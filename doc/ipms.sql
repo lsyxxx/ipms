@@ -11,42 +11,92 @@
  Target Server Version : 80034 (8.0.34)
  File Encoding         : 65001
 
- Date: 22/07/2023 18:01:05
+ Date: 24/07/2023 17:50:35
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for jsh_user
+-- Table structure for sys_role
+-- 用户角色表
 -- ----------------------------
-DROP TABLE IF EXISTS `jsh_user`;
-CREATE TABLE `jsh_user`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `username` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '用户姓名--例如张三',
-  `login_name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '登录用户名',
-  `password` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '登陆密码',
-  `leader_flag` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT '0' COMMENT '是否经理，0否，1是',
-  `position` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '职位',
-  `department` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '所属部门',
-  `email` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '电子邮箱',
-  `phonenum` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '手机号码',
-  `ismanager` tinyint NOT NULL DEFAULT 1 COMMENT '是否为管理者 0==管理者 1==员工',
-  `isystem` tinyint NOT NULL DEFAULT 0 COMMENT '是否系统自带数据 ',
-  `Status` tinyint NULL DEFAULT 0 COMMENT '状态，0：正常，1：删除，2封禁',
-  `description` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '用户描述信息',
-  `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '备注',
-  `weixin_open_id` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '微信绑定',
-  `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`) USING BTREE
+DROP TABLE IF EXISTS `sys_role`;
+CREATE TABLE `sys_role`  (
+                             `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+                             `name` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '名称',
+                             `type` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '类型',
+                             `price_limit` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '价格屏蔽 1-屏蔽采购价 2-屏蔽零售价 3-屏蔽销售价',
+                             `value` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '值',
+                             `description` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '描述',
+                             `enabled` bit(1) NULL DEFAULT NULL COMMENT '启用',
+                             `sort` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '排序',
+                             `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户id',
+                             `delete_flag` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT '0' COMMENT '删除标记，0未删除，1删除',
+                             PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '角色表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of sys_role
+-- ----------------------------
+INSERT INTO `sys_role` VALUES (4, '管理员', '全部数据', NULL, NULL, NULL, b'1', NULL, NULL, '0');
+INSERT INTO `sys_role` VALUES (10, '租户', '全部数据', NULL, NULL, '', b'1', NULL, NULL, '0');
+INSERT INTO `sys_role` VALUES (16, '销售经理', '全部数据', NULL, NULL, 'ddd', b'1', NULL, 63, '0');
+INSERT INTO `sys_role` VALUES (17, '销售代表', '个人数据', NULL, NULL, 'rrr', b'1', NULL, 63, '0');
+INSERT INTO `sys_role` VALUES (21, '财务主管', '个人数据', NULL, NULL, NULL, b'1', NULL, NULL, '0');
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : mysql_local
+ Source Server Type    : MySQL
+ Source Server Version : 80034 (8.0.34)
+ Source Host           : localhost:3306
+ Source Schema         : ipms
+
+ Target Server Type    : MySQL
+ Target Server Version : 80034 (8.0.34)
+ File Encoding         : 65001
+
+ Date: 24/07/2023 17:50:42
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for sys_user
+-- 用户信息表
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user`;
+CREATE TABLE `sys_user`  (
+                             `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+                             `username` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '用户姓名--例如张三',
+                             `login_name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL COMMENT '登录用户名',
+                             `password` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '登陆密码',
+                             `leader_flag` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT '0' COMMENT '是否经理，0否，1是',
+                             `position` varchar(200) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '职位',
+                             `department` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '所属部门',
+                             `email` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '电子邮箱',
+                             `phonenum` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '手机号码',
+                             `ismanager` tinyint NOT NULL DEFAULT 1 COMMENT '是否为管理者 0==管理者 1==员工',
+                             `isystem` tinyint NOT NULL DEFAULT 0 COMMENT '是否系统自带数据 ',
+                             `Status` tinyint NULL DEFAULT 0 COMMENT '状态，0：正常，1：删除，2封禁',
+                             `description` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '用户描述信息',
+                             `remark` varchar(500) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '备注',
+                             `weixin_open_id` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '微信绑定',
+                             `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户id',
+                             PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 146 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Records of jsh_user
+-- Records of sys_user
 -- ----------------------------
-INSERT INTO `jsh_user` VALUES (63, '测试用户', 'jsh', 'e10adc3949ba59abbe56e057f20f883e', '0', '主管', NULL, '666666@qq.com', '1123123123132', 1, 1, 0, '', NULL, NULL, 63);
-INSERT INTO `jsh_user` VALUES (111, 'abt1', 'abt1', '123456', '0', '软件开发', NULL, NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL);
-INSERT INTO `jsh_user` VALUES (120, '管理员', 'admin', 'e10adc3949ba59abbe56e057f20f883e', '0', NULL, NULL, NULL, NULL, 1, 0, 0, NULL, NULL, NULL, 0);
-INSERT INTO `jsh_user` VALUES (131, 'test123', 'test123', 'e10adc3949ba59abbe56e057f20f883e', '0', '总监', NULL, '7777777@qq.com', '', 1, 0, 0, '', NULL, NULL, 63);
+INSERT INTO `sys_user` VALUES (63, '测试用户', 'jsh', 'e10adc3949ba59abbe56e057f20f883e', '0', '主管', NULL, '666666@qq.com', '1123123123132', 1, 1, 0, '', NULL, NULL, 63);
+INSERT INTO `sys_user` VALUES (111, 'abt1', 'abt1', '123456', '0', '软件开发', NULL, NULL, NULL, 1, 0, 0, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_user` VALUES (120, '管理员', 'admin', 'e10adc3949ba59abbe56e057f20f883e', '0', NULL, NULL, NULL, NULL, 1, 0, 0, NULL, NULL, NULL, 0);
+INSERT INTO `sys_user` VALUES (131, 'test123', 'test123', 'e10adc3949ba59abbe56e057f20f883e', '0', '总监', NULL, '7777777@qq.com', '', 1, 0, 0, '', NULL, NULL, 63);
 
 SET FOREIGN_KEY_CHECKS = 1;
