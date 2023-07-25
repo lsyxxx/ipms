@@ -2,6 +2,7 @@ package com.ipms.sys.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 
@@ -9,14 +10,14 @@ import java.time.LocalDateTime;
  * 请求返回数据
  * @param <T>
  */
-@Data
-@NoArgsConstructor
-public class R<T>{
+public class R<T> {
     private T data;
     private String code;
     private String message;
     //eg: 2023-07-25T11:31:14.214514600
     private LocalDateTime timestamp = LocalDateTime.now();
+    private String token;
+    private String httpCode;
 
     public R(T data, String code, String message) {
         super();
@@ -43,6 +44,10 @@ public class R<T>{
 
     public static<T> R<T> invalidSession() {
         return new R<>(null, ResCode.SESSION_OUT.getCode(), ResCode.SESSION_OUT.getMessage());
+    }
+
+    public static R<Exception> authenticationFail(Exception e,  String msg) {
+        return new R<>(e, ResCode.AUTHENTICATION_FAIL.getCode(), msg);
     }
 
 }

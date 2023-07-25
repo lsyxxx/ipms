@@ -38,11 +38,10 @@ public class HomeController {
     }
 
     @GetMapping("/error")
-    public R error(HttpServletRequest request) {
+    public R error(HttpServletRequest request, HttpServletResponse response) {
         log.info("Something wrong...");
-        System.out.println(request.toString());
         //TODO 具体错误？
-        return R.fail(null);
+        return R.fail("Unknown error");
     }
 
     @GetMapping("/invalidSession")

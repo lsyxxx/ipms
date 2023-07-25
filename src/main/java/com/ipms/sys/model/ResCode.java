@@ -1,6 +1,5 @@
 package com.ipms.sys.model;
 
-import lombok.Data;
 import lombok.Getter;
 
 /**
@@ -11,6 +10,7 @@ public enum ResCode {
     SUCCESS(0, "0000", "Success"),
     FAIL(1, "9999", "Fail"),
     SESSION_OUT(2, "9998", "Out of Session"),
+    AUTHENTICATION_FAIL(3, "9997", "Authentication fail")
     ;
 
     private final int index;

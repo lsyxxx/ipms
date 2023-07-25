@@ -36,10 +36,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults())
-//                .formLogin(withDefaults())
-                .formLogin((config) -> config
-                        .successForwardUrl("/succLogin")
-                        .failureForwardUrl("/failLogin"))
+                .formLogin(withDefaults())
+//                .formLogin((config) -> config
+//                        .failureForwardUrl("/failLogin"))
 //                防止请求被保存，比如没有认证的用户信息不保存在session中
                 .requestCache((cache) -> cache
                         .requestCache(nullRequestCache))
