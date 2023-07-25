@@ -12,6 +12,13 @@ public interface UserMapper extends BaseMapper<User, User> {
     @Select("SELECT * FROM SYS_USER WHERE ID = #{id}")
     User findById(@Param("id") Long id);
 
+
+    @Select("SELECT * FROM SYS_USER WHERE LOGIN_NAME = #{loginName}")
+    User findByLoginName(@Param("loginName") String loginName);
+
+    @Select("SELECT * FROM SYS_USER WHERE ID = #{id} AND STATUS='1'")
+    User findEnabledById(@Param("id") Long id);
+
     @Select("SELECT * FROM SYS_USER")
     List<User> findAll();
 
@@ -21,4 +28,7 @@ public interface UserMapper extends BaseMapper<User, User> {
     @Insert("INSERT INTO SYS_USER (username, login_name, passowrd, position, department) VALUES (#{u.userName}, #{u.loginName}, #{u.password}, #{u.position}, #{u.department})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     long insert(User u);
+
+    @Update("UPDATE SYS_USER username=#{user.userName}, login_name=#{user.loginName}, position=#{user.position}, department=#{user.department}")
+    void update(User user);
 }

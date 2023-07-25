@@ -14,6 +14,9 @@ public interface RoleMapper extends BaseMapper<Role, Role>{
     long insert(Role role);
 
 
-    @Select("SELECT * FROM sys_role where id = #{id}")
-    List<Role> findBy(@Param("id") Long id);
+    @Select("SELECT * FROM sys_role where id = #{id} and delete_flag='0' and enabled=1")
+    Role findEnabledBy(@Param("id") Long id);
+
+    @Select("SELECT * FROM sys_role")
+    List<Role> findAll();
 }

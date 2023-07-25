@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * 获取用户权限
  */
-@Component
+//@Component
 @Slf4j
 public class UserFuncFilter implements Filter {
     @Override
@@ -19,7 +19,8 @@ public class UserFuncFilter implements Filter {
         log.info("UserFuncFilter.doFilter.....");
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-        //TODO: 获取用户权限
+        //TODO: 获取用户权限，不作任何处理，页面无法显示
+
 
 
     }
