@@ -1,6 +1,6 @@
 package com.ipms.sys.controller;
 
-import com.ipms.sys.model.R;
+import com.ipms.common.model.R;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +19,11 @@ public class HomeController {
         return R.success("HomePage");
     }
 
-    @GetMapping("/login")
-    public R<String> login() {
-        log.info("Login api");
-        return R.success("Login");
-    }
+//    @GetMapping("/login")
+//    public R<String> login() {
+//        log.info("Login api");
+//        return R.success("Login");
+//    }
 
     @GetMapping("/succLogin")
     public R<String> success() {
@@ -38,10 +38,10 @@ public class HomeController {
     }
 
     @GetMapping("/error")
-    public R error(HttpServletRequest request, HttpServletResponse response) {
+    public R<String> error(HttpServletRequest request, HttpServletResponse response) {
         log.info("Something wrong...");
         //TODO 具体错误？
-        return R.fail("Unknown error");
+        return R.fail("Something wrong...");
     }
 
     @GetMapping("/invalidSession")
@@ -50,10 +50,4 @@ public class HomeController {
         return R.invalidSession();
     }
 
-
-    @GetMapping("/test")
-    public R<String> test() {
-        log.info("test!");
-        return R.success("Test");
-    }
 }

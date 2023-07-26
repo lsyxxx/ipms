@@ -4,10 +4,13 @@ import com.ipms.sys.mapper.UserMapper;
 import com.ipms.sys.model.AuthUserDetails;
 import com.ipms.sys.model.User;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,10 +55,13 @@ public class UserService implements UserDetailsService, UserDetailsPasswordServi
      */
     @Override
     public UserDetails loadUserByUsername(String loginName) throws UsernameNotFoundException {
+        log.info("loadUserByUsername - {}", loginName);
         User user = userMapper.findByLoginName(loginName);
         if (user == null) {
+            log.error("loginname " + loginName + " is not found");
             throw new UsernameNotFoundException("loginname " + loginName + " is not found");
         }
         return new AuthUserDetails(user);
     }
+
 }

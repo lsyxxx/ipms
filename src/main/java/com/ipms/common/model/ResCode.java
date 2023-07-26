@@ -1,4 +1,4 @@
-package com.ipms.sys.model;
+package com.ipms.common.model;
 
 import lombok.Getter;
 
