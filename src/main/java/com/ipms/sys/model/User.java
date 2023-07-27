@@ -11,7 +11,7 @@ import org.springframework.lang.Nullable;
 @ToString
 public class User {
 
-    private @Id Integer id;
+    private @Id Long id;
     @NonNull
     private String userName;
     @NonNull

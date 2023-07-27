@@ -34,7 +34,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((authorize) -> authorize
                         //白名单不需要认证
-                        .requestMatchers("/", "/home", "/error", "/invalidSession", "/failLogin", "/toLogin")
+                        .requestMatchers("/", "/home", "/error", "/invalidSession", "/failLogin", "/doLogin")
                         .permitAll()
                         //需要权限
                         .requestMatchers("/u/*").hasRole("ADMIN")
@@ -47,11 +47,10 @@ public class SecurityConfig {
                 .formLogin(withDefaults())
                 .formLogin((config) -> config
 //                        .loginPage("/toLogin")
-//                        .loginProcessingUrl("/doLogin")
                         .successHandler(new SuccessLoginHandler())
                         .failureHandler((request, response, authenticationException) -> {
                             log.info("formLogin.failureHandler()");
-                            ResponseUtil.returnJson(response, R.fail("login fail...").toString());
+                            ResponseUtil.returnJson(response, R.fail("login fail...").toJson());
                         })
                         //the URL to validate username and password
                         .loginProcessingUrl("/doLogin"))
@@ -59,18 +58,8 @@ public class SecurityConfig {
                 .exceptionHandling(config -> config
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             log.info("exceptionHandling.accessDeniedHandler()");
-                            PrintWriter writer = response.getWriter();
-                            writer.write(R.fail("accessDeniedHandler fail..").toString());
-                            writer.flush();
-                            writer.close();
+                            ResponseUtil.returnJson(response, R.fail("exception: access denied...").toJson());
                         })
-//                        .authenticationEntryPoint(((request, response, authException) -> {
-//                            log.info("formLogin.authenticationEntryPoint()");
-//                            PrintWriter writer = response.getWriter();
-//                            writer.write(R.fail("entrypoint fail..").toString());
-//                            writer.flush();
-//                            writer.close();
-//                        }))
                 )
 
 

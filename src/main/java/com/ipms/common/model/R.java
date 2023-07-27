@@ -1,5 +1,6 @@
 package com.ipms.common.model;
 
+import com.alibaba.fastjson2.JSON;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +65,7 @@ public class R<T> {
      * @return
      */
     public String toJson() {
-        return "";
+        return JSON.toJSONString(this);
     }
 
 
