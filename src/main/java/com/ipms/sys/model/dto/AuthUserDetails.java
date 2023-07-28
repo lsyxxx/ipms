@@ -1,6 +1,6 @@
-package com.ipms.sys.model;
+package com.ipms.sys.model.dto;
 
-import lombok.Data;
+import com.ipms.sys.model.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -17,8 +17,8 @@ import java.util.List;
 public class AuthUserDetails implements UserDetails {
 
     private final User user;
-    private static final List<GrantedAuthority> ROLE_USER = Collections
-            .unmodifiableList(AuthorityUtils.createAuthorityList("ROLE_USER"));
+    private static final List<GrantedAuthority> ROLES = Collections
+            .unmodifiableList(AuthorityUtils.createAuthorityList("ROLE_USER", "ROLE_ADMIN"));
 
     public AuthUserDetails(User user) {
         this.user = user;
@@ -31,7 +31,7 @@ public class AuthUserDetails implements UserDetails {
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return ROLE_USER;
+        return ROLES;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.ipms.security;
 
+import com.ipms.common.model.R;
+import com.ipms.sys.util.ResponseUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,12 +17,16 @@ import java.io.IOException;
  */
 @Slf4j
 @Configuration
-public class SuccessLoginHandler implements AuthenticationSuccessHandler {
+public class UserLoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        log.info("AuthenticationSuccessHandler -> SuccessLoginHandler.onAuthenticationSuccess...");
-        //TODO 成功处理
+        log.info("Login success - Authentication = {}", authentication.toString());
+        //TODO 成功处理: token
+
+
+        //成功返回json
+        ResponseUtil.returnJson(response, R.success("Login success").toJson());
 
     }
 }

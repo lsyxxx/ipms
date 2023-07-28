@@ -4,13 +4,13 @@ import com.ipms.sys.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Configuration
 @Slf4j
-public class UserLoginAuthenticationProvider implements AuthenticationProvider {
+public class UserLoginAuthenticationProvider {
 
     private final UserService userService;
 
@@ -18,18 +18,23 @@ public class UserLoginAuthenticationProvider implements AuthenticationProvider {
         this.userService = userService;
     }
 
-    @Override
+//    @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         log.info("UserLoginAuthenticationProvider.authenticate - name: {}", authentication.getName() );
         //验证通过
         UserDetails userDetails = userService.loadUserByUsername(authentication.getName());
         log.debug(userDetails.toString());
 
-        //验证不通过
-        return authentication;
+        //校验
+
+        //TOKEN
+        UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.authenticated(authentication.getPrincipal(), authentication.getCredentials(), authentication.getAuthorities());
+        token.setDetails(userDetails);
+        //TODO: 验证不通过
+        return token;
     }
 
-    @Override
+//    @Override
     public boolean supports(Class<?> authentication) {
         return true;
     }

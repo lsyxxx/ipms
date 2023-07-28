@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.AuthenticationException;
 
 import java.time.LocalDateTime;
 
@@ -45,7 +46,7 @@ public class R<T> {
     }
 
     public static<T> R<T> success(String msg) {
-        return new R(null, ResCode.SUCCESS.getCode(), msg);
+        return new R<>(null, ResCode.SUCCESS.getCode(), msg);
     }
 
     public static<T> R<T> fail(String errMsg) {
@@ -56,7 +57,7 @@ public class R<T> {
         return new R<>(null, ResCode.SESSION_OUT.getCode(), ResCode.SESSION_OUT.getMessage());
     }
 
-    public static R<Exception> authenticationFail(Exception e,  String msg) {
+    public static R<Exception> authenticationFail(Exception e, String msg) {
         return new R<>(e, ResCode.AUTHENTICATION_FAIL.getCode(), msg);
     }
 

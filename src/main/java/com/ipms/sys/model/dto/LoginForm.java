@@ -1,4 +1,4 @@
-package com.ipms.sys.model;
+package com.ipms.sys.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package com.ipms.sys.controller;
 
 import com.ipms.common.model.R;
-import com.ipms.sys.model.User;
+import com.ipms.sys.model.entity.User;
 import com.ipms.sys.service.RoleService;
 import com.ipms.sys.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;

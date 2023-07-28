@@ -1,5 +1,7 @@
 package com.ipms.sys.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 /**
@@ -9,7 +11,7 @@ import java.util.List;
  */
 public interface BaseMapper<R, V> {
 
-    R findById(Integer id);
+    R findById(Long id);
 
     R findBy(V v);
 
@@ -23,8 +25,6 @@ public interface BaseMapper<R, V> {
 
     /**
      * 插入一条数据，插入成功后返回id
-     * @param v
-     * @return
      */
     long insert(V v);
 

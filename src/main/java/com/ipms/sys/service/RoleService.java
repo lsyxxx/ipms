@@ -1,8 +1,7 @@
 package com.ipms.sys.service;
 
 import com.ipms.sys.mapper.RoleMapper;
-import com.ipms.sys.model.Role;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ipms.sys.model.entity.Role;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

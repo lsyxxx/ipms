@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
@@ -17,7 +16,8 @@ public class GlobalExceptionHandler {
     /**
      * 处理认证异常
      * !注解@ExceptionHandler({class1})和 handleAuthenticationException({class2}): class1和class2异常类型必须一致
-     * @param e
+     *
+     * @param e AuthenticationException类异常
      * @return R
      */
     @ExceptionHandler(AuthenticationException.class)
@@ -37,4 +37,5 @@ public class GlobalExceptionHandler {
         log.error("Uncaught exception! - msg: {}, e: {1}", e.getMessage(), e);
         return R.fail(e.getMessage());
     }
+
 }
