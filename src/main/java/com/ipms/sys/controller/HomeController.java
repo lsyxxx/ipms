@@ -1,6 +1,8 @@
 package com.ipms.sys.controller;
 
 import com.ipms.common.model.R;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -12,38 +14,20 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Slf4j
+@Tag(name = "HomeController", description = "首页")
 public class HomeController {
 
-    @GetMapping("/home")
-    public R<String> home() {
-        return R.success("HomePage");
-    }
 
-//    @GetMapping("/login")
-//    public R<String> login() {
-//        log.info("Login api");
-//        return R.success("Login");
-//    }
 
-    @GetMapping("/succLogin")
-    public R<String> success() {
-        log.info("Login success");
-        return R.success("Login success!");
-    }
-
-    @GetMapping("/failLogin")
-    public R<String> fail() {
-        log.info("Login failed");
-        return R.fail("Login failed");
-    }
-
+    @Operation(summary = "错误统一返回")
     @GetMapping("/error")
-    public R<String> error(HttpServletRequest request, HttpServletResponse response) {
+    public R<String> error() {
         log.info("Something wrong...");
         //TODO 具体错误？
         return R.fail("Something wrong...");
     }
 
+    @Operation(summary = "Session超时", description = "session超时desc")
     @GetMapping("/invalidSession")
     public R invalidSession() {
         log.info("Session out of time!");

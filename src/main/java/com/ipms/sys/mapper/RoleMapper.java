@@ -21,4 +21,22 @@ public interface RoleMapper extends BaseMapper<Role, Role>{
     @Override
     @Select("SELECT * FROM sys_role")
     List<Role> findAll();
+
+    @Override
+    Role findById(Long id);
+
+
+
+
+
+
+
+
+
+
 }
+
+
+
+
+

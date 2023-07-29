@@ -23,4 +23,5 @@ public class RoleService {
     public List<Role> findAll() {
         return roleMapper.findAll();
     }
+
 }

@@ -4,6 +4,8 @@ import com.ipms.common.model.R;
 import com.ipms.sys.model.entity.User;
 import com.ipms.sys.service.RoleService;
 import com.ipms.sys.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +19,9 @@ import java.util.List;
  * 系统管理-用户操作
  */
 @RestController
-@RequestMapping("/u")
+@RequestMapping("/sys/u")
 @Slf4j
+@Tag(name = "SysUserController", description = "系统用户管理")
 public class SysUserController {
     private final RoleService roleService;
     private final UserService userService;
@@ -27,9 +30,10 @@ public class SysUserController {
         this.userService = userService;
     }
 
+    @Operation(summary = "查询所有未删除用户")
     @GetMapping("/all")
-    public R<List<User>> findAll(HttpServletRequest request, HttpServletResponse response) {
-        List<User> userList = userService.userList();
+    public R<List<User>> findAll() {
+        List<User> userList = userService.findAll();
         log.debug("user list == {}", userList);
         return R.success(userList);
     }

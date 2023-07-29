@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class UserService implements UserDetailsService, UserDetailsPasswordService {
+public class UserService implements UserDetailsService, UserDetailsPasswordService, CrudService<User, Long> {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -25,21 +25,60 @@ public class UserService implements UserDetailsService, UserDetailsPasswordServi
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<User> userList() {
-        return userMapper.findAll();
+    /**
+     * 所有正常、禁用用户
+     * @return
+     */
+    @Override
+    public List<User> findAll() {
+        return userMapper.findVisibleUsers();
+    }
+
+    /**
+     * 删除用户：设置删除标志
+     */
+    @Override
+    public void delete(User user) {
+        userMapper.updateStatus(User.Status.DELETE.ordinal(), user.getId());
     }
 
     public User findById(Long id) {
         return userMapper.findById(id);
     }
 
+    /**
+     * 更新用户基本信息
+     * @param user
+     */
+    @Override
+    public void update(User user) {
+        userMapper.updateUser(user);
+    }
+
+    @Override
+    public Long insert(User user) {
+        return userMapper.insert(user);
+    }
+
     public Long count() {
         return userMapper.count();
     }
 
-    public void addUser(User user) {
-        userMapper.insert(user);
+    /**
+     * 禁用用户
+     * @param user
+     */
+    public void ban(User user) {
+        userMapper.updateStatus(User.Status.BAN.ordinal(), user.getId());
     }
+
+    /**
+     * 删除用户，设置delete_flag
+     */
+    public void softDelete(User user) {
+
+    }
+
 
     @Override
     public UserDetails updatePassword(UserDetails user, String newPassword) {

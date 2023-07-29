@@ -15,13 +15,11 @@ public interface BaseMapper<R, V> {
 
     R findBy(V v);
 
-    R save(V v);
-
     List<R> findAll();
 
     long count();
 
-    void delete();
+    void delete(V v);
 
     /**
      * 插入一条数据，插入成功后返回id

@@ -24,6 +24,9 @@ public interface UserMapper extends BaseMapper<User, User> {
     @Select("SELECT * FROM SYS_USER")
     List<User> findAll();
 
+    @Select("SELECT * FROM SYS_USER WHERE status != '2'")
+    List<User> findVisibleUsers();
+
     @Select("SELECT count(1) FROM SYS_USER")
     long count();
 
@@ -33,5 +36,9 @@ public interface UserMapper extends BaseMapper<User, User> {
     long insert(@Param("u") User u);
 
     @Update("UPDATE SYS_USER SET username=#{user.userName}, login_name=#{user.loginName}, position=#{user.position}, department=#{user.department} WHERE id = #{user.id}")
-    void update(@Param("user") User user);
+    void updateUser(@Param("user") User user);
+
+    @Update("UPDATE sys_user SET status = #{sta} WHERE id = #{id}")
+    void updateStatus(@Param("sta") int sta, @Param("id") Long id);
+
 }

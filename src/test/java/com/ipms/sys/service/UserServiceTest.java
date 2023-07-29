@@ -30,7 +30,7 @@ class UserServiceTest {
     @Test
     void userList() {
         log.info("user list...");
-        List<User> users = service.userList();
+        List<User> users = service.findAll();
         users.forEach(u -> System.out.println(u.toString()));
     }
 

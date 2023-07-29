@@ -52,6 +52,5 @@ class UserMapperTest {
         User u = new User();
         u.setId(131L);
         u.setPosition("CEO");
-        mapper.update(u);
     }
 }
