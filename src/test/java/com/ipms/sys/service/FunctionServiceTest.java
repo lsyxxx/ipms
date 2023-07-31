@@ -1,5 +1,6 @@
 package com.ipms.sys.service;
 
+import com.ipms.sys.model.entity.Function;
 import com.ipms.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;

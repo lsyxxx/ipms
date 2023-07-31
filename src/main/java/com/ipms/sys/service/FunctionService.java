@@ -1,6 +1,7 @@
 package com.ipms.sys.service;
 
 import com.ipms.sys.mapper.FunctionMapper;
+import com.ipms.sys.model.entity.Function;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

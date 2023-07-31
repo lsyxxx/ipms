@@ -1,5 +1,6 @@
 package com.ipms.sys.mapper;
 
+import com.ipms.sys.model.entity.Function;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.annotations.Param;
 
