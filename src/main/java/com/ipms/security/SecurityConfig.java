@@ -42,7 +42,8 @@ public class SecurityConfig {
                         //静态资源
                         //需要权限
                         //TODO 数据库或xml存储？
-                        .requestMatchers("/u/*").hasRole("ADMIN")
+                        .requestMatchers("/sys/*").hasRole("ADMIN")
+                        .requestMatchers("/ac/*").hasAuthority("ACC")
                         //认证
                         .anyRequest().authenticated()
                 )

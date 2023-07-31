@@ -17,6 +17,11 @@ public class Role {
     private String name;
     @Schema(description = "类型")
     private String type;
+    /**
+     * eg: ADMIN, USER
+     */
+    @Schema(description = "角色代码")
+    private String code;
     @Schema(description = "描述")
     private String description;
     @Schema(description = "是否启用")
@@ -25,12 +30,8 @@ public class Role {
     private String sort;
     @Schema(description = "租户名称")
     private Long tenantId;
-    @Schema(description = "是否删除")
+    @Schema(description = "是否删除, 0未删除, 1删除")
     private char deleteFlag;
 
-
-    static Role of(String name, String type, String description, boolean enabled, String sort, Long tenantId, char deleteFlag) {
-        return new Role(null, name, type, description, enabled, sort, tenantId, deleteFlag);
-    }
 
 }

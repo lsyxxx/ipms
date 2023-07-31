@@ -19,12 +19,10 @@ public interface BaseMapper<R, V> {
 
     long count();
 
-    void delete(V v);
-
     /**
      * 插入一条数据，插入成功后返回id
      */
-    long insert(V v);
+    long insert(R r);
 
 
 

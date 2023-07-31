@@ -11,11 +11,13 @@ public interface CrudService<T, K> {
 
     List<T> findAll();
 
+    /**
+     * 根据主键删除
+     * @param t
+     */
     void delete(T t);
 
     T findById(K id);
-
-    void update(T t);
 
     /**
      * 返回主键
@@ -23,5 +25,7 @@ public interface CrudService<T, K> {
      * @return
      */
     Long insert(T t);
+
+    void update(T t);
 
 }

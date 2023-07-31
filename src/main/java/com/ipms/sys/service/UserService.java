@@ -72,13 +72,6 @@ public class UserService implements UserDetailsService, UserDetailsPasswordServi
         userMapper.updateStatus(User.Status.BAN.ordinal(), user.getId());
     }
 
-    /**
-     * 删除用户，设置delete_flag
-     */
-    public void softDelete(User user) {
-
-    }
-
 
     @Override
     public UserDetails updatePassword(UserDetails user, String newPassword) {
