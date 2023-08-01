@@ -5,6 +5,7 @@ import java.io.Serializable;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
 
 /**
@@ -14,6 +15,7 @@ import org.springframework.data.annotation.Id;
  * @since 2023-07-31 09:54:20
  */
 @Data
+@Accessors(chain = true)
 @NoArgsConstructor
 @Schema(description = "角色-功能关联表")
 public class RoleFunc implements Serializable {
@@ -41,6 +43,5 @@ public class RoleFunc implements Serializable {
 
     @Schema(description = "${column.comment}")
     private Date createDate;
-
 }
 

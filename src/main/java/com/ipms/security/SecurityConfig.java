@@ -43,7 +43,8 @@ public class SecurityConfig {
                         //需要权限
                         //TODO 数据库或xml存储？
                         .requestMatchers("/sys/*").hasRole("ADMIN")
-                        .requestMatchers("/ac/*").hasAuthority("ACC")
+                        .requestMatchers("/ac/a/*").hasRole("ACC")
+                        .requestMatchers("/ac/c/*").hasRole("CAS")
                         //认证
                         .anyRequest().authenticated()
                 )
