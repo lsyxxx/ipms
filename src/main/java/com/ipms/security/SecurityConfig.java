@@ -33,18 +33,19 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((authorize) -> authorize
+                        // !url通配符为**，/test/**表示/test下所有资源
                         //白名单不需要认证
                         .requestMatchers("/", "/home", "/error", "/invalidSession","/doLogin").permitAll()
                         //swagger
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/swagger-resource/**", "/v3/api-docs/**", "/v2/api-docs/**", "/webjars/**", "/doc.html").permitAll()
                         //测试路径不需要认证
-                        .requestMatchers("/test/*").permitAll()
+                        .requestMatchers("/test/**").permitAll()
                         //静态资源
                         //需要权限
                         //TODO 数据库或xml存储？
-                        .requestMatchers("/sys/*").hasRole("ADMIN")
-                        .requestMatchers("/ac/a/*").hasRole("ACC")
-                        .requestMatchers("/ac/c/*").hasRole("CAS")
+                        .requestMatchers("/sys/**").hasRole("ADMIN")
+                        .requestMatchers("/ac/a/**").hasRole("ACC")
+                        .requestMatchers("/ac/c/**").hasRole("CAS")
                         //认证
                         .anyRequest().authenticated()
                 )

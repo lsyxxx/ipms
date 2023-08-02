@@ -11,7 +11,7 @@
  Target Server Version : 80034 (8.0.34)
  File Encoding         : 65001
 
- Date: 31/07/2023 17:55:20
+ Date: 02/08/2023 17:36:34
 */
 
 SET NAMES utf8mb4;
@@ -34,7 +34,7 @@ CREATE TABLE `sys_dept`  (
   `delete_flag` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT '0' COMMENT '删除标记，0未删除，1删除',
   `role_group` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '多个角色以\",\"分隔',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 34 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '部门表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 34 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '部门表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_dept
@@ -73,7 +73,7 @@ CREATE TABLE `sys_function`  (
   `level` tinyint NOT NULL COMMENT '当前功能层级。0表示根节点',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `url`(`url` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 285 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '功能模块表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 285 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '功能模块表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_function
@@ -122,7 +122,7 @@ CREATE TABLE `sys_role`  (
   `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户id',
   `delete_flag` varchar(1) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT '0' COMMENT '删除标记，0未删除，1删除',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 27 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '角色表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 28 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_role
@@ -137,6 +137,7 @@ INSERT INTO `sys_role` VALUES (23, '会计专员', 'ACC_A', NULL, NULL, b'1', NU
 INSERT INTO `sys_role` VALUES (24, '出纳专员', 'CAS_A', NULL, NULL, b'1', NULL, NULL, '0');
 INSERT INTO `sys_role` VALUES (25, '税务专员', 'TAX_A', NULL, NULL, b'1', NULL, NULL, '0');
 INSERT INTO `sys_role` VALUES (26, '税务主管', 'TAX_M', NULL, NULL, b'1', NULL, NULL, '0');
+INSERT INTO `sys_role` VALUES (27, '总经理', 'GM', NULL, NULL, b'1', NULL, NULL, '0');
 
 -- ----------------------------
 -- Table structure for sys_role_func
@@ -149,11 +150,11 @@ CREATE TABLE `sys_role_func`  (
   `create_user` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT 'username',
   `create_date` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `role_id2`(`role_id` ASC) USING BTREE,
   INDEX `func_id`(`func_id` ASC) USING BTREE,
+  INDEX `role_id2`(`role_id` ASC) USING BTREE,
   CONSTRAINT `func_id` FOREIGN KEY (`func_id`) REFERENCES `sys_function` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `role_id2` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '角色-功能关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色-功能关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_role_func
@@ -191,7 +192,7 @@ CREATE TABLE `sys_user`  (
   `weixin_open_id` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '微信绑定',
   `tenant_id` bigint NULL DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 156 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 156 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_user
@@ -227,7 +228,7 @@ CREATE TABLE `sys_user_role`  (
   INDEX `role_id`(`role_id` ASC) USING BTREE,
   CONSTRAINT `role_id` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '用户-角色关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '用户-角色关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of sys_user_role

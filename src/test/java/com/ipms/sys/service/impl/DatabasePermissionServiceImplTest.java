@@ -46,4 +46,9 @@ class DatabasePermissionServiceImplTest {
         service.addRoleFuncRelations(test);
 
     }
+
+    @Test
+    void insertOne() {
+        service.insertOne(new RoleFunc().setFuncId(2L).setRoleId(21L).setCreateUser("test"));
+    }
 }

@@ -2,6 +2,7 @@ package com.ipms.sys.controller;
 
 import com.ipms.common.model.R;
 import com.ipms.sys.model.entity.RoleFunc;
+import com.ipms.sys.service.impl.DatabasePermissionServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,12 @@ import java.util.List;
 @RequestMapping("/sys/au")
 @Tag(name = "AuthorizationController", description = "权限管理")
 public class AuthorizationController {
+
+    private DatabasePermissionServiceImpl databasePermissionService;
+
+    public AuthorizationController(DatabasePermissionServiceImpl databasePermissionService) {
+        this.databasePermissionService = databasePermissionService;
+    }
 
 
     /**
