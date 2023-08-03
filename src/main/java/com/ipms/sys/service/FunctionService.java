@@ -1,7 +1,9 @@
 package com.ipms.sys.service;
 
+import com.ipms.common.model.R;
 import com.ipms.sys.mapper.FunctionMapper;
 import com.ipms.sys.model.entity.Function;
+import org.apache.ibatis.session.RowBounds;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +22,12 @@ public class FunctionService implements CrudService<Function, Long> {
 
     @Override
     public List<Function> findAll() {
-        return functionMapper.findVisible();
+        //无参的RowBounds表示不分页
+        return functionMapper.findVisible(new RowBounds());
+    }
+
+    public List<Function> findByPager(RowBounds rowBounds) {
+        return functionMapper.findVisible(rowBounds);
     }
 
     /**

@@ -21,11 +21,6 @@ import org.springframework.data.annotation.Id;
 public class RoleFunc implements Serializable {
     private static final long serialVersionUID = -39361324218546704L;
     /**
-     * pk
-     */
-    @Schema(description = "pk")
-    private @Id Long id;
-    /**
      * sys_role: id
      */
     @Schema(description = "sys_role: id")

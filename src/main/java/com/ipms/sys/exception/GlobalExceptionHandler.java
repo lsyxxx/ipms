@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
 /**
  * 全局异常处理
  */
@@ -39,8 +41,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public R<Exception> handleException(Exception e) {
-        log.error("Uncaught exception! - msg: {}, e: {1}", e.getMessage(), e);
+        log.error("Uncaught exception! - msg: {}, e: {}", e.getMessage(), e);
         return R.fail(e.getMessage());
     }
+
 
 }

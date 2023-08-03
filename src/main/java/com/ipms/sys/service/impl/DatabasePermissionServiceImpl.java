@@ -39,10 +39,14 @@ public class DatabasePermissionServiceImpl implements PermissionService {
      */
     @Override
     public void addRoleFuncRelations(List<RoleFunc> list) {
+        //
         SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
         try {
+            sqlSession.getConnection().setAutoCommit(false);
             RoleFuncMapper mapper = sqlSession.getMapper(RoleFuncMapper.class);
-            list.forEach(i -> mapper.insert(i));
+            list.forEach(i -> {
+                mapper.insert(i);
+            });
             sqlSession.commit();
         } catch (Exception e) {
             log.error("Insert sys_role_func error - ", e);
@@ -55,6 +59,7 @@ public class DatabasePermissionServiceImpl implements PermissionService {
     }
 
     public void insertOne(RoleFunc roleFunc) {
-        roleFuncMapper.insert(roleFunc);
+//        roleFuncMapper.insert(roleFunc);
+        roleFuncMapper.insert2(roleFunc);
     }
 }

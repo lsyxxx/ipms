@@ -49,6 +49,22 @@ class DatabasePermissionServiceImplTest {
 
     @Test
     void insertOne() {
-        service.insertOne(new RoleFunc().setFuncId(2L).setRoleId(21L).setCreateUser("test"));
+        service.insertOne(new RoleFunc().setFuncId(284L).setRoleId(27L).setCreateUser("test"));
+    }
+
+
+    @Test
+    void testMulti() {
+        List<RoleFunc> test = List.of(new RoleFunc[]{
+                new RoleFunc().setFuncId(2L).setRoleId(21L).setCreateUser("test"),
+                new RoleFunc().setFuncId(2L).setRoleId(22L).setCreateUser("test"),
+                new RoleFunc().setFuncId(2L).setRoleId(23L).setCreateUser("test"),
+                new RoleFunc().setFuncId(12L).setRoleId(24L).setCreateUser("test"),
+                new RoleFunc().setFuncId(2L).setRoleId(25L).setCreateUser("test"),
+                new RoleFunc().setFuncId(2L).setRoleId(26L).setCreateUser("test"),
+                new RoleFunc().setFuncId(2L).setRoleId(27L).setCreateUser("test"),
+        });
+        service.addRoleFuncRelations(test);
+
     }
 }

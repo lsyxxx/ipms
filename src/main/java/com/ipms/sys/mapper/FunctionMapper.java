@@ -3,6 +3,7 @@ package com.ipms.sys.mapper;
 import com.ipms.sys.model.entity.Function;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.session.RowBounds;
 
 import java.util.List;
 
@@ -16,13 +17,14 @@ public interface FunctionMapper extends BaseMapper<Function, Function> {
     @Select("select * from sys_function where id = #{id}")
     Function findById(@Param("id")Long id);
 
-
     /**
-     * 查询所有未删除的
+     * 分页查询
+     * @param rowBounds
      * @return
      */
     @Select("select * from sys_function where delete_flag='0'")
-    List<Function> findVisible();
+    List<Function> findVisible(RowBounds rowBounds);
+
 
     long count();
 
