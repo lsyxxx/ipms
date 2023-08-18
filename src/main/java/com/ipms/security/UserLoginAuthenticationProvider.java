@@ -9,6 +9,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 
+
+/**
+ * 自定义的用户名密码登录
+ */
 @Slf4j
 public class UserLoginAuthenticationProvider {
 

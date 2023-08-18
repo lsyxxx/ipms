@@ -1,10 +1,10 @@
 package com.ipms.common.model;
 
-import com.alibaba.fastjson2.JSON;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.ipms.sys.util.JsonUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.AuthenticationException;
 
 import java.time.LocalDateTime;
 
@@ -61,12 +61,9 @@ public class R<T> {
         return new R<>(e, ResCode.AUTHENTICATION_FAIL.getCode(), msg);
     }
 
-    /**
-     * TODO to json str
-     * @return
-     */
-    public String toJson() {
-        return JSON.toJSONString(this);
+
+    public String toJson() throws JsonProcessingException {
+        return JsonUtil.toJson(this);
     }
 
 
