@@ -61,6 +61,11 @@ public class R<T> {
         return new R<>(e, ResCode.AUTHENTICATION_FAIL.getCode(), msg);
     }
 
+public static R<Exception> invalidToken(Exception e) {
+        return new R<>(e, ResCode.INVALID_TOKEN.getCode(), ResCode.INVALID_TOKEN.getMessage());
+    }
+
+
 
     public String toJson() throws JsonProcessingException {
         return JsonUtil.toJson(this);

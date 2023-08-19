@@ -1,7 +1,6 @@
 package com.ipms.sys.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.ipms.common.model.R;
 import com.ipms.sys.model.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -14,10 +13,10 @@ import java.util.List;
 
 @SpringBootTest
 @Slf4j
-class UserServiceTest {
+class UserServiceImplTest {
 
     @Autowired
-    UserService service;
+    UserServiceImpl service;
 
     @BeforeEach
     void setUp() {

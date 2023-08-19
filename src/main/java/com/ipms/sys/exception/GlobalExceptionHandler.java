@@ -38,6 +38,13 @@ public class GlobalExceptionHandler {
         return R.authenticationFail(e, e.getMessage());
     }
 
+    @ExceptionHandler(InvalidTokenException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public R<Exception> handleInvalidTokenException(InvalidTokenException e) {
+        log.error("Invalid token! - {}", e.getMessage());
+        return R.invalidToken(e);
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public R<Exception> handleException(Exception e) {

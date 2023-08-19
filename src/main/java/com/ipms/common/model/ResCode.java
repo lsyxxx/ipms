@@ -10,7 +10,8 @@ public enum ResCode {
     SUCCESS(0, "0000", "Success"),
     FAIL(1, "9999", "Fail"),
     SESSION_OUT(2, "9998", "Out of Session"),
-    AUTHENTICATION_FAIL(3, "9997", "Authentication fail")
+    AUTHENTICATION_FAIL(3, "9997", "Authentication fail"),
+    INVALID_TOKEN(4, "9401", "认证失败，请提供认证信息")
     ;
 
     private final int index;

@@ -2,23 +2,20 @@ package com.ipms.security;
 
 import com.ipms.common.model.R;
 import com.ipms.sys.util.ResponseUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 
 /**
@@ -28,7 +25,12 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 @Slf4j
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final ABTWebApiTokenAuthenticationFilter abtWebApiTokenAuthenticationFilter;
+    private final ABTWebApiTokenAuthenticationProvider abtWebApiTokenAuthenticationProvider;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthorizationManager<RequestAuthorizationContext> authz) throws Exception {
         RequestCache nullRequestCache = new NullRequestCache();
@@ -40,18 +42,26 @@ public class SecurityConfig {
                         //swagger
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/swagger-resource/**", "/v3/api-docs/**", "/v2/api-docs/**", "/webjars/**", "/doc.html").permitAll()
                         //测试路径不需要认证
-                        .requestMatchers("/test/**").permitAll())
+                        .requestMatchers("/test/**").permitAll()
+                )
                 .requestCache((cache) -> cache
                         .requestCache(nullRequestCache))
-                //设置session超时
-                //TODO: 超时重新请求，强制刷新
-//                .sessionManagement(session -> session
-                        //超时跳转url redirect to webapi
-//                        .invalidSessionUrl("/invalidSession"))
+                .sessionManagement(session ->
+                        //无状态session
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                                //超时跳转url redirect to webapi
+                                .invalidSessionUrl("/invalidSession"))
                 //开启跨域请求，测试使用
                 .cors(AbstractHttpConfigurer::disable)
                 //开启模拟请求，测试使用
                 .csrf(AbstractHttpConfigurer::disable)
+
+
+                .authenticationProvider(abtWebApiTokenAuthenticationProvider)
+                // 自定义filter
+                // 1. Token: 放在AuthorizationFilter.class 前
+                .addFilterBefore(abtWebApiTokenAuthenticationFilter, AuthorizationFilter.class)
+
 
                 //认证异常处理
                 .exceptionHandling(config -> config
@@ -68,9 +78,6 @@ public class SecurityConfig {
         ;
         return http.build();
     }
-
-
-
 
     /**
      * 一般表单登录
@@ -94,9 +101,6 @@ public class SecurityConfig {
 
 
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
 
 }

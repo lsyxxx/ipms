@@ -1,28 +1,37 @@
 package com.ipms.sys.model.dto;
 
-import com.ipms.sys.model.entity.User;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * 已加载用户
  */
 @Slf4j
-public class AuthUserDetails implements UserDetails {
+@Data
+@RequiredArgsConstructor
+public class AuthUserDetails<T> implements UserDetails {
 
-    private final User user;
-    private static final List<GrantedAuthority> ROLES = Collections
-            .unmodifiableList(AuthorityUtils.createAuthorityList("ROLE_USER", "ROLE_ADMIN"));
+    private final T user;
 
-    public AuthUserDetails(User user) {
-        this.user = user;
+    private final String password;
+
+    private final String username;
+
+    private Collection<? extends GrantedAuthority> roles = Collections.emptyList();
+
+
+
+
+    public void setRoles(Collection<? extends GrantedAuthority> roles) {
+        this.roles = roles;
     }
+
 
     /**
      * 用户权限
@@ -31,17 +40,17 @@ public class AuthUserDetails implements UserDetails {
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return ROLES;
+        return roles;
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return user.getUserName();
+        return this.username;
     }
 
     /**
