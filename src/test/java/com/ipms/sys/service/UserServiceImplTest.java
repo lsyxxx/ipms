@@ -2,6 +2,7 @@ package com.ipms.sys.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ipms.sys.model.entity.User;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,10 +14,10 @@ import java.util.List;
 
 @SpringBootTest
 @Slf4j
+@RequiredArgsConstructor
 class UserServiceImplTest {
 
-    @Autowired
-    UserServiceImpl service;
+    private final UserService service;
 
     @BeforeEach
     void setUp() {
@@ -28,9 +29,6 @@ class UserServiceImplTest {
 
     @Test
     void userList() {
-        log.info("user list...");
-        List<User> users = service.findAll();
-        users.forEach(u -> System.out.println(u.toString()));
     }
 
     @Test
@@ -43,7 +41,6 @@ class UserServiceImplTest {
 
     @Test
     void count() {
-        System.out.println(service.count());
     }
 
     @Test

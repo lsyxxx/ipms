@@ -1,15 +1,20 @@
 package com.ipms.security;
 
+import com.ipms.sys.exception.InvalidTokenException;
+import com.ipms.sys.util.MessageUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 
@@ -19,45 +24,43 @@ import java.io.IOException;
  */
 
 @Slf4j
-@Component
 public class ABTWebApiTokenAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
-
-
-    private static final String MATCH_ALL = "/**";
+    protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
     /**
      * Request header key
      */
     public static final String ABT_TOKEN_KEY = "X-Token";
 
-    private String tokenKey = ABT_TOKEN_KEY;
-
-    /**
-     * URL必须token验证
-     */
-    protected ABTWebApiTokenAuthenticationFilter() {
-        super(new AntPathRequestMatcher(MATCH_ALL));
-
+    protected ABTWebApiTokenAuthenticationFilter(String defaultFilterProcessesUrl) {
+        super(defaultFilterProcessesUrl);
     }
+
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        log.info("Authenticate token....");
+        log.info("拦截 URL: {}, 开始获取用户token认证原始凭证", request.getRequestURI());
         String tokenValue = obtainTokenValue(request);
-        tokenValue = (tokenValue != null) ? tokenValue.trim() : "";
+        if (tokenValue == null) {
+            log.error("Token is null!");
+            throw new InvalidTokenException(this.messages.getMessage("ex.token.invalid.common"));
+        }
+//        Assert.notNull(tokenValue, this.messages.getMessage("ABTWebApiTokenAuthenticationFilter.nullToken"));
+        tokenValue = tokenValue.trim();
         log.info("Token value : {}", tokenValue);
-        ABTWebApiAuthenticationToken authRequest = ABTWebApiAuthenticationToken.unauthenticated(null, tokenValue);
-        // Allow subclasses to set the "details" property
+        ABTWebApiAuthenticationToken authRequest = ABTWebApiAuthenticationToken.unauthenticated(tokenValue);
         setDetails(request, authRequest);
         return this.getAuthenticationManager().authenticate(authRequest);
     }
 
     public String obtainTokenValue(HttpServletRequest request) {
-        return request.getParameter(tokenKey);
+        return request.getParameter(ABT_TOKEN_KEY);
     }
 
     protected void setDetails(HttpServletRequest request, ABTWebApiAuthenticationToken authRequest) {
         authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
     }
+
+
 
 }

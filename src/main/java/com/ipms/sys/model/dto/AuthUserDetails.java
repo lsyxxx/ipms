@@ -11,10 +11,12 @@ import java.util.Collections;
 
 /**
  * 已加载用户
+ * 由UserView替代
  */
 @Slf4j
 @Data
 @RequiredArgsConstructor
+@Deprecated
 public class AuthUserDetails<T> implements UserDetails {
 
     private final T user;
@@ -23,6 +25,9 @@ public class AuthUserDetails<T> implements UserDetails {
 
     private final String username;
 
+    private final String token;
+
+    //TODO: 授权
     private Collection<? extends GrantedAuthority> roles = Collections.emptyList();
 
 

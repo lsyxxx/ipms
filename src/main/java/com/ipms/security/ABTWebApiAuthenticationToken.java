@@ -1,5 +1,6 @@
 package com.ipms.security;
 
+import com.ipms.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,23 +23,22 @@ public class ABTWebApiAuthenticationToken extends AbstractAuthenticationToken {
     private static final String REQ_HEADER_KEY = "X-Token";
 
     /**
-     * 用户
-     * 暂时用不上
+     * 用户，认证后保存用户原始信息UserView
+     * 未认证则null
      */
-    private final Object principal;
+    private final UserView principal;
 
     /**
      * x-token value
      */
-    private Object credentials;
+    private String credentials;
 
     //TODO: 可以扩展其它信息，比如可见菜单
 
 
-
-    public ABTWebApiAuthenticationToken(Object principal, Object credentials) {
+    public ABTWebApiAuthenticationToken(String credentials) {
         super(null);
-        this.principal = principal;
+        this.principal = null;
         this.credentials = credentials;
         super.setAuthenticated(false);
     }
@@ -49,18 +49,31 @@ public class ABTWebApiAuthenticationToken extends AbstractAuthenticationToken {
      * @param authorities the collection of <tt>GrantedAuthority</tt>s for the principal
      *                    represented by this authentication object.
      */
-    public ABTWebApiAuthenticationToken(Collection<? extends GrantedAuthority> authorities, Object principal, Object credentials) {
+    public ABTWebApiAuthenticationToken(Collection<? extends GrantedAuthority> authorities, UserView principal, String credentials) {
         super(authorities);
         this.principal = principal;
         this.credentials = credentials;
         super.setAuthenticated(true); // must use super, as we override
     }
 
-    public static ABTWebApiAuthenticationToken unauthenticated(Object principal, Object credentials) {
-        return new ABTWebApiAuthenticationToken(principal, credentials);
+    /**
+     * 未认证token
+     * @param credentials: token
+     * @return
+     */
+    public static ABTWebApiAuthenticationToken unauthenticated(String credentials) {
+        return new ABTWebApiAuthenticationToken(credentials);
     }
 
-    public static ABTWebApiAuthenticationToken authenticate(Object principal, Object credentials,
+
+    /**
+     * 认证token
+     * @param principal: 用户原始信息 UserView
+     * @param credentials: token
+     * @param authorities: 权限信息
+     * @return
+     */
+    public static ABTWebApiAuthenticationToken authenticate(UserView principal, String credentials,
                                                             Collection<? extends GrantedAuthority> authorities) {
 
         return new ABTWebApiAuthenticationToken(authorities, principal, credentials);

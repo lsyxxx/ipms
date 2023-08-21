@@ -1,9 +1,11 @@
 package com.ipms.sys.exception;
 
+import org.springframework.security.core.AuthenticationException;
+
 /**
  * 非法token
  */
-public class InvalidTokenException extends RuntimeException {
+public class InvalidTokenException extends AuthenticationException {
 
     public InvalidTokenException(String msg, Throwable cause) {
         super(msg, cause);

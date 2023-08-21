@@ -6,7 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,6 +20,9 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.stereotype.Component;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 
 /**
@@ -25,47 +32,41 @@ import org.springframework.security.web.savedrequest.RequestCache;
 @Configuration
 @EnableWebSecurity
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final ABTWebApiTokenAuthenticationFilter abtWebApiTokenAuthenticationFilter;
     private final ABTWebApiTokenAuthenticationProvider abtWebApiTokenAuthenticationProvider;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthorizationManager<RequestAuthorizationContext> authz) throws Exception {
         RequestCache nullRequestCache = new NullRequestCache();
         http
+                //授权，而不是认证
                 .authorizeHttpRequests((authorize) -> authorize
-                        // !url通配符为**，/test/**表示/test下所有资源
-                        // whitelist
-                        .requestMatchers("/", "/home", "/error", "/invalidSession","/doLogin").permitAll()
-                        //swagger
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/swagger-resource/**", "/v3/api-docs/**", "/v2/api-docs/**", "/webjars/**", "/doc.html").permitAll()
-                        //测试路径不需要认证
-                        .requestMatchers("/test/**").permitAll()
+                        .requestMatchers(whiteList()).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .authenticated()
                 )
+
+                .addFilterBefore(this.abtWebApiTokenAuthenticationFilter(), AuthorizationFilter.class)
+                .authenticationManager(this.userAuthenticationManager())
+                .authenticationProvider(abtWebApiTokenAuthenticationProvider)
+
+
+
                 .requestCache((cache) -> cache
                         .requestCache(nullRequestCache))
                 .sessionManagement(session ->
                         //无状态session
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                                //超时跳转url redirect to webapi
-                                .invalidSessionUrl("/invalidSession"))
-                //开启跨域请求，测试使用
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(AbstractHttpConfigurer::disable)
-                //开启模拟请求，测试使用
                 .csrf(AbstractHttpConfigurer::disable)
-
-
-                .authenticationProvider(abtWebApiTokenAuthenticationProvider)
-                // 自定义filter
-                // 1. Token: 放在AuthorizationFilter.class 前
-                .addFilterBefore(abtWebApiTokenAuthenticationFilter, AuthorizationFilter.class)
 
 
                 //认证异常处理
                 .exceptionHandling(config -> config
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                        .accessDeniedHandler((request, response, authenticationException) -> {
                             log.info("exceptionHandling.accessDeniedHandler()");
                             ResponseUtil.returnJson(response, R.fail("exception: access denied...").toJson());
                         })
@@ -99,6 +100,32 @@ public class SecurityConfig {
         return http.build();
     }
 
+
+    /**
+     * 用户认证管理
+     * @return
+     */
+    @Bean
+    public AuthenticationManager userAuthenticationManager() {
+        return new ProviderManager(abtWebApiTokenAuthenticationProvider);
+    }
+
+    @Bean
+    public ABTWebApiTokenAuthenticationFilter abtWebApiTokenAuthenticationFilter() {
+        ABTWebApiTokenAuthenticationFilter abtWebApiTokenAuthenticationFilter = new ABTWebApiTokenAuthenticationFilter();
+        abtWebApiTokenAuthenticationFilter.setAuthenticationManager(userAuthenticationManager());
+        return abtWebApiTokenAuthenticationFilter;
+    }
+
+    public static String[] whiteList() {
+        return new String[]{
+                "/", "/home",
+                //swagger
+                "/swagger-ui.html", "/swagger-ui/**", "/swagger-resource/**", "/v3/api-docs/**", "/v2/api-docs/**", "/webjars/**", "/doc.html",
+                //测试使用
+                "/test/**"
+        };
+    }
 
 
 
