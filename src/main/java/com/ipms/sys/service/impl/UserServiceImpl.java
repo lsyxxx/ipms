@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService<UserView, String> {
 
     @Override
     public String getToken(HttpServletRequest request) {
-        return request.getParameter(TOKEN_KEY);
+        return request.getHeader(TOKEN_KEY);
     }
 
 

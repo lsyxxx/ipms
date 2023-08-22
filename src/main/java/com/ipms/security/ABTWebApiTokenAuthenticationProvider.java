@@ -18,6 +18,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -36,7 +39,6 @@ public class ABTWebApiTokenAuthenticationProvider implements AuthenticationProvi
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        log.debug("Parameter authentication instancetype : {}", authentication.getClass());
         log.info("Web api 认证用户 -- authentication: {}", authentication.toString());
         Assert.isInstanceOf(ABTWebApiAuthenticationToken.class, authentication,
                 () -> this.messages.getMessage("ABTWebApiTokenAuthenticationProvider.onlySupports",
@@ -44,8 +46,10 @@ public class ABTWebApiTokenAuthenticationProvider implements AuthenticationProvi
         String tokenValue = authentication.getCredentials().toString();
 
         UserView user = (UserView) this.tokenUserDetailsService().loadUserByUsername(tokenValue);
-
-        return new ABTWebApiAuthenticationToken(tokenValue);
+        //authorization, 获取权限
+        Collection authorities = Collections.unmodifiableList(new ArrayList<>());
+        log.warn("TODO: 获取用户权限 -- authorities: {}", authorities);
+        return ABTWebApiAuthenticationToken.authenticate(user, tokenValue, authorities);
     }
 
 

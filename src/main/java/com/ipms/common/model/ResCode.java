@@ -1,6 +1,7 @@
 package com.ipms.common.model;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 /**
  * Response code
@@ -11,12 +12,20 @@ public enum ResCode {
     FAIL(1, "9999", "Fail"),
     SESSION_OUT(2, "9998", "Out of Session"),
     AUTHENTICATION_FAIL(3, "9997", "Authentication fail"),
-    INVALID_TOKEN(4, "9401", "认证失败，请提供认证信息")
+    INVALID_TOKEN(4, "9401", "认证失败，请提供认证信息"),
+    ACCESS_DENIED(5, "9300", "Access Denied - unauthorized")
     ;
 
     private final int index;
+    /**
+     * 业务异常代码
+     */
     private final String code;
+    /**
+     * 异常信息
+     */
     private final String message;
+
 
     ResCode(int index, String code, String message) {
         this.index = index;

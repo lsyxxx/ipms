@@ -18,11 +18,6 @@ import java.util.Collection;
 public class ABTWebApiAuthenticationToken extends AbstractAuthenticationToken {
 
     /**
-     * request header key
-     */
-    private static final String REQ_HEADER_KEY = "X-Token";
-
-    /**
      * 用户，认证后保存用户原始信息UserView
      * 未认证则null
      */
@@ -36,10 +31,10 @@ public class ABTWebApiAuthenticationToken extends AbstractAuthenticationToken {
     //TODO: 可以扩展其它信息，比如可见菜单
 
 
-    public ABTWebApiAuthenticationToken(String credentials) {
+    public ABTWebApiAuthenticationToken(String token) {
         super(null);
         this.principal = null;
-        this.credentials = credentials;
+        this.credentials = token;
         super.setAuthenticated(false);
     }
 
@@ -49,10 +44,10 @@ public class ABTWebApiAuthenticationToken extends AbstractAuthenticationToken {
      * @param authorities the collection of <tt>GrantedAuthority</tt>s for the principal
      *                    represented by this authentication object.
      */
-    public ABTWebApiAuthenticationToken(Collection<? extends GrantedAuthority> authorities, UserView principal, String credentials) {
+    public ABTWebApiAuthenticationToken(Collection<? extends GrantedAuthority> authorities, UserView user, String token) {
         super(authorities);
-        this.principal = principal;
-        this.credentials = credentials;
+        this.principal = user;
+        this.credentials = token;
         super.setAuthenticated(true); // must use super, as we override
     }
 

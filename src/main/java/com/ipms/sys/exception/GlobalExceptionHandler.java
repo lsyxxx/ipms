@@ -52,5 +52,12 @@ public class GlobalExceptionHandler {
         return R.fail(e.getMessage());
     }
 
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public R<Exception> handleBusinessException(Exception e) {
+        log.error("业务异常! - msg: {}, e: {}", e.getMessage(), e);
+        return R.fail(e.getMessage());
+    }
+
 
 }

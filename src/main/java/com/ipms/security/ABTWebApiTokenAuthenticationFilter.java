@@ -1,66 +1,99 @@
 package com.ipms.security;
 
 import com.ipms.sys.exception.InvalidTokenException;
+import com.ipms.sys.model.dto.UserView;
 import com.ipms.sys.util.MessageUtil;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.core.log.LogMessage;
+import org.springframework.security.authentication.event.InteractiveAuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  在SpringSecurity FilterChain 添加一个Filter
- * 从request中获取token，调用webapi 获取用户信息
+ *  从request中获取token，调用webapi 获取用户信息
  */
 
 @Slf4j
-public class ABTWebApiTokenAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+public class ABTWebApiTokenAuthenticationFilter extends OncePerRequestFilter {
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
     /**
      * Request header key
      */
     public static final String ABT_TOKEN_KEY = "X-Token";
+    private OrRequestMatcher ignore = createOrMatcher();
 
-    protected ABTWebApiTokenAuthenticationFilter(String defaultFilterProcessesUrl) {
-        super(defaultFilterProcessesUrl);
+
+
+    public String obtainTokenValue(HttpServletRequest request) {
+        return request.getHeader(ABT_TOKEN_KEY);
+    }
+
+    private static OrRequestMatcher createOrMatcher() {
+        List<RequestMatcher> matchers = new ArrayList<>(SecurityConfig.whiteList().length);
+        for (String pattern : SecurityConfig.whiteList()) {
+            matchers.add(new AntPathRequestMatcher(pattern));
+        }
+        return new OrRequestMatcher(matchers);
     }
 
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("拦截 URL: {}, 开始获取用户token认证原始凭证", request.getRequestURI());
+
+        //不进行认证
+        if (ignore.matches(request)) {
+            log.info("不需要认证url: {}", request.getRequestURI());
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String tokenValue = obtainTokenValue(request);
         if (tokenValue == null) {
             log.error("Token is null!");
             throw new InvalidTokenException(this.messages.getMessage("ex.token.invalid.common"));
         }
-//        Assert.notNull(tokenValue, this.messages.getMessage("ABTWebApiTokenAuthenticationFilter.nullToken"));
         tokenValue = tokenValue.trim();
         log.info("Token value : {}", tokenValue);
         ABTWebApiAuthenticationToken authRequest = ABTWebApiAuthenticationToken.unauthenticated(tokenValue);
-        setDetails(request, authRequest);
-        return this.getAuthenticationManager().authenticate(authRequest);
+
+
+
+        this.successfulAuthentication(request, authRequest);
+
+        filterChain.doFilter(request, response);
+
     }
 
-    public String obtainTokenValue(HttpServletRequest request) {
-        return request.getParameter(ABT_TOKEN_KEY);
+    protected void successfulAuthentication(HttpServletRequest request, Authentication authResult) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            ABTWebApiAuthenticationToken authToken = new ABTWebApiAuthenticationToken(authResult.getAuthorities(), (UserView) authResult.getPrincipal(), (String)authResult.getPrincipal());
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
+        if (this.logger.isDebugEnabled()) {
+            this.logger.debug("ABTWebApiAuthenticationToken 保存于 SecurityContextHolder");
+        }
     }
-
-    protected void setDetails(HttpServletRequest request, ABTWebApiAuthenticationToken authRequest) {
-        authRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
-    }
-
-
 
 }

@@ -1,4 +1,4 @@
-package com.ipms.account.controller;
+package com.ipms.finance.controller;
 
 import com.ipms.common.model.R;
 import io.swagger.v3.oas.annotations.Operation;
