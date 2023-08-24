@@ -8,10 +8,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 @SpringBootApplication
-public class IpmsApplication {
+public class AbtApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(IpmsApplication.class, args);
+        SpringApplication.run(AbtApplication.class, args);
     }
 
 }

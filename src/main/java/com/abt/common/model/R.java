@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class R<T> {
-    private T data;
+    private T result;
     /**
      * 业务异常代码
      */
@@ -40,15 +40,15 @@ public class R<T> {
     private String token;
     private String httpCode;
 
-    public R(T data, String code, String message) {
+    public R(T resultW, String code, String message) {
         super();
-        this.data = data;
+        this.result = result;
         this.code = code;
         this.message = message;
     }
 
     public T get() {
-        return data;
+        return result;
     }
 
     public static<T> R<T> success(T data) {
@@ -67,6 +67,10 @@ public class R<T> {
         return new R<>(null, ResCode.FAIL.getCode(), errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
     }
 
+    public static<T> R<T> fail(String errMsg, int code) {
+        return new R<>(null, String.valueOf(code), errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
+    }
+
     public static<T> R<T> invalidSession() {
         return new R<>(null, ResCode.SESSION_OUT.getCode(), ResCode.SESSION_OUT.getMessage());
     }
@@ -79,7 +83,7 @@ public class R<T> {
         return new R<>(e, ResCode.INVALID_TOKEN.getCode(), ResCode.INVALID_TOKEN.getMessage());
     }
 
-    public static R<Exception> invalidToken() {
+    public static R<String> invalidToken() {
         return new R<>(null, ResCode.INVALID_TOKEN.getCode(), ResCode.INVALID_TOKEN.getMessage());
     }
 

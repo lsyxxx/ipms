@@ -1,5 +1,6 @@
 package com.abt.security;
 
+import com.abt.http.dto.WebApiToken;
 import com.abt.sys.exception.InvalidTokenException;
 import com.abt.sys.service.PermissionService;
 import com.abt.sys.service.UserService;
@@ -23,6 +24,7 @@ import java.util.function.Supplier;
 
 /**
  * 授权组件
+ * TODO
  */
 
 @Slf4j
@@ -55,8 +57,8 @@ public class ABTAuthorizationManager implements AuthorizationManager<RequestAuth
         String requestUri = request.getRequestURI();
 
         //TODO: Get userinfo/permissions
-        String token = userService.getToken(request);
-        List permissions = permissionService.getPermissionsBy(token);
+        WebApiToken token = userService.getToken(request);
+        List permissions = permissionService.getPermissionsBy(token.getTokenValue());
         Optional user = userService.userInfoBy(token);
         if (!user.isPresent()) {
             //TODO: 用户不存在, 提示认证失败

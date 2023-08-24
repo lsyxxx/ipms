@@ -130,4 +130,9 @@ public class UserView implements UserDetails{
     public boolean isEnabled() {
         return userIsEnabled;
     }
+
+    public String simpleInfo() {
+        return "[" + this.id + ", " + this.name + "]";
+    }
+
 }

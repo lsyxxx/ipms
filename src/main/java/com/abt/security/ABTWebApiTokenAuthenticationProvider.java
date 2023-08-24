@@ -1,5 +1,6 @@
 package com.abt.security;
 
+import com.abt.http.dto.WebApiToken;
 import com.abt.sys.exception.InvalidTokenException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.UserService;
@@ -37,17 +38,18 @@ public class ABTWebApiTokenAuthenticationProvider implements AuthenticationProvi
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        log.info("Web api 认证用户 -- authentication: {}", authentication.toString());
+        log.info("Web api 正在认证用户 -- authentication: {}", authentication.toString());
         Assert.isInstanceOf(ABTWebApiAuthenticationToken.class, authentication,
                 () -> this.messages.getMessage("ABTWebApiTokenAuthenticationProvider.onlySupports",
                         "Only ABTWebApiAuthenticationToken is supported"));
         String tokenValue = authentication.getCredentials().toString();
 
-        UserView user = (UserView) this.tokenUserDetailsService().loadUserByUsername(tokenValue);
+        Optional<UserView> user = userService.userInfoBy(WebApiToken.of(authentication));
         //authorization, 获取权限
         Collection authorities = Collections.unmodifiableList(new ArrayList<>());
         log.warn("TODO: 获取用户权限 -- authorities: {}", authorities);
-        return ABTWebApiAuthenticationToken.authenticate(user, tokenValue, authorities);
+        log.info("认证用户 -- {}:{} 成功", user.get().getId(), user.get().getName());
+        return ABTWebApiAuthenticationToken.authenticate(user.get(), tokenValue, authorities);
     }
 
 
@@ -62,16 +64,4 @@ public class ABTWebApiTokenAuthenticationProvider implements AuthenticationProvi
     }
 
 
-    @Bean
-    public UserDetailsService tokenUserDetailsService() {
-        return token -> {
-            log.info("tokenUserDetailsServiceImpl.loadUserByUsername(token), token={}", token);
-            Optional<UserView> user = userService.userInfoBy(token);
-            if (!user.isPresent()) {
-                log.error("认证失败。未找到用户 by token: {}", token);
-                throw new InvalidTokenException(this.messages.getMessage("ex.token.invalid.common"));
-            }
-            return (UserView) user.get();
-        };
-    }
 }

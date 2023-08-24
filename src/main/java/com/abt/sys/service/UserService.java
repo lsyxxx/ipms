@@ -1,5 +1,7 @@
 package com.abt.sys.service;
 
+import com.abt.http.dto.WebApiToken;
+import com.abt.sys.model.dto.UserView;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
@@ -19,10 +21,9 @@ public interface UserService<T, E> {
 
      /**
       * 从request header中获取token
+      *
       * @param request
       * @return
       */
-     String getToken(HttpServletRequest request);
-
-
+     WebApiToken getToken(HttpServletRequest request);
 }

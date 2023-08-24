@@ -10,9 +10,10 @@ public enum ResCode {
     SUCCESS(0, "0000", "Success"),
     FAIL(1, "9999", "Fail"),
     SESSION_OUT(2, "9998", "Out of Session"),
-    AUTHENTICATION_FAIL(3, "9997", "Authentication fail"),
-    INVALID_TOKEN(4, "9401", "认证失败，请提供认证信息"),
-    ACCESS_DENIED(5, "9300", "Access Denied - unauthorized")
+    //和webapi保持一致
+    AUTHENTICATION_FAIL(3, "401", "认证失败，请提供认证信息"),
+    INVALID_TOKEN(4, "401", "认证失败，请提供认证信息"),
+    ACCESS_DENIED(5, "300", "Access Denied - unauthorized")
     ;
 
     private final int index;

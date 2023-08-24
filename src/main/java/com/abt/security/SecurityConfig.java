@@ -1,5 +1,6 @@
 package com.abt.security;
 
+import com.abt.http.dto.WebApiToken;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,8 +48,8 @@ public class SecurityConfig {
                         .access(abtAuthorizationManager)
                 )
 
-                .formLogin(config -> config.disable())
-                .anonymous(config -> config.disable())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .anonymous(AbstractHttpConfigurer::disable)
 
                 .addFilterBefore(this.abtWebApiTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
 
@@ -74,7 +75,7 @@ public class SecurityConfig {
 
     /**
      * 用户认证管理
-     * @return
+     * @return ProviderManager
      */
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -83,14 +84,14 @@ public class SecurityConfig {
     }
 
     public ABTWebApiTokenAuthenticationFilter abtWebApiTokenAuthenticationFilter() {
-        return new ABTWebApiTokenAuthenticationFilter(this.authenticationManager());
+        return new ABTWebApiTokenAuthenticationFilter(this.authenticationManager(), tokenAuthenticationHandler, WebApiToken.of());
     }
 
 
     /**
      * 白名单
      * 不需要认证&授权
-     * @return
+     * @return String[]
      */
     public static String[] whiteList() {
         return new String[]{

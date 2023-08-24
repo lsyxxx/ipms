@@ -1,5 +1,7 @@
 package com.abt.security;
 
+import com.abt.common.util.ResponseUtil;
+import com.abt.http.dto.WebApiToken;
 import com.abt.sys.exception.InvalidTokenException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.common.util.MessageUtil;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -32,20 +35,23 @@ public class ABTWebApiTokenAuthenticationFilter extends OncePerRequestFilter {
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
     private final AuthenticationManager authenticationManager;
+    private final TokenAuthenticationHandler tokenAuthenticationHandler;
 
     /**
      * Request header key
      */
-    public static final String ABT_TOKEN_KEY = "X-Token";
+    private final WebApiToken tokenConfig;
     private OrRequestMatcher ignore = createOrMatcher();
 
-    public ABTWebApiTokenAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public ABTWebApiTokenAuthenticationFilter(AuthenticationManager authenticationManager, TokenAuthenticationHandler tokenAuthenticationHandler, WebApiToken tokenConfig) {
         this.authenticationManager = authenticationManager;
+        this.tokenAuthenticationHandler = tokenAuthenticationHandler;
+        this.tokenConfig = tokenConfig;
     }
 
 
     public String obtainTokenValue(HttpServletRequest request) {
-        return request.getHeader(ABT_TOKEN_KEY);
+        return request.getHeader(tokenConfig.getTokenKey());
     }
 
     private static OrRequestMatcher createOrMatcher() {
@@ -68,27 +74,38 @@ public class ABTWebApiTokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String tokenValue = obtainTokenValue(request);
-        if (tokenValue == null) {
-            log.error("Token is null!");
-            throw new InvalidTokenException(this.messages.getMessage("ex.token.invalid.common"));
+        try {
+            String tokenValue = obtainTokenValue(request);
+            if (tokenValue == null) {
+                log.error("Token is null!");
+                this.tokenAuthenticationHandler.onAuthenticationFailure(request, response, new InvalidTokenException(this.messages.getMessage("ex.token.invalid.common")));
+                return;
+            }
+            tokenValue = tokenValue.trim();
+            log.info("Token value : {}", tokenValue);
+            //生成需要认证的token
+            ABTWebApiAuthenticationToken authRequest = ABTWebApiAuthenticationToken.unauthenticated(tokenValue);
+            //认证token
+            Authentication authedToken =  this.authenticationManager.authenticate(authRequest);
+            //authedToken  没有credentials
+            this.successfulAuthentication(request, authedToken);
+            filterChain.doFilter(request, response);
+        } catch (AuthenticationException authenticationException) {
+            this.tokenAuthenticationHandler.onAuthenticationFailure(request, response, authenticationException);
+        } catch (Exception ex) {
+            log.error("ABTWebApiTokenAuthenticationFilter 认证异常 - {} , {}", ex.getMessage(), ex.getLocalizedMessage());
+            ResponseUtil.returnFail(response, ex.getMessage());
         }
-        tokenValue = tokenValue.trim();
-        log.info("Token value : {}", tokenValue);
-        ABTWebApiAuthenticationToken authRequest = ABTWebApiAuthenticationToken.unauthenticated(tokenValue);
-
-        this.authenticationManager.authenticate(authRequest);
 
 
-        this.successfulAuthentication(request, authRequest);
 
-        filterChain.doFilter(request, response);
 
     }
 
     protected void successfulAuthentication(HttpServletRequest request, Authentication authResult) {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            ABTWebApiAuthenticationToken authToken = new ABTWebApiAuthenticationToken(authResult.getAuthorities(), (UserView) authResult.getPrincipal(), (String)authResult.getPrincipal());
+            //authedToken  没有credentials?
+            ABTWebApiAuthenticationToken authToken = new ABTWebApiAuthenticationToken(authResult.getAuthorities(), (UserView) authResult.getPrincipal(), obtainTokenValue(request));
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
