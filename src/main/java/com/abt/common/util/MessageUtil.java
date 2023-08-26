@@ -15,4 +15,8 @@ public class MessageUtil extends ResourceBundleMessageSource {
     public static MessageSourceAccessor getAccessor() {
         return new MessageSourceAccessor(new MessageUtil());
     }
+
+    public static String getMessage(String code) {
+        return getAccessor().getMessage(code);
+    }
 }
