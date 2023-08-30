@@ -19,13 +19,13 @@ public class FlowableConfig {
     /**
      * 流程图字体
      */
-    @Value("${bt.flowable.diagram.font}")
+    @Value("${abt.flowable.diagram.font}")
     private String diagramFont;
 
     /**
      * 流程图比例
      */
-    @Value("${bt.flowable.diagram.scaleFactor}")
+    @Value("${abt.flowable.diagram.scaleFactor}")
     private String scaleFactor;
 
 
