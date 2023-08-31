@@ -1,5 +1,6 @@
 package com.abt.flow.model.entity;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.io.Serializable;
 
@@ -78,7 +79,7 @@ public class BizFlowRelation implements Serializable {
      */
     @Schema(description = "启动流程时间")
     @Column(columnDefinition = "启动流程时间")
-    private Date startDate;
+    private LocalDate startDate;
     /**
      * 流程定义id, 对应流程引擎中act_re_procdef: id
      */
@@ -86,7 +87,7 @@ public class BizFlowRelation implements Serializable {
     @Column(name = "procdef_id", columnDefinition = "流程定义id, 对应流程引擎中act_re_procdef: id")
     private String procDefId;
     /**
-     * 自定义流程状态, 1进行中，0完成，2已删除, 3暂存
+     * 自定义流程状态,
      */
     @Schema(description = "自定义流程状态， 参考ProcessState 类")
     @Column(columnDefinition = "自定义流程状态，参考ProcessState 类")
@@ -102,7 +103,7 @@ public class BizFlowRelation implements Serializable {
      */
     @Schema(description = "流程完成时间")
     @Column(columnDefinition = "流程完成时间")
-    private Date endDate;
+    private LocalDate endDate;
     /**
      * 流程删除原因
      */
@@ -120,14 +121,14 @@ public class BizFlowRelation implements Serializable {
      */
     @Schema(description = "流程删除时间")
     @Column(columnDefinition = "流程删除时间")
-    private Date delDate;
+    private LocalDate delDate;
 
 
     @Schema(description = "最后更新时间")
     @Column(name = "last_update_date", columnDefinition = "最后更新时间")
     @LastModifiedDate
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private Date lastUpdateDate;
+    private LocalDate lastUpdateDate;
 
     @Schema(description = "最后更新用户")
     @Column(columnDefinition = "最后更新用户")

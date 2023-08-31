@@ -36,9 +36,11 @@ public class Form {
     private String bizCode;
 
     /**
-     * 业务类型名称, 与code对应
+     * 业务类型Id
      */
-    private String bizCategory;
+    private String bizId;
+
+    private String bizName;
 
     /**
      * 流程定义ID

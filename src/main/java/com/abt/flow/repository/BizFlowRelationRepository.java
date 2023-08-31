@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface BizFlowRelationRepository extends JpaRepository<BizFlowRelation, String> {
 
 
+
+
 }
