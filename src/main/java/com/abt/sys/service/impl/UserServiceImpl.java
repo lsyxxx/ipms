@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService<UserView, WebApiToken> {
     private final HttpConnectService<WebApiDto> httpConnectService;
 
     @Value("${webapi.http.api.userinfo}")
-    private static String userinfoApi = "/check/GetUserProfile";
+    private String userinfoApi;
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
     @Override
     public WebApiToken getToken(HttpServletRequest request) {

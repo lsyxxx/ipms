@@ -1,15 +1,17 @@
 package com.abt;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * Integrated Production Manage System
  */
 
 @SpringBootApplication
-@MapperScan("com.abt.flow.dao")
+@EnableJpaAuditing
+@EnableJpaRepositories(basePackages = "com.abt.flow.repository")
 public class AbtApplication {
 
     public static void main(String[] args) {

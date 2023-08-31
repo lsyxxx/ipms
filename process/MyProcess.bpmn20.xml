@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="myProcess" name="My process" isExecutable="true">
+    <startEvent id="reimburse_more_1000_start" name="开始" activiti:async="true"></startEvent>
+    <userTask id="reimburse_more_1000_apply" name="申请报销">
+      <documentation>申请报销，录入申请信息</documentation>
+    </userTask>
+    <sequenceFlow id="flow1" sourceRef="reimburse_more_1000_start" targetRef="reimburse_more_1000_apply"></sequenceFlow>
+    <userTask id="reimburse_more_1000_manager" name="主管审批">
+      <documentation>主管审批</documentation>
+    </userTask>
+    <sequenceFlow id="flow2" sourceRef="reimburse_more_1000_apply" targetRef="reimburse_more_1000_manager"></sequenceFlow>
+    <exclusiveGateway id="reimburse_more_1000_decision" name="主管决策"></exclusiveGateway>
+    <sequenceFlow id="flow3" sourceRef="reimburse_more_1000_manager" targetRef="reimburse_more_1000_decision"></sequenceFlow>
+    <userTask id="reimburse_more_1000_ceo" name="总经理审批"></userTask>
+    <sequenceFlow id="reimburse_more_1000_manager_decision_approve" name="主管同意" sourceRef="reimburse_more_1000_decision" targetRef="reimburse_more_1000_ceo">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${form.currentResult == 'Approve'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="reimburse_more_1000_manager_decision_reject" name="主管驳回" sourceRef="reimburse_more_1000_decision" targetRef="reimburse_more_1000_apply">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${form.currentResult == 'Reject'}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="reimburse_more_1000_ceo_decision" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow4" sourceRef="reimburse_more_1000_ceo" targetRef="reimburse_more_1000_ceo_decision"></sequenceFlow>
+    <userTask id="reimburse_more_1000_fi" name="财务审批"></userTask>
+    <sequenceFlow id="reimburse_more_1000_ceo_decision_approve" name="总经理同意" sourceRef="reimburse_more_1000_ceo_decision" targetRef="reimburse_more_1000_fi">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${form.currentResult == 'Approve'}]]></conditionExpression>
+    </sequenceFlow>
+    <endEvent id="reimburse_more_1000_end1" name="结束"></endEvent>
+    <sequenceFlow id="reimburse_more_1000_ceo_decision_reject" name="总经理驳回" sourceRef="reimburse_more_1000_ceo_decision" targetRef="reimburse_more_1000_end1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${form.currentResult == 'Reject'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow5" sourceRef="reimburse_more_1000_fi" targetRef="reimburse_more_1000_end1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_myProcess">
+    <bpmndi:BPMNPlane bpmnElement="myProcess" id="BPMNPlane_myProcess">
+      <bpmndi:BPMNShape bpmnElement="reimburse_more_1000_start" id="BPMNShape_reimburse_more_1000_start">
+        <omgdc:Bounds height="35.0" width="35.0" x="140.0" y="200.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reimburse_more_1000_apply" id="BPMNShape_reimburse_more_1000_apply">
+        <omgdc:Bounds height="55.0" width="105.0" x="220.0" y="190.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reimburse_more_1000_manager" id="BPMNShape_reimburse_more_1000_manager">
+        <omgdc:Bounds height="55.0" width="105.0" x="370.0" y="190.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reimburse_more_1000_decision" id="BPMNShape_reimburse_more_1000_decision">
+        <omgdc:Bounds height="40.0" width="40.0" x="520.0" y="198.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reimburse_more_1000_ceo" id="BPMNShape_reimburse_more_1000_ceo">
+        <omgdc:Bounds height="55.0" width="105.0" x="640.0" y="191.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reimburse_more_1000_ceo_decision" id="BPMNShape_reimburse_more_1000_ceo_decision">
+        <omgdc:Bounds height="40.0" width="40.0" x="790.0" y="199.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reimburse_more_1000_fi" id="BPMNShape_reimburse_more_1000_fi">
+        <omgdc:Bounds height="55.0" width="105.0" x="758.0" y="310.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reimburse_more_1000_end1" id="BPMNShape_reimburse_more_1000_end1">
+        <omgdc:Bounds height="35.0" width="35.0" x="930.0" y="202.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="175.0" y="217.0"></omgdi:waypoint>
+        <omgdi:waypoint x="220.0" y="217.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="325.0" y="217.0"></omgdi:waypoint>
+        <omgdi:waypoint x="370.0" y="217.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="475.0" y="217.0"></omgdi:waypoint>
+        <omgdi:waypoint x="520.0" y="218.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="reimburse_more_1000_manager_decision_approve" id="BPMNEdge_reimburse_more_1000_manager_decision_approve">
+        <omgdi:waypoint x="560.0" y="218.0"></omgdi:waypoint>
+        <omgdi:waypoint x="640.0" y="218.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="560.0" y="218.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="reimburse_more_1000_manager_decision_reject" id="BPMNEdge_reimburse_more_1000_manager_decision_reject">
+        <omgdi:waypoint x="540.0" y="198.0"></omgdi:waypoint>
+        <omgdi:waypoint x="540.0" y="65.0"></omgdi:waypoint>
+        <omgdi:waypoint x="436.0" y="65.0"></omgdi:waypoint>
+        <omgdi:waypoint x="272.0" y="65.0"></omgdi:waypoint>
+        <omgdi:waypoint x="272.0" y="190.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="360.0" y="71.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="745.0" y="218.0"></omgdi:waypoint>
+        <omgdi:waypoint x="790.0" y="219.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="reimburse_more_1000_ceo_decision_approve" id="BPMNEdge_reimburse_more_1000_ceo_decision_approve">
+        <omgdi:waypoint x="810.0" y="239.0"></omgdi:waypoint>
+        <omgdi:waypoint x="810.0" y="310.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="810.0" y="259.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="reimburse_more_1000_ceo_decision_reject" id="BPMNEdge_reimburse_more_1000_ceo_decision_reject">
+        <omgdi:waypoint x="830.0" y="219.0"></omgdi:waypoint>
+        <omgdi:waypoint x="930.0" y="219.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="830.0" y="219.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="863.0" y="337.0"></omgdi:waypoint>
+        <omgdi:waypoint x="947.0" y="337.0"></omgdi:waypoint>
+        <omgdi:waypoint x="947.0" y="237.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

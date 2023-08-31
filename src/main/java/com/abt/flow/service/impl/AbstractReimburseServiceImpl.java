@@ -4,16 +4,15 @@ import com.abt.flow.model.ProcessVo;
 import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.model.dto.UserView;
-import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.runtime.ProcessInstance;
-import org.springframework.stereotype.Service;
+
+import java.io.InputStream;
+import java.util.List;
 
 /**
- * 报销流程
+ *
  */
-@Service
-@Slf4j
-public class ReimburseServiceImpl implements ReimburseService {
+public class AbstractReimburseServiceImpl implements ReimburseService {
 
     @Override
     public ProcessVo apply(UserView user, ReimburseApplyForm applyForm) {

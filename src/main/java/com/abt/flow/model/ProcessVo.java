@@ -1,6 +1,9 @@
 package com.abt.flow.model;
 
+import com.abt.flow.model.entity.BizFlowRelation;
+import com.abt.sys.model.dto.UserView;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 
@@ -13,7 +16,8 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-public class ProcessVo implements Serializable {
+@NoArgsConstructor
+public class ProcessVo<T extends Form> implements Serializable {
 
     /**
      * 当前处理用户
@@ -28,16 +32,11 @@ public class ProcessVo implements Serializable {
     /**
      *  流程申请用户
      */
-    private String applicant;
+    private UserView applicant;
     /**
      * 附件路径
      */
     private List<String> attachments = new ArrayList<>();
-    /**
-     * 整个流程是否结束
-     * 包括正常结束和异常结束
-     */
-    private boolean isFinished;
 
     /**
      * 所有审批信息
@@ -46,13 +45,33 @@ public class ProcessVo implements Serializable {
 
     private ProcessState state;
 
+    /**
+     * 数据库信息
+     */
+    private BizFlowRelation relation;
+
+    /**
+     * 流程中的表单数据
+     */
+    private T form;
+
+
+    public ProcessVo(BizFlowRelation relation, T form) {
+        //根据数据库的读取创建processVo
+//        this.user =
+        this.relation = relation;
+        this.state = ProcessState.of(relation.getState());
+        this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
+        this.form = form;
+    }
 
     /**
      * 决策是否通过
      * @return
      */
     public boolean isApprove() {
-        return StringUtils.equals(Decision.Approve.name(), String.valueOf(currentResult));
+        String str = String.valueOf(currentResult);
+        return Decision.isApprove(str);
     }
 
     /**
@@ -68,7 +87,8 @@ public class ProcessVo implements Serializable {
      * @return
      */
     public boolean isFinished() {
-        return this.isFinished = (this.state == ProcessState.Completed || this.state == ProcessState.Terminated);
+        int state = this.relation.getState();
+        return ProcessState.Completed.equal(state) || ProcessState.Terminated.equal(state);
     }
 
 
@@ -80,4 +100,5 @@ public class ProcessVo implements Serializable {
     public boolean isProcessing() {
         return this.state == ProcessState.Active;
     }
+
 }
