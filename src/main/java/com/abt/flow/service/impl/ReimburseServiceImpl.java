@@ -7,6 +7,7 @@ import com.abt.flow.service.ReimburseService;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,8 +21,8 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
     private final BizFlowRelationRepository bizFlowRelationRepository;
 
 
-    public ReimburseServiceImpl(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService) {
-        super(bizFlowRelationRepository, runtimeService);
+    public ReimburseServiceImpl(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService) {
+        super(bizFlowRelationRepository, runtimeService, taskService);
         this.runtimeService = runtimeService;
         this.bizFlowRelationRepository = bizFlowRelationRepository;
     }
@@ -50,4 +51,5 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
     public ProcessVo accountancyAudit(ProcessVo processVo, ReimburseApplyForm applyForm) {
         return null;
     }
+
 }

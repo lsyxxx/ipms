@@ -55,6 +55,13 @@ public class ProcessVo<T extends Form> implements Serializable {
      */
     private T form;
 
+    private String processInstanceId;
+
+    /**
+     * 当前task id
+     */
+    private String taskId;
+
 
     public ProcessVo(BizFlowRelation relation, T form) {
         //根据数据库的读取创建processVo
@@ -62,6 +69,7 @@ public class ProcessVo<T extends Form> implements Serializable {
         this.relation = relation;
         this.state = ProcessState.of(relation.getState());
         this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
+        this.processInstanceId = relation.getProcInstId();
         this.form = form;
     }
 

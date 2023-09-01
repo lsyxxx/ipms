@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @EnableJpaAuditing
-@EnableJpaRepositories(basePackages = "com.abt.flow.repository")
+//@EnableJpaRepositories(basePackages = "com.abt.flow.repository")
 public class AbtApplication {
 
     public static void main(String[] args) {

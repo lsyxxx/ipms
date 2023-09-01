@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * 报销流程申请表单
+ * 同时用来前后传递数据
  */
 @Data
 @Accessors(chain = true)
@@ -39,13 +40,9 @@ public class ReimburseApplyForm extends Form{
     private List<String> vouchers = new ArrayList<>();
 
     /**
-     * 流程信息
-     */
-    private ProcessVo process;
-
-    /**
      * 审批意见
      */
     private List<Approval> approvals = new ArrayList<>();
+
 
 }

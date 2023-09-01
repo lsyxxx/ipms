@@ -2,6 +2,7 @@ package com.abt.flow.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,4 +52,29 @@ public class Form {
      * 用于流程的key，唯一
      */
     private String businessKey;
+
+    private String processInstanceId;
+    private String taskId;
+    /**
+     * 业务-流程关系表id
+     */
+    private String relationId;
+
+
+    /**
+     * 更新流程processInstance, taskId
+     * @param processInstanceId 空则不更新
+     * @param taskId
+     */
+    public Form updateProcess(String processInstanceId, String taskId) {
+        if (StringUtils.hasLength(processInstanceId)) {
+            this.processInstanceId = processInstanceId;
+        }
+        this.taskId = taskId;
+        return this;
+    }
+
+
+
+
 }
