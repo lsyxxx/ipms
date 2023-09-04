@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,9 +42,13 @@ public class FlowOperationLogServiceImpl implements FlowOperationLogService {
     }
 
 
-    public void getAllOrderByOperateDate(int page, int size) {
+    public List<FlowOperationLog> getAllOrderByOperateDate(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, ORDER_OPTDATE);
         Page<FlowOperationLog> all = flowOperationLogRepository.findAll(pageRequest);
+        if (all.hasContent()) {
+            return all.getContent();
+        }
+        return new ArrayList<>();
     }
 
 }

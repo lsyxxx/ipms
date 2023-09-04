@@ -1,29 +1,38 @@
 package com.abt.flow.service.impl;
 
 import com.abt.common.util.MessageUtil;
-import com.abt.flow.model.FlowOperationLogVo;
+import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.Form;
 import com.abt.flow.model.ProcessState;
 import com.abt.flow.model.ProcessVo;
 import com.abt.flow.model.entity.BizFlowRelation;
+import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.flow.repository.BizFlowRelationRepository;
-import com.abt.flow.service.FlowService;
+import com.abt.flow.service.FlowOperationLogService;
+import com.abt.flow.service.FlowBaseService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
+import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.common.engine.impl.identity.Authentication;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.image.impl.DefaultProcessDiagramGenerator;
 import org.springframework.context.support.MessageSourceAccessor;
 
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class AbstractFlowService implements FlowService {
+public abstract class AbstractFlowService implements FlowBaseService {
 
     private final BizFlowRelationRepository bizFlowRelationRepository;
 
@@ -35,14 +44,24 @@ public abstract class AbstractFlowService implements FlowService {
      * TODO: 因为流程中参数flowable会保存到数据库，考虑最小参数。
      */
     public static final String VAR_KEY = "form_";
+    public static final String DIAG_PNG = "png";
 
-    private final RuntimeService runtimeService;
-    private final TaskService taskService;
+    protected final RuntimeService runtimeService;
+    protected final TaskService taskService;
+    protected final HistoryService historyService;
+    protected final RepositoryService repositoryService;
+    protected final FlowOperationLogService flowOperationLogService;
 
-    public AbstractFlowService(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService) {
+    protected final FlowableConstant flowableConstant;
+
+    public AbstractFlowService(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant) {
         this.bizFlowRelationRepository = bizFlowRelationRepository;
         this.runtimeService = runtimeService;
         this.taskService = taskService;
+        this.historyService = historyService;
+        this.repositoryService = repositoryService;
+        this.flowOperationLogService = flowOperationLogService;
+        this.flowableConstant = flowableConstant;
     }
 
     @Override
@@ -86,20 +105,54 @@ public abstract class AbstractFlowService implements FlowService {
     public void completeTask(UserView user, ProcessVo vo) {
         log.info("开始执行完成任务 -- 执行用户: {}|{}, 流程实例id: {},  taskId: {}", user.getId(), user.getName(), vo.getProcessInstanceId(), vo.getTaskId());
         taskService.claim(vo.getTaskId(), user.getId());
+        beforeComplete(user, vo);
         taskService.complete(vo.getTaskId());
     }
 
+    /**
+     * 完成任务前业务处理
+     */
+    abstract void beforeComplete(UserView user, ProcessVo vo);
+
     @Override
-    public List<FlowOperationLogVo> getOperationLogs(String processInstanceId) {
-
-
-
-        return null;
+    public List<FlowOperationLog> getOperationLogs(String processInstanceId) {
+        return flowOperationLogService.getByProcessInstanceId(processInstanceId);
     }
 
     @Override
-    public InputStream getHighLightedTaskPngDiagram(String processInstanceId) {
-        return null;
+    public InputStream getHighLightedTaskPngDiagram(String processInstanceId, String processDefinitionId) {
+        List<HistoricActivityInstance> historicActivityInstances = historyService
+                .createHistoricActivityInstanceQuery()
+                .processDefinitionId(processDefinitionId)
+                .processInstanceId(processInstanceId)
+                .list();
+        List<String> highLightedActivities = historicActivityInstances.stream().map(HistoricActivityInstance::getActivityId).collect(Collectors.toList());
+
+        return generatePngDiagram(processDefinitionId, highLightedActivities);
+    }
+
+    /**
+     * 生成流程图，高亮节点，不高亮连线，不显示连线名称
+     * @param processDefinitionId
+     * @param highLightedActivities
+     * @return
+     */
+    private InputStream generatePngDiagram(String processDefinitionId, List<String> highLightedActivities) {
+        DefaultProcessDiagramGenerator generator = new DefaultProcessDiagramGenerator();
+        // 获取流程图输入流
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
+        return generator.generateDiagram(bpmnModel,
+                DIAG_PNG,
+                highLightedActivities,
+                Collections.emptyList(),
+                flowableConstant.getDiagramFont(),
+                flowableConstant.getDiagramFont(),
+                flowableConstant.getDiagramFont(),
+                null,
+                flowableConstant.getScaleFactor(),
+                true
+                );
+
     }
 
     /**
@@ -127,6 +180,17 @@ public abstract class AbstractFlowService implements FlowService {
         bizFlowRelation.setState(ProcessState.Active.code());
 
         return bizFlowRelation;
+    }
+
+    @Override
+    public void deleteProcess(String processInstanceId) {
+        log.info("-----------删除流程: {}", processInstanceId);
+
+    }
+
+    @Override
+    public void cancelProcess(String processInstanceId) {
+        log.info("-----------撤销流程: {}", processInstanceId);
     }
 
 }

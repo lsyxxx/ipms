@@ -1,11 +1,8 @@
 package com.abt.flow.dao;
 
-import com.abt.db.DBConfig;
-import com.abt.flow.config.FlowableConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.*;
 import org.flowable.engine.repository.Deployment;
-import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +37,7 @@ public class FlowableTest {
     private HistoryService historyService;
 
 
-    private static final String bpmnFile = "process/MyProcess.bpmn20.xml";
+    private static final String bpmnFile = "processes/Normal_Reimburse_less5000.bpmn20.xml";
 
 
     @BeforeEach

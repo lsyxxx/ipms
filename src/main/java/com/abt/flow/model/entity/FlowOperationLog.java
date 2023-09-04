@@ -10,6 +10,7 @@ import org.hibernate.annotations.Comment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -24,7 +25,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class FlowOperationLog {
+public class FlowOperationLog implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -60,7 +61,7 @@ public class FlowOperationLog {
     private String operateUser;
 
     @Schema(description = "操作日期")
-    @Column(name = "opt_date", columnDefinition = "TIMESTAMP")
+    @Column(name = "opt_date", columnDefinition = "DATETIME")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime operateDate;
 
@@ -81,6 +82,7 @@ public class FlowOperationLog {
     @Override
     public String toString() {
         return "FlowOperationLog{" +
+                "id='" + id + '\'' +
                 "procInstId='" + procInstId + '\'' +
                 ", procDefId='" + procDefId + '\'' +
                 ", taskId='" + taskId + '\'' +

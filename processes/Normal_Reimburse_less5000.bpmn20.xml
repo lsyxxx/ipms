@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="normal_reimburse_less_5000_process" name="Normal reimburse less 5000 process" isExecutable="true">
+    <documentation>日常报销金额小于5000流程</documentation>
+    <startEvent id="normal_reimburse_less_5000_start" name="开始" activiti:async="true"/>
+    <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_less_5000_apply" name="申请报销">
+      <documentation>申请报销，录入申请信息</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_less_5000_flow1" sourceRef="normal_reimburse_less_5000_start" targetRef="normal_reimburse_less_5000_apply"/>
+    <userTask id="normal_reimburse_less_5000_manager" name="主管审批">
+      <documentation>主管审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_less_5000_flow2" sourceRef="normal_reimburse_less_5000_apply" targetRef="normal_reimburse_less_5000_manager"/>
+    <userTask id="normal_reimburse_less_5000_techmgr" name="技术负责人审批">
+      <documentation>技术负责人审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_less_5000_flow3" sourceRef="normal_reimburse_less_5000_manager" targetRef="normal_reimburse_less_5000_techmgr"/>
+    <userTask id="normal_reimburse_less_5000_acmgr" name="财务主管审批">
+      <documentation>财务主管审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_less_5000_flow4" sourceRef="normal_reimburse_less_5000_techmgr" targetRef="normal_reimburse_less_5000_acmgr"/>
+    <userTask id="normal_reimburse_less_5000_ceo" name="总经理审批">
+      <documentation>总经理审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_less_5000_flow5" sourceRef="normal_reimburse_less_5000_acmgr" targetRef="normal_reimburse_less_5000_ceo"/>
+    <userTask id="normal_reimburse_less_5000_tax" name="税务会计审批">
+      <documentation>税务会计审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_less_5000_flow6" sourceRef="normal_reimburse_less_5000_ceo" targetRef="normal_reimburse_less_5000_tax"/>
+    <userTask id="normal_reimburse_less_5000_act" name="财务会计审批">
+      <documentation>财务会计审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_less_5000_flow7" sourceRef="normal_reimburse_less_5000_tax" targetRef="normal_reimburse_less_5000_act"/>
+    <endEvent id="normal_reimburse_less_5000_end"/>
+    <sequenceFlow id="normal_reimburse_less_5000_flow8" sourceRef="normal_reimburse_less_5000_act" targetRef="normal_reimburse_less_5000_end"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_myProcess">
+    <bpmndi:BPMNPlane bpmnElement="normal_reimburse_less_5000_process" id="BPMNPlane_myProcess">
+      <bpmndi:BPMNShape bpmnElement="normal_reimburse_less_5000_start" id="BPMNShape_reimburse_more_1000_start">
+        <omgdc:Bounds height="35.0" width="35.0" x="140.0" y="200.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="normal_reimburse_less_5000_apply" id="BPMNShape_reimburse_more_1000_apply">
+        <omgdc:Bounds height="55.0" width="105.0" x="220.0" y="190.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="normal_reimburse_less_5000_manager" id="BPMNShape_reimburse_more_1000_manager">
+        <omgdc:Bounds height="55.0" width="105.0" x="370.0" y="190.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="normal_reimburse_less_5000_techmgr" id="BPMNShape_reimburse_more_1000_ceo">
+        <omgdc:Bounds height="55.0" width="105.0" x="525.0" y="190.00002"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="normal_reimburse_less_5000_flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="175.0" y="217.0"/>
+        <omgdi:waypoint x="220.0" y="217.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="normal_reimburse_less_5000_flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="325.0" y="217.0"/>
+        <omgdi:waypoint x="370.0" y="217.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-d64f9d67-8f7c-4908-a9be-4d6f422b5099" bpmnElement="normal_reimburse_less_5000_flow3">
+        <omgdi:waypoint x="475.0" y="217.5"/>
+        <omgdi:waypoint x="525.0" y="217.50002"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-1bad7f43-415f-4901-9332-90cb550b0d2c" bpmnElement="normal_reimburse_less_5000_acmgr">
+        <omgdc:Bounds x="695.0" y="190.0" width="110.0" height="55.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-a3eef5f1-63a9-475c-9d46-8be1fefaa9c0" bpmnElement="normal_reimburse_less_5000_flow4">
+        <omgdi:waypoint x="630.0" y="217.50002"/>
+        <omgdi:waypoint x="662.5" y="217.5"/>
+        <omgdi:waypoint x="695.0" y="217.5"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-4eb7be6e-aab7-4953-885d-ebb3264b9b74" bpmnElement="normal_reimburse_less_5000_ceo">
+        <omgdc:Bounds x="695.00006" y="287.50003" width="110.0" height="55.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-e2f970cb-9a17-499c-b284-b1efbc300c77" bpmnElement="normal_reimburse_less_5000_flow5">
+        <omgdi:waypoint x="750.00006" y="245.00002"/>
+        <omgdi:waypoint x="750.00006" y="287.5"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-df5aab17-f669-4659-a06a-2497dfabe23f" bpmnElement="normal_reimburse_less_5000_tax">
+        <omgdc:Bounds x="530.0" y="285.0" width="105.0" height="60.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-5d975a27-9e5b-481b-8c8d-b8ba242aabb6" bpmnElement="normal_reimburse_less_5000_flow6">
+        <omgdi:waypoint x="695.00006" y="315.00003"/>
+        <omgdi:waypoint x="635.0" y="315.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-9d414e76-d3af-4c08-a8db-280a757d4d9b" bpmnElement="normal_reimburse_less_5000_act">
+        <omgdc:Bounds x="372.5" y="285.00003" width="110.0" height="60.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-4810d261-2319-485f-a905-b839eff76b77" bpmnElement="normal_reimburse_less_5000_flow7">
+        <omgdi:waypoint x="530.0" y="315.0"/>
+        <omgdi:waypoint x="482.5" y="315.00003"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-b9d1abd4-c61f-4d97-a362-47291ea50fae" bpmnElement="normal_reimburse_less_5000_end">
+        <omgdc:Bounds x="257.5" y="300.0" width="30.0" height="30.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-7fcdd925-1e02-48a7-b87d-3a2384a9af83" bpmnElement="normal_reimburse_less_5000_flow8">
+        <omgdi:waypoint x="372.5" y="315.00003"/>
+        <omgdi:waypoint x="287.5" y="315.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -1,8 +1,8 @@
 package com.abt.flow.service;
 
-import com.abt.flow.model.FlowOperationLogVo;
 import com.abt.flow.model.Form;
 import com.abt.flow.model.ProcessVo;
+import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.sys.model.dto.UserView;
 
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 流程处理
  */
-public interface FlowService {
+public interface FlowBaseService {
 
     /**
      * 启动一个流程，不包括完成申请Task
@@ -24,6 +24,8 @@ public interface FlowService {
 
     /**
      * 完成节点
+     * 1. 用户认领任务
+     * 2. 完成task
      * @param user 操作用户
      * @param vo 流程对象
      */
@@ -31,10 +33,11 @@ public interface FlowService {
 
     /**
      * 获取流程操作记录
+     *
      * @param processInstanceId 流程实例ID
      * @return TODO: 返回类型
      */
-    List<FlowOperationLogVo> getOperationLogs(String processInstanceId);
+    List<FlowOperationLog> getOperationLogs(String processInstanceId);
 
 
     /**
@@ -42,5 +45,18 @@ public interface FlowService {
      * @param processInstanceId
      * @return
      */
-    InputStream getHighLightedTaskPngDiagram(String processInstanceId);
+    InputStream getHighLightedTaskPngDiagram(String processInstanceId, String processDefinitionId);
+
+    /**
+     * 删除一个流程
+     * @param processInstanceId
+     */
+    void deleteProcess(String processInstanceId);
+
+    /**
+     * 撤销一个流程
+     * TODO: 撤销条件
+     * @param processInstanceId
+     */
+    void cancelProcess(String processInstanceId);
 }

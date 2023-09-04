@@ -133,7 +133,7 @@ public class BizFlowRelation implements Serializable {
     @Schema(description = "最后更新时间")
     @Column(name = "last_update_date", columnDefinition = "DATE")
     @LastModifiedDate
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate lastUpdateDate;
 
