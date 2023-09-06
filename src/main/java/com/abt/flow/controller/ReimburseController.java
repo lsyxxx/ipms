@@ -2,8 +2,10 @@ package com.abt.flow.controller;
 
 import com.abt.common.model.R;
 import com.abt.common.util.MessageUtil;
+import com.abt.common.util.TokenUtil;
 import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.flow.service.ReimburseService;
+import com.abt.sys.model.dto.UserView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-@RequestMapping("/flow/rb")
+@RequestMapping("/wf/rb")
 @Tag(name = "ReimburseController", description = "报销流程")
 public class ReimburseController {
     private final ReimburseService reimburseService;
@@ -32,7 +34,7 @@ public class ReimburseController {
     @Parameter(name = "applyForm", description = "申请业务数据form")
     @PostMapping("/apply")
     public R apply(@RequestBody @NotNull ReimburseApplyForm applyForm) {
-
+        UserView user = TokenUtil.getUserFromAuthToken();
 
 
         return null;

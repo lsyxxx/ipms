@@ -15,10 +15,19 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-@RequestMapping("/flow")
+@RequestMapping("/wf/base")
 @Tag(name = "FlowController", description = "流程相关")
 public class FlowController {
 
+    /**
+     * 已处理
+     */
+    public static final String TYPE_DISPOSED = "disposed";
+
+    /**
+     * 待处理
+     */
+    public static final String TYPE_WAIT = "wait";
 
     private final FlowInfoService flowInfoService;
 
@@ -27,9 +36,10 @@ public class FlowController {
     }
 
     @Operation(summary = "查看用户申请的流程")
-    @Parameter(name = "userId", description = "用户id")
-    @GetMapping("/list")
-    public R flowList() {
+    @Parameter(name = "type", description = "查询流程类型(null我的/disposed已处理/wait待处理")
+    @Parameter(name = "query", description = "查询流程的参数")
+    @GetMapping("/load")
+    public R flowList(@RequestParam String type, @RequestParam String query) {
         UserView user = TokenUtil.getUserFromAuthToken();
 
 
@@ -37,5 +47,6 @@ public class FlowController {
 
         return R.success();
     }
+    
 
 }

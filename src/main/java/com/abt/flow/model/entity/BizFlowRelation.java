@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Comment;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -56,6 +57,15 @@ public class BizFlowRelation implements Serializable {
     @Schema(description = "业务类型Name,对应FlowSchema: SchemeName")
     @Column(columnDefinition = "VARCHAR(128)")
     private String bizCategoryName;
+
+
+    /**
+     * 自定义名称 [申请用户]业务类型name 申请时间
+     */
+    @Schema(description = "自定义名称")
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String customName;
+
     /**
      * 流程实例id,对应流程引擎中的proc_inst_id
      */
@@ -92,7 +102,7 @@ public class BizFlowRelation implements Serializable {
      * 自定义流程状态,
      */
     @Schema(description = "自定义流程状态, 参考ProcessState 类")
-    @Column(columnDefinition = "VARCHAR(128)")
+    @Column(columnDefinition = "INT")
     private Integer state;
     /**
      * 当前正在进行的流程task,对应act_ru_task: id
@@ -130,16 +140,36 @@ public class BizFlowRelation implements Serializable {
     private LocalDate delDate;
 
 
-    @Schema(description = "最后更新时间")
+    @Schema(description = "最后更新时间, 上一个已完成节点的执行时间")
     @Column(name = "last_update_date", columnDefinition = "DATE")
     @LastModifiedDate
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate lastUpdateDate;
 
-    @Schema(description = "最后更新用户")
+    @Schema(description = "最后更新用户, 上一个已完成节点的执行人")
     @Column(columnDefinition = "VARCHAR(255)")
     @LastModifiedBy
     private String lastUpdateUser;
+
+
+    @Schema(description = "当前节点名称")
+    @Column(columnDefinition = "VARCHAR(128)")
+    private String activityName;
+
+    @Schema(description = "创建时间")
+    @Column(name = "create_date", columnDefinition = "DATE")
+    @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private String createDate;
+
+    @Schema(description = "当前节点执行用户id")
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String currentUser;
+
+    @Schema(description = "当前节点执行用户name")
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String currentUsername;
 }
 

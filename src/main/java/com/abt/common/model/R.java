@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class R<T> {
-    private T result;
+    private T data;
     /**
      * 业务异常代码
      */
@@ -32,23 +32,28 @@ public class R<T> {
     /**
      * 异常信息
      */
-    private String message;
+    private String msg;
     //eg: 2023-07-25T11:31:14.214514600
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp = LocalDateTime.now();
     private String token;
     private String httpCode;
+    /**
+     * 记录条数
+     */
+    private int count = 0;
 
-    public R(T resultW, String code, String message) {
+
+    public R(T data, String code, String message) {
         super();
-        this.result = result;
+        this.data = data;
         this.code = code;
-        this.message = message;
+        this.msg = message;
     }
 
     public T get() {
-        return result;
+        return data;
     }
 
     public static<T> R<T> success(T data) {

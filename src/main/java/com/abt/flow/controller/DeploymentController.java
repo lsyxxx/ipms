@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Slf4j
-@RequestMapping("/flow/deploy")
+@RequestMapping("/wf/deploy")
 @Tag(name = "DeploymentController", description = "流程部署controller")
 public class DeploymentController {
 

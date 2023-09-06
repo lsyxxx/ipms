@@ -1,6 +1,7 @@
 package com.abt.flow.service.impl;
 
 import com.abt.flow.model.entity.BizFlowCategory;
+import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.service.FlowInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -33,6 +34,12 @@ class FlowInfoServiceImplTest {
 
     @Test
     void getUserApplyFlows() {
+
+        List<BizFlowRelation> list = service.getUserApplyFlows("abt010", 0, 10, null);
+        Assert.notEmpty(list, "list is null!!");
+        list.forEach(i -> {
+            log.info("list BizFlowRelation: {}", i.toString());
+        });
     }
 
     @Test
@@ -44,7 +51,22 @@ class FlowInfoServiceImplTest {
         });
     }
 
+
+    String userId = "abt019";
+    int page = 0;
+    int size = 20;
+    String type = "";
+    String query = "补卡";
+
     @Test
-    void enabledExample() {
+    void find() {
+        List<BizFlowRelation> list = service.find(userId, page, size, query, type);
+        Assert.notEmpty(list, "list is null!");
+        list.forEach(i -> {
+            log.info("------i: {}", i.toString());
+        });
     }
+
+
+
 }
