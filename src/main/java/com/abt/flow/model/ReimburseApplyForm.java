@@ -20,11 +20,6 @@ public class ReimburseApplyForm extends Form{
     private Double cost;
 
     /**
-     * 报销事由
-     */
-    private String reason;
-
-    /**
      * 票据数量
      */
     private int voucherNum;

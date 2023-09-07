@@ -3,6 +3,8 @@ package com.abt.common.util;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
+import java.text.MessageFormat;
+
 /**
  *
  */
@@ -18,5 +20,9 @@ public class MessageUtil extends ResourceBundleMessageSource {
 
     public static String getMessage(String code) {
         return getAccessor().getMessage(code);
+    }
+
+    public static String format(String msg, Object ...objects) {
+        return MessageFormat.format(getMessage(msg), objects);
     }
 }

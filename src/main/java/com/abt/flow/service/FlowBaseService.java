@@ -4,36 +4,35 @@ import com.abt.flow.model.Form;
 import com.abt.flow.model.ProcessVo;
 import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.sys.model.dto.UserView;
+import org.flowable.task.api.Task;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 流程处理
  */
-public interface FlowBaseService {
+public interface FlowBaseService<T extends Form> {
 
     /**
-     * 启动一个流程，不包括完成申请Task
-     *
-     * @param bizType 业务类型Id
-     * @param user    用户信息
-     * @return ProcessInstance 流程实例
-     */
-    ProcessVo start(String bizType, UserView user, Form form);
-
-    /**
-     * 完成节点
-     * 1. 用户认领任务
-     * 2. 完成task
+     * 正常完成节点
+     * 1. 完成task
+     * 2. 指定下一个任务assignee;
      * @param user 操作用户
      * @param vo 流程对象
      */
     void completeTask(UserView user, ProcessVo vo);
 
     /**
+     * 任务驳回
+     * @param user
+     * @param vo
+     */
+    void rejectTask(UserView user, ProcessVo vo);
+
+    /**
      * 获取流程操作记录
-     *
      * @param processInstanceId 流程实例ID
      * @return TODO: 返回类型
      */
@@ -48,10 +47,10 @@ public interface FlowBaseService {
     InputStream getHighLightedTaskPngDiagram(String processInstanceId, String processDefinitionId);
 
     /**
-     * 删除一个流程
+     * 删除一个正在进行的流程
      * @param processInstanceId
      */
-    void deleteProcess(String processInstanceId);
+    void deleteProcess(String processInstanceId, String delReason);
 
     /**
      * 撤销一个流程
@@ -59,4 +58,8 @@ public interface FlowBaseService {
      * @param processInstanceId
      */
     void cancelProcess(String processInstanceId);
+
+
+
+    Task getActiveTask(String processInstanceId);
 }

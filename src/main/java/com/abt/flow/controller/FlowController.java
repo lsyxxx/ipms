@@ -1,14 +1,21 @@
 package com.abt.flow.controller;
 
 import com.abt.common.model.R;
+import com.abt.common.model.RequestForm;
+import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
+import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.service.FlowInfoService;
 import com.abt.sys.model.dto.UserView;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.web.bind.annotation.*;
+
+import java.text.MessageFormat;
+import java.util.List;
 
 /**
  * 流程相关
@@ -19,15 +26,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "FlowController", description = "流程相关")
 public class FlowController {
 
-    /**
-     * 已处理
-     */
-    public static final String TYPE_DISPOSED = "disposed";
+    protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
-    /**
-     * 待处理
-     */
-    public static final String TYPE_WAIT = "wait";
 
     private final FlowInfoService flowInfoService;
 
@@ -36,16 +36,18 @@ public class FlowController {
     }
 
     @Operation(summary = "查看用户申请的流程")
-    @Parameter(name = "type", description = "查询流程类型(null我的/disposed已处理/wait待处理")
-    @Parameter(name = "query", description = "查询流程的参数")
+    @Parameter(name = "form", description = "请求参数，包括分页(page,size)与搜索参数(query)，id, type")
     @GetMapping("/load")
-    public R flowList(@RequestParam String type, @RequestParam String query) {
+    public R flowList(@RequestParam RequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
 
+        form.setId(user.getId());
+        List<BizFlowRelation> list = flowInfoService.getFlows(form);
 
 
 
-        return R.success();
+
+        return R.success(list, list.size());
     }
     
 

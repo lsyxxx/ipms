@@ -1,19 +1,22 @@
 package com.abt.common.model;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 /**
  * Response code
  */
 @Getter
 public enum ResCode {
-    SUCCESS(0, "0000", "Success"),
+    //http code
+    SUCCESS(0, String.valueOf(HttpStatus.OK.value()), "Success"),
     FAIL(1, "9999", "Fail"),
     SESSION_OUT(2, "9998", "Out of Session"),
     //和webapi保持一致
-    AUTHENTICATION_FAIL(3, "401", "认证失败，请提供认证信息"),
-    INVALID_TOKEN(4, "401", "认证失败，请提供认证信息"),
-    ACCESS_DENIED(5, "300", "Access Denied - unauthorized")
+    AUTHENTICATION_FAIL(3, String.valueOf(HttpStatus.UNAUTHORIZED.value()), "认证失败，请提供认证信息"),
+    INVALID_TOKEN(4, String.valueOf(HttpStatus.UNAUTHORIZED.value()), "认证失败，请提供认证信息"),
+    ACCESS_DENIED(5, String.valueOf(HttpStatus.UNAUTHORIZED.value()), "Access Denied - unauthorized"),
+    BAD_REQUEST(6, String.valueOf(HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST.getReasonPhrase()),
     ;
 
     private final int index;

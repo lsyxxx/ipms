@@ -22,28 +22,24 @@ import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.image.impl.DefaultProcessDiagramGenerator;
+import org.flowable.task.api.Task;
 import org.springframework.context.support.MessageSourceAccessor;
 
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class AbstractFlowService implements FlowBaseService {
+public abstract class AbstractFlowService<T extends Form> implements FlowBaseService {
 
     private final BizFlowRelationRepository bizFlowRelationRepository;
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
-
-    /**
-     * 流程中参数Key, value统一为Form对象
-     * TODO: 因为流程中参数flowable会保存到数据库，考虑最小参数。
-     */
-    public static final String VAR_KEY = "form_";
     public static final String DIAG_PNG = "png";
 
     protected final RuntimeService runtimeService;
@@ -64,50 +60,78 @@ public abstract class AbstractFlowService implements FlowBaseService {
         this.flowableConstant = flowableConstant;
     }
 
-    @Override
-    public ProcessVo<Form> start(String bizType, UserView user, Form form) {
+    public ProcessVo<T> apply(String bizType, UserView user, ProcessVo<T> processVo) {
+        log.info("申请流程 --- 业务: {}, 用户: {}", bizType, user.getName());
+
+        start(bizType, user, processVo);
+
+        completeTask(user, processVo);
+
+
+        return processVo;
+    }
+
+
+    /**
+     * 启动流程
+     * @param bizType 业务类型
+     * @param user 申请用户
+     * @param processVo 流程对象
+     */
+    protected ProcessVo<T> start(String bizType, UserView user, ProcessVo processVo) {
         log.info("启动流程 -- 业务: {}, 用户: {}", bizType, user.getName());
         setStartUser(user.getId());
         //1. start process
         ProcessInstance processInstance;
-        String taskId;
+        T form = (T) processVo.get();
+        String processInstanceId = "";
+        initProcessVariables(processVo);
+
         try {
             //启动流程的taskId就是processInstanceId
-            processInstance = runtimeService.startProcessInstanceById(form.getProcDefId(), form.getBusinessKey(), Map.of(VAR_KEY, form));
-            taskId = processInstance.getId();
+            processInstance = runtimeService.startProcessInstanceById(form.getProcDefId(), form.getBusinessKey(), processVo.getProcessVariables());
             log.info("已启动流程 -- id: {}", processInstance.getProcessInstanceId());
         } catch (Exception e) {
             log.error("启动流程失败 -- 失败原因: {}",e.getMessage());
             log.error(e.getLocalizedMessage());
-            throw new BusinessException(messages.getMessage("AbstractFlowService.start"));
+            throw new BusinessException(messages.getMessage("flow.service.AbstractFlowService.start"));
         }
-        BizFlowRelation bizFlowRelation = initBizFlowRelation(form, processInstance.getProcessInstanceId(), user);
+        BizFlowRelation bizFlowRelation = initBizFlowRelation(form, processInstanceId, user);
         bizFlowRelation = bizFlowRelationRepository.save(bizFlowRelation);
-        ProcessVo<Form> process = new ProcessVo(bizFlowRelation, form);
-        //update Form
-        form.updateProcess(processInstance.getId(), taskId);
-        clearAuthenticationId();
-        return process;
-    }
+        processVo.copyOf(bizFlowRelation, form);
 
-    /**
-     * 申请：启动流程+完成申请task
-     * @param user 执行任务的用户中
-     */
-    public void apply(String bizType, UserView user, Form form) {
-        //启动
-        ProcessVo vo = start(bizType, user, form);
-        //完成申请
-        completeTask(user, vo);
+        //update variables
+        requiredExecutionVariables(processVo);
+
+        runtimeService.setVariables(processInstanceId, processVo.getProcessVariables());
+
+        clearAuthenticationId();
+        return processVo;
     }
 
     @Override
     public void completeTask(UserView user, ProcessVo vo) {
-        log.info("开始执行完成任务 -- 执行用户: {}|{}, 流程实例id: {},  taskId: {}", user.getId(), user.getName(), vo.getProcessInstanceId(), vo.getTaskId());
-        taskService.claim(vo.getTaskId(), user.getId());
+        log.info("开始执行完成任务 -- 执行用户: {}|{}, 流程实例id: {}", user.getId(), user.getName(), vo.getProcessInstanceId());
+        vo.setUser(user.getId());
+        Task task = getActiveTask(vo.getProcessInstanceId());
+        if (task == null) {
+            log.error("流程实例: {} 没有待完成的Task", vo.getProcessInstanceId());
+            throw new BusinessException(messages.getMessage("flow.service.FlowInfoServiceImpl.completeTask"));
+        }
+
         beforeComplete(user, vo);
+
         taskService.complete(vo.getTaskId());
+
+        //NEXT task
+        task = getActiveTask(vo.getProcessInstanceId());
+        taskService.setAssignee(task.getId(), user.getId());
+
+        vo.updateBy(task);
+
+        log.info("Task: {} - {} 完成!", task.getId(), task.getName());
     }
+
 
     /**
      * 完成任务前业务处理
@@ -133,9 +157,9 @@ public abstract class AbstractFlowService implements FlowBaseService {
 
     /**
      * 生成流程图，高亮节点，不高亮连线，不显示连线名称
-     * @param processDefinitionId
-     * @param highLightedActivities
-     * @return
+     * @param processDefinitionId 流程定义id
+     * @param highLightedActivities 高亮节点
+     * @return InputStream
      */
     private InputStream generatePngDiagram(String processDefinitionId, List<String> highLightedActivities) {
         DefaultProcessDiagramGenerator generator = new DefaultProcessDiagramGenerator();
@@ -151,13 +175,12 @@ public abstract class AbstractFlowService implements FlowBaseService {
                 null,
                 flowableConstant.getScaleFactor(),
                 true
-                );
+        );
 
     }
 
     /**
      * 设置启动用户
-     * @param user
      */
     protected void setStartUser(String user) {
         Authentication.setAuthenticatedUserId(user);
@@ -183,8 +206,9 @@ public abstract class AbstractFlowService implements FlowBaseService {
     }
 
     @Override
-    public void deleteProcess(String processInstanceId) {
+    public void deleteProcess(String processInstanceId, String delReason) {
         log.info("-----------删除流程: {}", processInstanceId);
+        runtimeService.deleteProcessInstance(processInstanceId, delReason);
 
     }
 
@@ -193,4 +217,62 @@ public abstract class AbstractFlowService implements FlowBaseService {
         log.info("-----------撤销流程: {}", processInstanceId);
     }
 
+
+
+    /**
+     * 初始化流程参数
+     */
+    public Map<String, Object> initProcessVariables(String nextAssignee, String processDesc, String customName) {
+
+        return new HashMap<>(){{
+            put(FlowableConstant.PV_NEXT_ASSIGNEE, nextAssignee);
+            put(FlowableConstant.PV_PROCESS_DESC, processDesc);
+            put(FlowableConstant.PV_CUSTOM_NAME, customName);
+        }};
+    }
+
+    /**
+     * 执行过程中需要的参数
+     * @param procVars
+     * @param nextAssignee
+     * @param form
+     */
+    private void requiredExecutionVariables(Map<String, Object> procVars, String nextAssignee, Form form) {
+
+        procVars.put(FlowableConstant.PV_NEXT_ASSIGNEE, nextAssignee);
+        procVars.put(FlowableConstant.PV_FORM, form);
+
+    }
+
+    /**
+     * 自定义流程名称
+     * @return
+     */
+    abstract String customName(String ...strings);
+
+
+    /**
+     * 启动流程前，初始化流程参数
+     * @param processVo
+     * @return Map<String, Object> processVariables
+     */
+    abstract Map<String, Object> initProcessVariables(ProcessVo processVo);
+
+    /**
+     * 设置流程参数，需要:
+     * 1. 更新vo中的processVariables
+     * 2. 更新流程中的processVariables
+     */
+    abstract Map<String, Object> requiredExecutionVariables(ProcessVo<T> processVo);
+
+
+    /**
+     * 获取流程中正在进行的节点
+     * @param processInstanceId
+     * @return Task 没有则返回null
+     */
+    @Override
+    public Task getActiveTask(String processInstanceId) {
+        return taskService.createTaskQuery().processInstanceId(processInstanceId).active().orderByTaskCreateTime().desc().singleResult();
+    }
 }

@@ -50,6 +50,18 @@ public class GlobalExceptionHandler {
         return R.fail(e.getMessage());
     }
 
+
+    /**
+     * 请求参数异常
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(BadRequestParameterException.class)
+    public R<Exception> handleBadRequestParameterException(BadRequestParameterException e) {
+        log.error("Client请求参数错误 - msg: {}, e: {}", e.getMessage(), e);
+        return R.badRequest();
+    }
+
     @ExceptionHandler(BusinessException.class)
     public R<Exception> handleBusinessException(BusinessException e) {
         log.error("业务异常! - msg: {}, e: {}", e.getMessage(), e);

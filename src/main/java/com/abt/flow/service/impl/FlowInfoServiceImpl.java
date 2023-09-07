@@ -1,16 +1,24 @@
 package com.abt.flow.service.impl;
 
+import com.abt.common.model.RequestForm;
+import com.abt.common.util.MessageUtil;
+import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.entity.BizFlowCategory;
 import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.repository.BizFlowCategoryRepository;
 import com.abt.flow.repository.BizFlowRelationRepository;
 import com.abt.flow.service.FlowInfoService;
+import com.abt.sys.exception.BadRequestParameterException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.RuntimeService;
+import org.flowable.task.api.history.HistoricTaskInstance;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -28,24 +36,32 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
     private final BizFlowRelationRepository bizFlowRelationRepository;
 
-    @Value("${com.abt.flow.service.impl.FlowInfoServiceImpl.queryType.disposed}")
-    private String queryTypeDisposed;
+    private final HistoryService historyService;
+    private final RuntimeService runtimeService;
 
-    @Value("${com.abt.flow.service.impl.FlowInfoServiceImpl.queryType.wait}")
-    private String queryTypeWait;
+    /**
+     * 已处理
+     */
+    public static final String TYPE_DISPOSED = "disposed";
 
-    public FlowInfoServiceImpl(BizFlowCategoryRepository bizFlowCategoryRepository, Example<BizFlowCategory> enabledExample, BizFlowRelationRepository bizFlowRelationRepository) {
+    /**
+     * 待处理
+     */
+    public static final String TYPE_WAIT = "wait";
+
+    public FlowInfoServiceImpl(BizFlowCategoryRepository bizFlowCategoryRepository, Example<BizFlowCategory> enabledExample, BizFlowRelationRepository bizFlowRelationRepository, HistoryService historyService, RuntimeService runtimeService) {
         this.bizFlowCategoryRepository = bizFlowCategoryRepository;
         this.enabledExample = enabledExample;
         this.bizFlowRelationRepository = bizFlowRelationRepository;
+        this.historyService = historyService;
+        this.runtimeService = runtimeService;
     }
 
 
     @Override
-    public List<BizFlowRelation> getUserApplyFlows(String userId, int page, int size, String query) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, ORDERBY_CRTDATE);
-
-        Page<BizFlowRelation> all = bizFlowRelationRepository.findByStarterIdOrderByStartDateDesc(userId, pageRequest);
+    public List<BizFlowRelation> getUserApplyFlows(RequestForm form) {
+        PageRequest pageRequest = PageRequest.of(form.getPage(), form.getSize(), Sort.Direction.DESC, ORDERBY_CRTDATE);
+        Page<BizFlowRelation> all = bizFlowRelationRepository.findByStarterIdAndCustomNameContainingOrderByStartDateDesc(form.getId(), form.getQuery(), pageRequest);
         return all.getContent();
     }
 
@@ -63,31 +79,45 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
 
     @Override
-    public List<BizFlowRelation> find(String userId, int page, int size, String query, String type) {
-        return getInstanceListByUser(userId, page, size, query, type);
-    }
-
-    @Override
-    public List<BizFlowRelation> getTodoFlows(String userId, int page, int size, String query) {
+    public List<BizFlowRelation> getTodoFlows(RequestForm form) {
         return null;
     }
 
     @Override
-    public List<BizFlowRelation> getInvokedFlows(String userId, int page, int size, String query) {
+    public List<BizFlowRelation> getCompletedFlows(RequestForm form) {
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().taskAssignee(form.getId()).list();
+        list.stream().map(i -> {
+            BizFlowRelation rel = new BizFlowRelation();
+            Map<String, Object> processVariables = runtimeService.getVariables(i.getProcessInstanceId());
+            rel.setCustomName(String.valueOf(processVariables.get(FlowableConstant.PV_CUSTOM_NAME)));
+            rel.setProcInstId(i.getProcessInstanceId());
+            rel.setProcDefId(i.getProcessDefinitionId());
+
+            return rel;
+        }).collect(Collectors.toList());
+
         return null;
     }
 
     @Override
-    public List<BizFlowRelation> getFlows(String userId, int page, int size, String query, String type) {
-        return null;
+    public List<BizFlowRelation> getFlows(RequestForm form) {
+        List<BizFlowRelation> list;
+        switch (form.getType().toLowerCase()) {
+            case "": list = getUserApplyFlows(form); break;
+            case TYPE_DISPOSED:
+                list = getCompletedFlows(form);
+                break;
+            case TYPE_WAIT:
+                list = getTodoFlows(form);
+                break;
+            default:
+                log.error("Bad Request - 未知的参数:{}", form.getType());
+                throw new BadRequestParameterException(MessageUtil.format("flow.service.FlowInfoServiceImpl.getFlows", form.getType()));
+        }
+
+
+        return list;
     }
 
-
-    private List<BizFlowRelation> getInstanceListByUser(String userId, int page, int size, String query, String type) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, ORDERBY_CRTDATE);
-        Page<BizFlowRelation> all = bizFlowRelationRepository.findByStarterIdAndCustomNameContaining(userId, query, pageRequest);
-
-        return all.getContent();
-    }
 
 }

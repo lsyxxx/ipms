@@ -6,6 +6,11 @@ package com.abt.common.model;
 public enum Action {
 
     create("创建"),
+
+    apply("申请"),
+
+    complete("完成"),
+
     undo("撤销"),
     delete("删除"),
     audit("审核"),

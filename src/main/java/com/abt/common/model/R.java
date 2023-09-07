@@ -52,12 +52,24 @@ public class R<T> {
         this.msg = message;
     }
 
+    public R(T data, String code, String message, int count) {
+        super();
+        this.data = data;
+        this.code = code;
+        this.msg = message;
+        this.count = count;
+    }
+
     public T get() {
         return data;
     }
 
     public static<T> R<T> success(T data) {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage());
+    }
+
+    public static<T> R<T> success(T data, int count) {
+        return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
     }
 
     public static<T> R<T> success() {
@@ -98,6 +110,10 @@ public class R<T> {
 
     public static R<AccessDeniedException> accessDenied(AccessDeniedException e) {
         return new R<>(e, ResCode.ACCESS_DENIED.getCode(), ResCode.ACCESS_DENIED.getMessage());
+    }
+
+    public static R badRequest() {
+        return new R<>(null, ResCode.BAD_REQUEST.getCode(), ResCode.BAD_REQUEST.getMessage());
     }
 
 

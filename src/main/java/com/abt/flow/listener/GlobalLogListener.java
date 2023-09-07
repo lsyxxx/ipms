@@ -1,12 +1,13 @@
 package com.abt.flow.listener;
 
 import com.abt.flow.model.entity.FlowOperationLog;
-import com.abt.flow.service.FlowOperationLogService;
+import com.abt.flow.repository.FlowOperationLogRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
-import org.flowable.engine.delegate.event.impl.FlowableProcessEventImpl;
+import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
 import org.flowable.task.service.delegate.DelegateTask;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -17,44 +18,40 @@ import java.time.LocalDateTime;
  */
 @Slf4j
 @Component
-public class GlobalLogListener implements FlowableEventListener {
+public class GlobalLogListener extends FlowBaseListener implements FlowableEventListener {
 
 
-    private final FlowOperationLogService flowOperationLogService;
+    private final FlowOperationLogRepository flowOperationLogRepository;
 
-    public GlobalLogListener(FlowOperationLogService flowOperationLogService) {
-        this.flowOperationLogService = flowOperationLogService;
+    public GlobalLogListener(FlowOperationLogRepository flowOperationLogRepository) {
+        this.flowOperationLogRepository = flowOperationLogRepository;
     }
 
-//    @Override
-//    public void notify(DelegateTask delegateTask) {
-//        log.info("--------- GlobalLogListener.notify() 执行 -----------------");
-//        String eventName = delegateTask.getEventName();
-//        if (TaskListener.EVENTNAME_COMPLETE.equals(eventName)) {
-//            //任务完成事件
-//            log.info("----------- 任务完成. eventName: {}, taskInfo: {}", eventName, delegateTask.toString());
-//            flowOperationLogService.insertOne(createLog(delegateTask));
-//        }
-//    }
 
-
-    private FlowOperationLog createLog(DelegateTask delegateTask) {
+    private FlowOperationLog createLog(TaskEntity event) {
         FlowOperationLog optLog = new FlowOperationLog();
-        optLog.setProcInstId(delegateTask.getProcessInstanceId());
-        optLog.setAction(delegateTask.getEventName());
-        optLog.setExecutionId(delegateTask.getExecutionId());
+        optLog.setProcInstId(event.getProcessInstanceId());
+        optLog.setAction(event.getName());
+        optLog.setExecutionId(event.getExecutionId());
         optLog.setOperateDate(LocalDateTime.now());
-        optLog.setTaskId(delegateTask.getId());
-        optLog.setProcDefId(delegateTask.getProcessDefinitionId());
-
+        optLog.setTaskId(event.getId());
+        optLog.setProcDefId(event.getProcessDefinitionId());
+        optLog.setActivityId(event.getId());
+        optLog.setActivityName(event.getName());
+        optLog.setOperateUser(event.getAssignee());
         return optLog;
     }
 
     @Override
     public void onEvent(FlowableEvent event) {
-        log.info("-------- GlobalLogListener.onEvent() 执行 ----------------");
-        FlowableProcessEventImpl eventImpl = (FlowableProcessEventImpl) event;
-        log.info("-------- event info: {} ------------", eventImpl.toString());
+        log.info("-------- GlobalLogListener.onEvent() 执行 ---------------- ");
+        TaskEntity taskEntity = (TaskEntity) ((FlowableEntityEventImpl) event).getEntity();
+
+        if (taskNotComplete(event)) {
+            return;
+        }
+
+        flowOperationLogRepository.save(createLog(taskEntity));
 
     }
 

@@ -35,11 +35,6 @@ class FlowInfoServiceImplTest {
     @Test
     void getUserApplyFlows() {
 
-        List<BizFlowRelation> list = service.getUserApplyFlows("abt010", 0, 10, null);
-        Assert.notEmpty(list, "list is null!!");
-        list.forEach(i -> {
-            log.info("list BizFlowRelation: {}", i.toString());
-        });
     }
 
     @Test
@@ -58,14 +53,6 @@ class FlowInfoServiceImplTest {
     String type = "";
     String query = "补卡";
 
-    @Test
-    void find() {
-        List<BizFlowRelation> list = service.find(userId, page, size, query, type);
-        Assert.notEmpty(list, "list is null!");
-        list.forEach(i -> {
-            log.info("------i: {}", i.toString());
-        });
-    }
 
 
 

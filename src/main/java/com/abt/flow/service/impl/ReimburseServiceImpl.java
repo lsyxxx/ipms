@@ -15,6 +15,8 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 /**
  * 报销流程
  */
@@ -72,4 +74,20 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
     void beforeComplete(UserView user, ProcessVo vo) {
 
     }
+
+    @Override
+    String customName(String... strings) {
+        return null;
+    }
+
+    @Override
+    Map<String, Object> initProcessVariables(Map processVariables) {
+        return null;
+    }
+
+    @Override
+    Map<String, Object> addProcessVariables(Map processVariables, Map.Entry[] entries) {
+        return null;
+    }
+
 }

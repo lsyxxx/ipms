@@ -1,13 +1,16 @@
 package com.abt.flow.config;
 
-import com.abt.flow.listener.GlobalLogListener;
+import com.abt.flow.listener.GlobalTaskCompleteListener;
+import com.abt.flow.listener.ProcessDeleteListener;
 import lombok.extern.slf4j.Slf4j;
+import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
+import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.flowable.spring.boot.EngineConfigurationConfigurer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 流程相关配置
@@ -16,12 +19,13 @@ import java.util.Collections;
 @Slf4j
 public class FlowableConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {
 
-    private final GlobalLogListener globalLogListener;
-
+    private final GlobalTaskCompleteListener globalTaskCompleteListener;
+    private final ProcessDeleteListener processDeleteListener;
 
     private final FlowableDataSourceConfigurer configurer;
-    public FlowableConfig(GlobalLogListener globalLogListener, FlowableDataSourceConfigurer configurer) {
-        this.globalLogListener = globalLogListener;
+    public FlowableConfig(GlobalTaskCompleteListener globalTaskCompleteListener, ProcessDeleteListener processDeleteListener, FlowableDataSourceConfigurer configurer) {
+        this.globalTaskCompleteListener = globalTaskCompleteListener;
+        this.processDeleteListener = processDeleteListener;
         this.configurer = configurer;
     }
 
@@ -34,7 +38,11 @@ public class FlowableConfig implements EngineConfigurationConfigurer<SpringProce
         log.info("将自定义数据库配置导入SpringProcessEngineConfiguration");
         engineConfiguration.addConfigurator(configurer);
         log.info("配置自定义事件监听器到SpringProcessEngineConfiguration");
-        engineConfiguration.setEventListeners(Collections.singletonList(globalLogListener));
+//        engineConfiguration.setEventListeners(List.of(globalLogListener, globalTaskListener));
+        Map<String, List<FlowableEventListener>> typedListeners =
+                Map.of(FlowableEngineEventType.TASK_COMPLETED.name(), List.of(globalTaskCompleteListener),
+                        FlowableEngineEventType.PROCESS_CANCELLED.name(), List.of(processDeleteListener));
+        engineConfiguration.setTypedEventListeners(typedListeners);
 
     }
 

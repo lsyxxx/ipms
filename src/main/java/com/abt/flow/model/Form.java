@@ -1,9 +1,12 @@
 package com.abt.flow.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +29,7 @@ public class Form {
     private String name;
 
     /**
-     * 表单说明
-     * TODO: 比如：报销<5000流程，申请表单
+     * 申请说明
      */
     private String description;
 
@@ -50,6 +52,7 @@ public class Form {
 
     /**
      * 用于流程的key，唯一
+     * 同biz_flow_rel: customName
      */
     private String businessKey;
 
@@ -59,6 +62,12 @@ public class Form {
      * 业务-流程关系表id
      */
     private String relationId;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime createTime;
+
+    private String createUser;
 
 
     /**
@@ -75,6 +84,14 @@ public class Form {
     }
 
 
+    /**
+     * 默认生成customName
+     * [createUser] bizName createTime
+     * @return
+     */
+    public String customName() {
+        return String.format("[%s] %s %s", createUser, bizName, createTime);
+    }
 
 
 }

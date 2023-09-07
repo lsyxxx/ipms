@@ -6,10 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.task.api.Task;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 流程处理中的参数
@@ -58,9 +60,20 @@ public class ProcessVo<T extends Form> implements Serializable {
     private String processInstanceId;
 
     /**
-     * 当前task id
+     * 最近完成的task id
      */
     private String taskId;
+    private String taskName;
+
+    /**
+     * 流程参数
+     */
+    private Map<String, Object> processVariables = Map.of();
+
+    /**
+     * 下一个处理用户
+     */
+    private String nextAssignee;
 
 
     public ProcessVo(BizFlowRelation relation, T form) {
@@ -73,9 +86,17 @@ public class ProcessVo<T extends Form> implements Serializable {
         this.form = form;
     }
 
+    public ProcessVo copyOf(BizFlowRelation relation, T form) {
+        this.relation = relation;
+        this.state = ProcessState.of(relation.getState());
+        this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
+        this.processInstanceId = relation.getProcInstId();
+        this.form = form;
+        return this;
+    }
+
     /**
      * 决策是否通过
-     * @return
      */
     public boolean isApprove() {
         String str = String.valueOf(currentResult);
@@ -92,7 +113,6 @@ public class ProcessVo<T extends Form> implements Serializable {
     /**
      * 流程是否结束
      * 包括正常结束Completed和异常结束Terminated
-     * @return
      */
     public boolean isFinished() {
         int state = this.relation.getState();
@@ -103,10 +123,26 @@ public class ProcessVo<T extends Form> implements Serializable {
     /**
      * 是否正常进行
      * state = active
-     * @return
      */
     public boolean isProcessing() {
         return this.state == ProcessState.Active;
     }
 
+
+    public T get() {
+        return this.form;
+    }
+
+
+    /**
+     * 更新task相关信息
+     * @param task flowable Task
+     */
+    public ProcessVo updateBy(Task task) {
+        this.setTaskName(task.getName());
+        this.setTaskId(task.getId());
+        form.updateProcess(this.processInstanceId, task.getId());
+
+        return this;
+    }
 }
