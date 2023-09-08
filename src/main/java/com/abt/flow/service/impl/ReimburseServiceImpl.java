@@ -81,13 +81,18 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
     }
 
     @Override
-    Map<String, Object> initProcessVariables(Map processVariables) {
+    Map<String, Object> initProcessVariables(ProcessVo processVo) {
         return null;
     }
 
     @Override
-    Map<String, Object> addProcessVariables(Map processVariables, Map.Entry[] entries) {
+    Map<String, Object> requiredExecutionVariables(ProcessVo processVo) {
         return null;
     }
 
+
+    @Override
+    public void rejectTask(UserView user, ProcessVo vo) {
+
+    }
 }
