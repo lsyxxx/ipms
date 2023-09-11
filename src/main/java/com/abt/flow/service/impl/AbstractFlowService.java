@@ -23,7 +23,9 @@ import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.image.impl.DefaultProcessDiagramGenerator;
 import org.flowable.task.api.Task;
+import org.flowable.task.api.TaskInfo;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.util.Assert;
 
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -63,10 +65,22 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
     public ProcessVo<T> apply(String bizType, UserView user, ProcessVo<T> processVo) {
         log.info("申请流程 --- 业务: {}, 用户: {}", bizType, user.getName());
 
-        start(bizType, user, processVo);
+        processVo = start(bizType, user, processVo);
+        String proc = processVo.getProcessInstanceId();
+        TaskInfo activeTask = getActiveTask(proc);
+        Assert.notNull(activeTask, "流程[" + proc + "] 没有正在进行的任务");
+        taskService.claim(activeTask.getId(), user.getId());
+        taskService.complete(activeTask.getId());
 
-        completeTask(user, processVo);
+        T form = processVo.get();
+        BizFlowRelation bizFlowRelation = initBizFlowRelation(form, proc, user);
+        bizFlowRelation = bizFlowRelationRepository.save(bizFlowRelation);
+        processVo.copyOf(bizFlowRelation, form);
+        //update variables
+        requiredExecutionVariables(processVo);
+        runtimeService.setVariables(proc, processVo.getProcessVariables());
 
+        log.info("申请流程成功:processInfo = {}", proc);
 
         return processVo;
     }
@@ -76,7 +90,7 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
      * 启动流程
      * @param bizType 业务类型
      * @param user 申请用户
-     * @param processVo 流程对象
+     * @param processVo 流程对象。传入时必须：form, processVariables。在启动成功后根据BizFlowRelation生成完整的对象
      */
     protected ProcessVo<T> start(String bizType, UserView user, ProcessVo processVo) {
         log.info("启动流程 -- 业务: {}, 用户: {}", bizType, user.getName());
@@ -84,7 +98,6 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
         //1. start process
         ProcessInstance processInstance;
         T form = (T) processVo.get();
-        String processInstanceId = "";
         initProcessVariables(processVo);
 
         try {
@@ -96,14 +109,6 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
             log.error(e.getLocalizedMessage());
             throw new BusinessException(messages.getMessage("flow.service.AbstractFlowService.start"));
         }
-        BizFlowRelation bizFlowRelation = initBizFlowRelation(form, processInstanceId, user);
-        bizFlowRelation = bizFlowRelationRepository.save(bizFlowRelation);
-        processVo.copyOf(bizFlowRelation, form);
-
-        //update variables
-        requiredExecutionVariables(processVo);
-
-        runtimeService.setVariables(processInstanceId, processVo.getProcessVariables());
 
         clearAuthenticationId();
         return processVo;
@@ -125,11 +130,11 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
         //NEXT task
         task = getActiveTask(vo.getProcessInstanceId());
-        taskService.setAssignee(task.getId(), user.getId());
+        taskService.setAssignee(task.getId(), vo.getNextAssignee());
 
         vo.updateBy(task);
 
-        log.info("Task: {} - {} 完成!", task.getId(), task.getName());
+        log.info("Task: {} - {} 完成! 下一个执行人: {}", task.getId(), task.getName(), vo.getNextAssignee());
     }
 
 
@@ -223,7 +228,6 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
      * 初始化流程参数
      */
     public Map<String, Object> initProcessVariables(String nextAssignee, String processDesc, String customName) {
-
         return new HashMap<>(){{
             put(FlowableConstant.PV_NEXT_ASSIGNEE, nextAssignee);
             put(FlowableConstant.PV_PROCESS_DESC, processDesc);
@@ -275,4 +279,6 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
     public Task getActiveTask(String processInstanceId) {
         return taskService.createTaskQuery().processInstanceId(processInstanceId).active().orderByTaskCreateTime().desc().singleResult();
     }
+
+
 }

@@ -36,8 +36,10 @@ public class ReimburseController {
     public R apply(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
 
+        reimburseService.apply(user, applyForm);
 
-        return null;
+
+        return R.success("${}");
     }
 
 

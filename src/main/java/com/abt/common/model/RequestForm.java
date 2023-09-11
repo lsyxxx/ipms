@@ -10,8 +10,15 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class RequestForm {
 
+    /**
+     * 分页页数
+     */
     private int page = 0;
-    private int size = 0;
+
+    /**
+     * 分页单页数量
+     */
+    private int limit = 0;
 
     /**
      * 按id查询
@@ -20,7 +27,7 @@ public class RequestForm {
     /**
      * 按类型查询时
      */
-    private String type;
+    private String type = "";
 
     /**
      * 搜索参数
@@ -45,7 +52,16 @@ public class RequestForm {
      * @return
      */
     public boolean noPaging() {
-       return (page == 0) && (size == 0);
+       return (page == 0) && (limit == 0);
     }
 
+
+    public static RequestForm of (int page, int limit, String type, String query) {
+        RequestForm form = new RequestForm();
+        if (type == null) {
+            type  = "";
+        }
+        form.setPage(page).setType(type).setLimit(limit).setQuery(query);
+        return form;
+    }
 }

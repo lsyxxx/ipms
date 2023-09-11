@@ -1,11 +1,13 @@
 package com.abt.flow.service.impl;
 
-import com.abt.flow.config.FlowableConfig;
+import com.abt.common.validator.IValidator;
+import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.ProcessVo;
 import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.flow.repository.BizFlowRelationRepository;
 import com.abt.flow.service.FlowOperationLogService;
+import com.abt.flow.service.FormBaseService;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +17,7 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * 报销流程
@@ -32,23 +34,41 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
 
     private final FlowOperationLogService flowOperationLogService;
 
+    private final FormBaseService formBaseService;
+
     private final FlowableConstant flowableConstant;
 
+    private ValidatorChain applyFormValidatorChain;
 
-    public ReimburseServiceImpl(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant) {
+    public ValidatorChain getApplyFormValidatorChain() {
+        return applyFormValidatorChain;
+    }
+
+    public void setApplyFormValidatorChain(IValidator ...validators) {
+        formBaseService.addApplyFormValidator(validators);
+    }
+
+
+    public ReimburseServiceImpl(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FormBaseService formBaseService, FlowableConstant flowableConstant) {
         super(bizFlowRelationRepository, runtimeService, taskService, historyService, repositoryService, flowOperationLogService, flowableConstant);
         this.runtimeService = runtimeService;
         this.bizFlowRelationRepository = bizFlowRelationRepository;
         this.historyService = historyService;
         this.repositoryService = repositoryService;
         this.flowOperationLogService = flowOperationLogService;
+        this.formBaseService = formBaseService;
         this.flowableConstant = flowableConstant;
     }
 
     @Override
     public ProcessVo apply(UserView user, ReimburseApplyForm applyForm) {
-        return null;
+        ProcessVo<ReimburseApplyForm> vo = new ProcessVo<>();
+        vo.setForm(applyForm);
+        vo.setUser(user.getId());
+        apply(applyForm.getBizCode(), user, vo);
+        return vo;
     }
+
 
     @Override
     public ProcessVo departmentAudit(ProcessVo process, ReimburseApplyForm applyForm) {
@@ -70,6 +90,7 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
         return null;
     }
 
+
     @Override
     void beforeComplete(UserView user, ProcessVo vo) {
 
@@ -82,7 +103,7 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
 
     @Override
     Map<String, Object> initProcessVariables(ProcessVo processVo) {
-        return null;
+        return new HashMap<>();
     }
 
     @Override
@@ -95,4 +116,7 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
     public void rejectTask(UserView user, ProcessVo vo) {
 
     }
+
+
+
 }

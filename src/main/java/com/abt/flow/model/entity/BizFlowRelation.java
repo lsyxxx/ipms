@@ -165,11 +165,11 @@ public class BizFlowRelation implements Serializable {
     private String createDate;
 
     @Schema(description = "当前节点执行用户id")
-    @Column(columnDefinition = "VARCHAR(255)")
+    @Column(name = "cur_userid", columnDefinition = "VARCHAR(255)")
     private String currentUser;
 
     @Schema(description = "当前节点执行用户name")
-    @Column(columnDefinition = "VARCHAR(255)")
+    @Column(name = "cur_username", columnDefinition = "VARCHAR(255)")
     private String currentUsername;
 }
 

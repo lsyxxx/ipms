@@ -5,6 +5,11 @@ package com.abt.sys.exception;
  */
 public class BadRequestParameterException extends RuntimeException{
 
+
+    public BadRequestParameterException() {
+        super();
+    }
+
     public BadRequestParameterException(String message) {
         super(message);
     }

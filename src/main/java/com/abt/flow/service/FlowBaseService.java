@@ -20,21 +20,21 @@ public interface FlowBaseService<T extends Form> {
      * 1. 完成task
      * 2. 指定下一个任务assignee;
      * @param user 操作用户
-     * @param vo 流程对象
+     * @param vo 流程对象，传入时必须：processInstanceId流程实例id, nextAssignee下一个节点执行人
      */
-    void completeTask(UserView user, ProcessVo vo);
+    void completeTask(UserView user, ProcessVo<T> vo);
 
     /**
      * 任务驳回
      * @param user
      * @param vo
      */
-    void rejectTask(UserView user, ProcessVo vo);
+    void rejectTask(UserView user, ProcessVo<T> vo);
 
     /**
      * 获取流程操作记录
      * @param processInstanceId 流程实例ID
-     * @return TODO: 返回类型
+     * @return FlowOperationLog
      */
     List<FlowOperationLog> getOperationLogs(String processInstanceId);
 
@@ -62,4 +62,5 @@ public interface FlowBaseService<T extends Form> {
 
 
     Task getActiveTask(String processInstanceId);
+
 }

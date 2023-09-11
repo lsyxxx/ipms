@@ -14,8 +14,10 @@ import org.springframework.stereotype.Repository;
 public interface BizFlowRelationRepository extends JpaRepository<BizFlowRelation, String> {
 
 
-    Page<BizFlowRelation> findByStarterIdAndCustomNameContainingOrderByStartDateDesc(@Param("startId") String startId, @Param("customName")String customName, Pageable pageable);
+    Page<BizFlowRelation> findByStarterIdOrCustomNameContainingOrderByStartDateDesc(@Param("startId") String startId, @Param("customName")String customName, Pageable pageable);
 
 
     BizFlowRelation findByProcInstId(@Param("procInstId") String procInstId);
+
+    Page<BizFlowRelation> findByCurrentUserAndStateOrCustomNameContainingOrderByLastUpdateDateDesc(@Param("currentUser") String currentUser, @Param("state") Integer state, @Param("customName")String customName, Pageable pageable);
 }

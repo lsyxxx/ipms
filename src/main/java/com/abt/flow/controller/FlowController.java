@@ -38,14 +38,13 @@ public class FlowController {
     @Operation(summary = "查看用户申请的流程")
     @Parameter(name = "form", description = "请求参数，包括分页(page,size)与搜索参数(query)，id, type")
     @GetMapping("/load")
-    public R flowList(@RequestParam RequestForm form) {
+    public R flowList(@RequestParam int page, @RequestParam int limit, @RequestParam(required = false) String type, @RequestParam(required = false) String query) {
         UserView user = TokenUtil.getUserFromAuthToken();
 
+        RequestForm form = RequestForm.of(page, limit, type, query);
         form.setId(user.getId());
+
         List<BizFlowRelation> list = flowInfoService.getFlows(form);
-
-
-
 
         return R.success(list, list.size());
     }

@@ -1,5 +1,6 @@
 package com.abt.flow.service.impl;
 
+import com.abt.common.model.RequestForm;
 import com.abt.flow.model.entity.BizFlowCategory;
 import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.service.FlowInfoService;
@@ -16,16 +17,21 @@ import java.util.List;
 
 @SpringBootTest
 @Slf4j
-class FlowInfoServiceImplTest {
+class FlowInfoServiceImplTest extends BaseTest{
 
     @Autowired
     private FlowInfoService service;
     @Autowired
     private Example<BizFlowCategory>  enableExample;
 
+    private RequestForm form;
 
     @BeforeEach
     void setUp() {
+        form = new RequestForm();
+        form.setLimit(20);
+        form.setPage(0);
+
     }
 
     @AfterEach
@@ -53,7 +59,21 @@ class FlowInfoServiceImplTest {
     String type = "";
     String query = "补卡";
 
+    @Test
+    void getTodoFlows() {
+        form.setId("abt010");
+
+        List<BizFlowRelation> todoFlows = service.getTodoFlows(form);
+        logListElement(todoFlows);
+    }
+
+    @Test
+    void getCompletedFlows() {
 
 
+    }
 
+    @Test
+    void getFlows() {
+    }
 }

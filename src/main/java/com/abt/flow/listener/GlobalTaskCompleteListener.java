@@ -5,8 +5,8 @@ import com.abt.flow.repository.FlowOperationLogRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
-import org.flowable.engine.RuntimeService;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,13 +20,13 @@ public class GlobalTaskCompleteListener extends FlowBaseListener implements Flow
     private final BizFlowRelationRepository bizFlowRelationRepository;
     private final FlowOperationLogRepository flowOperationLogRepository;
 
-    private final RuntimeService runtimeService;
+    private final ApplicationContext context;
 
-    public GlobalTaskCompleteListener(BizFlowRelationRepository bizFlowRelationRepository, FlowOperationLogRepository flowOperationLogRepository, RuntimeService runtimeService) {
-        super(bizFlowRelationRepository, flowOperationLogRepository, runtimeService);
+    public GlobalTaskCompleteListener(BizFlowRelationRepository bizFlowRelationRepository, FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
+        super(bizFlowRelationRepository, flowOperationLogRepository, context);
         this.bizFlowRelationRepository = bizFlowRelationRepository;
         this.flowOperationLogRepository = flowOperationLogRepository;
-        this.runtimeService = runtimeService;
+        this.context = context;
     }
 
     @Override

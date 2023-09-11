@@ -1,14 +1,19 @@
 package com.abt.flow.service;
 
 
+import com.abt.common.validator.IValidator;
+import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.model.ProcessVo;
 import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.sys.model.dto.UserView;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 报销
  */
-public interface ReimburseService {
+public interface ReimburseService{
 
 
     /**
@@ -48,6 +53,7 @@ public interface ReimburseService {
      * @return
      */
     ProcessVo accountancyAudit(ProcessVo processVo, ReimburseApplyForm applyForm);
+
 
 
 }

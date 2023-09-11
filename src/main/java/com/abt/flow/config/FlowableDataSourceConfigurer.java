@@ -16,7 +16,7 @@ import javax.sql.DataSource;
 public class FlowableDataSourceConfigurer implements EngineConfigurator {
 
     private final DataSource flowableDataSource;
-    private final static int PRIORITY = 100;
+    private final static int PRIORITY = 10000;
 
     public FlowableDataSourceConfigurer(@Qualifier("flowableDataSource") DataSource flowableDataSource) {
         this.flowableDataSource = flowableDataSource;

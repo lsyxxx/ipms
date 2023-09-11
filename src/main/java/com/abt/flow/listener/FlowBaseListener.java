@@ -11,6 +11,7 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
+import org.springframework.context.ApplicationContext;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,12 +23,13 @@ public class FlowBaseListener {
 
     private BizFlowRelationRepository bizFlowRelationRepository;
     private FlowOperationLogRepository flowOperationLogRepository;
-    private RuntimeService runtimeService;
 
-    public FlowBaseListener(BizFlowRelationRepository bizFlowRelationRepository, FlowOperationLogRepository flowOperationLogRepository, RuntimeService runtimeService) {
+    private ApplicationContext context;
+
+    public FlowBaseListener(BizFlowRelationRepository bizFlowRelationRepository, FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
         this.bizFlowRelationRepository = bizFlowRelationRepository;
         this.flowOperationLogRepository = flowOperationLogRepository;
-        this.runtimeService = runtimeService;
+        this.context = context;
     }
 
     /**
@@ -76,6 +78,7 @@ public class FlowBaseListener {
     protected BizFlowRelation create(TaskEntity task) {
         BizFlowRelation obj = bizFlowRelationRepository.findByProcInstId(task.getProcessInstanceId());
         if (obj == null) {
+            RuntimeService runtimeService = context.getBean(RuntimeService.class);
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
             obj = new BizFlowRelation();
             obj.setProcDefId(task.getProcessDefinitionId());

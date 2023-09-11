@@ -9,13 +9,19 @@ public enum ProcessState {
     Deleted(2, "Deleted", "已删除"),
 //    Temporary(3, "Temporary", "暂存"),
     /**
-     * 暂停流程，停止操作
+     * 暂停流程。无法进行任何操作
      */
     Suspended(4, "Suspended", "已挂起"),
     /**
      * 人为干预终止
      */
     Terminated(5, "Terminated", "已终止"),
+
+    /**
+     * 流程仅仅启动，第一个任务还未开始。
+     * 仅用来更新flowable的businessKey
+     */
+    Start(6, "Start", "已启动"),
 
     ;
 
