@@ -5,6 +5,7 @@ import com.abt.sys.model.dto.UserView;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.task.api.Task;
 
@@ -30,7 +31,7 @@ public class ProcessVo<T extends Form> implements Serializable {
      * 仅当前节点的结果
      * 一般是Decision
      */
-    private Object currentResult;
+    private Decision currentResult;
     /**
      *  流程申请用户
      */
@@ -67,6 +68,7 @@ public class ProcessVo<T extends Form> implements Serializable {
 
     /**
      * 流程参数
+     * 无法remove(key)
      */
     private Map<String, Object> processVariables = Map.of();
 
@@ -75,6 +77,22 @@ public class ProcessVo<T extends Form> implements Serializable {
      */
     private String nextAssignee;
 
+    /**
+     * 当前审批评论
+     */
+    private String comment;
+
+
+    /**
+     * 创建
+     * @param user 当前用户
+     * @param form 当前表单
+     */
+    public ProcessVo(UserView user, T form) {
+        this.user = user.getId();
+        this.form = form;
+        this.processInstanceId = form.getProcessInstanceId();
+    }
 
     public ProcessVo(BizFlowRelation relation, T form) {
         //根据数据库的读取创建processVo
@@ -143,6 +161,16 @@ public class ProcessVo<T extends Form> implements Serializable {
         this.setTaskId(task.getId());
         form.updateProcess(this.processInstanceId, task.getId());
 
+        return this;
+    }
+
+    /**
+     * 添加评论
+     * @return
+     */
+    public ProcessVo addApproval() {
+        approvals = ListUtils.emptyIfNull(this.approvals);
+        approvals.add(new Approval(this.user, this.currentResult, this.comment));
         return this;
     }
 }

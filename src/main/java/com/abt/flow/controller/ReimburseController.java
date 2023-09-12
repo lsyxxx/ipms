@@ -38,9 +38,30 @@ public class ReimburseController {
 
         reimburseService.apply(user, applyForm);
 
-
-        return R.success("${}");
+        return R.success(messages.getMessage("common.apply.success"));
     }
+
+    @Operation(summary = "部门审批")
+    @Parameter(name = "applyForm", description = "业务数据form")
+    @PostMapping("/dc")
+    public R departmentCheck(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        reimburseService.departmentAudit(user, applyForm);
+        return R.success();
+    }
+
+
+    @Operation(summary = "技术负责人审批")
+    @Parameter(name = "applyForm", description = "业务数据form")
+    @PostMapping("/tc")
+    public R techCheck(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+
+
+
+        return R.success();
+    }
+
+
 
 
 }

@@ -8,8 +8,8 @@ import com.abt.flow.model.ProcessVo;
 import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.flow.repository.BizFlowRelationRepository;
-import com.abt.flow.service.FlowOperationLogService;
 import com.abt.flow.service.FlowBaseService;
+import com.abt.flow.service.FlowOperationLogService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
@@ -38,19 +38,15 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class AbstractFlowService<T extends Form> implements FlowBaseService {
 
-    private final BizFlowRelationRepository bizFlowRelationRepository;
-
-    protected MessageSourceAccessor messages = MessageUtil.getAccessor();
-
     public static final String DIAG_PNG = "png";
-
     protected final RuntimeService runtimeService;
     protected final TaskService taskService;
     protected final HistoryService historyService;
     protected final RepositoryService repositoryService;
     protected final FlowOperationLogService flowOperationLogService;
-
     protected final FlowableConstant flowableConstant;
+    private final BizFlowRelationRepository bizFlowRelationRepository;
+    protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
     public AbstractFlowService(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant) {
         this.bizFlowRelationRepository = bizFlowRelationRepository;
@@ -88,16 +84,17 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
     /**
      * 启动流程
-     * @param bizType 业务类型
-     * @param user 申请用户
+     *
+     * @param bizType   业务类型
+     * @param user      申请用户
      * @param processVo 流程对象。传入时必须：form, processVariables。在启动成功后根据BizFlowRelation生成完整的对象
      */
-    protected ProcessVo<T> start(String bizType, UserView user, ProcessVo processVo) {
+    protected ProcessVo<T> start(String bizType, UserView user, ProcessVo<T> processVo) {
         log.info("启动流程 -- 业务: {}, 用户: {}", bizType, user.getName());
         setStartUser(user.getId());
         //1. start process
         ProcessInstance processInstance;
-        T form = (T) processVo.get();
+        T form = processVo.get();
         initProcessVariables(processVo);
 
         try {
@@ -105,7 +102,7 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
             processInstance = runtimeService.startProcessInstanceById(form.getProcDefId(), form.getBusinessKey(), processVo.getProcessVariables());
             log.info("已启动流程 -- id: {}", processInstance.getProcessInstanceId());
         } catch (Exception e) {
-            log.error("启动流程失败 -- 失败原因: {}",e.getMessage());
+            log.error("启动流程失败 -- 失败原因: {}", e.getMessage());
             log.error(e.getLocalizedMessage());
             throw new BusinessException(messages.getMessage("flow.service.AbstractFlowService.start"));
         }
@@ -116,17 +113,16 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
     @Override
     public void completeTask(UserView user, ProcessVo vo) {
-        log.info("开始执行完成任务 -- 执行用户: {}|{}, 流程实例id: {}", user.getId(), user.getName(), vo.getProcessInstanceId());
+        log.info("开始执行[完成任务] -- 执行用户: {}|{}, 流程实例id: {}", user.getId(), user.getName(), vo.getProcessInstanceId());
         vo.setUser(user.getId());
         Task task = getActiveTask(vo.getProcessInstanceId());
         if (task == null) {
             log.error("流程实例: {} 没有待完成的Task", vo.getProcessInstanceId());
             throw new BusinessException(messages.getMessage("flow.service.FlowInfoServiceImpl.completeTask"));
         }
-
         beforeComplete(user, vo);
 
-        taskService.complete(vo.getTaskId());
+        taskService.complete(task.getId());
 
         //NEXT task
         task = getActiveTask(vo.getProcessInstanceId());
@@ -162,7 +158,8 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
     /**
      * 生成流程图，高亮节点，不高亮连线，不显示连线名称
-     * @param processDefinitionId 流程定义id
+     *
+     * @param processDefinitionId   流程定义id
      * @param highLightedActivities 高亮节点
      * @return InputStream
      */
@@ -181,7 +178,6 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
                 flowableConstant.getScaleFactor(),
                 true
         );
-
     }
 
     /**
@@ -223,12 +219,11 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
     }
 
 
-
     /**
      * 初始化流程参数
      */
     public Map<String, Object> initProcessVariables(String nextAssignee, String processDesc, String customName) {
-        return new HashMap<>(){{
+        return new HashMap<>() {{
             put(FlowableConstant.PV_NEXT_ASSIGNEE, nextAssignee);
             put(FlowableConstant.PV_PROCESS_DESC, processDesc);
             put(FlowableConstant.PV_CUSTOM_NAME, customName);
@@ -237,9 +232,10 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
     /**
      * 执行过程中需要的参数
-     * @param procVars
-     * @param nextAssignee
-     * @param form
+     *
+     * @param procVars 流程参数map
+     * @param nextAssignee 下一个执行人
+     * @param form 表单
      */
     private void requiredExecutionVariables(Map<String, Object> procVars, String nextAssignee, Form form) {
 
@@ -250,17 +246,16 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
     /**
      * 自定义流程名称
-     * @return
+     *
      */
-    abstract String customName(String ...strings);
+    abstract String customName(String... strings);
 
 
     /**
      * 启动流程前，初始化流程参数
-     * @param processVo
      * @return Map<String, Object> processVariables
      */
-    abstract Map<String, Object> initProcessVariables(ProcessVo processVo);
+    abstract Map<String, Object> initProcessVariables(ProcessVo<T> processVo);
 
     /**
      * 设置流程参数，需要:
@@ -272,12 +267,35 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
     /**
      * 获取流程中正在进行的节点
-     * @param processInstanceId
      * @return Task 没有则返回null
      */
     @Override
     public Task getActiveTask(String processInstanceId) {
         return taskService.createTaskQuery().processInstanceId(processInstanceId).active().orderByTaskCreateTime().desc().singleResult();
+    }
+
+
+    @Override
+    public ProcessVo<T> check(UserView user, ProcessVo vo) {
+        log.info("开始执行一般性审核check(). 流程实例id: {}, 审批结果: {}, 评论: {}", vo.getProcessInstanceId(), vo.getCurrentResult(), vo.getComment());
+//        TaskInfo activeTask = getActiveTask(vo.getProcessInstanceId());
+//        String taskId = activeTask.getId();
+//        taskService.addComment(taskId, vo.getProcessInstanceId(), vo.getComment());
+        vo.addApproval();
+        switch (vo.getCurrentResult()) {
+            case Approve:
+                log.info("流程 - {}审批[通过], 进行下一个节点!", vo.getProcessInstanceId());
+                completeTask(user, vo);
+                break;
+            case Reject:
+                log.info("流程 - {}审批[拒绝], 终止流程!", vo.getProcessInstanceId());
+                rejectTask(user, vo);
+                break;
+            default:
+                log.error("审批结果参数 - {} 类型错误!", vo.getCurrentResult());
+                throw new IllegalArgumentException(MessageUtil.format("flow.service.AbstractFlowService.check.error", vo.getCurrentResult().value()));
+        }
+        return vo;
     }
 
 

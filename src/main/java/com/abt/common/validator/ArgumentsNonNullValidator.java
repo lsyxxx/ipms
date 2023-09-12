@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @NoArgsConstructor
-public class ArgumentsNonNullValidator implements IValidator{
+public class ArgumentsNonNullValidator<T> implements IValidator<T>{
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
@@ -23,6 +23,7 @@ public class ArgumentsNonNullValidator implements IValidator{
      */
     private String argumentName;
 
+
     public static ArgumentsNonNullValidator create(String argumentName) {
          ArgumentsNonNullValidator validator = new ArgumentsNonNullValidator();
          validator.setArgumentName(argumentName);
@@ -30,7 +31,7 @@ public class ArgumentsNonNullValidator implements IValidator{
     }
 
     @Override
-    public ValidationResult validate(Object object) {
+    public ValidationResult validate(T object) {
         if (object == null) {
             return ValidationResult.fail(messages.getMessage("com.abt.common.validator.ArgumentsNonNullValidator.validate", argumentName));
         }
@@ -42,7 +43,6 @@ public class ArgumentsNonNullValidator implements IValidator{
 
         return ValidationResult.success();
     }
-
 
     public String getArgumentName() {
         return argumentName;

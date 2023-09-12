@@ -31,4 +31,10 @@ public class Approval {
         this.user = user;
         this.decision = decision;
     }
+
+    public Approval(String user, Object decision, String comment) {
+        this.user = user;
+        this.decision = decision;
+        this.comment = comment;
+    }
 }

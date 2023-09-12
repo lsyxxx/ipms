@@ -18,41 +18,31 @@ public interface ReimburseService{
 
     /**
      * 申请报销
-     * @param user
+     * @param user 申请用户
      * @param applyForm 申请表单
-     * @return
+     * @return ProcessVo
      */
-    ProcessVo apply(UserView user, ReimburseApplyForm applyForm);
+    ProcessVo<ReimburseApplyForm> apply(UserView user, ReimburseApplyForm applyForm);
 
     /**
      * 启动部门审查
-     * @return
      */
-    ProcessVo departmentAudit(ProcessVo process, ReimburseApplyForm applyForm);
+    ProcessVo<ReimburseApplyForm> departmentAudit(UserView user, ReimburseApplyForm applyForm);
 
     /**
      * 技术负责人审批
-     * @param process
-     * @param applyForm
-     * @return
      */
-    ProcessVo techLeadAudit(ProcessVo process, ReimburseApplyForm applyForm);
+    ProcessVo<ReimburseApplyForm> techLeadAudit(UserView user, ReimburseApplyForm applyForm);
 
     /**
      * 总经理审批
-     * @param processVo
-     * @param applyForm
-     * @return
      */
-    ProcessVo ceoAudit(ProcessVo processVo, ReimburseApplyForm applyForm);
+    ProcessVo<ReimburseApplyForm> ceoAudit(UserView user, ReimburseApplyForm applyForm);
 
     /**
      * 财务主管审批
-     * @param processVo
-     * @param applyForm
-     * @return
      */
-    ProcessVo accountancyAudit(ProcessVo processVo, ReimburseApplyForm applyForm);
+    ProcessVo<ReimburseApplyForm> accountancyAudit(UserView user, ReimburseApplyForm applyForm);
 
 
 

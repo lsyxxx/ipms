@@ -63,4 +63,11 @@ public interface FlowBaseService<T extends Form> {
 
     Task getActiveTask(String processInstanceId);
 
+    /**
+     * 一般审批，只做2点
+     * 1. 同意/拒绝
+     * 2. 评论
+     * 3. 同意则进行下一个节点，拒绝则终止流程
+     */
+    ProcessVo<T>  check(UserView user, ProcessVo<T> vo);
 }

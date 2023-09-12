@@ -8,6 +8,4 @@ public interface IValidator<T> {
      * @return 通过true, 不通过false
      */
     ValidationResult validate(T t);
-
-
 }

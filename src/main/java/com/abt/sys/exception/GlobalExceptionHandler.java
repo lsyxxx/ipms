@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<Exception> handleException(Exception e) {
         log.error("Uncaught exception! - msg: {}, e: {}", e.getMessage(), e);
         return R.fail(e.getMessage());
@@ -53,16 +53,17 @@ public class GlobalExceptionHandler {
 
     /**
      * 请求参数异常
-     * @param e
-     * @return
+     * @param e 异常
      */
     @ExceptionHandler(BadRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R<Exception> handleBadRequestParameterException(BadRequestParameterException e) {
         log.error("Client请求参数错误 - msg: {}, e: {}", e.getMessage(), e);
         return R.badRequest();
     }
 
     @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<Exception> handleBusinessException(BusinessException e) {
         log.error("业务异常! - msg: {}, e: {}", e.getMessage(), e);
         return R.fail(e.getMessage(), e.getCode());

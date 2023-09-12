@@ -50,5 +50,15 @@ public class ReimburseApplyForm extends Form{
      */
     private LocalDateTime dateTime;
 
+    /**
+     * 当前节点决策
+     */
+    private String decision;
+
+    /**
+     * 当前节点评论
+     */
+    private String comment;
+
 
 }
