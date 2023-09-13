@@ -4,7 +4,7 @@ import com.abt.common.model.RequestForm;
 import com.abt.common.util.MessageUtil;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.ProcessState;
-import com.abt.flow.model.entity.BizFlowCategory;
+import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.repository.BizFlowCategoryRepository;
 import com.abt.flow.repository.BizFlowRelationRepository;
@@ -14,12 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
-import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +34,7 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
     private final BizFlowCategoryRepository bizFlowCategoryRepository;
 
-    private final Example<BizFlowCategory> enabledExample;
+    private final Example<FlowCategory> enabledExample;
 
     private final BizFlowRelationRepository bizFlowRelationRepository;
 
@@ -55,7 +53,7 @@ public class FlowInfoServiceImpl implements FlowInfoService {
      */
     public static final String TYPE_WAIT = "wait";
 
-    public FlowInfoServiceImpl(BizFlowCategoryRepository bizFlowCategoryRepository, Example<BizFlowCategory> enabledExample, BizFlowRelationRepository bizFlowRelationRepository, HistoryService historyService, RuntimeService runtimeService, TaskService taskService) {
+    public FlowInfoServiceImpl(BizFlowCategoryRepository bizFlowCategoryRepository, Example<FlowCategory> enabledExample, BizFlowRelationRepository bizFlowRelationRepository, HistoryService historyService, RuntimeService runtimeService, TaskService taskService) {
         this.bizFlowCategoryRepository = bizFlowCategoryRepository;
         this.enabledExample = enabledExample;
         this.bizFlowRelationRepository = bizFlowRelationRepository;
@@ -74,14 +72,24 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
 
     @Override
-    public List<BizFlowCategory> findAllEnabled(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, ORDERBY_CRTDATE, ORDERBY_SORT);
-        log.info("example == {}", enabledExample.toString());
-        Page<BizFlowCategory> all = bizFlowCategoryRepository.findAll(enabledExample, pageRequest);
+    public List<FlowCategory> findAllEnabled(int page, int size) {
+        if (size == 0) {
+            //不分页
+            return findAllEnabled();
+        }
+
+        //分页
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, ORDERBY_SORT, ORDERBY_CRTDATE);
+        Page<FlowCategory> all = bizFlowCategoryRepository.findAll(enabledExample, pageRequest);
         if (all.hasContent()) {
             return all.getContent();
         }
         return List.of();
+    }
+    @Override
+    public List<FlowCategory> findAllEnabled() {
+        List<FlowCategory> all = bizFlowCategoryRepository.findAll(enabledExample, Sort.by(Sort.Direction.DESC, ORDERBY_SORT, ORDERBY_CRTDATE));
+        return all;
     }
 
 
@@ -124,6 +132,5 @@ public class FlowInfoServiceImpl implements FlowInfoService {
         }
         return list;
     }
-
 
 }

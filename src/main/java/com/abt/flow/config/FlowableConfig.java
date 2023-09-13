@@ -23,13 +23,12 @@ public class FlowableConfig implements EngineConfigurationConfigurer<SpringProce
     private final GlobalTaskCompleteListener globalTaskCompleteListener;
     private final ProcessDeleteListener processDeleteListener;
 
-    private final IdGenerator customIdGenerator;
+//    private final IdGenerator customIdGenerator;
 
     private final FlowableDataSourceConfigurer configurer;
-    public FlowableConfig(GlobalTaskCompleteListener globalTaskCompleteListener, ProcessDeleteListener processDeleteListener, IdGenerator customIdGenerator, FlowableDataSourceConfigurer configurer) {
+    public FlowableConfig(GlobalTaskCompleteListener globalTaskCompleteListener, ProcessDeleteListener processDeleteListener, FlowableDataSourceConfigurer configurer) {
         this.globalTaskCompleteListener = globalTaskCompleteListener;
         this.processDeleteListener = processDeleteListener;
-        this.customIdGenerator = customIdGenerator;
         this.configurer = configurer;
     }
 
@@ -45,7 +44,7 @@ public class FlowableConfig implements EngineConfigurationConfigurer<SpringProce
                 Map.of(FlowableEngineEventType.TASK_COMPLETED.name(), List.of(globalTaskCompleteListener),
                         FlowableEngineEventType.PROCESS_CANCELLED.name(), List.of(processDeleteListener));
         engineConfiguration.setTypedEventListeners(typedListeners);
-        engineConfiguration.setIdGenerator(customIdGenerator);
+//        engineConfiguration.setIdGenerator(customIdGenerator);
     }
 
 

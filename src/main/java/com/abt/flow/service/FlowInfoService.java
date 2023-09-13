@@ -1,8 +1,7 @@
 package com.abt.flow.service;
 
 import com.abt.common.model.RequestForm;
-import com.abt.flow.model.ProcessVo;
-import com.abt.flow.model.entity.BizFlowCategory;
+import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.model.entity.BizFlowRelation;
 
 import java.util.List;
@@ -21,25 +20,24 @@ public interface FlowInfoService {
 
     /**
      * 获取所有可用的业务类型 未删除&&已启用
-     * @return
      */
-    List<BizFlowCategory> findAllEnabled(int page, int size);
+    List<FlowCategory> findAllEnabled(int page, int size);
+
+    //不分页
+    List<FlowCategory> findAllEnabled();
 
     /**
      * 查询用户的待办业务
-     * @return
      */
     List<BizFlowRelation> getTodoFlows(RequestForm form);
 
     /**
      * 查看用户的已处理业务
-     * @return
      */
     List<BizFlowRelation> getCompletedFlows(RequestForm form);
 
     /**
      * 查看用户的流程
-     * @return
      */
     List<BizFlowRelation> getFlows(RequestForm form);
 

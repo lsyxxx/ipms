@@ -2,6 +2,7 @@ package com.abt.flow.service;
 
 import com.abt.flow.model.Form;
 import com.abt.flow.model.ProcessVo;
+import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.sys.model.dto.UserView;
 import org.flowable.task.api.Task;
@@ -26,8 +27,10 @@ public interface FlowBaseService<T extends Form> {
 
     /**
      * 任务驳回
-     * @param user
-     * @param vo
+     * 1. 审批意见
+     * 2. 流程终止
+     * @param user 审批用户
+     * @param vo 流程vo
      */
     void rejectTask(UserView user, ProcessVo<T> vo);
 
@@ -69,5 +72,12 @@ public interface FlowBaseService<T extends Form> {
      * 2. 评论
      * 3. 同意则进行下一个节点，拒绝则终止流程
      */
-    ProcessVo<T>  check(UserView user, ProcessVo<T> vo);
+    ProcessVo<T> check(UserView user, ProcessVo<T> vo);
+
+
+    /**
+     * 启动流程
+     * @param user 启动用户
+     */
+    ProcessVo<T> start(UserView user, ProcessVo<T> vo);
 }

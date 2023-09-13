@@ -40,10 +40,24 @@ public interface ReimburseService{
     ProcessVo<ReimburseApplyForm> ceoAudit(UserView user, ReimburseApplyForm applyForm);
 
     /**
-     * 财务主管审批
+     * 会计审批
      */
-    ProcessVo<ReimburseApplyForm> accountancyAudit(UserView user, ReimburseApplyForm applyForm);
+    ProcessVo<ReimburseApplyForm> accountantAudit(UserView user, ReimburseApplyForm applyForm);
 
+    /**
+     * 财务主管审批
+     * @param user 审批用户（财务主管）
+     * @param applyForm 提交表单
+     */
+    ProcessVo<ReimburseApplyForm> accountManagerAudit(UserView user, ReimburseApplyForm applyForm);
+
+
+    /**
+     * 税务会计审批
+     * @param user 审批用户（税务会计）
+     * @param applyForm 提交表单
+     */
+    ProcessVo<ReimburseApplyForm> taxOfficerAudit(UserView user, ReimburseApplyForm applyForm);
 
 
 }

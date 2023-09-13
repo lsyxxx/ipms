@@ -119,7 +119,17 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
     }
 
     @Override
-    public ProcessVo<ReimburseApplyForm> accountancyAudit(UserView userVo, ReimburseApplyForm applyForm) {
+    public ProcessVo<ReimburseApplyForm> accountantAudit(UserView userVo, ReimburseApplyForm applyForm) {
+        return null;
+    }
+
+    @Override
+    public ProcessVo<ReimburseApplyForm> accountManagerAudit(UserView user, ReimburseApplyForm applyForm) {
+        return null;
+    }
+
+    @Override
+    public ProcessVo<ReimburseApplyForm> taxOfficerAudit(UserView user, ReimburseApplyForm applyForm) {
         return null;
     }
 
@@ -129,25 +139,11 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
         //TODO: 添加评论
     }
 
-    @Override
-    String customName(String... strings) {
-        return null;
-    }
 
-    @Override
-    Map<String, Object> initProcessVariables(ProcessVo processVo) {
-        return new HashMap<>();
-    }
 
     @Override
     Map<String, Object> requiredExecutionVariables(ProcessVo processVo) {
         return null;
-    }
-
-
-    @Override
-    public void rejectTask(UserView user, ProcessVo vo) {
-
     }
 
 

@@ -30,6 +30,19 @@ public class ReimburseController {
         this.reimburseService = reimburseService;
     }
 
+
+
+    @Operation(summary = "启动报销流程申请")
+    @Parameter(name = "applyForm", description = "申请业务数据form")
+    @PostMapping("/start")
+    public R start(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+
+//        reimburseService.start(user, applyForm);
+
+        return R.success(messages.getMessage("common.apply.success"));
+    }
+
     @Operation(summary = "报销流程申请")
     @Parameter(name = "applyForm", description = "申请业务数据form")
     @PostMapping("/apply")
@@ -43,8 +56,8 @@ public class ReimburseController {
 
     @Operation(summary = "部门审批")
     @Parameter(name = "applyForm", description = "业务数据form")
-    @PostMapping("/dc")
-    public R departmentCheck(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+    @PostMapping("/dpa")
+    public R departmentAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
         reimburseService.departmentAudit(user, applyForm);
         return R.success();
@@ -53,13 +66,47 @@ public class ReimburseController {
 
     @Operation(summary = "技术负责人审批")
     @Parameter(name = "applyForm", description = "业务数据form")
-    @PostMapping("/tc")
-    public R techCheck(@RequestBody @NotNull ReimburseApplyForm applyForm) {
-
-
+    @PostMapping("/tca")
+    public R techAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        reimburseService.techLeadAudit(user, applyForm);
 
         return R.success();
     }
+
+
+    @Operation(summary = "财务主管审批")
+    @Parameter(name = "applyForm", description = "业务数据form")
+    @PostMapping("/fma")
+    public R financeManagerAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        reimburseService.accountManagerAudit(user, applyForm);
+
+        return R.success();
+    }
+
+
+    @Operation(summary = "税务会计审批")
+    @Parameter(name = "applyForm", description = "业务数据form")
+    @PostMapping("/toa")
+    public R taxOfficerAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        reimburseService.taxOfficerAudit(user, applyForm);
+
+        return R.success();
+    }
+
+    @Operation(summary = "财务会计审批")
+    @Parameter(name = "applyForm", description = "业务数据form")
+    @PostMapping("/ata")
+    public R accountantAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        reimburseService.accountantAudit(user, applyForm);
+
+        return R.success();
+    }
+
+
 
 
 

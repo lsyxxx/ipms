@@ -5,6 +5,7 @@ import com.abt.common.model.RequestForm;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.flow.model.entity.BizFlowRelation;
+import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.service.FlowInfoService;
 import com.abt.sys.model.dto.UserView;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,6 +47,16 @@ public class FlowController {
 
         List<BizFlowRelation> list = flowInfoService.getFlows(form);
 
+        return R.success(list, list.size());
+    }
+
+    @Operation(summary = "流程类型列表")
+    @Parameter(name = "form", description = "请求参数，包括分页(page,size)与搜索参数(query)，id, type")
+    @GetMapping("/cat")
+    public R flowCategory(@RequestParam int page, @RequestParam int limit) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        //不分页
+        List<FlowCategory> list = flowInfoService.findAllEnabled(page, limit);
         return R.success(list, list.size());
     }
     

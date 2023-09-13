@@ -1,6 +1,6 @@
 package com.abt.flow;
 
-import com.abt.flow.model.entity.BizFlowCategory;
+import com.abt.flow.model.entity.FlowCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
@@ -40,16 +40,16 @@ public class DeploymentTest {
     }
 
 
-    public static BizFlowCategory of() {
-        BizFlowCategory cat = new BizFlowCategory();
+    public static FlowCategory of() {
+        FlowCategory cat = new FlowCategory();
         cat.setId("123");
         cat.setCode("c_123");
         return cat;
     }
 
     public static void main(String[] args) {
-        BizFlowCategory cat1 = of();
-        BizFlowCategory cat2 = of();
+        FlowCategory cat1 = of();
+        FlowCategory cat2 = of();
         System.out.println(cat1.toString());
         System.out.println(cat2.toString());
         System.out.println(cat1 == cat2);

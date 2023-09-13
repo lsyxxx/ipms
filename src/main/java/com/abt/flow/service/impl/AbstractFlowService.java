@@ -89,13 +89,13 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
      * @param user      申请用户
      * @param processVo 流程对象。传入时必须：form, processVariables。在启动成功后根据BizFlowRelation生成完整的对象
      */
-    protected ProcessVo<T> start(String bizType, UserView user, ProcessVo<T> processVo) {
+    public ProcessVo<T> start(String bizType, UserView user, ProcessVo<T> processVo) {
         log.info("启动流程 -- 业务: {}, 用户: {}", bizType, user.getName());
         setStartUser(user.getId());
         //1. start process
         ProcessInstance processInstance;
         T form = processVo.get();
-        initProcessVariables(processVo);
+//        initProcessVariables(customName(processVo));
 
         try {
             //启动流程的taskId就是processInstanceId
@@ -221,25 +221,27 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
     /**
      * 初始化流程参数
+     * 在启动流程时(start)添加
      */
-    public Map<String, Object> initProcessVariables(String nextAssignee, String processDesc, String customName) {
-        return new HashMap<>() {{
-            put(FlowableConstant.PV_NEXT_ASSIGNEE, nextAssignee);
-            put(FlowableConstant.PV_PROCESS_DESC, processDesc);
-            put(FlowableConstant.PV_CUSTOM_NAME, customName);
+    public Map<String, Object> initProcessVariables(ProcessVo<T> vo) {
+        HashMap<String, Object> vars = new HashMap<>() {{
+//            put(FlowableConstant.PV_NEXT_ASSIGNEE, nextAssignee);
+//            put(FlowableConstant.PV_PROCESS_DESC, processDesc);
+            put(FlowableConstant.PV_CUSTOM_NAME, customName(vo));
         }};
+        Map<String, Object> toAdd = customInitProcessVariables(vo);
+        vars.putAll(toAdd);
+        return vars;
     }
 
     /**
      * 执行过程中需要的参数
      *
      * @param procVars 流程参数map
-     * @param nextAssignee 下一个执行人
      * @param form 表单
      */
     private void requiredExecutionVariables(Map<String, Object> procVars, String nextAssignee, Form form) {
 
-        procVars.put(FlowableConstant.PV_NEXT_ASSIGNEE, nextAssignee);
         procVars.put(FlowableConstant.PV_FORM, form);
 
     }
@@ -248,14 +250,25 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
      * 自定义流程名称
      *
      */
-    abstract String customName(String... strings);
+    abstract String customName(ProcessVo<T> vo);
 
 
     /**
-     * 启动流程前，初始化流程参数
-     * @return Map<String, Object> processVariables
+     * 默认customName
+     * @param starter 启动流程用户
+     * @param startTime 启动时间
+     * @param bizTypeName 流程类型名称
      */
-    abstract Map<String, Object> initProcessVariables(ProcessVo<T> processVo);
+    public String defaultCustomName(String starter, String startTime, String bizTypeName) {
+        return String.format("[%s] %s %s", starter, bizTypeName, startTime);
+    }
+
+
+    /**
+     * 自定义流程参数，在流程启动时添加
+     * @return Map<String, Object> 需要添加的参数map
+     */
+    abstract Map<String, Object> customInitProcessVariables(ProcessVo<T> processVo);
 
     /**
      * 设置流程参数，需要:
@@ -284,11 +297,11 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
         vo.addApproval();
         switch (vo.getCurrentResult()) {
             case Approve:
-                log.info("流程 - {}审批[通过], 进行下一个节点!", vo.getProcessInstanceId());
+                log.info("流程 - {} 审批[通过], 准备进行下一个节点!", vo.getProcessInstanceId());
                 completeTask(user, vo);
                 break;
             case Reject:
-                log.info("流程 - {}审批[拒绝], 终止流程!", vo.getProcessInstanceId());
+                log.info("流程 - {} 审批[拒绝], 准备终止流程!", vo.getProcessInstanceId());
                 rejectTask(user, vo);
                 break;
             default:
@@ -297,6 +310,15 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
         }
         return vo;
     }
+
+    @Override
+    public void rejectTask(UserView user, ProcessVo vo) {
+        log.error("开始执行[审批拒绝]rejectTask(), 审批用户[id,name]: {}, 流程实例id: {}", user.simpleInfo(), vo.getProcessInstanceId());
+
+        runtimeService.deleteProcessInstance(vo.getProcessInstanceId(), vo.getComment());
+
+    }
+
 
 
 }

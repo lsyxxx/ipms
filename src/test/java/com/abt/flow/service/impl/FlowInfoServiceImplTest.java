@@ -1,7 +1,7 @@
 package com.abt.flow.service.impl;
 
 import com.abt.common.model.RequestForm;
-import com.abt.flow.model.entity.BizFlowCategory;
+import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.service.FlowInfoService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ class FlowInfoServiceImplTest extends BaseTest{
     @Autowired
     private FlowInfoService service;
     @Autowired
-    private Example<BizFlowCategory>  enableExample;
+    private Example<FlowCategory>  enableExample;
 
     private RequestForm form;
 
@@ -45,7 +45,7 @@ class FlowInfoServiceImplTest extends BaseTest{
 
     @Test
     void findAllEnabled() {
-        List<BizFlowCategory> allEnabled = service.findAllEnabled(0, 10);
+        List<FlowCategory> allEnabled = service.findAllEnabled(0, 10);
         Assert.notEmpty(allEnabled, "list is empty");
         allEnabled.forEach(i -> {
             log.info(i.toString());

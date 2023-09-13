@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @Comment("流程类型表")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class BizFlowCategory implements Serializable {
+public class FlowCategory implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -63,9 +63,9 @@ public class BizFlowCategory implements Serializable {
     @Column(name = "procdef_file", columnDefinition = "VARCHAR(128)")
     private String procDefFile;
 
-    @Schema(description = "权限类型")
+    @Schema(description = "权限类型, 0: 所有人可用, 1: 指定权限")
     @Column(columnDefinition = "INT")
-    private Integer authType = null;
+    private Integer authType = 0;
 
     @Schema(description = "创建用户id")
     @Column(columnDefinition = "VARCHAR(128)")

@@ -3,22 +3,28 @@
   <process id="normal_reimburse_less_5000_process" name="Normal reimburse less 5000 process" isExecutable="true">
     <documentation>日常报销金额小于5000流程</documentation>
     <startEvent id="normal_reimburse_less_5000_start" name="开始" activiti:async="true"/>
+
     <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_less_5000_apply" name="申请报销">
       <documentation>申请报销，录入申请信息</documentation>
     </userTask>
     <sequenceFlow id="normal_reimburse_less_5000_flow1" sourceRef="normal_reimburse_less_5000_start" targetRef="normal_reimburse_less_5000_apply"/>
-    <userTask id="normal_reimburse_less_5000_manager" name="主管审批">
+
+    <userTask id="normal_reimburse_less_5000_manager" name="主管审批" xmlns:flowable="http://flowable.org/bpmn" flowable:assignee="${applyForm.deptManager}">
       <documentation>主管审批</documentation>
     </userTask>
+
     <sequenceFlow id="normal_reimburse_less_5000_flow2" sourceRef="normal_reimburse_less_5000_apply" targetRef="normal_reimburse_less_5000_manager"/>
-    <userTask id="normal_reimburse_less_5000_techmgr" name="技术负责人审批">
+
+    <userTask id="normal_reimburse_less_5000_techmgr" name="技术负责人审批" xmlns:flowable="http://flowable.org/bpmn" flowable:assignee="${applyForm.techManager}">
       <documentation>技术负责人审批</documentation>
     </userTask>
     <sequenceFlow id="normal_reimburse_less_5000_flow3" sourceRef="normal_reimburse_less_5000_manager" targetRef="normal_reimburse_less_5000_techmgr"/>
+
     <userTask id="normal_reimburse_less_5000_acmgr" name="财务主管审批">
       <documentation>财务主管审批</documentation>
     </userTask>
     <sequenceFlow id="normal_reimburse_less_5000_flow4" sourceRef="normal_reimburse_less_5000_techmgr" targetRef="normal_reimburse_less_5000_acmgr"/>
+
     <userTask id="normal_reimburse_less_5000_ceo" name="总经理审批">
       <documentation>总经理审批</documentation>
     </userTask>

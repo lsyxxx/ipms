@@ -4,7 +4,7 @@ import lombok.Data;
 
 /**
  * 流程信息VO
- * 用于前端查看流程列表
+ * 用于传递前端查看流程列表(待办/已办列表)
  */
 @Data
 public class FlowInfoVo {
@@ -15,13 +15,14 @@ public class FlowInfoVo {
      */
     private String procInstId;
     /**
-     * 名称
+     * customName
      */
-    private String name;
+    private String customName;
     /**
      * 流程类型代码
      */
     private String flowCode;
+    private String flowName;
     private String activityName;
     private String description;
     private String state;

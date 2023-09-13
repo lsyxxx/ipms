@@ -38,14 +38,28 @@ public class FlowableConstant {
      * 下一个执行人
      */
     public static final String PV_NEXT_ASSIGNEE = "nextAssignee";
+
     public static final String PV_PROCESS_DESC = "processDesc";
 
+    public static final String PV_BIZ_CODE = "businessType";
+    /**
+     * 部门主管assignee key
+     * 对应bpmn文件flowable:assignee
+     */
+    public static final String PV_DEPT_MANAGER = "deptManager";
 
     /**
-     * 流程中参数Key, value统一为Form对象
-     * TODO: 因为流程中参数flowable会保存到数据库，考虑最小参数。
+     * 技术负责人assignee key
+     * 对应bpmn文件flowable:assignee
      */
-    public static final String PV_FORM = "form_";
+    public static final String PV_TECH_MANAGER = "techManager";
+
+    /**
+     * 保存在流程参数(processVariables中的form表单key, 对应bpmn文件flowable:assignee
+     * 流程中参数Key, value统一为Form对象
+     * 因为流程中参数flowable会保存到数据库，最好不保存过大数据。
+     */
+    public static final String PV_FORM = "applyForm";
 
 
 }

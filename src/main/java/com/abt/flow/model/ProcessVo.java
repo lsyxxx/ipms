@@ -1,5 +1,6 @@
 package com.abt.flow.model;
 
+import com.abt.common.model.User;
 import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.sys.model.dto.UserView;
 import lombok.Data;
@@ -15,27 +16,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 流程处理中的参数
+ * 流程处理中的用到的数据
+ * 字段涵盖所有流程相关的参数
+ * 用于在流程处理中传递数据
  */
 @Data
 @Accessors(chain = true)
 @NoArgsConstructor
-public class ProcessVo<T extends Form> implements Serializable {
+public class ProcessVo<T extends FlowForm> implements Serializable {
 
     /**
-     * 当前处理用户
+     * 仅当前节点的审批结果
+     * 非审批节点结果=null
      */
-    private String user;
+    private Decision currentResult = null;
+    /**
+     *  流程申请/启动用户
+     */
+    private User<String> starter;
 
-    /**
-     * 仅当前节点的结果
-     * 一般是Decision
-     */
-    private Decision currentResult;
-    /**
-     *  流程申请用户
-     */
-    private UserView applicant;
     /**
      * 附件路径
      */
@@ -89,7 +88,7 @@ public class ProcessVo<T extends Form> implements Serializable {
      * @param form 当前表单
      */
     public ProcessVo(UserView user, T form) {
-        this.user = user.getId();
+//        this.user = user.getId();
         this.form = form;
         this.processInstanceId = form.getProcessInstanceId();
     }
@@ -99,7 +98,7 @@ public class ProcessVo<T extends Form> implements Serializable {
 //        this.user =
         this.relation = relation;
         this.state = ProcessState.of(relation.getState());
-        this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
+//        this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
         this.processInstanceId = relation.getProcInstId();
         this.form = form;
     }
@@ -107,7 +106,7 @@ public class ProcessVo<T extends Form> implements Serializable {
     public ProcessVo copyOf(BizFlowRelation relation, T form) {
         this.relation = relation;
         this.state = ProcessState.of(relation.getState());
-        this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
+//        this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
         this.processInstanceId = relation.getProcInstId();
         this.form = form;
         return this;
@@ -159,7 +158,7 @@ public class ProcessVo<T extends Form> implements Serializable {
     public ProcessVo updateBy(Task task) {
         this.setTaskName(task.getName());
         this.setTaskId(task.getId());
-        form.updateProcess(this.processInstanceId, task.getId());
+//        form.updateProcess(this.processInstanceId, task.getId());
 
         return this;
     }
@@ -170,7 +169,7 @@ public class ProcessVo<T extends Form> implements Serializable {
      */
     public ProcessVo addApproval() {
         approvals = ListUtils.emptyIfNull(this.approvals);
-        approvals.add(new Approval(this.user, this.currentResult, this.comment));
+//        approvals.add(new Approval(this.user, this.currentResult, this.comment));
         return this;
     }
 }
