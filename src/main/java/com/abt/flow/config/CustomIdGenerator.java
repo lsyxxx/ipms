@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * 自定义流程编号
- * 并发有问题
+ * 并发可能会有问题
  */
 @Component
 @Slf4j

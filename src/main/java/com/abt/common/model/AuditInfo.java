@@ -3,6 +3,7 @@ package com.abt.common.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -15,6 +16,7 @@ import java.util.Date;
  * 审计信息
  */
 @Data
+@MappedSuperclass
 public class AuditInfo {
     @Schema(description = "最后更新时间")
 //    @Column(name = "update_date", columnDefinition = "DATETIME")

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
  * 流程-业务关系
  */
 @Repository
+@Deprecated
 public interface BizFlowRelationRepository extends JpaRepository<BizFlowRelation, String> {
 
 

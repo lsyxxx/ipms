@@ -34,17 +34,21 @@ public class FlowableConfig implements EngineConfigurationConfigurer<SpringProce
 
     /**
      * 导入自定义配置数据源 FlowableDataSourceConfigurer
+     * !!==> 不要设置事件Log:engineConfiguration.setEnableDatabaseEventLogging(true); 异步任务容易出现死锁
      * @param engineConfiguration
      */
     @Override
     public void configure(SpringProcessEngineConfiguration engineConfiguration) {
         log.info("将自定义配置导入SpringProcessEngineConfiguration");
+        //数据源
         engineConfiguration.addConfigurator(configurer);
+        //按类型设置监听器
         Map<String, List<FlowableEventListener>> typedListeners =
                 Map.of(FlowableEngineEventType.TASK_COMPLETED.name(), List.of(globalTaskCompleteListener),
                         FlowableEngineEventType.PROCESS_CANCELLED.name(), List.of(processDeleteListener));
         engineConfiguration.setTypedEventListeners(typedListeners);
-//        engineConfiguration.setIdGenerator(customIdGenerator);
+
+
     }
 
 

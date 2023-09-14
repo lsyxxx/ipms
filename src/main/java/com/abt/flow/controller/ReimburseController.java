@@ -32,23 +32,14 @@ public class ReimburseController {
 
 
 
-    @Operation(summary = "启动报销流程申请")
-    @Parameter(name = "applyForm", description = "申请业务数据form")
-    @PostMapping("/start")
-    public R start(@RequestBody @NotNull ReimburseApplyForm applyForm) {
-        UserView user = TokenUtil.getUserFromAuthToken();
-
-//        reimburseService.start(user, applyForm);
-
-        return R.success(messages.getMessage("common.apply.success"));
-    }
-
     @Operation(summary = "报销流程申请")
     @Parameter(name = "applyForm", description = "申请业务数据form")
     @PostMapping("/apply")
     public R apply(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+        //flowType: id/code/name
+        //user
+        //bizData: cost/rbsDate/reason/voucherNum/project
         UserView user = TokenUtil.getUserFromAuthToken();
-
         reimburseService.apply(user, applyForm);
 
         return R.success(messages.getMessage("common.apply.success"));

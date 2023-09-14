@@ -26,6 +26,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Comment("业务-流程关系表")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Deprecated
 public class BizFlowRelation implements Serializable {
     private static final long serialVersionUID = -93782996630936457L;
     /**

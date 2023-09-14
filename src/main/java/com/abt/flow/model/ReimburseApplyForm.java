@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -55,5 +56,20 @@ public class ReimburseApplyForm extends FlowForm{
      * 当前节点评论
      */
     private String comment;
+
+    /**
+     * 相关项目
+     */
+    private String project;
+
+    /**
+     * 报销时间
+     */
+    private Date rbsDate;
+
+    /**
+     * 报销事由
+     */
+    private String reason;
 
 }

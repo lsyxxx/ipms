@@ -2,14 +2,11 @@ package com.abt.flow.service.impl;
 
 import com.abt.common.util.MessageUtil;
 import com.abt.flow.config.FlowableConstant;
-import com.abt.flow.model.Form;
-import com.abt.flow.model.ProcessState;
+import com.abt.flow.model.FlowForm;
 import com.abt.flow.model.ProcessVo;
-import com.abt.flow.model.entity.BizFlowRelation;
+import com.abt.flow.model.entity.FlowBusinessBase;
 import com.abt.flow.model.entity.FlowOperationLog;
-import com.abt.flow.repository.BizFlowRelationRepository;
 import com.abt.flow.service.FlowBaseService;
-import com.abt.flow.service.FlowOperationLogService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
@@ -28,38 +25,47 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.util.Assert;
 
 import java.io.InputStream;
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 流程默认实现
+ * @param <T extends FlowForm> 申请表单对象
+ * @param <E extends FlowBusinessBase> 业务数据对象
+ */
 @Slf4j
-public abstract class AbstractFlowService<T extends Form> implements FlowBaseService {
+public abstract class AbstractFlowService<T extends FlowForm, E extends FlowBusinessBase> implements FlowBaseService {
 
     public static final String DIAG_PNG = "png";
-    protected final RuntimeService runtimeService;
-    protected final TaskService taskService;
-    protected final HistoryService historyService;
-    protected final RepositoryService repositoryService;
-    protected final FlowOperationLogService flowOperationLogService;
-    protected final FlowableConstant flowableConstant;
-    private final BizFlowRelationRepository bizFlowRelationRepository;
-    protected MessageSourceAccessor messages = MessageUtil.getAccessor();
+    private RuntimeService runtimeService;
+    private TaskService taskService;
+    private HistoryService historyService;
+    private RepositoryService repositoryService;
+    private FlowableConstant flowableConstant;
+    private MessageSourceAccessor messages = MessageUtil.getAccessor();
+    private FlowOperationLogServiceImpl flowOperationLogService;
 
-    public AbstractFlowService(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant) {
-        this.bizFlowRelationRepository = bizFlowRelationRepository;
+    public AbstractFlowService(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowableConstant flowableConstant, FlowOperationLogServiceImpl flowOperationLogService) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
         this.historyService = historyService;
         this.repositoryService = repositoryService;
-        this.flowOperationLogService = flowOperationLogService;
         this.flowableConstant = flowableConstant;
+        this.flowOperationLogService = flowOperationLogService;
     }
 
     public ProcessVo<T> apply(String bizType, UserView user, ProcessVo<T> processVo) {
         log.info("申请流程 --- 业务: {}, 用户: {}", bizType, user.getName());
+
+        T form = processVo.get();
+
+        //1. 保存业务
+        E saved = saveApplyBusinessData(form, user);
+
+        //2. 启动流程
 
         processVo = start(bizType, user, processVo);
         String proc = processVo.getProcessInstanceId();
@@ -68,10 +74,6 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
         taskService.claim(activeTask.getId(), user.getId());
         taskService.complete(activeTask.getId());
 
-        T form = processVo.get();
-        BizFlowRelation bizFlowRelation = initBizFlowRelation(form, proc, user);
-        bizFlowRelation = bizFlowRelationRepository.save(bizFlowRelation);
-        processVo.copyOf(bizFlowRelation, form);
         //update variables
         requiredExecutionVariables(processVo);
         runtimeService.setVariables(proc, processVo.getProcessVariables());
@@ -80,6 +82,12 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
 
         return processVo;
     }
+
+    /**
+     * 保存业务数据
+     * @param applyForm 申请数据
+     */
+    abstract E saveApplyBusinessData(T applyForm, UserView user);
 
 
     /**
@@ -92,14 +100,13 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
     public ProcessVo<T> start(String bizType, UserView user, ProcessVo<T> processVo) {
         log.info("启动流程 -- 业务: {}, 用户: {}", bizType, user.getName());
         setStartUser(user.getId());
+        T form = processVo.get();
         //1. start process
         ProcessInstance processInstance;
-        T form = processVo.get();
-//        initProcessVariables(customName(processVo));
 
+        Map<String, Object> processVariables = initProcessVariables(processVo.getProcessVariables());
         try {
-            //启动流程的taskId就是processInstanceId
-            processInstance = runtimeService.startProcessInstanceById(form.getProcDefId(), form.getBusinessKey(), processVo.getProcessVariables());
+            processInstance = runtimeService.startProcessInstanceById(form.getFlowType().getProcDefId(), saved.getid, processVariables);
             log.info("已启动流程 -- id: {}", processInstance.getProcessInstanceId());
         } catch (Exception e) {
             log.error("启动流程失败 -- 失败原因: {}", e.getMessage());
@@ -110,6 +117,8 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
         clearAuthenticationId();
         return processVo;
     }
+
+
 
     @Override
     public void completeTask(UserView user, ProcessVo vo) {
@@ -191,20 +200,6 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
         Authentication.setAuthenticatedUserId(null);
     }
 
-    private BizFlowRelation initBizFlowRelation(Form form, String processInstanceId, UserView user) {
-        BizFlowRelation bizFlowRelation = new BizFlowRelation();
-        bizFlowRelation.setProcDefId(form.getProcDefId());
-        bizFlowRelation.setBizCategoryId(form.getBizId());
-        bizFlowRelation.setBizCategoryCode(form.getBizCode());
-        bizFlowRelation.setBusinessKey(form.getBusinessKey());
-        bizFlowRelation.setStartDate(LocalDate.now());
-        bizFlowRelation.setStarterId(user.getId());
-        bizFlowRelation.setStarterName(user.getName());
-        bizFlowRelation.setProcInstId(processInstanceId);
-        bizFlowRelation.setState(ProcessState.Active.code());
-
-        return bizFlowRelation;
-    }
 
     @Override
     public void deleteProcess(String processInstanceId, String delReason) {
@@ -222,14 +217,14 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
     /**
      * 初始化流程参数
      * 在启动流程时(start)添加
+     * @param toAdd 要添加的参数map
      */
-    public Map<String, Object> initProcessVariables(ProcessVo<T> vo) {
+    public Map<String, Object> initProcessVariables(Map<String, Object> toAdd) {
         HashMap<String, Object> vars = new HashMap<>() {{
+            //默认的
 //            put(FlowableConstant.PV_NEXT_ASSIGNEE, nextAssignee);
 //            put(FlowableConstant.PV_PROCESS_DESC, processDesc);
-            put(FlowableConstant.PV_CUSTOM_NAME, customName(vo));
         }};
-        Map<String, Object> toAdd = customInitProcessVariables(vo);
         vars.putAll(toAdd);
         return vars;
     }
@@ -240,28 +235,13 @@ public abstract class AbstractFlowService<T extends Form> implements FlowBaseSer
      * @param procVars 流程参数map
      * @param form 表单
      */
-    private void requiredExecutionVariables(Map<String, Object> procVars, String nextAssignee, Form form) {
+    private void requiredExecutionVariables(Map<String, Object> procVars, String nextAssignee, FlowForm form) {
 
         procVars.put(FlowableConstant.PV_FORM, form);
 
     }
 
-    /**
-     * 自定义流程名称
-     *
-     */
-    abstract String customName(ProcessVo<T> vo);
 
-
-    /**
-     * 默认customName
-     * @param starter 启动流程用户
-     * @param startTime 启动时间
-     * @param bizTypeName 流程类型名称
-     */
-    public String defaultCustomName(String starter, String startTime, String bizTypeName) {
-        return String.format("[%s] %s %s", starter, bizTypeName, startTime);
-    }
 
 
     /**

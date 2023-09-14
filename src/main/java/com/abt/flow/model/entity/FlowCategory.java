@@ -43,6 +43,10 @@ public class FlowCategory implements Serializable {
     @Column(columnDefinition = "VARCHAR(255)")
     private String description;
 
+    @Schema(description = "流程分类, eg: 报销,用车,资金流入,资金流出,人事，在设置时录入")
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String category;
+
     @Schema(description = "排序代码")
     @Column(columnDefinition = "INT")
     private Integer sortCode = null;

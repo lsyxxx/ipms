@@ -48,11 +48,6 @@ public class ProcessVo<T extends FlowForm> implements Serializable {
     private ProcessState state;
 
     /**
-     * 数据库信息
-     */
-    private BizFlowRelation relation;
-
-    /**
      * 流程中的表单数据
      */
     private T form;
@@ -96,7 +91,6 @@ public class ProcessVo<T extends FlowForm> implements Serializable {
     public ProcessVo(BizFlowRelation relation, T form) {
         //根据数据库的读取创建processVo
 //        this.user =
-        this.relation = relation;
         this.state = ProcessState.of(relation.getState());
 //        this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
         this.processInstanceId = relation.getProcInstId();
@@ -104,7 +98,6 @@ public class ProcessVo<T extends FlowForm> implements Serializable {
     }
 
     public ProcessVo copyOf(BizFlowRelation relation, T form) {
-        this.relation = relation;
         this.state = ProcessState.of(relation.getState());
 //        this.applicant = new UserView().setId(relation.getStarterId()).setName(relation.getStarterName());
         this.processInstanceId = relation.getProcInstId();
@@ -120,30 +113,7 @@ public class ProcessVo<T extends FlowForm> implements Serializable {
         return Decision.isApprove(str);
     }
 
-    /**
-     * 添加一条审批信息，只保存审批用户
-     */
-    public void addApprovalUser(String user, String decision) {
-        this.approvals.add(new Approval(user, decision));
-    }
 
-    /**
-     * 流程是否结束
-     * 包括正常结束Completed和异常结束Terminated
-     */
-    public boolean isFinished() {
-        int state = this.relation.getState();
-        return ProcessState.Completed.equal(state) || ProcessState.Terminated.equal(state);
-    }
-
-
-    /**
-     * 是否正常进行
-     * state = active
-     */
-    public boolean isProcessing() {
-        return this.state == ProcessState.Active;
-    }
 
 
     public T get() {

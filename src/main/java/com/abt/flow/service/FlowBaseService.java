@@ -1,6 +1,6 @@
 package com.abt.flow.service;
 
-import com.abt.flow.model.Form;
+import com.abt.flow.model.FlowForm;
 import com.abt.flow.model.ProcessVo;
 import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.flow.model.entity.FlowOperationLog;
@@ -9,12 +9,11 @@ import org.flowable.task.api.Task;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 流程处理
  */
-public interface FlowBaseService<T extends Form> {
+public interface FlowBaseService<T extends FlowForm> {
 
     /**
      * 正常完成节点
@@ -51,7 +50,6 @@ public interface FlowBaseService<T extends Form> {
 
     /**
      * 删除一个正在进行的流程
-     * @param processInstanceId
      */
     void deleteProcess(String processInstanceId, String delReason);
 
@@ -63,7 +61,11 @@ public interface FlowBaseService<T extends Form> {
     void cancelProcess(String processInstanceId);
 
 
-
+    /**
+     * 根据流程实例ID获取正在进行的task
+     * @param processInstanceId 流程实例ID
+     * @return 如果没有结果则返回NULL
+     */
     Task getActiveTask(String processInstanceId);
 
     /**

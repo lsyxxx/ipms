@@ -39,14 +39,13 @@ public class FlowForm extends AutoForm {
     private String techManager;
 
     /**
-     * 流程-业务关系
-     * T_biz_flow_rel
-     */
-    private BizFlowRelation relation;
-
-    /**
      * 流程申请人
      */
     private User<String> applicant;
+
+    /**
+     * 流程状态
+     */
+    private ProcessState state;
 
 }

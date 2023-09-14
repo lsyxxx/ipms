@@ -6,7 +6,9 @@ import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.Decision;
 import com.abt.flow.model.ProcessVo;
 import com.abt.flow.model.ReimburseApplyForm;
+import com.abt.flow.model.entity.Reimburse;
 import com.abt.flow.repository.BizFlowRelationRepository;
+import com.abt.flow.repository.ReimburseRepository;
 import com.abt.flow.service.FlowOperationLogService;
 import com.abt.flow.service.FormBaseService;
 import com.abt.flow.service.ReimburseService;
@@ -40,14 +42,16 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
 
     private final FlowableConstant flowableConstant;
 
+    private final ReimburseRepository reimburseRepository;
+
     //报销事由,报销金额,票据数量,报销日期
     private final ValidatorChain applyFormValidatorChain;
 
     private final ValidatorChain commonDecisionValidatorChain;
 
 
-    public ReimburseServiceImpl(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FormBaseService formBaseService, FlowableConstant flowableConstant, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain) {
-        super(bizFlowRelationRepository, runtimeService, taskService, historyService, repositoryService, flowOperationLogService, flowableConstant);
+    public ReimburseServiceImpl(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FormBaseService formBaseService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain) {
+        super(runtimeService, taskService, historyService, repositoryService, flowOperationLogService, flowableConstant);
         this.runtimeService = runtimeService;
         this.bizFlowRelationRepository = bizFlowRelationRepository;
         this.historyService = historyService;
@@ -55,22 +59,41 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
         this.flowOperationLogService = flowOperationLogService;
         this.formBaseService = formBaseService;
         this.flowableConstant = flowableConstant;
+        this.reimburseRepository = reimburseRepository;
         this.applyFormValidatorChain = applyFormValidatorChain;
         this.commonDecisionValidatorChain = commonDecisionValidatorChain;
 
     }
 
+    /**
+     * 1. 启动流程
+     * 2. 完成申请task
+     * @param user 申请用户
+     * @param applyForm 申请表单
+     */
     @Override
     public ProcessVo<ReimburseApplyForm> apply(UserView user, ReimburseApplyForm applyForm) {
         log.info("开始执行[报销流程] - [申请]");
         ProcessVo<ReimburseApplyForm> vo = createProcessVo(user, applyForm);
+
+        validateApplyForm(applyForm);
+
+        apply(applyForm.getBizCode(), user, vo);
+        return vo;
+    }
+
+    private void validateApplyForm(ReimburseApplyForm applyForm) {
         ValidationResult result = applyFormValidatorChain.validate(applyForm.getDescription(), applyForm.getCost(), applyForm.getVoucherNum(), applyForm.getDateTime());
         if (!result.isValid()) {
             log.error("申请表单参数验证失败！错误信息 - {}", result.getErrorMessage());
             throw new BadRequestParameterException(result.getErrorMessage());
         }
-        apply(applyForm.getBizCode(), user, vo);
-        return vo;
+    }
+
+    private Reimburse saveApplyBusinessData(ReimburseApplyForm form, UserView user) {
+        Reimburse reimburse = Reimburse.create(form, user);
+        reimburse = reimburseRepository.save(reimburse);
+        return reimburse;
     }
 
 
