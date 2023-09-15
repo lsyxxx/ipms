@@ -1,8 +1,14 @@
 package com.abt.flow.model;
 
+import com.abt.sys.exception.BusinessException;
+import lombok.extern.slf4j.Slf4j;
+
 /**
- * 自定义流程状态
+ * 自定义流程状态，最细分的状态
+ * 用来更新流程引擎的businessState，方便查询
+ * 审批结果的粒度小于流程状态，即审批结果可以得到审批/流程状态，但是审批状态不能得到确定的审批结果
  */
+@Slf4j
 public enum ProcessState {
     Completed(0, "Completed", "已完成"),
     Active(1, "Active", "进行中"),
@@ -14,8 +20,9 @@ public enum ProcessState {
     Suspended(4, "Suspended", "已挂起"),
     /**
      * 人为干预终止
+     * cancel
      */
-    Terminated(5, "Terminated", "已终止"),
+    Terminated(5, "Terminated", "终止"),
 
     /**
      * 流程仅仅启动，第一个任务还未开始。
@@ -23,20 +30,31 @@ public enum ProcessState {
      */
     Start(6, "Start", "已启动"),
 
+
+    //主要用来查询
+    Approve(7, "Approve", "审批已通过"),
+    Reject(8, "Reject", "审批未通过"),
+    Cancel(9, "Cancel", "已撤销"),
+
+
     ;
 
     private final int code;
-    private final String name;
+    private final String value;
     private final String description;
 
-    ProcessState(int code, String name, String description) {
+    ProcessState(int code, String value, String description) {
         this.code = code;
-        this.name = name;
+        this.value = value;
         this.description = description;
     }
 
     public int code() {
         return this.code;
+    }
+
+    public String value() {
+        return this.value;
     }
 
     public String description() {
@@ -49,11 +67,11 @@ public enum ProcessState {
 
     /**
      * 流程是否结束
-     * 包括正常结束Completed和异常结束Terminated
+     * 包括正常结束Completed和异常结束Terminated/reject
      * @return
      */
     public boolean isFinished() {
-        return this == Completed || this == Terminated;
+        return this == Completed || this == Terminated || this == Reject;
     }
 
     /**
@@ -61,7 +79,7 @@ public enum ProcessState {
      * @return
      */
     public boolean isActive() {
-        return this == Active;
+        return this == Active || this == Approve;
     }
 
     public boolean isDeleted() {
@@ -77,6 +95,51 @@ public enum ProcessState {
         throw new IllegalStateException("No such state code : " + code);
     }
 
+    public static ProcessState of(Decision decision) {
+        switch (decision) {
+            case Approve -> {
+                return Active;
+            }
+            case Reject -> {
+                return Completed;
+            }
+
+            default -> {
+                log.warn("未知的决策: " + decision);
+                throw new BusinessException("Unknown decision - " + decision);
+            }
+        }
+    }
+
+    public static ProcessState of(String str) {
+        for (ProcessState c : ProcessState.values()) {
+            if (c.value().equals(str)) {
+                return c;
+            }
+        }
+        throw new IllegalStateException("No such state value : " + str);
+    }
+
+    public boolean isAuditResult() {
+        return Approve == this || Reject == this;
+    }
+
+    /**
+     * 审批状态
+     */
+    public ProcessState auditState() {
+        //TODO;
+    }
+
+    /**
+     * 审批结果
+     */
+    public ProcessState auditResult() {
+        if (isAuditResult()) {
+            return this;
+        }
+        throw new IllegalArgumentException("未知的审批结果: " + this.value);
+    }
 
 }
 

@@ -3,24 +3,28 @@ package com.abt.flow.model;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.*;
-
 /**
  * 流程决策
  */
 public enum Decision {
-    Approve("Approve"),
-    Reject("Reject"),
+    Approve("Approve", "审批已通过"),
+    Reject("Reject", "审批未通过"),
     ;
 
     private String value;
+    private String description;
 
-    Decision(String value) {
+    Decision(String value, String description) {
         this.value = value;
+        this.description = description;
     }
 
     public String value() {
         return value;
+    }
+
+    public String description() {
+        return this.description;
     }
 
     public static boolean isApprove(String name) {

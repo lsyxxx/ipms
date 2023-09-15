@@ -1,6 +1,5 @@
 package com.abt.flow.dao;
 
-import com.abt.flow.model.entity.BizFlowRelation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

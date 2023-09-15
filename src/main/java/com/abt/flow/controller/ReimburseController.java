@@ -71,7 +71,7 @@ public class ReimburseController {
     @PostMapping("/fma")
     public R financeManagerAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
-        reimburseService.accountManagerAudit(user, applyForm);
+        reimburseService.financeManagerAudit(user, applyForm);
 
         return R.success();
     }

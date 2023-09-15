@@ -1,7 +1,6 @@
 package com.abt.flow.listener;
 
 import com.abt.flow.model.entity.FlowOperationLog;
-import com.abt.flow.repository.BizFlowRelationRepository;
 import com.abt.flow.repository.FlowOperationLogRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -17,14 +16,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ProcessDeleteListener extends FlowBaseListener implements FlowableEventListener {
 
-    private final BizFlowRelationRepository bizFlowRelationRepository;
     private final FlowOperationLogRepository flowOperationLogRepository;
 
     private final ApplicationContext context;
 
-    public ProcessDeleteListener(BizFlowRelationRepository bizFlowRelationRepository, FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
-        super(bizFlowRelationRepository, flowOperationLogRepository, context);
-        this.bizFlowRelationRepository = bizFlowRelationRepository;
+    public ProcessDeleteListener( FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
+        super( flowOperationLogRepository, context);
         this.flowOperationLogRepository = flowOperationLogRepository;
         this.context = context;
     }
@@ -38,7 +35,6 @@ public class ProcessDeleteListener extends FlowBaseListener implements FlowableE
         log.info("--------- 开始执行[流程删除监听器ProcessDeleteListener] ----------------");
         TaskEntity taskEntity = getTaskEntity(event);
 
-        bizFlowRelationRepository.save(create(taskEntity));
         FlowOperationLog flowLog = createLog(taskEntity);
 
 

@@ -12,8 +12,4 @@ import java.util.Date;
  */
 public class QueryUtil {
 
-    public static LocalDateTime from(Date date) {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    }
-
 }

@@ -20,20 +20,20 @@
     </userTask>
     <sequenceFlow id="normal_reimburse_less_5000_flow3" sourceRef="normal_reimburse_less_5000_manager" targetRef="normal_reimburse_less_5000_techmgr"/>
 
-    <userTask id="normal_reimburse_less_5000_acmgr" name="财务主管审批">
+    <userTask id="normal_reimburse_less_5000_acmgr" name="财务主管审批" xmlns:flowable="http://flowable.org/bpmn" flowable:assignee="${applyForm.fiManager}">
       <documentation>财务主管审批</documentation>
     </userTask>
     <sequenceFlow id="normal_reimburse_less_5000_flow4" sourceRef="normal_reimburse_less_5000_techmgr" targetRef="normal_reimburse_less_5000_acmgr"/>
 
-    <userTask id="normal_reimburse_less_5000_ceo" name="总经理审批">
+    <userTask id="normal_reimburse_less_5000_ceo" name="总经理审批" xmlns:flowable="http://flowable.org/bpmn" flowable:assignee="${applyForm.ceo}">
       <documentation>总经理审批</documentation>
     </userTask>
     <sequenceFlow id="normal_reimburse_less_5000_flow5" sourceRef="normal_reimburse_less_5000_acmgr" targetRef="normal_reimburse_less_5000_ceo"/>
-    <userTask id="normal_reimburse_less_5000_tax" name="税务会计审批">
+    <userTask id="normal_reimburse_less_5000_tax" name="税务会计审批" xmlns:flowable="http://flowable.org/bpmn" flowable:assignee="${applyForm.taxOfficer}">
       <documentation>税务会计审批</documentation>
     </userTask>
     <sequenceFlow id="normal_reimburse_less_5000_flow6" sourceRef="normal_reimburse_less_5000_ceo" targetRef="normal_reimburse_less_5000_tax"/>
-    <userTask id="normal_reimburse_less_5000_act" name="财务会计审批">
+    <userTask id="normal_reimburse_less_5000_act" name="财务会计审批" xmlns:flowable="http://flowable.org/bpmn" flowable:assignee="${applyForm.accountancy}">
       <documentation>财务会计审批</documentation>
     </userTask>
     <sequenceFlow id="normal_reimburse_less_5000_flow7" sourceRef="normal_reimburse_less_5000_tax" targetRef="normal_reimburse_less_5000_act"/>

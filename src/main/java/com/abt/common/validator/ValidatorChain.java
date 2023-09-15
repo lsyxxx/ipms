@@ -55,7 +55,7 @@ public class ValidatorChain {
 
         //校验器和参数长度必须一致
         if (object.length != validators.size()) {
-            throw new IllegalArgumentException("校验器与校验参数长度不一致！校验器个数: " + validators.size() + ", 验证参数个数:" + object.length);
+            throw new IllegalArgumentException("校验器与校验参数数量不一致！校验器个数: " + validators.size() + ", 验证参数个数:" + object.length);
         }
 
         ValidationResult result = new ValidationResult();

@@ -23,7 +23,6 @@ public class FlowableConfig implements EngineConfigurationConfigurer<SpringProce
     private final GlobalTaskCompleteListener globalTaskCompleteListener;
     private final ProcessDeleteListener processDeleteListener;
 
-//    private final IdGenerator customIdGenerator;
 
     private final FlowableDataSourceConfigurer configurer;
     public FlowableConfig(GlobalTaskCompleteListener globalTaskCompleteListener, ProcessDeleteListener processDeleteListener, FlowableDataSourceConfigurer configurer) {

@@ -24,6 +24,8 @@ public class RequestForm {
      * 按id查询
      */
     private String id;
+
+    private String name;
     /**
      * 按类型查询时
      */

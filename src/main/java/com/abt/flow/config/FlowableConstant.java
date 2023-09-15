@@ -53,6 +53,10 @@ public class FlowableConstant {
      * 对应bpmn文件flowable:assignee
      */
     public static final String PV_TECH_MANAGER = "techManager";
+    public static final String PV_CEO = "ceo";
+    public static final String PV_FI_MANAGER = "fiManager";
+    public static final String PV_TAX_OFFICER = "taxOfficer";
+    public static final String PV_ACCOUNTANCY = "accountancy";
 
     /**
      * 保存在流程参数(processVariables中的form表单key, 对应bpmn文件flowable:assignee

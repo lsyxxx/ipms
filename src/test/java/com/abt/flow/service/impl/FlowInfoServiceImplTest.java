@@ -2,7 +2,6 @@ package com.abt.flow.service.impl;
 
 import com.abt.common.model.RequestForm;
 import com.abt.flow.model.entity.FlowCategory;
-import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.service.FlowInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;

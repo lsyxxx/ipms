@@ -3,14 +3,11 @@ package com.abt.flow.service.impl;
 import com.abt.common.validator.ValidationResult;
 import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
-import com.abt.flow.model.Decision;
-import com.abt.flow.model.ProcessVo;
-import com.abt.flow.model.ReimburseApplyForm;
+import com.abt.flow.model.*;
 import com.abt.flow.model.entity.Reimburse;
-import com.abt.flow.repository.BizFlowRelationRepository;
+import com.abt.flow.repository.FlowCategoryRepository;
 import com.abt.flow.repository.ReimburseRepository;
 import com.abt.flow.service.FlowOperationLogService;
-import com.abt.flow.service.FormBaseService;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.exception.BadRequestParameterException;
 import com.abt.sys.model.dto.UserView;
@@ -19,67 +16,97 @@ import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.Task;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 报销流程
  */
 @Service
 @Slf4j
-public class ReimburseServiceImpl extends AbstractFlowService implements ReimburseService {
+public class ReimburseServiceImpl extends AbstractDefaultFlowService implements ReimburseService {
 
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
-    private final BizFlowRelationRepository bizFlowRelationRepository;
-
-    private final RepositoryService repositoryService;
-
-    private final FlowOperationLogService flowOperationLogService;
-
-    private final FormBaseService formBaseService;
-
+    private final TaskService taskService;
     private final FlowableConstant flowableConstant;
 
     private final ReimburseRepository reimburseRepository;
+
 
     //报销事由,报销金额,票据数量,报销日期
     private final ValidatorChain applyFormValidatorChain;
 
     private final ValidatorChain commonDecisionValidatorChain;
 
+    private final Map<String, String> defaultAuditor;
 
-    public ReimburseServiceImpl(BizFlowRelationRepository bizFlowRelationRepository, RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FormBaseService formBaseService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain) {
-        super(runtimeService, taskService, historyService, repositoryService, flowOperationLogService, flowableConstant);
+
+
+    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain,@Qualifier("flowDefaultAuditorMap") Map<String, String> defaultAuditor) {
+        super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService);
         this.runtimeService = runtimeService;
-        this.bizFlowRelationRepository = bizFlowRelationRepository;
         this.historyService = historyService;
-        this.repositoryService = repositoryService;
-        this.flowOperationLogService = flowOperationLogService;
-        this.formBaseService = formBaseService;
+        this.taskService = taskService;
         this.flowableConstant = flowableConstant;
         this.reimburseRepository = reimburseRepository;
         this.applyFormValidatorChain = applyFormValidatorChain;
         this.commonDecisionValidatorChain = commonDecisionValidatorChain;
 
+        this.defaultAuditor = defaultAuditor;
     }
 
     /**
+     * 0. 创建业务对象
      * 1. 启动流程
      * 2. 完成申请task
+     * 3. 更新业务对象
      * @param user 申请用户
      * @param applyForm 申请表单
      */
     @Override
-    public ProcessVo<ReimburseApplyForm> apply(UserView user, ReimburseApplyForm applyForm) {
-        log.info("开始执行[报销流程] - [申请]");
-        ProcessVo<ReimburseApplyForm> vo = createProcessVo(user, applyForm);
-
+    public void apply(UserView user, ReimburseApplyForm applyForm) {
+        log.info("开始执行[报销流程] - [申请], 申请用户: {}, 流程类型: {}", user.simpleInfo(), applyForm.getFlowType().getName());
         validateApplyForm(applyForm);
 
-        apply(applyForm.getBizCode(), user, vo);
-        return vo;
+        Reimburse rbs = new Reimburse();
+        rbs.create(applyForm, user);
+
+        //添加流程参数
+        Map<String, Object> processVars = initProcessVars(applyForm);
+        ProcessInstance processInstance = start(user, applyForm.getFlowType().getProcDefId(), rbs.getId(), processVars);
+        String procId = processInstance.getId();
+
+        //verify
+        verifyRunningProcess(procId, messages.getMessage("flow.service.ReimburseServiceImpl.apply.start.error"));
+
+        Task activeTask = getActiveTask(procId, messages.getMessage("flow.service.ReimburseServiceImpl.apply.start.error1"));
+
+        completeTask(activeTask.getId());
+
+        rbs.update(procId, activeTask, user.getId(), user.getName(), ProcessState.Active.value(), null);
+
+        runtimeService.updateBusinessStatus(processInstance.getId(), ProcessState.Active.value());
+        reimburseRepository.save(rbs);
+
+    }
+    /**
+     * 一般审批包含角色
+     * 包括：部门审批人(deptManager)，技术负责人(techManager)，总经理(ceo)，财务总监(fiManager)，税务(texOfficer)，会计(accountancy)
+     * 下一个审批人(nextAssignee，这个流程没有)
+     */
+    private Map<String, Object> initProcessVars(ReimburseApplyForm form) {
+        Map<String, Object> processVars = new HashMap<>();
+        processVars.putAll(defaultAuditor);
+        processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
+        processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
+        return processVars;
     }
 
     private void validateApplyForm(ReimburseApplyForm applyForm) {
@@ -90,33 +117,13 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
         }
     }
 
-    private Reimburse saveApplyBusinessData(ReimburseApplyForm form, UserView user) {
-        Reimburse reimburse = Reimburse.create(form, user);
-        reimburse = reimburseRepository.save(reimburse);
-        return reimburse;
-    }
-
-
-    /**
-     * 创建process vo
-     * @param user 当前用户
-     * @param applyForm 表单
-     */
-    private ProcessVo<ReimburseApplyForm> createProcessVo(UserView user, ReimburseApplyForm applyForm) {
-        ProcessVo<ReimburseApplyForm> vo = new ProcessVo(user, applyForm);
-        vo.setComment(applyForm.getComment());
-        vo.setCurrentResult(Decision.fromValue(applyForm.getDecision()));
-        return vo;
-    }
-
-
     @Override
-    public ProcessVo<ReimburseApplyForm> departmentAudit(UserView user, ReimburseApplyForm applyForm) {
-        log.info("开始执行[报销流程] - [部门审核]");
-        ProcessVo<ReimburseApplyForm> vo = createProcessVo(user, applyForm);
+    public void departmentAudit(UserView user, ReimburseApplyForm applyForm) {
+        String procId = applyForm.getProcessInstanceId();
+        log.info("开始执行[报销流程] - [部门审核]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
         decisionValidate(applyForm.getDecision());
-        this.check(user, vo);
-        return vo;
+
+        check(user, applyForm);
     }
 
     private void decisionValidate(String decision) {
@@ -128,47 +135,89 @@ public class ReimburseServiceImpl extends AbstractFlowService implements Reimbur
     }
 
     @Override
-    public ProcessVo<ReimburseApplyForm> techLeadAudit(UserView user, ReimburseApplyForm applyForm) {
-        log.info("开始执行[报销流程] - [技术负责人审核]");
-        ProcessVo<ReimburseApplyForm> vo = createProcessVo(user, applyForm);
+    public void techLeadAudit(UserView user, ReimburseApplyForm applyForm) {
+        String procId = applyForm.getProcessInstanceId();
+        log.info("开始执行[报销流程] - [技术负责人审核]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
+
         decisionValidate(applyForm.getDecision());
-        this.check(user, vo);
-        return vo;
+
+        check(user, applyForm);
+
+    }
+
+    private Reimburse check(UserView user, ReimburseApplyForm applyForm) {
+        String procId = applyForm.getProcessInstanceId();
+
+        //1. verify
+        verifyRunningProcess(procId);
+        Task activeTask = getActiveTask(procId, null);
+        String taskId = activeTask.getId();
+
+        Decision decision = Decision.fromValue(applyForm.getDecision());
+        ProcessState state = ProcessState.of(decision);
+
+        if (StringUtils.hasLength(applyForm.getComment())) {
+            taskService.addComment(taskId, procId, applyForm.getComment());
+        }
+
+        //2. check
+        runtimeService.updateBusinessStatus(procId, state.value());
+        this.check(user, decision, procId, taskId);
+
+        //3. update
+        Reimburse rbs = reimburseRepository.findByProcessInstanceId(procId);
+
+        rbs.update(procId, activeTask, user.getId(), user.getName(), state.value(), decision.description());
+        reimburseRepository.save(rbs);
+        return rbs;
     }
 
     @Override
-    public ProcessVo<ReimburseApplyForm> ceoAudit(UserView userVo, ReimburseApplyForm applyForm) {
-        return null;
+    public Reimburse ceoAudit(UserView user, ReimburseApplyForm applyForm) {
+        String procId = applyForm.getProcessInstanceId();
+        log.info("开始执行[报销流程] - [总经理审核]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
+
+        decisionValidate(applyForm.getDecision());
+
+        Reimburse rbs = check(user, applyForm);
+
+        return rbs;
     }
 
     @Override
-    public ProcessVo<ReimburseApplyForm> accountantAudit(UserView userVo, ReimburseApplyForm applyForm) {
-        return null;
+    public Reimburse accountantAudit(UserView user, ReimburseApplyForm applyForm) {
+        String procId = applyForm.getProcessInstanceId();
+        log.info("开始执行[报销流程] - [财务会计审批]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
+
+        decisionValidate(applyForm.getDecision());
+
+        Reimburse rbs = check(user, applyForm);
+
+        return rbs;
     }
 
     @Override
-    public ProcessVo<ReimburseApplyForm> accountManagerAudit(UserView user, ReimburseApplyForm applyForm) {
-        return null;
+    public Reimburse financeManagerAudit(UserView user, ReimburseApplyForm applyForm) {
+        String procId = applyForm.getProcessInstanceId();
+        log.info("开始执行[报销流程] - [财务主管审批]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
+
+        decisionValidate(applyForm.getDecision());
+
+        Reimburse rbs = check(user, applyForm);
+
+        return rbs;
     }
 
     @Override
-    public ProcessVo<ReimburseApplyForm> taxOfficerAudit(UserView user, ReimburseApplyForm applyForm) {
-        return null;
+    public Reimburse taxOfficerAudit(UserView user, ReimburseApplyForm applyForm) {
+        String procId = applyForm.getProcessInstanceId();
+        log.info("开始执行[报销流程] - [财务主管审批]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
+
+        decisionValidate(applyForm.getDecision());
+
+        Reimburse rbs = check(user, applyForm);
+
+        return rbs;
     }
-
-
-    @Override
-    void beforeComplete(UserView user, ProcessVo vo) {
-        //TODO: 添加评论
-    }
-
-
-
-    @Override
-    Map<String, Object> requiredExecutionVariables(ProcessVo processVo) {
-        return null;
-    }
-
-
 
 }

@@ -1,9 +1,7 @@
 package com.abt.flow.listener;
 
 import com.abt.flow.model.ProcessState;
-import com.abt.flow.model.entity.BizFlowRelation;
 import com.abt.flow.model.entity.FlowOperationLog;
-import com.abt.flow.repository.BizFlowRelationRepository;
 import com.abt.flow.repository.FlowOperationLogRepository;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -21,13 +19,11 @@ import java.time.LocalDateTime;
  */
 public class FlowBaseListener {
 
-    private BizFlowRelationRepository bizFlowRelationRepository;
     private FlowOperationLogRepository flowOperationLogRepository;
 
     private ApplicationContext context;
 
-    public FlowBaseListener(BizFlowRelationRepository bizFlowRelationRepository, FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
-        this.bizFlowRelationRepository = bizFlowRelationRepository;
+    public FlowBaseListener(FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
         this.flowOperationLogRepository = flowOperationLogRepository;
         this.context = context;
     }
@@ -73,38 +69,5 @@ public class FlowBaseListener {
         optLog.setActivityName(event.getName());
         optLog.setOperateUser(event.getAssignee());
         return optLog;
-    }
-
-    protected BizFlowRelation create(TaskEntity task) {
-        BizFlowRelation obj = bizFlowRelationRepository.findByProcInstId(task.getProcessInstanceId());
-        if (obj == null) {
-            RuntimeService runtimeService = context.getBean(RuntimeService.class);
-            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId()).singleResult();
-            obj = new BizFlowRelation();
-            obj.setProcDefId(task.getProcessDefinitionId());
-            obj.setProcInstId(task.getProcessInstanceId());
-            obj.setCustomName(processInstance.getBusinessKey());
-            obj.setStarterId(task.getAssignee());
-            obj.setState(ProcessState.Active.code());
-            obj.setStartDate(LocalDate.now());
-        }
-
-        update(task, obj);
-        return obj;
-    }
-
-
-
-    /**
-     * 已有的流程更新
-     * @param task 当前完成的task
-     */
-    protected BizFlowRelation update(TaskEntity task, BizFlowRelation obj) {
-        obj.setTaskId(task.getId());
-        obj.setActivityName(task.getName());
-        obj.setCurrentUser(task.getAssignee());
-        obj.setLastUpdateDate(LocalDate.now());
-        obj.setLastUpdateUser(task.getAssignee());
-        return obj;
     }
 }

@@ -5,8 +5,8 @@ import com.abt.flow.model.ProcessState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Transient;
 import lombok.Data;
+import org.flowable.task.api.Task;
 
 /**
  * 流程业务数据表流所需流程数据, 流程业务数据表需要继承
@@ -33,6 +33,15 @@ public class FlowBusinessBase extends AuditInfo {
     @Schema(description = "流程实例状态，参考processSate.value")
     @Column(columnDefinition = "VARCHAR(32)")
     private String state;
+
+
+    /**
+     * 审批结果
+     * @see com.abt.flow.model.Decision
+     */
+    @Schema(description = "审批结果, 已通过/未通过")
+    @Column(columnDefinition = "VARCHAR(32)")
+    private String result;
 
     /**
      * 当前任务用户
@@ -63,7 +72,7 @@ public class FlowBusinessBase extends AuditInfo {
     /**
      * 流程业务类型name
      */
-    @Schema(description = "流程类型NAMEs")
+    @Schema(description = "流程类型NAME")
     @Column(name = "cat_name", columnDefinition = "VARCHAR(200)")
     private String categoryName;
 
@@ -74,7 +83,31 @@ public class FlowBusinessBase extends AuditInfo {
     @Column(columnDefinition = "VARCHAR(128)")
     private String processDefinitionId;
 
+    @Schema(description = "流程任务名称")
+    @Column(columnDefinition = "VARCHAR(128)")
+    private String taskName;
 
+    @Schema(description = "流程任务ID")
+    @Column(columnDefinition = "VARCHAR(128)")
+    private String taskId;
+
+    /**
+     * 更新流程相关
+     * @param task 已完成的任务, 没有则null
+     */
+    public FlowBusinessBase update(String procId, Task task, String updateUserid, String updateUsername, String state, String result) {
+        setProcessInstanceId(procId);
+        setCurrentUserid(updateUserid);
+        setCurrentUsername(updateUsername);
+        setState(state);
+        setResult(result);
+        if (task != null) {
+            setTaskId(task.getId());
+            setTaskName(task.getName());
+        }
+        this.update(updateUserid, updateUsername);
+        return this;
+    }
 
 
 }

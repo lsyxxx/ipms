@@ -2,7 +2,6 @@ package com.abt.flow.model;
 
 import com.abt.common.model.AutoForm;
 import com.abt.common.model.User;
-import com.abt.flow.model.entity.BizFlowRelation;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -37,6 +36,22 @@ public class FlowForm extends AutoForm {
      * 技术负责人
      */
     private String techManager;
+
+    private String ceo;
+    /**
+     * 财务主管
+     */
+    private String fiManager;
+
+    /**
+     * 税务审批人
+     */
+    private String taxOfficer;
+
+    /**
+     * 会计审批人
+     */
+    private String accountancy;
 
     /**
      * 流程申请人

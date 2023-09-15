@@ -1,17 +1,20 @@
 package com.abt.flow.model.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.common.util.TimeUtil;
+import com.abt.flow.model.FlowType;
 import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.sys.model.dto.UserView;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.Task;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -33,7 +36,6 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
      * 关联流程引擎businessKey
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Schema(description = "PK")
     private String id;
 
@@ -74,21 +76,22 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
 
 
     public Reimburse create(ReimburseApplyForm form, UserView user) {
-        Reimburse rbs = new Reimburse();
-        rbs.setCost(form.getCost());
-        rbs.setProject(form.getProject());
-        rbs.setReimburseDate(form.getRbsDate());
-        rbs.setReason(form.getReason());
-        rbs.setVoucherNum(form.getVoucherNum());
-        rbs.setReimburseDate(form.getRbsDate());
+        setId(TimeUtil.idGenerator());
 
-        rbs.setCategoryId(form.getFlowType().getId());
-        rbs.setCategoryCode(form.getFlowType().getCode());
-        rbs.setCategoryName(form.getFlowType().getName());
+        setCost(form.getCost());
+        setProject(form.getProject());
+        setReimburseDate(form.getRbsDate());
+        setReason(form.getReason());
+        setVoucherNum(form.getVoucherNum());
+        setReimburseDate(form.getRbsDate());
+
+        setCategoryId(form.getFlowType().getId());
+        setCategoryCode(form.getFlowType().getCode());
+        setCategoryName(form.getFlowType().getName());
 
         create(user.getId(), user.getUsername());
 
-        return rbs;
+        return this;
     }
 
 
