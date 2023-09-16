@@ -73,6 +73,9 @@ public class FlowInfoServiceImpl implements FlowInfoService {
         //1. 审批状态，审批结果
         String bizState = processInstance.getBusinessStatus();
         ProcessState state = ProcessState.of(bizState);
+        //审批状态
+        flowInfoVo.setState(state);
+        flowInfoVo.setResult(state.auditResult());
 
         //2.当前负责人
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();

@@ -125,13 +125,6 @@ public enum ProcessState {
     }
 
     /**
-     * 审批状态
-     */
-    public ProcessState auditState() {
-        //TODO;
-    }
-
-    /**
      * 审批结果
      */
     public ProcessState auditResult() {

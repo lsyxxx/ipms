@@ -41,12 +41,12 @@ public class FlowInfoVo extends AuditInfo {
     /**
      * 审批状态
      */
-    private String state;
+    private ProcessState state;
 
     /**
      * 审批结果
      */
-    private String result;
+    private ProcessState result;
 
     /**
      * 历史审批人;
