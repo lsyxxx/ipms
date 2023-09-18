@@ -1,5 +1,6 @@
 package com.abt.common.model;
 
+import com.abt.sys.model.dto.UserView;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -16,7 +17,7 @@ public class RequestForm {
     private int page = 0;
 
     /**
-     * 分页单页数量
+     * 单页数量
      */
     private int limit = 0;
 
@@ -40,6 +41,19 @@ public class RequestForm {
      * 列表数据count
      */
     private int count;
+
+    private int firstResult;
+
+    private User user;
+
+    /**
+     * 开始日期
+     */
+    private String startDate;
+    /**
+     * 结束日期;
+     */
+    private String endDate;
 
     /**
      * 是否分页
@@ -66,4 +80,37 @@ public class RequestForm {
         form.setPage(page).setType(type).setLimit(limit).setQuery(query);
         return form;
     }
+
+    public int getFirstResult() {
+        this.firstResult = this.page * limit;
+        return this.firstResult;
+    }
+
+    public void setUser(UserView userView) {
+        this.user = new User(userView);
+    }
+
+
+    public String getUserid() {
+        if (this.user == null) {
+            return "";
+        }
+        return this.user.getUserid();
+    }
+
+    public String getUsername() {
+        if (this.user == null) {
+            return "";
+        }
+        return this.user.getUsername();
+    }
+
+    public String getUserCode() {
+        if (this.user == null) {
+            return "";
+        }
+        return this.user.getCode();
+    }
+
+
 }

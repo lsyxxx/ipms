@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 /**
  * 流程决策
+ * 1. 整个流程的审批结果
+ * 2. 一个节点的审批决策
  */
 public enum Decision {
     Approve("Approve", "审批已通过"),

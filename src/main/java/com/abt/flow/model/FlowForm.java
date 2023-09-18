@@ -56,7 +56,7 @@ public class FlowForm extends AutoForm {
     /**
      * 流程申请人
      */
-    private User<String> applicant;
+    private User applicant;
 
     /**
      * 流程状态

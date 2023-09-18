@@ -150,12 +150,11 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         //1. verify
         verifyRunningProcess(procId);
+
         Task activeTask = getActiveTask(procId, null);
         String taskId = activeTask.getId();
-
         Decision decision = Decision.fromValue(applyForm.getDecision());
         ProcessState state = ProcessState.of(decision);
-
         if (StringUtils.hasLength(applyForm.getComment())) {
             taskService.addComment(taskId, procId, applyForm.getComment());
         }
@@ -166,9 +165,9 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         //3. update
         Reimburse rbs = reimburseRepository.findByProcessInstanceId(procId);
-
         rbs.update(procId, activeTask, user.getId(), user.getName(), state.value(), decision.description());
         reimburseRepository.save(rbs);
+
         return rbs;
     }
 

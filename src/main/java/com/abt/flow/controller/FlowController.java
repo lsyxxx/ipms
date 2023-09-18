@@ -1,9 +1,10 @@
 package com.abt.flow.controller;
 
 import com.abt.common.model.R;
-import com.abt.common.model.RequestForm;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
+import com.abt.flow.model.FlowInfoVo;
+import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.service.FlowInfoService;
 import com.abt.sys.model.dto.UserView;
@@ -37,13 +38,12 @@ public class FlowController {
     @Operation(summary = "查看用户申请的流程")
     @Parameter(name = "form", description = "请求参数，包括分页(page,size)与搜索参数(query)，id, type")
     @GetMapping("/load")
-    public R flowList(@RequestParam int page, @RequestParam int limit, @RequestParam(required = false) String type, @RequestParam(required = false) String query) {
+    public R flowList(@RequestParam FlowRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
 
-        RequestForm form = RequestForm.of(page, limit, type, query);
-        form.setId(user.getId());
+        form.setUser(user);
 
-        List<BizFlowRelation> list = flowInfoService.getFlows(form);
+        List<FlowInfoVo> list = flowInfoService.getFlows(form);
 
         return R.success(list, list.size());
     }
