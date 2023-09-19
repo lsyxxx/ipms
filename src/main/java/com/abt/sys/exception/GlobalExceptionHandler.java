@@ -2,6 +2,7 @@ package com.abt.sys.exception;
 
 import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -46,7 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<Exception> handleException(Exception e) {
-        log.error("Uncaught exception! - msg: {}, e: {}", e.getMessage(), e);
+        log.error("Uncaught exception! - msg: {}, exp: {}", e.getMessage(), e.getLocalizedMessage());
         return R.fail(e.getMessage());
     }
 
@@ -58,14 +59,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R<Exception> handleBadRequestParameterException(BadRequestParameterException e) {
-        log.error("Client请求参数错误 - msg: {}, e: {}", e.getMessage(), e);
-        return R.badRequest();
+        log.error("Client请求参数错误 - msg: {}", e.getMessage());
+        return R.badRequest(e.getMessage());
     }
 
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<Exception> handleBusinessException(BusinessException e) {
-        log.error("业务异常! - msg: {}, e: {}", e.getMessage(), e);
+        log.error("业务异常! - msg: {}", e.getMessage());
         return R.fail(e.getMessage(), e.getCode());
     }
 

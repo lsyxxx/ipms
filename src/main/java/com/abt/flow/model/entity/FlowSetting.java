@@ -1,14 +1,14 @@
 package com.abt.flow.model.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.db.CustomAuditorListener;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.Comment;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * 流程设置参数
@@ -20,8 +20,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Table(name = "T_flow_setting")
 @Comment("流程设置参数")
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-@Data
+@Getter
+@Setter
+@ToString
 public class FlowSetting extends AuditInfo {
 
 
@@ -31,20 +32,21 @@ public class FlowSetting extends AuditInfo {
     private String id;
 
     @Schema(description = "参数key")
-    @Column(columnDefinition = "VARCHAR(128)")
+    @Column(name = "key_", columnDefinition = "VARCHAR(128)")
     private String key;
 
     @Schema(description = "参数value")
-    @Column(columnDefinition = "VARCHAR(128)")
+    @Column(name = "value_", columnDefinition = "VARCHAR(128)")
     private String value;
 
     @Schema(description = "参数分类")
-    @Column(columnDefinition = "VARCHAR(128)")
+    @Column(name = "type_", columnDefinition = "VARCHAR(128)")
     private String type;
 
-    public FlowSetting() {
-        super();
-    }
+
+    @Schema(description = "说明")
+    @Column(columnDefinition = "VARCHAR(128)")
+    private String remark;
 
     public FlowSetting(String key, String value) {
         this.key = key;
@@ -52,4 +54,7 @@ public class FlowSetting extends AuditInfo {
     }
 
 
+    public FlowSetting() {
+        super();
+    }
 }

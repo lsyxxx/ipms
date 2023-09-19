@@ -33,11 +33,11 @@ public class ArgumentsNonNullValidator<T> implements IValidator<T>{
     @Override
     public ValidationResult validate(T object) {
         if (object == null) {
-            return ValidationResult.fail(messages.getMessage("com.abt.common.validator.ArgumentsNonNullValidator.validate", argumentName));
+            return ValidationResult.fail(MessageUtil.format("com.abt.common.validator.ArgumentsNonNullValidator.validate", argumentName));
         }
         if (object instanceof String) {
             if ("" == object) {
-                return ValidationResult.fail(messages.getMessage("com.abt.common.validator.ArgumentsNonNullValidator.validate", argumentName));
+                return ValidationResult.fail(MessageUtil.format("com.abt.common.validator.ArgumentsNonNullValidator.validate", argumentName));
             }
         }
 

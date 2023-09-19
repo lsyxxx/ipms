@@ -154,7 +154,7 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
     }
 
     public void verifyRunningProcess(String procId) {
-        verifyRunningProcess(procId);
+        verifyRunningProcess(procId, MessageUtil.format("flow.service.AbstractDefaultFlowService.verifyRunningProcess", procId));
     }
 
         @Override
@@ -190,17 +190,30 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
 
     @Override
     public ProcessInstance start(UserView user, String procDefId, String businessKey, Map<String, Object> variblesMap) {
-        log.info("开始执行启动流程. 启动用户: {}, 流程定义id: {}, 业务key: {}", user.simpleInfo(), procDefId, businessKey);
+        log.info("开始执行[启动流程]. 启动用户: {}, 流程定义id: {}, 业务key: {}", user.simpleInfo(), procDefId, businessKey);
         Authentication.setAuthenticatedUserId(user.getId());
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(procDefId, businessKey, variblesMap);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceById(procDefId, businessKey, variblesMap);
         Authentication.setAuthenticatedUserId(null);
         log.info("启动流程成功! 流程实例id: {}", processInstance.getId());
         return processInstance;
     }
 
     @Override
+    public String businessKey(String result, String state) {
+        if (result == null) {
+            result = "";
+        }
+        return result + "," + state;
+    }
+
+    @Override
     public void completeTask(String taskId) {
         taskService.complete(taskId);
     }
+
+    protected String emptyIfNull(Object o) {
+        return o == null ? "" : String.valueOf(o);
+    }
+
 
 }

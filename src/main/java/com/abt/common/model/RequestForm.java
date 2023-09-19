@@ -95,7 +95,7 @@ public class RequestForm {
         if (this.user == null) {
             return "";
         }
-        return this.user.getUserid();
+        return this.user.getId();
     }
 
     public String getUsername() {

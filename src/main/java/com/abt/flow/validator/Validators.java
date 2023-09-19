@@ -64,8 +64,6 @@ public class Validators {
     }
 
 
-
-
     private List<String> from(String properties) {
         if (StringUtils.isNotEmpty(properties)) {
             return List.of(properties.split(","));

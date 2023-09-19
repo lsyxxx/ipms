@@ -49,6 +49,10 @@ public class FlowableConstant {
      * 历史审批人
      */
     public static final String PV_HIS_INVOKERS = "historyAuditors";
+    /**
+     * 流程申请人
+     */
+    public static final String PV_APPLICANT = "applicant";
 
 
     //----------------- 审批流程常用角色

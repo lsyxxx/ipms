@@ -19,6 +19,10 @@ public class ValidationResult {
         return this;
     }
 
+    public boolean failed() {
+        return !this.valid;
+    }
+
     public ValidationResult fail() {
         ValidationResult validationResult = new ValidationResult();
         validationResult.valid(false);

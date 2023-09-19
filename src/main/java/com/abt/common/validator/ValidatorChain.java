@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 /**
  * 责任链模式
- * 如果链中有一个返回失败，则中断，整体失败
+ * 默认：链中有一个返回失败，则中断，整体失败
  */
 public class ValidatorChain {
 
@@ -62,6 +62,9 @@ public class ValidatorChain {
 
         for (int i = 0; i < validators.size(); i++) {
             result = validators.get(i).validate(object[i]);
+            if (!isContinue && result.failed()) {
+                return result;
+            }
         }
 
         return result;

@@ -1,5 +1,6 @@
 package com.abt.flow.config;
 
+import com.abt.common.model.User;
 import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.model.entity.FlowSetting;
 import com.abt.flow.repository.FlowSettingRepository;
@@ -54,14 +55,13 @@ public class FlowBusinessConfig {
 
     /**
      * 默认审批用户
-     * @return
      */
     @Bean(name = "flowDefaultAuditorMap")
     @Lazy
-    public Map<String, String> defaultAuditor() {
-        List<FlowSetting> list = flowSettingRepository.findByTypeOrderBycAndCreateDate(DEFAULT_AUDITOR);
-        Map<String, String> collect = list.stream()
-                .collect(toMap(FlowSetting::getKey, FlowSetting::getValue));
+    public Map<String, User> defaultAuditor() {
+        List<FlowSetting> list = flowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_AUDITOR);
+        Map<String, User> collect = list.stream()
+                .collect(toMap(FlowSetting::getKey, i -> new User(i.getValue(), i.getRemark())));
         return collect;
     }
 

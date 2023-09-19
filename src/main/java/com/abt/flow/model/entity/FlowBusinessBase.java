@@ -30,7 +30,7 @@ public class FlowBusinessBase extends AuditInfo {
      * 流程实例状态
      * @see ProcessState
      */
-    @Schema(description = "流程实例状态，参考processSate.value")
+    @Schema(description = "流程实例状态，参考processSate")
     @Column(columnDefinition = "VARCHAR(32)")
     private String state;
 
@@ -39,7 +39,7 @@ public class FlowBusinessBase extends AuditInfo {
      * 审批结果
      * @see com.abt.flow.model.Decision
      */
-    @Schema(description = "审批结果, 已通过/未通过")
+    @Schema(description = "审批结果, 已通过Approve/未通过Reject")
     @Column(columnDefinition = "VARCHAR(32)")
     private String result;
 

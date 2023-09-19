@@ -65,7 +65,8 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
     @Override
     public List<FlowInfoVo> getUserApplyFlows(FlowRequestForm form) {
-        HistoricProcessInstanceQuery query = historyService.createHistoricProcessInstanceQuery().startedBy(form.getUserid());
+        HistoricProcessInstanceQuery query = historyService.createHistoricProcessInstanceQuery()
+                .startedBy(form.getUserid());
         if (StringUtils.isNotBlank(form.getState())) {
             //approve, reject
             query.processInstanceBusinessStatusLike("%" + form.getState() + "%");

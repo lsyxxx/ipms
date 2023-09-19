@@ -20,7 +20,7 @@ public class ProcessDeleteListener extends FlowBaseListener implements FlowableE
 
     private final ApplicationContext context;
 
-    public ProcessDeleteListener( FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
+    public ProcessDeleteListener(FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
         super( flowOperationLogRepository, context);
         this.flowOperationLogRepository = flowOperationLogRepository;
         this.context = context;
@@ -29,15 +29,10 @@ public class ProcessDeleteListener extends FlowBaseListener implements FlowableE
 
     @Override
     public void onEvent(FlowableEvent event) {
-        if (!isProcessDelete(event)) {
-            return;
-        }
         log.info("--------- 开始执行[流程删除监听器ProcessDeleteListener] ----------------");
         TaskEntity taskEntity = getTaskEntity(event);
-
         FlowOperationLog flowLog = createLog(taskEntity);
-
-
+        flowLog.setAction("删除");
 
         flowOperationLogRepository.save(flowLog);
 

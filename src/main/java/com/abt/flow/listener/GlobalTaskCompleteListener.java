@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 所有task完成的操作
+ * 1. 添加操作日志
  */
 @Component
 @Slf4j
@@ -30,7 +31,6 @@ public class GlobalTaskCompleteListener extends FlowBaseListener implements Flow
     public void onEvent(FlowableEvent event) {
         TaskEntity taskEntity = getTaskEntity(event);
         log.info("----- 开始执行[流程完成监听器 GlobalTaskCompleteListener] Task: id: {}, name: {}", taskEntity.getId(), taskEntity.getName());
-
         flowOperationLogRepository.save(createLog(taskEntity));
     }
 

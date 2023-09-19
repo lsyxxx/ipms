@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +28,10 @@ import java.util.List;
 @RequestMapping("/wf/rb")
 @Tag(name = "ReimburseController", description = "报销流程")
 public class ReimburseController {
+
+    @Value("com.abt.flow.controller.ReimburseController.type")
+    private String reimburseType;
+
     private final ReimburseService reimburseService;
     private final FlowInfoService flowInfoService;
 
@@ -42,11 +47,9 @@ public class ReimburseController {
     @Operation(summary = "报销流程申请")
     @Parameter(name = "applyForm", description = "申请业务数据form")
     @PostMapping("/apply")
-    public R apply(@RequestBody @NotNull ReimburseApplyForm applyForm) {
-        //flowType: id/code/name
-        //user
-        //bizData: cost/rbsDate/reason/voucherNum/project
+    public R apply(@RequestBody ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
+
         reimburseService.apply(user, applyForm);
 
         return R.success(messages.getMessage("common.apply.success"));
@@ -54,19 +57,22 @@ public class ReimburseController {
 
     @Operation(summary = "部门审批")
     @Parameter(name = "applyForm", description = "业务数据form")
-    @PostMapping("/dpa")
+    @PostMapping("/dpt")
     public R departmentAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
+
         reimburseService.departmentAudit(user, applyForm);
+
         return R.success();
     }
 
 
     @Operation(summary = "技术负责人审批")
     @Parameter(name = "applyForm", description = "业务数据form")
-    @PostMapping("/tca")
+    @PostMapping("/tch")
     public R techAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
+
         reimburseService.techLeadAudit(user, applyForm);
 
         return R.success();
@@ -75,9 +81,10 @@ public class ReimburseController {
 
     @Operation(summary = "财务主管审批")
     @Parameter(name = "applyForm", description = "业务数据form")
-    @PostMapping("/fma")
+    @PostMapping("/fin")
     public R financeManagerAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
+
         reimburseService.financeManagerAudit(user, applyForm);
 
         return R.success();
@@ -86,7 +93,7 @@ public class ReimburseController {
 
     @Operation(summary = "税务会计审批")
     @Parameter(name = "applyForm", description = "业务数据form")
-    @PostMapping("/toa")
+    @PostMapping("/tax")
     public R taxOfficerAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
         reimburseService.taxOfficerAudit(user, applyForm);
@@ -96,7 +103,7 @@ public class ReimburseController {
 
     @Operation(summary = "财务会计审批")
     @Parameter(name = "applyForm", description = "业务数据form")
-    @PostMapping("/ata")
+    @PostMapping("/act")
     public R accountantAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
         reimburseService.accountantAudit(user, applyForm);
@@ -111,17 +118,15 @@ public class ReimburseController {
     public R myReimburse(@RequestParam FlowRequestForm form) {
 
         UserView user = TokenUtil.getUserFromAuthToken();
-        //TODO: 报销的type, 目前FlowScheme中的id，用code还是id?
-        form.setType("7c2f7166-4696-4f4f-bf59-c4447179cbe3");
+        //TODO: 报销的type, 目前FlowScheme中的id
+//        form.setType("7c2f7166-4696-4f4f-bf59-c4447179cbe3");
+        form.setType(reimburseType);
+        form.setUser(user);
 
         List<FlowInfoVo> list = flowInfoService.getUserApplyFlows(form);
 
         return R.success(list, list.size());
     }
-
-
-
-
 
 
 }

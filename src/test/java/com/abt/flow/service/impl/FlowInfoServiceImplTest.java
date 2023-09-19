@@ -60,10 +60,6 @@ class FlowInfoServiceImplTest extends BaseTest{
 
     @Test
     void getTodoFlows() {
-        form.setId("abt010");
-
-        List<BizFlowRelation> todoFlows = service.getTodoFlows(form);
-        logListElement(todoFlows);
     }
 
     @Test

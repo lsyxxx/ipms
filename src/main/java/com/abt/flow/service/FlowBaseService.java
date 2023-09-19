@@ -71,4 +71,11 @@ public interface FlowBaseService {
      * @return ProcessInstance 流程实例
      */
     ProcessInstance start(UserView user, String procDefId, String businessKey, Map<String, Object> variblesMap);
+
+    /**
+     * 保存businessKey=审批结果,审批状态
+     * @param result 审批结果
+     * @param state 审批状态
+     */
+    String businessKey(String result, String state);
 }

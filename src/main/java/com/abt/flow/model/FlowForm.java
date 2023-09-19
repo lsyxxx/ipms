@@ -25,33 +25,33 @@ public class FlowForm extends AutoForm {
     /**
      * 下一个审批人
      */
-    private String nextAssignee;
+    private User nextAssignee;
 
     /**
      * 部门审批人
      */
-    private String deptManager;
+    private User deptManager;
 
     /**
      * 技术负责人
      */
-    private String techManager;
+    private User techManager;
 
-    private String ceo;
+    private User ceo;
     /**
      * 财务主管
      */
-    private String fiManager;
+    private User fiManager;
 
     /**
      * 税务审批人
      */
-    private String taxOfficer;
+    private User taxOfficer;
 
     /**
      * 会计审批人
      */
-    private String accountancy;
+    private User accountancy;
 
     /**
      * 流程申请人

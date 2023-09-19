@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -115,6 +116,11 @@ public class R<T> {
     public static R badRequest() {
         return new R<>(null, ResCode.BAD_REQUEST.getCode(), ResCode.BAD_REQUEST.getMessage());
     }
+
+    public static R badRequest(String msg) {
+        return new R<>(null, ResCode.BAD_REQUEST.getCode(), StringUtils.isBlank(msg) ? ResCode.BAD_REQUEST.getMessage() : msg);
+    }
+
 
 
     public String toJson() throws JsonProcessingException {

@@ -21,7 +21,7 @@ public class DeploymentTest {
     private RepositoryService repositoryService;
 
 
-    public static String bpmFile = "processes/MyProcess.bpmn20.xml";
+    public static String bpmFile = "processes/Normal_Reimburse_less5000.bpmn20.xml";
 
 
     @Test
@@ -32,12 +32,17 @@ public class DeploymentTest {
                 //todo: 不知道具体哪一步激活的
                 .addInputStream(bpmFile, new FileInputStream(bpmFile))
                 //act_re_deployment:key_
-                .name("myProcess_")
-                .key("myProcess_test")
+                .name("Normal_Reimburse_less5000")
+                .key("Normal_Reimburse_less5000_key_")
                 .deploy();
         log.info("================= deploy -- id: {}, key: {} =================", deployment.getId(), deployment.getKey());
+        //deploy -- id: b8fda264-56c5-11ee-ac20-a497b12f53fd, key: Normal_Reimburse_less5000_key_ =================
 
     }
+
+    void deleteProcDef() {
+    }
+
 
 
     public static FlowCategory of() {
@@ -47,11 +52,4 @@ public class DeploymentTest {
         return cat;
     }
 
-    public static void main(String[] args) {
-        FlowCategory cat1 = of();
-        FlowCategory cat2 = of();
-        System.out.println(cat1.toString());
-        System.out.println(cat2.toString());
-        System.out.println(cat1 == cat2);
-    }
 }

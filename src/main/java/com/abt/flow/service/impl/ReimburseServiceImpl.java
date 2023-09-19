@@ -1,5 +1,6 @@
 package com.abt.flow.service.impl;
 
+import com.abt.common.model.User;
 import com.abt.common.validator.ValidationResult;
 import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
@@ -12,6 +13,7 @@ import com.abt.flow.service.ReimburseService;
 import com.abt.sys.exception.BadRequestParameterException;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
@@ -24,6 +26,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.abt.flow.model.ProcessState.Active;
 
 /**
  * 报销流程
@@ -45,11 +49,11 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
     private final ValidatorChain commonDecisionValidatorChain;
 
-    private final Map<String, String> defaultAuditor;
+    private final Map<String, User> defaultAuditor;
 
 
 
-    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain,@Qualifier("flowDefaultAuditorMap") Map<String, String> defaultAuditor) {
+    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain,@Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor) {
         super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
@@ -80,6 +84,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         //添加流程参数
         Map<String, Object> processVars = initProcessVars(applyForm);
+        processVars.put(FlowableConstant.PV_APPLICANT, new User(user));
+
         ProcessInstance processInstance = start(user, applyForm.getFlowType().getProcDefId(), rbs.getId(), processVars);
         String procId = processInstance.getId();
 
@@ -90,9 +96,9 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         completeTask(activeTask.getId());
 
-        rbs.update(procId, activeTask, user.getId(), user.getName(), ProcessState.Active.value(), null);
+        rbs.update(procId, activeTask, user.getId(), user.getName(), Active.value(), null);
 
-        runtimeService.updateBusinessStatus(processInstance.getId(), ProcessState.Active.value());
+        runtimeService.updateBusinessStatus(processInstance.getId(), businessKey(null, Active.value()));
         reimburseRepository.save(rbs);
 
     }
@@ -103,14 +109,21 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
      */
     private Map<String, Object> initProcessVars(ReimburseApplyForm form) {
         Map<String, Object> processVars = new HashMap<>();
-        processVars.putAll(defaultAuditor);
+        processVars.put(FlowableConstant.PV_BIZ_NAME, form.getFlowType().getName());
+        processVars.put(FlowableConstant.PV_BIZ_ID, form.getFlowType().getId());
+        processVars.put(FlowableConstant.PV_BIZ_CODE, form.getFlowType().getCode());
+
         processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
         processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
+        processVars.put(FlowableConstant.PV_HIS_INVOKERS, "");
+
+        processVars.putAll(defaultAuditor);
+
         return processVars;
     }
 
     private void validateApplyForm(ReimburseApplyForm applyForm) {
-        ValidationResult result = applyFormValidatorChain.validate(applyForm.getDescription(), applyForm.getCost(), applyForm.getVoucherNum(), applyForm.getDateTime());
+        ValidationResult result = applyFormValidatorChain.validate(applyForm.getDescription(), applyForm.getCost(), applyForm.getVoucherNum(), applyForm.getRbsDate());
         if (!result.isValid()) {
             log.error("申请表单参数验证失败！错误信息 - {}", result.getErrorMessage());
             throw new BadRequestParameterException(result.getErrorMessage());
@@ -123,6 +136,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         log.info("开始执行[报销流程] - [部门审核]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
         decisionValidate(applyForm.getDecision());
 
+        runtimeService.setVariable(procId, FlowableConstant.PV_DEPT_MANAGER, new User(user));
         check(user, applyForm);
     }
 
@@ -141,6 +155,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         decisionValidate(applyForm.getDecision());
 
+        runtimeService.setVariable(procId, FlowableConstant.PV_TECH_MANAGER, new User(user));
         check(user, applyForm);
 
     }
@@ -160,7 +175,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         }
 
         //2. check
-        runtimeService.updateBusinessStatus(procId, state.value());
+        addInvokers(procId, user.getId());
+        runtimeService.updateBusinessStatus(procId, businessKey(decision.value(), state.value()));
         this.check(user, decision, procId, taskId);
 
         //3. update
@@ -178,6 +194,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         decisionValidate(applyForm.getDecision());
 
+        runtimeService.setVariable(procId, FlowableConstant.PV_CEO, new User(user));
         Reimburse rbs = check(user, applyForm);
 
         return rbs;
@@ -190,6 +207,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         decisionValidate(applyForm.getDecision());
 
+        runtimeService.setVariable(procId, FlowableConstant.PV_ACCOUNTANCY, new User(user));
         Reimburse rbs = check(user, applyForm);
 
         return rbs;
@@ -202,6 +220,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         decisionValidate(applyForm.getDecision());
 
+        runtimeService.setVariable(procId, FlowableConstant.PV_FI_MANAGER, new User(user));
         Reimburse rbs = check(user, applyForm);
 
         return rbs;
@@ -214,9 +233,20 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         decisionValidate(applyForm.getDecision());
 
+        runtimeService.setVariable(procId, FlowableConstant.PV_TAX_OFFICER, new User(user));
         Reimburse rbs = check(user, applyForm);
 
         return rbs;
+    }
+
+
+    private void addInvokers(String procId, String user) {
+        Object obj = runtimeService.getVariable(procId, FlowableConstant.PV_HIS_INVOKERS);
+        String invokers = emptyIfNull(obj);
+        if (StringUtils.hasLength(invokers)) {
+            invokers  = invokers + ", " + user;
+        }
+        runtimeService.setVariable(procId, FlowableConstant.PV_HIS_INVOKERS, invokers);
     }
 
 }

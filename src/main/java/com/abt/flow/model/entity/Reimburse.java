@@ -7,10 +7,12 @@ import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.sys.model.dto.UserView;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serial;
@@ -25,7 +27,6 @@ import java.util.Date;
 @Table(name = "T_reimburse")
 @Comment("报销流程数据表")
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 public class Reimburse extends FlowBusinessBase implements Serializable {
 
     @Serial
@@ -36,6 +37,7 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
      * 关联流程引擎businessKey
      */
     @Id
+//    @GeneratedValue(generator = "custom_id_generator")
     @Schema(description = "PK")
     private String id;
 
@@ -81,9 +83,9 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
         setCost(form.getCost());
         setProject(form.getProject());
         setReimburseDate(form.getRbsDate());
-        setReason(form.getReason());
         setVoucherNum(form.getVoucherNum());
         setReimburseDate(form.getRbsDate());
+        setReason(form.getDescription());
 
         setCategoryId(form.getFlowType().getId());
         setCategoryCode(form.getFlowType().getCode());
