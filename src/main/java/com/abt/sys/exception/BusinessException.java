@@ -20,4 +20,9 @@ public class BusinessException extends RuntimeException{
         this.code = code;
     }
 
+    public BusinessException(Throwable cause) {
+        super(cause);
+    }
+
+
 }

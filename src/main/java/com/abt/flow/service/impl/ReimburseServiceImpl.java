@@ -1,6 +1,7 @@
 package com.abt.flow.service.impl;
 
 import com.abt.common.model.User;
+import com.abt.common.validator.UserTaskCheckValidator;
 import com.abt.common.validator.ValidationResult;
 import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
@@ -11,9 +12,9 @@ import com.abt.flow.repository.ReimburseRepository;
 import com.abt.flow.service.FlowOperationLogService;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.exception.BadRequestParameterException;
+import com.abt.sys.exception.IllegalUserException;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,11 +51,16 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
     private final ValidatorChain commonDecisionValidatorChain;
 
+    /**
+     * 用户验证
+     */
+    private final UserTaskCheckValidator userTaskCheckValidator;
+
     private final Map<String, User> defaultAuditor;
 
 
 
-    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain,@Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor) {
+    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor) {
         super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
@@ -62,6 +69,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         this.reimburseRepository = reimburseRepository;
         this.applyFormValidatorChain = applyFormValidatorChain;
         this.commonDecisionValidatorChain = commonDecisionValidatorChain;
+        this.userTaskCheckValidator = userTaskCheckValidator;
 
         this.defaultAuditor = defaultAuditor;
     }
@@ -134,6 +142,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     public void departmentAudit(UserView user, ReimburseApplyForm applyForm) {
         String procId = applyForm.getProcessInstanceId();
         log.info("开始执行[报销流程] - [部门审核]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
+
         decisionValidate(applyForm.getDecision());
 
         runtimeService.setVariable(procId, FlowableConstant.PV_DEPT_MANAGER, new User(user));
@@ -160,13 +169,21 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
     }
 
+    private void userTaskCheckValidate(Task task) {
+        final ValidationResult result = userTaskCheckValidator.validate(task);
+        if (result.failed()) {
+            throw new IllegalUserException(result.getErrorMessage());
+        }
+    }
+
     private Reimburse check(UserView user, ReimburseApplyForm applyForm) {
         String procId = applyForm.getProcessInstanceId();
 
         //1. verify
         verifyRunningProcess(procId);
-
         Task activeTask = getActiveTask(procId, null);
+        userTaskCheckValidate(activeTask);
+
         String taskId = activeTask.getId();
         Decision decision = Decision.fromValue(applyForm.getDecision());
         ProcessState state = ProcessState.of(decision);
@@ -229,7 +246,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     @Override
     public Reimburse taxOfficerAudit(UserView user, ReimburseApplyForm applyForm) {
         String procId = applyForm.getProcessInstanceId();
-        log.info("开始执行[报销流程] - [财务主管审批]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
+        log.info("开始执行[报销流程] - [税务审批]: 审批人: {}, 流程id: {}", user.simpleInfo(), procId);
 
         decisionValidate(applyForm.getDecision());
 
@@ -237,6 +254,11 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         Reimburse rbs = check(user, applyForm);
 
         return rbs;
+    }
+
+    @Override
+    public InputStream getHighLightedTaskPngDiagram(UserView user, ReimburseApplyForm applyForm) {
+        return getHighLightedTaskPngDiagram(applyForm.getProcessInstanceId(), applyForm.getFlowType().getProcDefId());
     }
 
 

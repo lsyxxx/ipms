@@ -1,9 +1,7 @@
 package com.abt.flow.validator;
 
-import com.abt.common.validator.ArgumentsNonNullValidator;
-import com.abt.common.validator.CommonDecisionValidator;
-import com.abt.common.validator.IValidator;
-import com.abt.common.validator.ValidatorChain;
+import com.abt.common.validator.*;
+import com.abt.sys.exception.IllegalUserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +57,8 @@ public class Validators {
     @Bean
     public ValidatorChain commonDecisionValidatorChain() {
         ValidatorChain chain = ValidatorChain.create();
-        chain.addValidators(ArgumentsNonNullValidator.create(decisionArg), CommonDecisionValidator.create());
+        chain.addValidators(ArgumentsNonNullValidator.create(decisionArg),
+                CommonDecisionValidator.create());
         return chain;
     }
 

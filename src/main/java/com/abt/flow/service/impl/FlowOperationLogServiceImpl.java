@@ -38,7 +38,7 @@ public class FlowOperationLogServiceImpl implements FlowOperationLogService {
         FlowOperationLog prop = FlowOperationLog.of();
         prop.setProcInstId(processInstanceId);
         Example<FlowOperationLog> example = Example.of(prop);
-        return flowOperationLogRepository.findAll(example);
+        return flowOperationLogRepository.findAll(example, Sort.by(ORDER_OPTDATE));
     }
 
 
@@ -50,5 +50,6 @@ public class FlowOperationLogServiceImpl implements FlowOperationLogService {
         }
         return new ArrayList<>();
     }
+
 
 }

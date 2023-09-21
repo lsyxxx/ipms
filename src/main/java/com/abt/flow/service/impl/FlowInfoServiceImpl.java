@@ -1,12 +1,13 @@
 package com.abt.flow.service.impl;
 
+import com.abt.common.util.MessageUtil;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.FlowInfoVo;
-import com.abt.flow.model.ProcessState;
 import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.repository.FlowCategoryRepository;
 import com.abt.flow.service.FlowInfoService;
+import com.abt.sys.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,15 +17,15 @@ import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.task.api.Task;
-import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.variable.api.history.HistoricVariableInstance;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.Flow;
+import java.util.Optional;
 
 /**
  *
@@ -32,6 +33,9 @@ import java.util.concurrent.Flow;
 @Slf4j
 @Service
 public class FlowInfoServiceImpl implements FlowInfoService {
+
+    protected MessageSourceAccessor messages = MessageUtil.getAccessor();
+
 
     public static final String ORDERBY_CRTDATE = "createDate";
     public static final String ORDERBY_SORT= "sortCode";
@@ -154,6 +158,7 @@ public class FlowInfoServiceImpl implements FlowInfoService {
     public List<FlowInfoVo> getCompletedFlows(FlowRequestForm form) {
 
         HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery().taskInvolvedUser(form.getId()).finished();
+
         if (StringUtils.isNotBlank(form.getState())) {
             query.processInstanceBusinessKeyLike("%" + form.getState() + "%");
         }
@@ -170,8 +175,10 @@ public class FlowInfoServiceImpl implements FlowInfoService {
         }
 
 
-        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().taskInvolvedUser(form.getId()).finished()
-                .orderByTaskCreateTime().desc().listPage(form.getFirstResult(), form.getLimit());
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
+                .taskInvolvedUser(form.getId()).finished()
+                .orderByTaskCreateTime().desc()
+                .listPage(form.getFirstResult(), form.getLimit());
         list = ListUtils.emptyIfNull(list);
 
         return list.stream().map(i -> {
@@ -205,8 +212,13 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
     @Override
     public FlowCategory getFlowCategory(String id) {
-        return flowCategoryRepository.findById(id).get();
-    }
+        Optional<FlowCategory> optional = flowCategoryRepository.findById(id);
+        if (optional.isEmpty()) {
+            log.error("未查询到流程类型 -- {}", id);
+            throw new BusinessException(messages.getMessage("flow.service.FlowInfoServiceImpl.getFlowCategory"));
+        }
 
+        return optional.get();
+    }
 
 }

@@ -5,6 +5,8 @@ import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.flow.model.entity.Reimburse;
 import com.abt.sys.model.dto.UserView;
 
+import java.io.InputStream;
+
 /**
  * 报销
  */
@@ -53,6 +55,11 @@ public interface ReimburseService{
      * @param applyForm 提交表单
      */
     Reimburse taxOfficerAudit(UserView user, ReimburseApplyForm applyForm);
+
+    /**
+     * 生成流程图，高亮节点，不高亮连线，不显示连线名称
+     */
+    InputStream getHighLightedTaskPngDiagram(UserView user, ReimburseApplyForm applyForm);
 
 
 }

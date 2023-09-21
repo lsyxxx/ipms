@@ -85,6 +85,10 @@ public class R<T> {
         return new R<>(null, ResCode.FAIL.getCode(), errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
     }
 
+    public static<T> R<T> fail() {
+        return new R<>(null, ResCode.FAIL.getCode(), ResCode.FAIL.getMessage());
+    }
+
     public static<T> R<T> fail(String errMsg, int code) {
         return new R<>(null, String.valueOf(code), errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
     }

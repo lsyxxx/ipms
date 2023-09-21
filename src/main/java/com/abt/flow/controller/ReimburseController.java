@@ -16,8 +16,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -91,11 +95,24 @@ public class ReimburseController {
     }
 
 
+    @Operation(summary = "总经理审批")
+    @Parameter(name = "applyForm", description = "业务数据form")
+    @PostMapping("/ceo")
+    public R ceoAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+
+        reimburseService.ceoAudit(user, applyForm);
+
+        return R.success();
+    }
+
+
     @Operation(summary = "税务会计审批")
     @Parameter(name = "applyForm", description = "业务数据form")
     @PostMapping("/tax")
     public R taxOfficerAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
+
         reimburseService.taxOfficerAudit(user, applyForm);
 
         return R.success();
@@ -106,6 +123,7 @@ public class ReimburseController {
     @PostMapping("/act")
     public R accountantAudit(@RequestBody @NotNull ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
+
         reimburseService.accountantAudit(user, applyForm);
 
         return R.success();
@@ -128,5 +146,19 @@ public class ReimburseController {
         return R.success(list, list.size());
     }
 
+
+    @Operation(summary = "流程图")
+    @Parameter(name = "applyForm", description = "业务数据form")
+    @PostMapping("/diag")
+    public ResponseEntity PngDiagram(@RequestParam ReimburseApplyForm applyForm) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+
+        InputStream highLightedTaskPngDiagram = reimburseService.getHighLightedTaskPngDiagram(user, applyForm);
+        InputStreamResource resource = new InputStreamResource(highLightedTaskPngDiagram);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG) // 设置图像类型为JPEG
+                .body(resource);
+    }
 
 }

@@ -26,29 +26,29 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public R<Exception> handleAuthenticationException(AuthenticationException e) {
-        log.error("Authentication failed! - {}", e.getMessage());
+        log.error("Authentication failed! - ", e);
         return R.authenticationFail(e, e.getMessage());
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public R<Exception> handleUsernameNotFoundException(UsernameNotFoundException e) {
-        log.error("handleUsernameNotFoundException -> Username not found! - {}", e.getMessage());
+        log.error("handleUsernameNotFoundException -> Username not found! - ", e);
         return R.authenticationFail(e, e.getMessage());
     }
 
     @ExceptionHandler(InvalidTokenException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public R<Exception> handleInvalidTokenException(InvalidTokenException e) {
-        log.error("Invalid token! - {}", e.getMessage());
+        log.error("Invalid token! ", e);
         return R.invalidToken(e);
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<Exception> handleException(Exception e) {
-        log.error("Uncaught exception! - msg: {}, exp: {}", e.getMessage(), e.getLocalizedMessage());
-        return R.fail(e.getMessage());
+        log.error("Uncaught exception! - ", e);
+        return R.fail();
     }
 
 
@@ -59,14 +59,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R<Exception> handleBadRequestParameterException(BadRequestParameterException e) {
-        log.error("Client请求参数错误 - msg: {}", e.getMessage());
+        log.error("Client请求参数错误 - ", e);
         return R.badRequest(e.getMessage());
     }
 
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<Exception> handleBusinessException(BusinessException e) {
-        log.error("业务异常! - msg: {}", e.getMessage());
+        log.error("业务异常! - ", e);
         return R.fail(e.getMessage(), e.getCode());
     }
 
