@@ -131,7 +131,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     }
 
     private void validateApplyForm(ReimburseApplyForm applyForm) {
-        ValidationResult result = applyFormValidatorChain.validate(applyForm.getDescription(), applyForm.getCost(), applyForm.getVoucherNum(), applyForm.getRbsDate());
+        ValidationResult result = applyFormValidatorChain.validate(applyForm.getReason(), applyForm.getCost(), applyForm.getVoucherNum(), applyForm.getRbsDate());
         if (!result.isValid()) {
             log.error("申请表单参数验证失败！错误信息 - {}", result.getErrorMessage());
             throw new BadRequestParameterException(result.getErrorMessage());
@@ -212,9 +212,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         decisionValidate(applyForm.getDecision());
 
         runtimeService.setVariable(procId, FlowableConstant.PV_CEO, new User(user));
-        Reimburse rbs = check(user, applyForm);
 
-        return rbs;
+        return check(user, applyForm);
     }
 
     @Override
@@ -225,9 +224,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         decisionValidate(applyForm.getDecision());
 
         runtimeService.setVariable(procId, FlowableConstant.PV_ACCOUNTANCY, new User(user));
-        Reimburse rbs = check(user, applyForm);
 
-        return rbs;
+        return check(user, applyForm);
     }
 
     @Override
@@ -238,9 +236,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         decisionValidate(applyForm.getDecision());
 
         runtimeService.setVariable(procId, FlowableConstant.PV_FI_MANAGER, new User(user));
-        Reimburse rbs = check(user, applyForm);
 
-        return rbs;
+        return check(user, applyForm);
     }
 
     @Override

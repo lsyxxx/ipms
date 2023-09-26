@@ -76,7 +76,7 @@ class ReimburseServiceImplTest extends BaseTest{
         flowType.setName("日常报销（金额>=5000元）");
         flowType.setProcDefId(procDefId);
 
-        applyForm = new ReimburseApplyForm(563.12, 11, new Date());
+        applyForm = new ReimburseApplyForm(563.12, 11, new Date(), "报销事由：123");
 
         //applyForm
         applyForm.setFlowType(flowType);

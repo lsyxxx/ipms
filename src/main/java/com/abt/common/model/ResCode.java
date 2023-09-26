@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum ResCode {
     //http code
     SUCCESS(0, String.valueOf(HttpStatus.OK.value()), "Success"),
-    FAIL(1, "9999", "Fail"),
+    FAIL(1, "9999", "Failed"),
     SESSION_OUT(2, "9998", "Out of Session"),
     //和webapi保持一致
     AUTHENTICATION_FAIL(3, String.valueOf(HttpStatus.UNAUTHORIZED.value()), "认证失败，请提供认证信息"),

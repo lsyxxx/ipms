@@ -1,14 +1,15 @@
 package com.abt.sys.model.entity;
 
+import com.abt.common.util.FileUtil;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
  */
 
 @Data
-@Schema(description = "UploadFile上传文件表")
+@Schema(description = "UploadFile上传文件表,来源OPENAUTH")
 @Table(name = "UploadFile")
 @Comment("上传文件表")
 @Entity
@@ -39,11 +40,14 @@ public class UploadFile implements Serializable {
     @Column(name = "Description", columnDefinition = "VARCHAR(200)")
     private String description;
 
+    /**
+     * 附件类型
+     */
     @Column(name = "FileType", columnDefinition = "PrimaryKey")
     private String fileType;
 
     @Column(name = "FileSize", columnDefinition = "INT")
-    private String fileSize;
+    private long fileSize;
 
     @Column(name = "Enable", columnDefinition = "BIT NOT NULL DEFAULT 1")
     private boolean enable = true;
@@ -64,6 +68,7 @@ public class UploadFile implements Serializable {
     @Column(name = "CreateUserName", columnDefinition = "VARCHAR(50)")
     private String createUserName;
 
+    @CreatedDate
     @Column(name = "CreateTime", columnDefinition = "DATETIME")
     private LocalDateTime createTime;
 
@@ -77,9 +82,13 @@ public class UploadFile implements Serializable {
     private String belongAppId;
 
 
-    public static UploadFile create(MultipartFile file) {
+    public static UploadFile create(MultipartFile file, String path) {
         UploadFile uploadFile = new UploadFile();
         uploadFile.setFileName(file.getOriginalFilename());
+        uploadFile.setFilePath(path);
+        uploadFile.setFileSize(file.getSize());
+        //保存票据类型
+        uploadFile.setFileType(FileUtil.getFileExtension(file.getOriginalFilename()));
 
 
         return uploadFile;

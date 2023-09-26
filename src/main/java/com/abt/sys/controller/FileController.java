@@ -46,8 +46,9 @@ public class FileController {
 
     @Operation(summary = "上传文件")
     @Parameter(name = "form", description = "文件信息")
+    @Parameter(name = "fileType", description = "附件类型")
     @PostMapping("/upload")
-    public R upload(@RequestParam("file") MultipartFile[] files) {
+    public R upload(@RequestParam("file") MultipartFile[] files, @RequestParam String type) {
         UserView user = TokenUtil.getUserFromAuthToken();
         if (files == null || files.length <1) {
             log.warn("用户没有上传文件");
@@ -60,9 +61,8 @@ public class FileController {
             }
 
             try {
-                UploadFile uploadFile = new UploadFile();
                 FileUtil.saveFile(file, savedRoot);
-                fileService.saveFile(uploadFile);
+                fileService.saveFile(file);
             } catch (Exception e) {
                 log.error("保存文件失败", e);
                 throw new BusinessException(messages.getMessage("com.abt.sys.FileController.save.error"));
