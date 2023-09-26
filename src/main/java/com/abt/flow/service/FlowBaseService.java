@@ -78,4 +78,9 @@ public interface FlowBaseService {
      * @param state 审批状态
      */
     String businessKey(String result, String state);
+
+    /**
+     * 保存附件，只保存附件路径
+     */
+    void saveAttachments(String taskId, String processInstanceId, String service, String bizType);
 }

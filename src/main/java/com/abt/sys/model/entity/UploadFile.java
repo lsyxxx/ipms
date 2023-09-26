@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 @Comment("上传文件表")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Deprecated
 public class UploadFile implements Serializable {
 
     public static final long serialVersionUID = -1988249215026734302L;

@@ -1,5 +1,6 @@
 package com.abt.flow.service.impl;
 
+import com.abt.common.util.FileUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.Decision;
@@ -9,7 +10,10 @@ import com.abt.flow.service.FlowBaseService;
 import com.abt.flow.service.FlowOperationLogService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.service.IFileService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.common.engine.impl.identity.Authentication;
@@ -27,7 +31,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -45,17 +48,20 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
     private FlowOperationLogService flowOperationLogService;
 
+    private IFileService iFileService;
+
 
     public static final String DIAG_PNG = "png";
 
 
-    protected AbstractDefaultFlowService(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowableConstant flowableConstant, FlowOperationLogService flowOperationLogService) {
+    protected AbstractDefaultFlowService(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowableConstant flowableConstant, FlowOperationLogService flowOperationLogService, IFileService iFileService) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
         this.historyService = historyService;
         this.repositoryService = repositoryService;
         this.flowableConstant = flowableConstant;
         this.flowOperationLogService = flowOperationLogService;
+        this.iFileService = iFileService;
     }
 
 
@@ -215,5 +221,30 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
         return o == null ? "" : String.valueOf(o);
     }
 
+
+    @Override
+    public void saveAttachments(String taskId, String processInstanceId, String service, String bizType) {
+        SystemFile condition = systemFile(service, processInstanceId, taskId, bizType);
+        List<SystemFile> all = iFileService.findBy(condition);
+        if (CollectionUtils.isEmpty(all)) {
+            return;
+        }
+
+        all.forEach(i -> {
+            taskService.createAttachment(FileUtil.getFileExtension(i.getType()), taskId, processInstanceId, i.getName(), "", i.getUrl());
+        });
+
+    }
+
+
+    private SystemFile systemFile(String service, String processInstanceId, String taskId, String bizType) {
+        SystemFile condition = new SystemFile();
+        condition.setService(service);
+        condition.setRelationId1(processInstanceId);
+        condition.setRelationId2(taskId);
+        //业务类型id
+        condition.setBizType(bizType);
+        return condition;
+    }
 
 }

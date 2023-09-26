@@ -67,11 +67,12 @@ public class ReimburseApplyForm extends FlowForm{
      */
     private String reason;
 
+
     public ReimburseApplyForm(double cost, int voucherNum, Date rbsDate, String reason) {
         this.cost = cost;
         this.voucherNum = voucherNum;
         this.rbsDate = rbsDate;
-        this.reason = getReason();
+        this.reason = reason;
     }
 
 }

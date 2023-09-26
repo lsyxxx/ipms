@@ -5,6 +5,7 @@ import com.abt.common.validator.UserTaskCheckValidator;
 import com.abt.common.validator.ValidationResult;
 import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
+import com.abt.flow.controller.ReimburseController;
 import com.abt.flow.model.*;
 import com.abt.flow.model.entity.Reimburse;
 import com.abt.flow.repository.FlowCategoryRepository;
@@ -14,6 +15,7 @@ import com.abt.flow.service.ReimburseService;
 import com.abt.sys.exception.BadRequestParameterException;
 import com.abt.sys.exception.IllegalUserException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.service.IFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
@@ -45,6 +47,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
     private final ReimburseRepository reimburseRepository;
 
+    private final IFileService iFileService;
+
 
     //报销事由,报销金额,票据数量,报销日期
     private final ValidatorChain applyFormValidatorChain;
@@ -60,13 +64,14 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
 
 
-    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor) {
-        super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService);
+    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor) {
+        super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService, iFileService);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
         this.taskService = taskService;
         this.flowableConstant = flowableConstant;
         this.reimburseRepository = reimburseRepository;
+        this.iFileService = iFileService;
         this.applyFormValidatorChain = applyFormValidatorChain;
         this.commonDecisionValidatorChain = commonDecisionValidatorChain;
         this.userTaskCheckValidator = userTaskCheckValidator;
@@ -190,6 +195,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         if (StringUtils.hasLength(applyForm.getComment())) {
             taskService.addComment(taskId, procId, applyForm.getComment());
         }
+        this.saveAttachments(taskId, procId, ReimburseController.SERVICE, applyForm.getFlowType().getId());
 
         //2. check
         addInvokers(procId, user.getId());

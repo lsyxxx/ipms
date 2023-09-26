@@ -43,9 +43,11 @@ public class FlowController {
     @Operation(summary = "查看用户申请的流程")
     @Parameter(name = "form", description = "请求参数，包括分页(page,size)与搜索参数(query)，id, type")
     @GetMapping("/load")
-    public R<List<FlowInfoVo>> flowList(@RequestParam FlowRequestForm form) {
+    public R<List<FlowInfoVo>> flowList(FlowRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
-
+        if (form == null) {
+            form = FlowRequestForm.createNoPaging();
+        }
         form.setUser(user);
 
         List<FlowInfoVo> list = flowInfoService.getFlows(form);

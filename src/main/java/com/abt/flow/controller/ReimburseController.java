@@ -36,6 +36,8 @@ public class ReimburseController {
     @Value("com.abt.flow.controller.ReimburseController.type")
     private String reimburseType;
 
+    public final static String SERVICE = "wf_reimburse";
+
     private final ReimburseService reimburseService;
     private final FlowInfoService flowInfoService;
 

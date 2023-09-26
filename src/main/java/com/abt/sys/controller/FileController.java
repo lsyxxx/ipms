@@ -1,6 +1,7 @@
 package com.abt.sys.controller;
 
 import com.abt.common.model.R;
+import com.abt.common.model.RequestFile;
 import com.abt.common.util.FileUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
@@ -48,9 +49,9 @@ public class FileController {
     @Parameter(name = "form", description = "文件信息")
     @Parameter(name = "fileType", description = "附件类型")
     @PostMapping("/upload")
-    public R upload(@RequestParam("file") MultipartFile[] files, @RequestParam String type) {
+    public R<String> upload(@RequestParam("file") MultipartFile[] files, @RequestParam RequestFile requestFile) {
         UserView user = TokenUtil.getUserFromAuthToken();
-        if (files == null || files.length <1) {
+        if (files == null || files.length < 1) {
             log.warn("用户没有上传文件");
             return R.success(messages.getMessage("com.abt.sys.FileController.upload.empty"));
         }
@@ -59,13 +60,10 @@ public class FileController {
             if (file.isEmpty()) {
                 continue;
             }
-
             try {
-                FileUtil.saveFile(file, savedRoot);
-                fileService.saveFile(file);
+                fileService.saveFile(user, file, requestFile);
             } catch (Exception e) {
                 log.error("保存文件失败", e);
-                throw new BusinessException(messages.getMessage("com.abt.sys.FileController.save.error"));
             }
         }
 

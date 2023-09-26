@@ -1,5 +1,6 @@
 package com.abt.common.model;
 
+import com.abt.flow.model.FlowRequestForm;
 import com.abt.sys.model.dto.UserView;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -10,6 +11,8 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class RequestForm {
+
+    public static final int PAGE_LIMIT = 999;
 
     /**
      * 分页页数
@@ -112,5 +115,10 @@ public class RequestForm {
         return this.user.getCode();
     }
 
+    public static RequestForm createNoPaging() {
+        RequestForm form = new RequestForm();
+        form.setLimit(PAGE_LIMIT);
+        return form;
+    }
 
 }

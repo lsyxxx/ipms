@@ -8,6 +8,7 @@ import lombok.Data;
  */
 @Data
 public class FlowRequestForm extends RequestForm {
+
     /**
      * 审批状态
      */
@@ -21,4 +22,10 @@ public class FlowRequestForm extends RequestForm {
      */
     private String starter;
 
+
+    public static FlowRequestForm createNoPaging() {
+        FlowRequestForm form = new FlowRequestForm();
+        FlowRequestForm.createNoPaging();
+        return form;
+    }
 }
