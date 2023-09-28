@@ -5,6 +5,9 @@ import com.abt.common.model.RequestFile;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -17,7 +20,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Table(name = "T_sys_file")
 @Comment("系统文件 ")
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class SystemFile extends  AuditInfo {
 

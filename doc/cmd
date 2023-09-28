@@ -5,3 +5,9 @@ git config --global --unset https.proxy
 
 查看my.ini位置
 show variables like 'datadir';
+
+
+
+SVN
+https://124.220.91.40/svn/ABT_Project
+LSY
