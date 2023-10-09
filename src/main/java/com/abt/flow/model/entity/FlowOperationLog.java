@@ -1,5 +1,6 @@
 package com.abt.flow.model.entity;
 
+import com.abt.common.model.Action;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -75,6 +76,7 @@ public class FlowOperationLog implements Serializable {
     @Column(name = "action_des", columnDefinition = "VARCHAR(128)")
     private String actionDescription;
 
+    private String comment;
 
     public static FlowOperationLog of() {
         return new FlowOperationLog();

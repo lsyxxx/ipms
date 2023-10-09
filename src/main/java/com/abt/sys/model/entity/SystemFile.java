@@ -64,7 +64,7 @@ public class SystemFile extends  AuditInfo {
     private String relationId1;
 
     @Schema(description = "关联ID2")
-    @Column(name = "rel_id1", columnDefinition = "VARCHAR(256)")
+    @Column(name = "rel_id2", columnDefinition = "VARCHAR(256)")
     private String relationId2;
 
 

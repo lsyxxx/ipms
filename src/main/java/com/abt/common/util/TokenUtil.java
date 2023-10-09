@@ -30,4 +30,27 @@ public class TokenUtil {
     }
 
 
+    /**
+     * 获取token value
+     * @return 如果没有认证则返回空字符串
+     *         如果没有token值，则返回空字符串
+     */
+    public static String getToken() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            log.warn("没有认证信息!");
+            return "";
+        }
+        Object token = auth.getCredentials();
+        if (token == null) {
+            return "";
+        }
+        return (String) token;
+    }
+
+    public static Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+
 }

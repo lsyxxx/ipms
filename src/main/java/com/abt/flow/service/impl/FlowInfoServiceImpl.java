@@ -1,13 +1,20 @@
 package com.abt.flow.service.impl;
 
 import com.abt.common.util.MessageUtil;
+import com.abt.common.util.TokenUtil;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.FlowInfoVo;
 import com.abt.flow.model.entity.FlowCategory;
+import com.abt.flow.model.entity.FlowScheme;
 import com.abt.flow.repository.FlowCategoryRepository;
 import com.abt.flow.service.FlowInfoService;
+import com.abt.http.dto.WebApiDto;
+import com.abt.http.dto.WebApiToken;
+import com.abt.http.service.HttpConnectService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +27,7 @@ import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.variable.api.history.HistoricVariableInstance;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -32,9 +40,13 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FlowInfoServiceImpl implements FlowInfoService {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
+
+
+    private final HttpConnectService<WebApiDto> httpConnectService;
 
 
     public static final String ORDERBY_CRTDATE = "createDate";
@@ -59,13 +71,8 @@ public class FlowInfoServiceImpl implements FlowInfoService {
      */
     public static final String TYPE_WAIT = "wait";
 
-    public FlowInfoServiceImpl(FlowCategoryRepository flowCategoryRepository, Example<FlowCategory> enabledExample, HistoryService historyService, RuntimeService runtimeService, TaskService taskService) {
-        this.flowCategoryRepository = flowCategoryRepository;
-        this.enabledExample = enabledExample;
-        this.historyService = historyService;
-        this.runtimeService = runtimeService;
-        this.taskService = taskService;
-    }
+    @Value("webapi.http.api.flowschemes")
+    private String flowSchemeApi;
 
     @Override
     public List<FlowInfoVo> getUserApplyFlows(FlowRequestForm form) {

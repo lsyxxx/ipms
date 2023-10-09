@@ -152,7 +152,7 @@ public class ReimburseController {
     @Operation(summary = "流程图")
     @Parameter(name = "applyForm", description = "业务数据form")
     @PostMapping("/diag")
-    public ResponseEntity PngDiagram(@RequestParam ReimburseApplyForm applyForm) {
+    public ResponseEntity<InputStreamResource> PngDiagram(@RequestParam ReimburseApplyForm applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
 
         InputStream highLightedTaskPngDiagram = reimburseService.getHighLightedTaskPngDiagram(user, applyForm);
@@ -161,6 +161,24 @@ public class ReimburseController {
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG) // 设置图像类型为JPEG
                 .body(resource);
+    }
+
+    @Operation(summary = "获取流程附件")
+//    @Parameter(name = "applyForm", description = "业务数据form")
+    @PostMapping("/files")
+    public void getAttachmentList() {
+
+    }
+
+
+    @Operation(summary = "打开流程页面")
+    @Parameter(name = "id", description = "报销业务id")
+    @GetMapping("/get")
+    public R<ReimburseApplyForm> get(String id) {
+
+
+        //TODO 返回类型
+        return R.success();
     }
 
 }

@@ -71,4 +71,12 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(SystemFileNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public R<Exception> handleSystemFileNotFoundException(SystemFileNotFoundException e) {
+        log.error("文件未找到! - ", e);
+        return R.fileNotFound();
+    }
+
+
 }

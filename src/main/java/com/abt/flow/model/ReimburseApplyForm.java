@@ -3,6 +3,8 @@ package com.abt.flow.model;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
@@ -16,6 +18,8 @@ import java.util.Map;
  * client流程申请数据表单
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Accessors(chain = true)
 public class ReimburseApplyForm extends FlowForm{
 

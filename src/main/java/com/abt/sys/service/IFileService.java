@@ -13,4 +13,8 @@ public interface IFileService {
     void saveFile(UserView user, MultipartFile file, RequestFile requestFile);
 
     List<SystemFile> findBy(SystemFile condition);
+
+    void delete(String id, String name);
+
+    SystemFile findById(String id, String name);
 }

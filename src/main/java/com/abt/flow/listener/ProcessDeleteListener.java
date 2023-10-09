@@ -1,5 +1,6 @@
 package com.abt.flow.listener;
 
+import com.abt.common.model.Action;
 import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.flow.repository.FlowOperationLogRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class ProcessDeleteListener extends FlowBaseListener implements FlowableE
         log.info("--------- 开始执行[流程删除监听器ProcessDeleteListener] ----------------");
         TaskEntity taskEntity = getTaskEntity(event);
         FlowOperationLog flowLog = createLog(taskEntity);
-        flowLog.setAction("删除");
+        flowLog.setAction(Action.delete.description());
 
         flowOperationLogRepository.save(flowLog);
 

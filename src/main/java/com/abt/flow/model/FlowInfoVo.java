@@ -4,6 +4,9 @@ import com.abt.common.model.AuditInfo;
 import com.abt.common.util.TimeUtil;
 import com.abt.flow.config.FlowableConstant;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -21,6 +24,9 @@ import java.util.stream.Collectors;
  * 用于传递前端查看流程列表(待办/已办列表)
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Accessors(chain = true)
 public class FlowInfoVo extends AuditInfo {
 
 

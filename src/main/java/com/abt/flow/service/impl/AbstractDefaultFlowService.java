@@ -147,7 +147,7 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
     public void cancelRunningProcess(String processInstanceId, UserView user) {
         log.info("开始执行取消流程cancelProcess(), 流程实例id: {}", processInstanceId);
         verifyRunningProcess(processInstanceId, messages.getMessage("flow.service.AbstractDefaultFlowService.cancelProcess.error"));
-        runtimeService.deleteProcessInstance(processInstanceId, MessageUtil.format("flow.service.AbstractDefaultFlowService.cancelProcess.delReason", user.simpleInfo()));
+        runtimeService.deleteProcessInstance(processInstanceId, messages.getMessage("flow.service.AbstractDefaultFlowService.cancelProcess.delReason"));
 
     }
 
@@ -246,5 +246,6 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
         condition.setBizType(bizType);
         return condition;
     }
+
 
 }

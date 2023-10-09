@@ -3,12 +3,17 @@ package com.abt.flow.model;
 import com.abt.common.model.AutoForm;
 import com.abt.common.model.User;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 /**
  * 流程业务表单
  */
+
 @Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Accessors(chain = true)
 public class FlowForm extends AutoForm {
 
@@ -62,5 +67,6 @@ public class FlowForm extends AutoForm {
      * 流程状态
      */
     private ProcessState state;
+
 
 }

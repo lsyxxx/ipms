@@ -5,23 +5,36 @@ package com.abt.common.model;
  */
 public enum Action {
 
-    create("创建"),
+    create("create",  "创建"),
 
-    apply("申请"),
+    apply("apply", "申请"),
 
-    complete("完成"),
+    complete("complete", "完成"),
 
-    undo("撤销"),
-    delete("删除"),
-    audit("审核"),
-    check("复核"),
-    suspend("挂起"),
-    active("激活"),
+    undo("undo", "撤销"),
+    delete("delete", "删除"),
+    audit("audit", "审核"),
+    check("check", "复核"),
+    suspend("suspend", "挂起"),
+    active("active", "激活")
     ;
 
+    private final String value;
     private final String description;
 
-    Action(String description) {
+    Action(String value, String description) {
+        this.value = value;
         this.description = description;
     }
+
+
+    public String value() {
+        return this.value;
+    }
+
+    public String description() {
+        return this.description;
+    }
+
+
 }

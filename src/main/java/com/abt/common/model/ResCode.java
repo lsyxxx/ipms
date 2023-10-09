@@ -17,6 +17,7 @@ public enum ResCode {
     INVALID_TOKEN(4, String.valueOf(HttpStatus.UNAUTHORIZED.value()), "认证失败，请提供认证信息"),
     ACCESS_DENIED(5, String.valueOf(HttpStatus.UNAUTHORIZED.value()), "Access Denied - unauthorized"),
     BAD_REQUEST(6, String.valueOf(HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST.getReasonPhrase()),
+    FILE_NOT_FOUND(7, String.valueOf(HttpStatus.NOT_FOUND.value()), "文件未找到")
     ;
 
     private final int index;

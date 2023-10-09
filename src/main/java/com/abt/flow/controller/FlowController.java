@@ -40,6 +40,7 @@ public class FlowController {
         this.flowOperationLogService = flowOperationLogService;
     }
 
+
     @Operation(summary = "查看用户申请的流程")
     @Parameter(name = "form", description = "请求参数，包括分页(page,size)与搜索参数(query)，id, type")
     @GetMapping("/load")
@@ -58,6 +59,7 @@ public class FlowController {
     @Operation(summary = "流程类型列表")
     @Parameter(name = "form", description = "请求参数，包括分页(page,size)与搜索参数(query)，id, type")
     @GetMapping("/cat")
+    @Deprecated
     public R<List<FlowCategory>> flowCategory(@RequestParam int page, @RequestParam int limit) {
         UserView user = TokenUtil.getUserFromAuthToken();
         List<FlowCategory> list = flowInfoService.findAllEnabled(page, limit);

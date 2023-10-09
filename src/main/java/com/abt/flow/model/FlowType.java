@@ -2,12 +2,18 @@ package com.abt.flow.model;
 
 import com.abt.common.model.AuditInfo;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 
 /**
  * 流程业务类型
  * 数据根源：FlowScheme
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Accessors(chain = true)
 public class FlowType extends AuditInfo {
 
     /**

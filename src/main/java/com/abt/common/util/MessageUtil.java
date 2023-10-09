@@ -22,7 +22,7 @@ public class MessageUtil extends ResourceBundleMessageSource {
         return getAccessor().getMessage(code);
     }
 
-    public static String format(String msg, Object ...objects) {
-        return MessageFormat.format(getMessage(msg), objects);
+    public static String format(String code, Object ...objects) {
+        return MessageFormat.format(getMessage(code), objects);
     }
 }

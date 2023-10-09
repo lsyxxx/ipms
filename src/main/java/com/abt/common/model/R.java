@@ -21,11 +21,15 @@ import java.time.LocalDateTime;
  */
 @Data
 @Slf4j
-@NoArgsConstructor
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class R<T> {
     private T data;
+    /**
+     * 等于data，以data为准
+     * 因为前端有的是data, 有的是result
+     */
+    private T result = data;
     /**
      * 业务异常代码
      */
@@ -34,6 +38,11 @@ public class R<T> {
      * 异常信息
      */
     private String msg;
+    /**
+     * 等于msg，以msg为准
+     * 因为前端有的是msg, 有的是message
+     */
+    private String message = msg;
     //eg: 2023-07-25T11:31:14.214514600
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -51,6 +60,8 @@ public class R<T> {
         this.data = data;
         this.code = code;
         this.msg = message;
+        this.message = message;
+        this.result = data;
     }
 
     public R(T data, String code, String message, int count) {
@@ -59,11 +70,17 @@ public class R<T> {
         this.code = code;
         this.msg = message;
         this.count = count;
+        this.message = message;
+        this.result = data;
     }
 
     public T get() {
         return data;
     }
+
+
+
+
 
     public static<T> R<T> success(T data) {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage());
@@ -125,6 +142,14 @@ public class R<T> {
         return new R<>(null, ResCode.BAD_REQUEST.getCode(), StringUtils.isBlank(msg) ? ResCode.BAD_REQUEST.getMessage() : msg);
     }
 
+    public static<T> R<T> fileNotFound(String errMsg) {
+        return new R<>(null, ResCode.FAIL.getCode(), errMsg == null ? ResCode.FILE_NOT_FOUND.getMessage() : errMsg);
+    }
+
+    public static<T> R<T> fileNotFound() {
+        return new R<>(null, ResCode.FAIL.getCode(), ResCode.FILE_NOT_FOUND.getMessage());
+    }
+
 
 
     public String toJson() throws JsonProcessingException {
@@ -135,6 +160,7 @@ public class R<T> {
             throw new BusinessException("Json序列化异常 -- " + exception.getMessage());
         }
     }
+
 
 
 }

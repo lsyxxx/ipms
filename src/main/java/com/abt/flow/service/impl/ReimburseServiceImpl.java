@@ -1,6 +1,7 @@
 package com.abt.flow.service.impl;
 
 import com.abt.common.model.User;
+import com.abt.common.util.MessageUtil;
 import com.abt.common.validator.UserTaskCheckValidator;
 import com.abt.common.validator.ValidationResult;
 import com.abt.common.validator.ValidatorChain;
@@ -13,10 +14,12 @@ import com.abt.flow.repository.ReimburseRepository;
 import com.abt.flow.service.FlowOperationLogService;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.exception.BadRequestParameterException;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.exception.IllegalUserException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.IFileService;
 import lombok.extern.slf4j.Slf4j;
+import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
@@ -30,6 +33,7 @@ import org.springframework.util.StringUtils;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.abt.flow.model.ProcessState.Active;
 
@@ -189,6 +193,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         Task activeTask = getActiveTask(procId, null);
         userTaskCheckValidate(activeTask);
 
+        Authentication.setAuthenticatedUserId(user.getId());
+
         String taskId = activeTask.getId();
         Decision decision = Decision.fromValue(applyForm.getDecision());
         ProcessState state = ProcessState.of(decision);
@@ -207,6 +213,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         rbs.update(procId, activeTask, user.getId(), user.getName(), state.value(), decision.description());
         reimburseRepository.save(rbs);
 
+        Authentication.setAuthenticatedUserId(null);
         return rbs;
     }
 
@@ -272,6 +279,18 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
             invokers  = invokers + ", " + user;
         }
         runtimeService.setVariable(procId, FlowableConstant.PV_HIS_INVOKERS, invokers);
+    }
+
+    public void get(String id) {
+        final Optional<Reimburse> byId = reimburseRepository.findById(id);
+        if (byId.isEmpty()) {
+            log.error("报销业务数据未找到, 业务实体id: {}", id);
+            throw new BusinessException(MessageUtil.format("flow.service.ReimburseServiceImpl.get.notFound"));
+        }
+        Reimburse reimburse = byId.get();
+
+
+
     }
 
 }
