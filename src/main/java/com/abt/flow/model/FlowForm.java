@@ -59,7 +59,7 @@ public class FlowForm extends AutoForm {
     private User accountancy;
 
     /**
-     * 流程申请人
+     * 流程申请人/创建人
      */
     private User applicant;
 
@@ -67,6 +67,18 @@ public class FlowForm extends AutoForm {
      * 流程状态
      */
     private ProcessState state;
+
+    /**
+     * 当前节点
+     */
+    private String activityName;
+    private String taskId;
+
+    /**
+     * 自定义名称
+     */
+    private String customName;
+    private String processDefId;
 
 
 }

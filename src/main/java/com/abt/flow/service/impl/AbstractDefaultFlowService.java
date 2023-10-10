@@ -136,7 +136,7 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
     public void deleteRunningProcess(String processInstanceId, String delReason, UserView user) {
         log.info("开始执行删除流程deleteProcess(), 流程实例id: {}, 删除原因: {}, 删除用户: {}", processInstanceId, delReason, user.simpleInfo());
         if (StringUtils.isBlank(delReason)) {
-            delReason = messages.getMessage("comm.flow.deleteReason.default");
+            delReason = messages.getMessage("comm.flow.deleteReason.default.action");
         }
         //verify
         verifyRunningProcess(processInstanceId, messages.getMessage("flow.service.AbstractDefaultFlowService.deleteRunningProcess.error"));
@@ -177,7 +177,7 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
     }
 
     @Override
-    public void check(UserView user, Decision result, String procId, String taskId) {
+    public void doCheck(UserView user, Decision result, String procId, String taskId) {
         log.info("开始执行一般性审批, 审批人：{}, 审批流程: {}, 审批结果: {}", user.simpleInfo(), procId, result);
         switch (result) {
             case Approve:

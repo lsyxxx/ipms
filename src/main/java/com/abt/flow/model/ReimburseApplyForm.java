@@ -1,11 +1,14 @@
 package com.abt.flow.model;
 
+import com.abt.flow.model.entity.Reimburse;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import java.util.Map;
 @ToString(callSuper = true)
 @Accessors(chain = true)
 public class ReimburseApplyForm extends FlowForm{
+    public static final int SHOW_COMMENT = 1;
 
     /**
      * 报销费用
@@ -64,6 +68,8 @@ public class ReimburseApplyForm extends FlowForm{
     /**
      * 报销时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date rbsDate;
 
     /**
@@ -71,12 +77,54 @@ public class ReimburseApplyForm extends FlowForm{
      */
     private String reason;
 
+    /**
+     * 是否显示审批意见表单，页面控制
+     * 1:显示
+     */
+    private int showComment = 0;
 
     public ReimburseApplyForm(double cost, int voucherNum, Date rbsDate, String reason) {
+        super();
         this.cost = cost;
         this.voucherNum = voucherNum;
         this.rbsDate = rbsDate;
         this.reason = reason;
     }
+
+    public ReimburseApplyForm(Reimburse reimburse) {
+        super();
+        this.cost = reimburse.getCost();
+        this.reason = reimburse.getReason();
+        this.rbsDate = reimburse.getReimburseDate();
+        this.voucherNum = reimburse.getVoucherNum();
+        this.decision = reimburse.getResult();
+
+        this.setProcessInstanceId(reimburse.getProcessInstanceId());
+        this.setProject(reimburse.getProject());
+        this.setState(ProcessState.of(reimburse.getState()));
+        this.setProcessDefId(reimburse.getProcessDefinitionId());
+        this.setFrmId(reimburse.getFormId());
+
+        FlowType flowType = new FlowType();
+        flowType.setCode(reimburse.getCategoryCode());
+        flowType.setId(reimburse.getCategoryId());
+        flowType.setName(reimburse.getCategoryName());
+        this.setFlowType(flowType);
+    }
+
+    /**
+     * 显示审批意见表单
+     */
+    public void showComment() {
+        this.showComment = 1;
+    }
+
+    /**
+     * 不显示审批意见表单
+     */
+    public void disableComment() {
+        this.showComment = 0;
+    }
+
 
 }

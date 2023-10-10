@@ -63,7 +63,7 @@ public interface FlowBaseService {
      * 1. 同意/拒绝
      * 2. 同意则进行下一个节点，拒绝则终止流程
      */
-    void check(UserView user, Decision result, String procId, String taskId);
+    void doCheck(UserView user, Decision result, String procId, String taskId);
 
     /**
      * 启动流程

@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.hibernate.annotations.Comment;
@@ -26,6 +28,8 @@ import java.util.Date;
 @Schema(description = "T_reimburse 报销流程数据表")
 @Table(name = "T_reimburse")
 @Comment("报销流程数据表")
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Entity
 public class Reimburse extends FlowBusinessBase implements Serializable {
 
@@ -75,6 +79,17 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
     @Schema(description = "报销日期")
     @Column(name = "rbs_date", columnDefinition = "VARCHAR(255)")
     private Date reimburseDate;
+
+    /**
+     * 当前是否是申请节点
+     */
+    @Schema(description = "当前是否是申请节点")
+    @Column(name = "is_apply", columnDefinition = "BIT")
+    private boolean isApply = true;
+
+    @Schema(description = "表单模板id")
+    @Column(name = "form_id", columnDefinition = "VARCHAR(255)")
+    private String formId;
 
 
     public Reimburse create(ReimburseApplyForm form, UserView user) {

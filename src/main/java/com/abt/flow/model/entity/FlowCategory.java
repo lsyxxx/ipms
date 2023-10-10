@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 @Comment("流程类型表")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Deprecated
 public class FlowCategory implements Serializable {
 
     @Id

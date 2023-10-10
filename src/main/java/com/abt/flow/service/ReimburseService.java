@@ -62,4 +62,14 @@ public interface ReimburseService{
     InputStream getHighLightedTaskPngDiagram(UserView user, ReimburseApplyForm applyForm);
 
 
+    /**
+     * 流程详情
+     */
+    ReimburseApplyForm get(String id);
+
+    /**
+     * 删除流程
+     * @param id 业务数据ID
+     */
+    void delete(String id);
 }

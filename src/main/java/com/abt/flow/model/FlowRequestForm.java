@@ -30,8 +30,6 @@ public class FlowRequestForm extends RequestForm {
 
 
     public static FlowRequestForm createNoPaging() {
-        FlowRequestForm form = new FlowRequestForm();
-        FlowRequestForm.createNoPaging();
-        return form;
+        return new FlowRequestForm();
     }
 }

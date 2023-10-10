@@ -4,6 +4,7 @@ import com.abt.common.model.RequestForm;
 import com.abt.flow.model.FlowInfoVo;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.entity.FlowCategory;
+import org.flowable.engine.task.Comment;
 
 import java.util.List;
 
@@ -42,11 +43,6 @@ public interface FlowInfoService {
      */
     List<FlowInfoVo> getFlows(FlowRequestForm form);
 
-    /**
-     * 根据id查询流程类型
-     * @param id
-     * @return
-     */
-    FlowCategory getFlowCategory(String id);
 
+    List<Comment> getComments(String procId);
 }

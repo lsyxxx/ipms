@@ -1,19 +1,15 @@
 package com.abt.flow.service.impl;
 
 import com.abt.common.util.MessageUtil;
-import com.abt.common.util.TokenUtil;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.FlowInfoVo;
 import com.abt.flow.model.entity.FlowCategory;
-import com.abt.flow.model.entity.FlowScheme;
 import com.abt.flow.repository.FlowCategoryRepository;
 import com.abt.flow.service.FlowInfoService;
 import com.abt.http.dto.WebApiDto;
-import com.abt.http.dto.WebApiToken;
 import com.abt.http.service.HttpConnectService;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.dto.UserView;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
@@ -23,6 +19,7 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
+import org.flowable.engine.task.Comment;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
@@ -218,14 +215,9 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
 
     @Override
-    public FlowCategory getFlowCategory(String id) {
-        Optional<FlowCategory> optional = flowCategoryRepository.findById(id);
-        if (optional.isEmpty()) {
-            log.error("未查询到流程类型 -- {}", id);
-            throw new BusinessException(messages.getMessage("flow.service.FlowInfoServiceImpl.getFlowCategory"));
-        }
-
-        return optional.get();
+    public List<Comment> getComments(String procId) {
+        //order by time desc
+        return taskService.getProcessInstanceComments(procId);
     }
 
 }

@@ -16,6 +16,7 @@ import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,5 +169,37 @@ class ReimburseServiceImplTest extends BaseTest{
 //        list.forEach(i -> {
 //            logTask(i);
 //        });
+    }
+
+    @AfterEach
+    void tearDown() {
+    }
+
+    @Test
+    void get() {
+        String rbsId = "202309191695111409784";
+//        service.get();
+    }
+
+
+    void doPrintProcess(String procId) {
+        final ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(procId).singleResult();
+        logProcess(processInstance);
+    }
+
+
+    void doPrintTasks(String procId) {
+        final List<Task> tasks = taskService.createTaskQuery().processInstanceId(procId).list();
+        countList(tasks);
+        for (Task task : tasks) {
+            logTask(task);
+        }
+    }
+
+
+    @Test
+    void printTasks() {
+        String procId = "e1e4efdc-56c4-11ee-a4cb-a497b12f53fd";
+        doPrintTasks(procId);
     }
 }

@@ -15,10 +15,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.flowable.engine.task.Comment;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 流程相关
@@ -72,10 +75,18 @@ public class FlowController {
     @GetMapping("/log")
     public R<List<FlowOperationLog>> getOperateLog(@NotNull @RequestParam String id) {
 
-        List<FlowOperationLog> logs = flowOperationLogService.getByProcessInstanceId(id);
+        final List<FlowOperationLog> logs = flowOperationLogService.getByProcessInstanceId(id);
+        final List<Comment> comments = flowInfoService.getComments(id);
+        Map<String, Comment> commentMap = comments.stream()
+                .collect(Collectors.toMap(Comment::getTaskId, comment -> comment));
+        logs.forEach(i -> {
+            i.setComment(commentMap.get(i.getTaskId()).getFullMessage());
+        });
 
         return R.success(logs, logs.size());
     }
-    
+
+
+
 
 }

@@ -8,8 +8,12 @@ import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.controller.ReimburseController;
 import com.abt.flow.model.*;
+import com.abt.flow.model.entity.FlowScheme;
+import com.abt.flow.model.entity.Form;
 import com.abt.flow.model.entity.Reimburse;
 import com.abt.flow.repository.FlowCategoryRepository;
+import com.abt.flow.repository.FlowSchemeRepository;
+import com.abt.flow.repository.FormRepository;
 import com.abt.flow.repository.ReimburseRepository;
 import com.abt.flow.service.FlowOperationLogService;
 import com.abt.flow.service.ReimburseService;
@@ -52,6 +56,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     private final ReimburseRepository reimburseRepository;
 
     private final IFileService iFileService;
+    private final FlowSchemeRepository flowSchemeRepository;
+    private final FormRepository formRepository;
 
 
     //报销事由,报销金额,票据数量,报销日期
@@ -68,7 +74,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
 
 
-    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor) {
+    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, FlowSchemeRepository flowSchemeRepository, FormRepository formRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor) {
         super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService, iFileService);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
@@ -76,6 +82,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         this.flowableConstant = flowableConstant;
         this.reimburseRepository = reimburseRepository;
         this.iFileService = iFileService;
+        this.flowSchemeRepository = flowSchemeRepository;
+        this.formRepository = formRepository;
         this.applyFormValidatorChain = applyFormValidatorChain;
         this.commonDecisionValidatorChain = commonDecisionValidatorChain;
         this.userTaskCheckValidator = userTaskCheckValidator;
@@ -206,11 +214,12 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         //2. check
         addInvokers(procId, user.getId());
         runtimeService.updateBusinessStatus(procId, businessKey(decision.value(), state.value()));
-        this.check(user, decision, procId, taskId);
+        this.doCheck(user, decision, procId, taskId);
 
         //3. update
         Reimburse rbs = reimburseRepository.findByProcessInstanceId(procId);
         rbs.update(procId, activeTask, user.getId(), user.getName(), state.value(), decision.description());
+        rbs.setApply(false);
         reimburseRepository.save(rbs);
 
         Authentication.setAuthenticatedUserId(null);
@@ -281,7 +290,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         runtimeService.setVariable(procId, FlowableConstant.PV_HIS_INVOKERS, invokers);
     }
 
-    public void get(String id) {
+    @Override
+    public ReimburseApplyForm get(String id) {
         final Optional<Reimburse> byId = reimburseRepository.findById(id);
         if (byId.isEmpty()) {
             log.error("报销业务数据未找到, 业务实体id: {}", id);
@@ -289,8 +299,16 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         }
         Reimburse reimburse = byId.get();
 
+        ReimburseApplyForm form = new ReimburseApplyForm(reimburse);
+        final String contentData = formRepository.findById(reimburse.getFormId()).get().getContentData();
+        form.setFormJson(contentData);
+        return form;
 
+    }
 
+    @Override
+    public void delete(String id) {
+        //TODO
     }
 
 }

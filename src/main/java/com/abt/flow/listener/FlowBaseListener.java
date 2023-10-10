@@ -1,17 +1,13 @@
 package com.abt.flow.listener;
 
-import com.abt.flow.model.ProcessState;
 import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.flow.repository.FlowOperationLogRepository;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
-import org.flowable.engine.RuntimeService;
 import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
-import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.context.ApplicationContext;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -47,15 +43,6 @@ public class FlowBaseListener {
         return (TaskEntity) ((FlowableEntityEventImpl) event).getEntity();
     }
 
-
-    /**
-     * 流程是否被删除
-     * @param event
-     * @return
-     */
-    boolean isProcessDelete(FlowableEvent event) {
-        return FlowableEngineEventType.PROCESS_CANCELLED.equals(event);
-    }
 
     protected FlowOperationLog createLog(TaskEntity event) {
         FlowOperationLog optLog = new FlowOperationLog();

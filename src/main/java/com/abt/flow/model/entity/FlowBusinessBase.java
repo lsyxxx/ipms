@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.flowable.task.api.Task;
 
 /**
@@ -17,6 +19,8 @@ import org.flowable.task.api.Task;
  */
 @Data
 @MappedSuperclass
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class FlowBusinessBase extends AuditInfo {
 
     /**
@@ -105,6 +109,7 @@ public class FlowBusinessBase extends AuditInfo {
             setTaskId(task.getId());
             setTaskName(task.getName());
         }
+
         this.update(updateUserid, updateUsername);
         return this;
     }

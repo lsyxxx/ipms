@@ -22,6 +22,8 @@ public class FlowOperationLogServiceImpl implements FlowOperationLogService {
 
     private final FlowOperationLogRepository flowOperationLogRepository;
 
+    private final Sort.Direction desc = Sort.Direction.DESC;
+
     public FlowOperationLogServiceImpl(FlowOperationLogRepository flowOperationLogRepository) {
         this.flowOperationLogRepository = flowOperationLogRepository;
     }
@@ -38,12 +40,12 @@ public class FlowOperationLogServiceImpl implements FlowOperationLogService {
         FlowOperationLog prop = FlowOperationLog.of();
         prop.setProcInstId(processInstanceId);
         Example<FlowOperationLog> example = Example.of(prop);
-        return flowOperationLogRepository.findAll(example, Sort.by(ORDER_OPTDATE));
+        return flowOperationLogRepository.findAll(example, Sort.by(desc, ORDER_OPTDATE));
     }
 
 
     public List<FlowOperationLog> getAllOrderByOperateDate(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, ORDER_OPTDATE);
+        PageRequest pageRequest = PageRequest.of(page, size, desc, ORDER_OPTDATE);
         Page<FlowOperationLog> all = flowOperationLogRepository.findAll(pageRequest);
         if (all.hasContent()) {
             return all.getContent();
