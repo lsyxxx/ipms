@@ -32,12 +32,6 @@ public class WebApiHttpConnectServiceImpl implements HttpConnectService<WebApiDt
     private final IWebApiHttpHandler<WebApiDto> webApiHttpConnectHandler;
     private final WebApiConfig webApiConfig;
 
-//    public Object get(String api, WebApiToken token) {
-//        WebApiDto<UserView> dto = (WebApiDto) get(api, token);
-//        UserView user = dto.get();
-//        return user;
-//    }
-
     @Override
     public String simpleGet(String url) {
         return null;

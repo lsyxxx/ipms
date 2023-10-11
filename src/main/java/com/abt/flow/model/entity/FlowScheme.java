@@ -15,30 +15,18 @@ import java.time.LocalDateTime;
  */
 @Data
 @Accessors(chain = true)
-@Entity
 @Schema(description = "自定义页面")
-@Comment("流程操作日志表")
-@Table(name = "FlowScheme")
 public class FlowScheme {
 
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Schema(description = "PK")
-    @Column(name = "Id")
     private String id;
 
-
-    @Column(name = "SchemeCode")
     private String schemeCode;
 
-    @Column(name = "SchemeName")
     private String schemeName;
 
-    @Column(name = "SchemeType")
     private String schemeType;
 
-    @Column(name = "SchemeVersion")
     private String schemeVersion;
 
     private String schemeCanUser;
@@ -65,12 +53,15 @@ public class FlowScheme {
     private LocalDateTime modifyDate;
     private String modifyUserId;
     private String modifyUserName;
+
     private String schemeName1;
 
     /**
      * Flowable流程定义ID
      */
     private String processDefId;
+
+    private String orgId;
 
 
 }

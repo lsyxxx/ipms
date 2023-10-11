@@ -2,12 +2,7 @@ package com.abt.flow.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.annotations.Comment;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,15 +14,9 @@ import java.time.LocalDateTime;
  */
 
 @Schema(description = "表单")
-@Table(name = "Form")
-@Comment("表单")
-@Entity
 @Data
 public class Form {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Schema(description = "PK")
     private String id;
 
     private String name;

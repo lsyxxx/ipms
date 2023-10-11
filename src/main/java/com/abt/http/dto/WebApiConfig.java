@@ -2,15 +2,11 @@ package com.abt.http.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.Objects;
 
 /**
  * 连接webapi http参数

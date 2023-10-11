@@ -1,5 +1,6 @@
 package com.abt.common.util;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -19,14 +20,28 @@ public class TimeUtil {
      */
     public synchronized static String idGenerator() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String id = LocalDate.now().format(formatter) + System.currentTimeMillis();
-        return id;
+        return LocalDate.now().format(formatter) + System.currentTimeMillis();
     }
 
 
 
     public static LocalDateTime from(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+
+    public static LocalDateTime from(java.sql.Date date) {
+        if (date == null) {
+            return null;
+        }
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    public static LocalDateTime from(Timestamp ts) {
+        if (ts == null) {
+            return null;
+        }
+        return ts.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
 }

@@ -28,6 +28,7 @@ public class FlowBusinessConfig {
      * 一般审批人默认分类
      */
     public static final String DEFAULT_AUDITOR = "defaultAuditor";
+    public static final String OA_AUTH = "oaAuth";
 
     public FlowBusinessConfig(FlowSettingRepository flowSettingRepository) {
         this.flowSettingRepository = flowSettingRepository;
@@ -47,10 +48,9 @@ public class FlowBusinessConfig {
     @Lazy
     public Map<String, List<String>> flowSettingList() {
         List<FlowSetting> all = flowSettingRepository.findAll();
-        Map<String, List<String>> collect = all.stream()
+        return all.stream()
                 .collect(groupingBy(FlowSetting::getKey
                         , mapping(FlowSetting::getValue, toList())));
-        return collect;
     }
 
     /**
@@ -60,9 +60,18 @@ public class FlowBusinessConfig {
     @Lazy
     public Map<String, User> defaultAuditor() {
         List<FlowSetting> list = flowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_AUDITOR);
-        Map<String, User> collect = list.stream()
+        return list.stream()
                 .collect(toMap(FlowSetting::getKey, i -> new User(i.getValue(), i.getRemark())));
-        return collect;
     }
+
+    /**
+     * 获取OA审批权限
+     */
+    @Bean(name = "oaAuthList")
+    @Lazy
+    public List<FlowSetting>  oaAuthList() {
+        return flowSettingRepository.findByTypeOrderByCreateDate(OA_AUTH);
+    }
+
 
 }

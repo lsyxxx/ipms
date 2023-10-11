@@ -178,7 +178,6 @@ public class ReimburseController {
     @GetMapping("/get")
     public R<ReimburseApplyForm> get(String id, @RequestParam(required = false) int showComment) {
         //1. 查询业务
-
         ReimburseApplyForm reimburseApplyForm = reimburseService.get(id);
         reimburseApplyForm.setShowComment(showComment);
 
@@ -187,11 +186,11 @@ public class ReimburseController {
 
 
     @Operation(summary = "删除流程")
-    @Parameter(name = "id", description = "报销业务id")
+    @Parameter(name = "procId", description = "流程实例id")
     @GetMapping("/del")
-    public R delete(String id) {
+    public R delete(String procId) {
 
-        reimburseService.delete(id);
+        reimburseService.delete(procId);
 
         return R.success();
     }

@@ -2,14 +2,14 @@ package com.abt.flow.service.impl;
 
 import com.abt.common.model.User;
 import com.abt.common.util.MessageUtil;
+import com.abt.common.util.TokenUtil;
+import com.abt.common.validator.OAAdminValidator;
 import com.abt.common.validator.UserTaskCheckValidator;
 import com.abt.common.validator.ValidationResult;
 import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.controller.ReimburseController;
 import com.abt.flow.model.*;
-import com.abt.flow.model.entity.FlowScheme;
-import com.abt.flow.model.entity.Form;
 import com.abt.flow.model.entity.Reimburse;
 import com.abt.flow.repository.FlowCategoryRepository;
 import com.abt.flow.repository.FlowSchemeRepository;
@@ -71,10 +71,11 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     private final UserTaskCheckValidator userTaskCheckValidator;
 
     private final Map<String, User> defaultAuditor;
+    private final OAAdminValidator oaAdminValidator;
 
 
 
-    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, FlowSchemeRepository flowSchemeRepository, FormRepository formRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor) {
+    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, FlowSchemeRepository flowSchemeRepository, FormRepository formRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor, OAAdminValidator oaAdminValidator) {
         super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService, iFileService);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
@@ -89,6 +90,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         this.userTaskCheckValidator = userTaskCheckValidator;
 
         this.defaultAuditor = defaultAuditor;
+        this.oaAdminValidator = oaAdminValidator;
     }
 
     /**
@@ -141,8 +143,11 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
         processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
         processVars.put(FlowableConstant.PV_HIS_INVOKERS, "");
-
-        processVars.putAll(defaultAuditor);
+        processVars.put(FlowableConstant.PV_CEO, defaultAuditor.get(FlowableConstant.PV_CEO));
+        processVars.put(FlowableConstant.PV_FI_MANAGER, defaultAuditor.get(FlowableConstant.PV_FI_MANAGER));
+        processVars.put(FlowableConstant.PV_TAX_OFFICER, defaultAuditor.get(FlowableConstant.PV_TAX_OFFICER));
+        processVars.put(FlowableConstant.PV_ACCOUNTANCY, defaultAuditor.get(FlowableConstant.PV_ACCOUNTANCY));
+        processVars.put(FlowableConstant.PV_CASHIER, defaultAuditor.get(FlowableConstant.PV_CASHIER));
 
         return processVars;
     }
@@ -299,16 +304,28 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         }
         Reimburse reimburse = byId.get();
 
+        //form
         ReimburseApplyForm form = new ReimburseApplyForm(reimburse);
-        final String contentData = formRepository.findById(reimburse.getFormId()).get().getContentData();
+        final String contentData = formRepository.findById(reimburse.getFormId()).getContentData();;
         form.setFormJson(contentData);
+
+
         return form;
 
     }
 
     @Override
-    public void delete(String id) {
-        //TODO
+    public void delete(String procId) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        //1. 判断是否允许删除
+        final ValidationResult result = oaAdminValidator.validate(user);
+        if (result.failed()) {
+            throw new BusinessException(messages.getMessage("flow.service.ReimburseServiceImpl.delete.noauth"));
+        }
+
+
+        //2. 删除
+        deleteRunningProcess(procId, null, user);
     }
 
 }

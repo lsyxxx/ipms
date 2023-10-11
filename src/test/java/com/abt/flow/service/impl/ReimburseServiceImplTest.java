@@ -16,6 +16,7 @@ import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.variable.api.history.HistoricVariableInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,19 +66,19 @@ class ReimburseServiceImplTest extends BaseTest{
         procDefId = rbsDef.getId();
 
         //userView
-        user.setId("test_id_apply");
-        user.setName("lsy_apply");
-        user.setAccount("abt_lsy_apply");
+        user.setId("45af5ac3-9c89-4244-9f8d-ddc056b0e7b1");
+        user.setName("阿伯塔管理员");
+        user.setAccount("abtadmin");
 
 
         //flowType
         FlowType flowType = new FlowType();
-        flowType.setId("b93b47a7-56c5-11ee-ac20-a497b12f53fd");
-        flowType.setCode("1672043402022");
-        flowType.setName("日常报销（金额>=5000元）");
+        flowType.setId("9c88ae57-373a-4bcd-915f-dddc15803aba");
+        flowType.setCode("1696907356572");
+        flowType.setName("流程申请测试勿用");
         flowType.setProcDefId(procDefId);
 
-        applyForm = new ReimburseApplyForm(563.12, 11, new Date(), "报销事由：123");
+        applyForm = new ReimburseApplyForm(563.12, 11, new Date(), "报销事由：测试测试abtadmin");
 
         //applyForm
         applyForm.setFlowType(flowType);
@@ -201,5 +202,16 @@ class ReimburseServiceImplTest extends BaseTest{
     void printTasks() {
         String procId = "e1e4efdc-56c4-11ee-a4cb-a497b12f53fd";
         doPrintTasks(procId);
+    }
+
+
+    @Test
+    void printVars() {
+        String procId = "82f98890-6814-11ee-89d4-a497b12f53fd";
+        final List<HistoricVariableInstance> list = historyService.createHistoricVariableInstanceQuery().processInstanceId(procId).list();
+        countList(list);
+        list.forEach(i -> {
+            log.info("---his vars: value: {}, name: {}", i.getValue(), i.getVariableName());
+        });
     }
 }

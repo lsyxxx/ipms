@@ -103,6 +103,16 @@ public class FlowableConstant {
 //    public static final String PV_NEXT_ASSIGNEE_CODE = "nextAssignee_code";
 //    public static final String PV_NEXT_ASSIGNEE_NAME = "nextAssignee_name";
 
+
+    /**
+     * 出纳
+     */
+    public static final String PV_CASHIER = "cashier";
+
+
+
+
+
     //----------------- 流程常用表单
     /**
      * 保存在流程参数(processVariables中的form表单key, 对应bpmn文件flowable:assignee

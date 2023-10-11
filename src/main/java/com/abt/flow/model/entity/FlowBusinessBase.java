@@ -10,6 +10,8 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.flowable.task.api.Task;
 
+import java.io.Serial;
+
 /**
  * 流程业务数据表流所需流程数据, 流程业务数据表需要继承
  * 1. 创建/更新信息(AuditInfo), 表示流程实例的更新/创建
@@ -27,7 +29,7 @@ public class FlowBusinessBase extends AuditInfo {
      * 流程实例id
      */
     @Schema(description = "流程实例Id")
-    @Column(columnDefinition = "VARCHAR(128)")
+    @Column(name = "proc_id", columnDefinition = "VARCHAR(128)")
     private String processInstanceId;
 
     /**
@@ -84,7 +86,7 @@ public class FlowBusinessBase extends AuditInfo {
      * 流程定义ID;
      */
     @Schema(description = "流程定义ID")
-    @Column(columnDefinition = "VARCHAR(128)")
+    @Column(name = "procdef_id", columnDefinition = "VARCHAR(128)")
     private String processDefinitionId;
 
     @Schema(description = "流程任务名称")

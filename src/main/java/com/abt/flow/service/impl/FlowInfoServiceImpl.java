@@ -68,7 +68,7 @@ public class FlowInfoServiceImpl implements FlowInfoService {
      */
     public static final String TYPE_WAIT = "wait";
 
-    @Value("webapi.http.api.flowschemes")
+    @Value("${webapi.http.api.flowschemes}")
     private String flowSchemeApi;
 
     @Override

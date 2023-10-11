@@ -1,24 +1,21 @@
 package com.abt.flow.repository;
 
-import com.abt.flow.model.entity.FlowScheme;
+import com.abt.flow.model.entity.Form;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.util.Assert;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class FlowSchemeRepositoryTest {
+class FormRepositoryImplTest {
 
     @Autowired
-    private FlowSchemeRepository flowSchemeRepository;
-
-
+    private FormRepositoryImpl repo;
     @BeforeEach
     void setUp() {
     }
@@ -28,11 +25,9 @@ class FlowSchemeRepositoryTest {
     }
 
     @Test
-    void deleteInBatch() {
-    }
+    void findById() {
+        final Form byId = repo.findById("51ed5ed3-45a3-4f6e-8c17-0d0a884112b3");
+        System.out.println(byId.toString());
 
-    @Test
-    void find() {
-        final FlowScheme all = flowSchemeRepository.findById("7c2f7166-4696-4f4f-bf59-c4447179cbe3");
     }
 }

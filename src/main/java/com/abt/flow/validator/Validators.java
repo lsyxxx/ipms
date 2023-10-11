@@ -29,10 +29,11 @@ public class Validators {
     @Value("${com.abt.flow.validator.decision}")
     private String decisionArg;
 
+    private final OAAdminValidator oaAdminValidator;
+
 
     /**
      * 报销申请表单验证器
-     * @return
      */
     @Bean
     public ValidatorChain applyFormValidatorChain() {
@@ -52,7 +53,6 @@ public class Validators {
      * 普通决策验证器
      * 1. 不能空
      * 2. 普通验证Reject/Approval
-     * @return
      */
     @Bean
     public ValidatorChain commonDecisionValidatorChain() {

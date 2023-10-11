@@ -14,12 +14,24 @@ abt.serivce.finance=finance
 
 #------------ jpa
 spring.jpa.show-sql=true
-spring.jpa.hibernate.ddl-auto=update
+#spring.jpa.hibernate.ddl-auto=update
+#spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+#spring.jpa.hibernate.naming.implicit-strategy=org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+
+
+
+#--------- webapi
+#webapi.http.ip=7386n59g91.goho.co
+#webapi.http.port=10008
+#webapi.http.base=/api
+#webapi.http.protocol=http://
+#webapi.http.uri=http://7386n59g91.goho.co:10008/api
+#webapi.http.token.key=X-Token
 
 #--------- api
 webapi.http.api.userinfo=/check/GetUserProfile
 webapi.http.api.flowschemes=/flowschemes/load
-webapi.http.api.loadforuser=/roles/loadforuser?userId=
+webapi.http.api.loadforuser=/roles/loadforuser?userId
 
 
 

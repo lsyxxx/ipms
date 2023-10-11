@@ -91,7 +91,6 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
     @Column(name = "form_id", columnDefinition = "VARCHAR(255)")
     private String formId;
 
-
     public Reimburse create(ReimburseApplyForm form, UserView user) {
         setId(TimeUtil.idGenerator());
 
@@ -99,8 +98,9 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
         setProject(form.getProject());
         setReimburseDate(form.getRbsDate());
         setVoucherNum(form.getVoucherNum());
-        setReimburseDate(form.getRbsDate());
-        setReason(form.getDescription());
+        setReason(form.getReason());
+        setFormId(form.getFlowType().getFormId());
+        setProcessDefinitionId(form.getFlowType().getProcDefId());
 
         setCategoryId(form.getFlowType().getId());
         setCategoryCode(form.getFlowType().getCode());
