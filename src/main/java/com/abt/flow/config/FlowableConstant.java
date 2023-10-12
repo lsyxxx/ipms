@@ -132,5 +132,17 @@ public class FlowableConstant {
      */
     public static final String PV_AUDIT_RESULT = "auditResult";
 
+    /**
+     * 表单模板ID
+     */
+    public static final String PV_FORM_ID = "formId";
+
+
+    /**
+     * 业务相关
+     * 业务描述：报销-报销事由，等
+     */
+    public static final String PV_DES = "description";
+
 
 }

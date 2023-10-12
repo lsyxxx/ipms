@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequestMapping("/wf/base")
 @Tag(name = "FlowController", description = "流程相关")
+@CrossOrigin
 public class FlowController {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();

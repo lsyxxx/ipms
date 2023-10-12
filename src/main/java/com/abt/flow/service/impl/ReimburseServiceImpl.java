@@ -139,6 +139,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         processVars.put(FlowableConstant.PV_BIZ_NAME, form.getFlowType().getName());
         processVars.put(FlowableConstant.PV_BIZ_ID, form.getFlowType().getId());
         processVars.put(FlowableConstant.PV_BIZ_CODE, form.getFlowType().getCode());
+        processVars.put(FlowableConstant.PV_FORM_ID, form.getFlowType().getFormId());
 
         processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
         processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
@@ -148,6 +149,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         processVars.put(FlowableConstant.PV_TAX_OFFICER, defaultAuditor.get(FlowableConstant.PV_TAX_OFFICER));
         processVars.put(FlowableConstant.PV_ACCOUNTANCY, defaultAuditor.get(FlowableConstant.PV_ACCOUNTANCY));
         processVars.put(FlowableConstant.PV_CASHIER, defaultAuditor.get(FlowableConstant.PV_CASHIER));
+
+        processVars.put(FlowableConstant.PV_DES, form.getReason());
 
         return processVars;
     }

@@ -70,16 +70,21 @@ public class FlowInfoVo extends AuditInfo {
     private String invokers;
 
     /**
-     * 当前负责人
+     * 当前负责人id
      */
     private String currentUser;
+    private String currentUsername;
 
     /**
      * flowable中保存的: 审批结果,审批状态
      */
     private String businessStatus;
 
-
+    /**
+     * 流程是否已结束
+     *
+     */
+    private boolean isFinished = false;
 
     public static FlowInfoVo create(HistoricProcessInstance process) {
         FlowInfoVo vo = new FlowInfoVo();
@@ -97,8 +102,8 @@ public class FlowInfoVo extends AuditInfo {
 
     public FlowInfoVo updateStateAndResult(String businessStatus) {
         this.setBusinessStatus(businessStatus);
-        this.setState(auditState(businessStatus));
         this.setResult(auditResult(businessStatus));
+        this.setState(auditState(businessStatus));
         return this;
     }
 
@@ -111,26 +116,31 @@ public class FlowInfoVo extends AuditInfo {
 
         String bizState = process.getBusinessStatus();
         vo.setState(auditState(bizState));
-
+        vo.setResult(auditResult(bizState));
 
         return vo;
     }
 
     /**
+     * 审批状态
      * businessStatus = 审批结果，审批状态
      */
     public static String auditState(String businessStatus) {
         if (StringUtils.isBlank(businessStatus)) {
             return "";
         }
-        return businessStatus.split(",")[0];
+        return businessStatus.split(",")[1];
     }
 
+    /**
+     * 审批结果
+     * @param businessStatus 审批结果，审批状态
+     */
     public static String auditResult(String businessStatus) {
         if (StringUtils.isBlank(businessStatus)) {
             return "";
         }
-        return businessStatus.split(",")[1];
+        return businessStatus.split(",")[0];
     }
 
     public FlowInfoVo updateTask(Task task) {
@@ -152,8 +162,10 @@ public class FlowInfoVo extends AuditInfo {
         setFlowCode(emptyIfNull(varMap, FlowableConstant.PV_BIZ_CODE));
         setFlowName(emptyIfNull(varMap, FlowableConstant.PV_BIZ_NAME));
         setInvokers(emptyIfNull(varMap, FlowableConstant.PV_HIS_INVOKERS));
-        setResult(emptyIfNull(varMap, FlowableConstant.PV_AUDIT_RESULT));
-        setState(emptyIfNull(varMap, FlowableConstant.PV_AUDIT_STATE));
+//        setResult(emptyIfNull(varMap, FlowableConstant.PV_AUDIT_RESULT));
+//        setState(emptyIfNull(varMap, FlowableConstant.PV_AUDIT_STATE));
+        setFlowId(emptyIfNull(varMap, FlowableConstant.PV_FORM_ID));
+        setDescription(emptyIfNull(varMap, FlowableConstant.PV_DES));
 
         return this;
     }

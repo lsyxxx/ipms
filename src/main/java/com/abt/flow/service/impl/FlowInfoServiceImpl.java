@@ -1,5 +1,6 @@
 package com.abt.flow.service.impl;
 
+import com.abt.common.model.User;
 import com.abt.common.util.MessageUtil;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.FlowRequestForm;
@@ -10,6 +11,9 @@ import com.abt.flow.service.FlowInfoService;
 import com.abt.http.dto.WebApiDto;
 import com.abt.http.service.HttpConnectService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
+import com.abt.sys.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
@@ -29,6 +33,7 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,6 +62,7 @@ public class FlowInfoServiceImpl implements FlowInfoService {
     private final RuntimeService runtimeService;
 
     private final TaskService taskService;
+    private final UserRepository userRepository;
 
     /**
      * 已处理
@@ -95,17 +101,31 @@ public class FlowInfoServiceImpl implements FlowInfoService {
         List<HistoricProcessInstance> list = query.orderByProcessInstanceStartTime().desc()
                 .listPage(form.getFirstResult(), form.getLimit());
         list = ListUtils.emptyIfNull(list);
-        List<FlowInfoVo> collect = list.stream().map(h -> fulfill(h)).toList();
-        return collect;
+        return list.stream().map(this::fulfill).toList();
     }
 
-    private FlowInfoVo fulfill(HistoricProcessInstance processInstance) {
+    private FlowInfoVo fulfill(HistoricProcessInstance processInstance){
+
         //1.
         FlowInfoVo flowInfoVo = FlowInfoVo.create(processInstance);
 
+        final Date endTime = processInstance.getEndTime();
+        if (endTime != null) {
+            flowInfoVo.setFinished(true);
+        }
+        //创建人
+        String createUserid = flowInfoVo.getCreateUserid();
+        User createUser = userRepository.getSimpleUserInfo(createUserid);
+        flowInfoVo.setCreateUsername(createUser.getUsername());
+
         //2.当前负责人
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
-        flowInfoVo.updateTask(task);
+        if (task != null) {
+            String curAssigneeId = task.getAssignee();
+            User curAssignee = userRepository.getSimpleUserInfo(curAssigneeId);
+            flowInfoVo.updateTask(task);
+            flowInfoVo.setCurrentUsername(curAssignee.getUsername());
+        }
 
         //3. 其它需要从variables获取
         setProcessVariables(processInstance.getId(), flowInfoVo);

@@ -200,14 +200,14 @@ class ReimburseServiceImplTest extends BaseTest{
 
     @Test
     void printTasks() {
-        String procId = "e1e4efdc-56c4-11ee-a4cb-a497b12f53fd";
+        String procId = "722c29ad-6816-11ee-a16b-a497b12f53fd";
         doPrintTasks(procId);
     }
 
 
     @Test
     void printVars() {
-        String procId = "82f98890-6814-11ee-89d4-a497b12f53fd";
+        String procId = "722c29ad-6816-11ee-a16b-a497b12f53fd";
         final List<HistoricVariableInstance> list = historyService.createHistoricVariableInstanceQuery().processInstanceId(procId).list();
         countList(list);
         list.forEach(i -> {
