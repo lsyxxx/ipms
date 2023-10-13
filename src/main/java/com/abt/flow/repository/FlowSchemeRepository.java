@@ -11,4 +11,5 @@ public interface FlowSchemeRepository{
 
     FlowScheme findById(String id);
 
+    List<FlowScheme> findAllEnabled();
 }

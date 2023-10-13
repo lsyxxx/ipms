@@ -20,8 +20,6 @@ class FlowInfoServiceImplTest extends BaseTest{
 
     @Autowired
     private FlowInfoService service;
-    @Autowired
-    private Example<FlowCategory>  enableExample;
 
     private RequestForm form;
 
@@ -42,14 +40,6 @@ class FlowInfoServiceImplTest extends BaseTest{
 
     }
 
-    @Test
-    void findAllEnabled() {
-        List<FlowCategory> allEnabled = service.findAllEnabled(0, 10);
-        Assert.notEmpty(allEnabled, "list is empty");
-        allEnabled.forEach(i -> {
-            log.info(i.toString());
-        });
-    }
 
 
     String userId = "abt019";

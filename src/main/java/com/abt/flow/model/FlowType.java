@@ -77,6 +77,11 @@ public class FlowType extends AuditInfo {
      */
     private String procDefId;
 
+    /**
+     * 对应服务
+     */
+    private String service;
+
     public String simpleInfo() {
         return
                 "{id='" + id + '\'' +

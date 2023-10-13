@@ -56,9 +56,13 @@ public class FlowOperationLog implements Serializable {
     @Column(name = "act_name", columnDefinition = "VARCHAR(128)")
     private String activityName;
 
-    @Schema(description = "操作人")
-    @Column(name = "opt_user", columnDefinition = "VARCHAR(128)")
-    private String operateUser;
+    @Schema(description = "操作人id")
+    @Column(name = "opt_userid", columnDefinition = "VARCHAR(128)")
+    private String operateUserid;
+
+    @Schema(description = "操作人id")
+    @Column(name = "opt_username", columnDefinition = "VARCHAR(128)")
+    private String operateUsername;
 
     @Schema(description = "操作日期")
     @Column(name = "opt_date", columnDefinition = "DATETIME")
@@ -98,7 +102,7 @@ public class FlowOperationLog implements Serializable {
                 ", executionId='" + executionId + '\'' +
                 ", activityId='" + activityId + '\'' +
                 ", activityName='" + activityName + '\'' +
-                ", operateUser='" + operateUser + '\'' +
+                ", operateUserid='" + operateUserid + '\'' +
                 ", operateDate=" + operateDate +
                 ", actionDescription='" + actionDescription + '\'' +
                 '}';

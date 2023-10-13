@@ -65,7 +65,7 @@ public interface ReimburseService{
     /**
      * 流程详情
      */
-    ReimburseApplyForm get(String id);
+//    ReimburseApplyForm get(String id);
 
     /**
      * 删除流程

@@ -6,7 +6,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.flow.model.FlowInfoVo;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.ReimburseApplyForm;
-import com.abt.flow.model.entity.Reimburse;
+import com.abt.flow.service.FlowEntry;
 import com.abt.flow.service.FlowInfoService;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.model.dto.UserView;
@@ -172,18 +172,6 @@ public class ReimburseController {
 
     }
 
-
-    @Operation(summary = "打开流程页面")
-    @Parameter(name = "id", description = "报销业务id")
-    @Parameter(name = "showComment", description = "是否显示审批意见表单")
-    @GetMapping("/get")
-    public R<ReimburseApplyForm> get(String id, @RequestParam(required = false) int showComment) {
-        //1. 查询业务
-        ReimburseApplyForm reimburseApplyForm = reimburseService.get(id);
-        reimburseApplyForm.setShowComment(showComment);
-
-        return R.success(reimburseApplyForm);
-    }
 
 
     @Operation(summary = "删除流程")

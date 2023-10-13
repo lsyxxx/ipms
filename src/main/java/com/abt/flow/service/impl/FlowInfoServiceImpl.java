@@ -2,24 +2,21 @@ package com.abt.flow.service.impl;
 
 import com.abt.common.model.User;
 import com.abt.common.util.MessageUtil;
+import com.abt.common.util.TokenUtil;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.FlowInfoVo;
 import com.abt.flow.model.entity.FlowCategory;
-import com.abt.flow.repository.FlowCategoryRepository;
+import com.abt.flow.model.entity.FlowScheme;
+import com.abt.flow.repository.FlowSchemeRepository;
 import com.abt.flow.service.FlowInfoService;
-import com.abt.http.dto.WebApiDto;
-import com.abt.http.service.HttpConnectService;
-import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.repository.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.HistoryService;
-import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
@@ -35,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 /**
  *
@@ -48,21 +44,17 @@ public class FlowInfoServiceImpl implements FlowInfoService {
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
 
-    private final HttpConnectService<WebApiDto> httpConnectService;
-
 
     public static final String ORDERBY_CRTDATE = "createDate";
     public static final String ORDERBY_SORT= "sortCode";
 
-    private final FlowCategoryRepository flowCategoryRepository;
-
     private final Example<FlowCategory> enabledExample;
 
     private final HistoryService historyService;
-    private final RuntimeService runtimeService;
 
     private final TaskService taskService;
     private final UserRepository userRepository;
+    private final FlowSchemeRepository flowSchemeRepository;
 
     /**
      * 已处理
@@ -130,32 +122,18 @@ public class FlowInfoServiceImpl implements FlowInfoService {
         //3. 其它需要从variables获取
         setProcessVariables(processInstance.getId(), flowInfoVo);
 
+        //3. flowScheme
+        final FlowScheme scheme = flowSchemeRepository.findById(flowInfoVo.getFlowId());
+        flowInfoVo.setFlowName(scheme.getSchemeName());
+        flowInfoVo.setFlowCode(scheme.getSchemeCode());
+        flowInfoVo.setService(scheme.getService());
+
         return flowInfoVo;
     }
 
     private void setProcessVariables(String procId, FlowInfoVo flowInfoVo) {
         List<HistoricVariableInstance> list = historyService.createHistoricVariableInstanceQuery().processInstanceId(procId).list();
         flowInfoVo.updateVariables(list);
-    }
-
-    @Override
-    public List<FlowCategory> findAllEnabled(int page, int size) {
-        if (size == 0) {
-            //不分页
-            return findAllEnabled();
-        }
-
-        //分页
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, ORDERBY_SORT, ORDERBY_CRTDATE);
-        Page<FlowCategory> all = flowCategoryRepository.findAll(enabledExample, pageRequest);
-        if (all.hasContent()) {
-            return all.getContent();
-        }
-        return List.of();
-    }
-    @Override
-    public List<FlowCategory> findAllEnabled() {
-        return flowCategoryRepository.findAll(enabledExample, Sort.by(Sort.Direction.DESC, ORDERBY_SORT, ORDERBY_CRTDATE));
     }
 
     @Override
@@ -180,7 +158,8 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
     @Override
     public List<FlowInfoVo> getCompletedFlows(FlowRequestForm form) {
-
+        UserView user = TokenUtil.getUserFromAuthToken();
+        form.setId(user.getId());
         HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery().taskInvolvedUser(form.getId()).finished();
 
         if (StringUtils.isNotBlank(form.getState())) {
@@ -238,6 +217,11 @@ public class FlowInfoServiceImpl implements FlowInfoService {
     public List<Comment> getComments(String procId) {
         //order by time desc
         return taskService.getProcessInstanceComments(procId);
+    }
+
+    @Override
+    public List<FlowScheme> getFlowScheme() {
+        return flowSchemeRepository.findAllEnabled();
     }
 
 }

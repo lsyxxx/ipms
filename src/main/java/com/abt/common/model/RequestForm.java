@@ -16,8 +16,9 @@ public class RequestForm {
 
     /**
      * 分页页数
+     * based = 1
      */
-    private int page = 0;
+    private int page = 1;
 
     /**
      * 单页数量
@@ -71,7 +72,7 @@ public class RequestForm {
      * @return
      */
     public boolean noPaging() {
-       return (page == 0) && (limit == 0);
+       return limit == 0;
     }
 
 
@@ -85,7 +86,7 @@ public class RequestForm {
     }
 
     public int getFirstResult() {
-        this.firstResult = this.page * limit;
+        this.firstResult = (this.page - 1) * limit;
         return this.firstResult;
     }
 

@@ -10,11 +10,13 @@ import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.controller.ReimburseController;
 import com.abt.flow.model.*;
+import com.abt.flow.model.entity.Form;
 import com.abt.flow.model.entity.Reimburse;
 import com.abt.flow.repository.FlowCategoryRepository;
 import com.abt.flow.repository.FlowSchemeRepository;
 import com.abt.flow.repository.FormRepository;
 import com.abt.flow.repository.ReimburseRepository;
+import com.abt.flow.service.FlowEntry;
 import com.abt.flow.service.FlowOperationLogService;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.exception.BadRequestParameterException;
@@ -28,6 +30,7 @@ import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,7 +49,7 @@ import static com.abt.flow.model.ProcessState.Active;
  */
 @Service
 @Slf4j
-public class ReimburseServiceImpl extends AbstractDefaultFlowService implements ReimburseService {
+public class ReimburseServiceImpl extends AbstractDefaultFlowService implements ReimburseService, FlowEntry<ReimburseApplyForm> {
 
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
@@ -140,6 +143,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         processVars.put(FlowableConstant.PV_BIZ_ID, form.getFlowType().getId());
         processVars.put(FlowableConstant.PV_BIZ_CODE, form.getFlowType().getCode());
         processVars.put(FlowableConstant.PV_FORM_ID, form.getFlowType().getFormId());
+        processVars.put(FlowableConstant.PV_SERVICE, form.getFlowType().getService());
+
 
         processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
         processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
@@ -300,18 +305,24 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
     @Override
     public ReimburseApplyForm get(String id) {
-        final Optional<Reimburse> byId = reimburseRepository.findById(id);
+        final HistoricProcessInstance process = historyService.createHistoricProcessInstanceQuery().processInstanceId(id).singleResult();
+        String rbsId = process.getBusinessKey();
+        final Optional<Reimburse> byId = reimburseRepository.findById(rbsId);
         if (byId.isEmpty()) {
             log.error("报销业务数据未找到, 业务实体id: {}", id);
             throw new BusinessException(MessageUtil.format("flow.service.ReimburseServiceImpl.get.notFound"));
         }
         Reimburse reimburse = byId.get();
 
-        //form
+        //form model
+        final Form formTemplate = formRepository.findById(reimburse.getFormId());
+
         ReimburseApplyForm form = new ReimburseApplyForm(reimburse);
+        form.setFrmType(formTemplate.getFrmType());
+        form.setFrmId(reimburse.getFormId());
+
         final String contentData = formRepository.findById(reimburse.getFormId()).getContentData();;
         form.setFormJson(contentData);
-
 
         return form;
 

@@ -4,6 +4,7 @@ import com.abt.common.model.RequestForm;
 import com.abt.flow.model.FlowInfoVo;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.entity.FlowCategory;
+import com.abt.flow.model.entity.FlowScheme;
 import org.flowable.engine.task.Comment;
 
 import java.util.List;
@@ -19,14 +20,6 @@ public interface FlowInfoService {
      * @return 默认根据创建日期排序
      */
     List<FlowInfoVo> getUserApplyFlows(FlowRequestForm form);
-
-    /**
-     * 获取所有可用的业务类型 未删除&&已启用
-     */
-    List<FlowCategory> findAllEnabled(int page, int size);
-
-    //不分页
-    List<FlowCategory> findAllEnabled();
 
     /**
      * 查询用户的待办业务
@@ -45,4 +38,6 @@ public interface FlowInfoService {
 
 
     List<Comment> getComments(String procId);
+
+    List<FlowScheme> getFlowScheme();
 }

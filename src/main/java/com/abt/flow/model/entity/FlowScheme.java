@@ -63,5 +63,20 @@ public class FlowScheme {
 
     private String orgId;
 
+    /**
+     * 业务对应的service beanName
+     */
+    private String service;
 
+
+    public String printSimple() {
+        return "FlowScheme{" +
+                "id='" + id + '\'' +
+                ", schemeCode='" + schemeCode + '\'' +
+                ", schemeName='" + schemeName + '\'' +
+                ", schemeType='" + schemeType + '\'' +
+                ", frmId='" + frmId + '\'' +
+                ", processDefId='" + processDefId + '\'' +
+                '}';
+    }
 }

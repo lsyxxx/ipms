@@ -25,10 +25,13 @@ public class FlowSchemeRepositoryImpl implements FlowSchemeRepository{
 
     @Override
     public FlowScheme findById(String id) {
-        String sql = "SELECT * FROM FlowScheme where Id = ?";
-        return jdbcTemplate.queryForObject(sql, new FlowSchemeRowMapper(), id);
+        return jdbcTemplate.queryForObject("SELECT * FROM FlowScheme WHERE Id = ?", new FlowSchemeRowMapper(), id);
     }
 
+    @Override
+    public List<FlowScheme> findAllEnabled() {
+        return jdbcTemplate.query("SELECT * FROM FlowScheme WHERE DeleteMark = 0 AND Disabled = 0", new FlowSchemeRowMapper());
+    }
 
     class FlowSchemeRowMapper implements RowMapper<FlowScheme> {
 
@@ -59,6 +62,7 @@ public class FlowSchemeRepositoryImpl implements FlowSchemeRepository{
             flowScheme.setOrgId(rs.getString("OrgId"));
             flowScheme.setSchemeName1(rs.getString("SchemeName1"));
             flowScheme.setProcessDefId(rs.getString("ProcDefId"));
+            flowScheme.setService(rs.getString("Service"));
             return flowScheme;
         }
     }

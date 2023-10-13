@@ -29,11 +29,11 @@ public class R<T> {
      * 等于data，以data为准
      * 因为前端有的是data, 有的是result
      */
-    private T result = data;
+//    private T result = data;
     /**
      * 业务异常代码
      */
-    private String code;
+    private int code;
     /**
      * 异常信息
      */
@@ -42,7 +42,7 @@ public class R<T> {
      * 等于msg，以msg为准
      * 因为前端有的是msg, 有的是message
      */
-    private String message = msg;
+//    private String message = msg;
     //eg: 2023-07-25T11:31:14.214514600
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -55,23 +55,23 @@ public class R<T> {
     private int count = 0;
 
 
-    public R(T data, String code, String message) {
+    public R(T data, int code, String message) {
         super();
         this.data = data;
         this.code = code;
         this.msg = message;
-        this.message = message;
-        this.result = data;
+//        this.message = message;
+//        this.result = data;
     }
 
-    public R(T data, String code, String message, int count) {
+    public R(T data, int code, String message, int count) {
         super();
         this.data = data;
         this.code = code;
         this.msg = message;
         this.count = count;
-        this.message = message;
-        this.result = data;
+//        this.message = message;
+//        this.result = data;
     }
 
     public T get() {
@@ -107,7 +107,7 @@ public class R<T> {
     }
 
     public static<T> R<T> fail(String errMsg, int code) {
-        return new R<>(null, String.valueOf(code), errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
+        return new R<>(null, code, errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
     }
 
     public static<T> R<T> invalidSession() {

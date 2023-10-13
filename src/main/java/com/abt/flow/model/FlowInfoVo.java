@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @Accessors(chain = true)
 public class FlowInfoVo extends AuditInfo {
 
+    private String id;
 
     /**
      * 流程实例id
@@ -44,6 +45,10 @@ public class FlowInfoVo extends AuditInfo {
     private String flowId;
     private String flowCode;
     private String flowName;
+    /**
+     * 业务对应service
+     */
+    private String service;
     /**
      * 正在进行的节点
      */
@@ -90,6 +95,7 @@ public class FlowInfoVo extends AuditInfo {
         FlowInfoVo vo = new FlowInfoVo();
         vo.setProcInstId(process.getId());
         vo.setBusinessKey(process.getBusinessKey());
+        vo.setId(process.getId());
         vo.setCreateDate(TimeUtil.from(process.getStartTime()));
         vo.setCreateUserid(process.getStartUserId());
 

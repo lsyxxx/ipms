@@ -2,6 +2,10 @@ package com.abt.flow.listener;
 
 import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.flow.repository.FlowOperationLogRepository;
+import com.abt.sys.repository.UserRepository;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
@@ -13,16 +17,11 @@ import java.time.LocalDateTime;
 /**
  * 流程监听器
  */
+@AllArgsConstructor
 public class FlowBaseListener {
 
-    private FlowOperationLogRepository flowOperationLogRepository;
 
-    private ApplicationContext context;
-
-    public FlowBaseListener(FlowOperationLogRepository flowOperationLogRepository, ApplicationContext context) {
-        this.flowOperationLogRepository = flowOperationLogRepository;
-        this.context = context;
-    }
+    private UserRepository userRepository;
 
     /**
      * 任务是否完成
@@ -54,7 +53,8 @@ public class FlowBaseListener {
         optLog.setProcDefId(event.getProcessDefinitionId());
         optLog.setActivityId(event.getId());
         optLog.setActivityName(event.getName());
-        optLog.setOperateUser(event.getAssignee());
+        optLog.setOperateUserid(event.getAssignee());
+        optLog.setOperateUsername(userRepository.getSimpleUserInfo(event.getAssignee()).getUsername());
         return optLog;
     }
 }

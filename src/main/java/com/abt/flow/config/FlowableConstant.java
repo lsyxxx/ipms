@@ -144,5 +144,10 @@ public class FlowableConstant {
      */
     public static final String PV_DES = "description";
 
+    /**
+     * 流程对应服务
+     */
+    public static final String PV_SERVICE = "service";
+
 
 }
