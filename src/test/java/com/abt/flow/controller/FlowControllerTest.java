@@ -33,4 +33,6 @@ class FlowControllerTest {
 //        String type = MessageFormat.format("test param - {0}", "type123");
         System.out.println(type);
     }
+
+
 }

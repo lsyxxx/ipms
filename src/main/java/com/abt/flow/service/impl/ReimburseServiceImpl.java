@@ -133,6 +133,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
     }
     /**
+     * 初始化流程参数
      * 一般审批包含角色
      * 包括：部门审批人(deptManager)，技术负责人(techManager)，总经理(ceo)，财务总监(fiManager)，税务(texOfficer)，会计(accountancy)
      * 下一个审批人(nextAssignee，这个流程没有)
@@ -145,7 +146,6 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         processVars.put(FlowableConstant.PV_FORM_ID, form.getFlowType().getFormId());
         processVars.put(FlowableConstant.PV_SERVICE, form.getFlowType().getService());
 
-
         processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
         processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
         processVars.put(FlowableConstant.PV_HIS_INVOKERS, "");
@@ -155,7 +155,9 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         processVars.put(FlowableConstant.PV_ACCOUNTANCY, defaultAuditor.get(FlowableConstant.PV_ACCOUNTANCY));
         processVars.put(FlowableConstant.PV_CASHIER, defaultAuditor.get(FlowableConstant.PV_CASHIER));
 
+
         processVars.put(FlowableConstant.PV_DES, form.getReason());
+        processVars.put(FlowableConstant.PV_COST, form.getCost());
 
         return processVars;
     }

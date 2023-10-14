@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="normal_reimburse_process" name="Normal reimburse less 5000 process" isExecutable="true">
+    <documentation>日常报销</documentation>
+    <startEvent id="normal_reimburse_start" name="开始" activiti:async="false"/>
+    <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_apply" name="申请报销" flowable:assignee="${applicant.id}">
+      <documentation>申请报销，录入申请信息</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_flow1" sourceRef="normal_reimburse_start" targetRef="normal_reimburse_apply"/>
+    <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_manager" name="主管审批" flowable:assignee="${deptManager.id}">
+      <documentation>主管审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_flow2" sourceRef="normal_reimburse_apply" targetRef="normal_reimburse_manager"/>
+    <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_techmgr" name="技术负责人审批" flowable:assignee="${techManager.id}">
+      <documentation>技术负责人审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_flow3" sourceRef="normal_reimburse_manager" targetRef="normal_reimburse_techmgr"/>
+    <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_acmgr" name="财务主管审批" flowable:assignee="${fiManager.id}">
+      <documentation>财务主管审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_flow4" sourceRef="normal_reimburse_techmgr" targetRef="normal_reimburse_acmgr"/>
+    <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_ceo" name="总经理审批" flowable:assignee="${ceo.id}">
+      <documentation>总经理审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_flow5" sourceRef="normal_reimburse_acmgr" targetRef="normal_reimburse_ceo"/>
+    <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_tax" name="税务会计审批" flowable:assignee="${taxOfficer.id}">
+      <documentation>税务会计审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_flow6" sourceRef="normal_reimburse_ceo" targetRef="normal_reimburse_tax">
+      <conditionExpression>{{cost&lt;5000}}</conditionExpression>
+    </sequenceFlow>
+    <userTask xmlns:flowable="http://flowable.org/bpmn" id="normal_reimburse_act" name="财务会计审批" flowable:assignee="${accountancy.id}">
+      <documentation>财务会计审批</documentation>
+    </userTask>
+    <sequenceFlow id="normal_reimburse_flow7" sourceRef="normal_reimburse_tax" targetRef="normal_reimburse_act"/>
+    <endEvent id="normal_reimburse_end"/>
+    <sequenceFlow id="normal_reimburse_flow8" sourceRef="normal_reimburse_act" targetRef="normal_reimburse_end"/>
+    <userTask id="normal_reimburse_chairman" name="董事长审批">
+      <documentation>董事长审批</documentation>
+    </userTask>
+    <sequenceFlow id="sid-4bc58a92-d393-4259-8a51-bc430aa6ac57" sourceRef="normal_reimburse_chairman" targetRef="normal_reimburse_tax"/>
+    <sequenceFlow id="normal_reimburse_flow10" sourceRef="normal_reimburse_ceo" targetRef="normal_reimburse_chairman">
+      <conditionExpression>${cost&gt;=5000}</conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_myProcess">
+    <bpmndi:BPMNPlane bpmnElement="normal_reimburse_process" id="BPMNPlane_myProcess">
+      <bpmndi:BPMNShape bpmnElement="normal_reimburse_start" id="BPMNShape_reimburse_more_1000_start">
+        <omgdc:Bounds height="35.0" width="35.0" x="140.0" y="200.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="normal_reimburse_apply" id="BPMNShape_reimburse_more_1000_apply">
+        <omgdc:Bounds height="55.0" width="105.0" x="220.0" y="190.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="normal_reimburse_manager" id="BPMNShape_reimburse_more_1000_manager">
+        <omgdc:Bounds height="55.0" width="105.0" x="367.27542" y="190.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="normal_reimburse_techmgr" id="BPMNShape_reimburse_more_1000_ceo">
+        <omgdc:Bounds height="55.0" width="105.0" x="525.0" y="190.00002"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="normal_reimburse_flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="175.0" y="217.5"/>
+        <omgdi:waypoint x="220.0" y="217.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="normal_reimburse_flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="325.0" y="217.0"/>
+        <omgdi:waypoint x="367.27542" y="217.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-d64f9d67-8f7c-4908-a9be-4d6f422b5099" bpmnElement="normal_reimburse_flow3">
+        <omgdi:waypoint x="472.27542" y="217.5"/>
+        <omgdi:waypoint x="525.0" y="217.50002"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-1bad7f43-415f-4901-9332-90cb550b0d2c" bpmnElement="normal_reimburse_acmgr">
+        <omgdc:Bounds x="695.0" y="190.0" width="110.0" height="55.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-a3eef5f1-63a9-475c-9d46-8be1fefaa9c0" bpmnElement="normal_reimburse_flow4">
+        <omgdi:waypoint x="630.0" y="217.50002"/>
+        <omgdi:waypoint x="662.5" y="217.5"/>
+        <omgdi:waypoint x="695.0" y="217.5"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-4eb7be6e-aab7-4953-885d-ebb3264b9b74" bpmnElement="normal_reimburse_ceo">
+        <omgdc:Bounds x="695.00006" y="377.49997" width="110.0" height="55.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-e2f970cb-9a17-499c-b284-b1efbc300c77" bpmnElement="normal_reimburse_flow5">
+        <omgdi:waypoint x="750.00006" y="245.00002"/>
+        <omgdi:waypoint x="750.00006" y="377.49994"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-df5aab17-f669-4659-a06a-2497dfabe23f" bpmnElement="normal_reimburse_tax">
+        <omgdc:Bounds x="408.24472" y="375.0" width="105.0" height="60.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-5d975a27-9e5b-481b-8c8d-b8ba242aabb6" bpmnElement="normal_reimburse_flow6">
+        <omgdi:waypoint x="695.00006" y="404.99997"/>
+        <omgdi:waypoint x="513.24475" y="405.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-9d414e76-d3af-4c08-a8db-280a757d4d9b" bpmnElement="normal_reimburse_act">
+        <omgdc:Bounds x="250.74472" y="375.00003" width="110.0" height="60.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-4810d261-2319-485f-a905-b839eff76b77" bpmnElement="normal_reimburse_flow7">
+        <omgdi:waypoint x="408.24472" y="405.0"/>
+        <omgdi:waypoint x="360.74472" y="405.00003"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-b9d1abd4-c61f-4d97-a362-47291ea50fae" bpmnElement="normal_reimburse_end">
+        <omgdc:Bounds x="135.74472" y="390.0" width="30.0" height="30.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-7fcdd925-1e02-48a7-b87d-3a2384a9af83" bpmnElement="normal_reimburse_flow8">
+        <omgdi:waypoint x="250.74472" y="405.00003"/>
+        <omgdi:waypoint x="165.74472" y="405.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="shape-f10d26ba-7c2e-41da-a0fb-b9db6e6a4fd4" bpmnElement="normal_reimburse_chairman">
+        <omgdc:Bounds x="700.00006" y="512.28925" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge-ef266dc7-911f-4e5f-a41d-59751a3a78be" bpmnElement="">
+        <omgdi:waypoint x="750.00006" y="432.50003"/>
+        <omgdi:waypoint x="750.00006" y="513.3791"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-4fe6b7ee-e906-4f42-83e7-d3b72d83da80" bpmnElement="sid-4bc58a92-d393-4259-8a51-bc430aa6ac57">
+        <omgdi:waypoint x="700.00006" y="532.28925"/>
+        <omgdi:waypoint x="513.24475" y="420.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge-16850439-7fd5-4696-bc60-73612e388e32" bpmnElement="normal_reimburse_flow10">
+        <omgdi:waypoint x="750.0" y="432.49997"/>
+        <omgdi:waypoint x="750.0001" y="512.2893"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

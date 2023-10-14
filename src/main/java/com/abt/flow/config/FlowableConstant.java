@@ -138,6 +138,11 @@ public class FlowableConstant {
     public static final String PV_FORM_ID = "formId";
 
 
+
+    //-----------------------------------
+    //----------- 报销流程
+    //-----------------------------------
+
     /**
      * 业务相关
      * 业务描述：报销-报销事由，等
@@ -148,6 +153,11 @@ public class FlowableConstant {
      * 流程对应服务
      */
     public static final String PV_SERVICE = "service";
+
+    /**
+     * 报销费用
+     */
+    public static final String PV_COST = "cost";
 
 
 }
