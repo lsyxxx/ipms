@@ -100,6 +100,7 @@ public class SecurityConfig {
                 "/swagger-ui.html", "/swagger-ui/**", "/swagger-resource/**", "/v3/api-docs/**", "/v2/api-docs/**", "/webjars/**", "/doc.html",
                 //测试使用
                 "/test/**",
+                "/static/**", //静态资源
         };
     }
 

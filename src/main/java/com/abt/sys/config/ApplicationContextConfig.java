@@ -1,4 +1,4 @@
-package com.abt;
+package com.abt.sys.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

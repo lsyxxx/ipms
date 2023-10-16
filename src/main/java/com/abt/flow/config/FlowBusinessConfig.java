@@ -28,6 +28,7 @@ public class FlowBusinessConfig {
      * 一般审批人默认分类
      */
     public static final String DEFAULT_AUDITOR = "defaultAuditor";
+    public static final String DEFAULT_SKIP = "flowSkipManager";
     public static final String OA_AUTH = "oaAuth";
 
     public FlowBusinessConfig(FlowSettingRepository flowSettingRepository) {

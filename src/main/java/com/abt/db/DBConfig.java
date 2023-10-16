@@ -26,7 +26,6 @@ public class DBConfig {
 
     /**
      * 主数据库
-     * @return
      */
 
     @Bean
@@ -44,7 +43,6 @@ public class DBConfig {
 
     /**
      * 流程引擎数据库
-     * @return
      */
     @Bean
     @ConfigurationProperties("spring.datasource.flowable")
@@ -56,8 +54,7 @@ public class DBConfig {
     @Bean(name = "flowableDataSource")
     public DataSource flowableDataSource(@Qualifier("flowableDataSourceProperties") DataSourceProperties flowableDataSourceProperties) {
         log.info("配置abt flowable datasource");
-        DataSource fds = flowableDataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
-        return fds;
+        return flowableDataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
     @Bean(name = "transactionManager")

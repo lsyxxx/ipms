@@ -32,7 +32,6 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/wf/rb")
 @Tag(name = "ReimburseController", description = "报销流程")
-@CrossOrigin
 public class ReimburseController {
 
     @Value("com.abt.flow.controller.ReimburseController.type")

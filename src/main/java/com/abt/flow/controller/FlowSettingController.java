@@ -17,7 +17,6 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/wf/setting")
 @Tag(name = "FlowSettingController", description = "流程参数设置")
-@CrossOrigin
 public class FlowSettingController {
 
     private final FlowSettingService flowSettingService;

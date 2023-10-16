@@ -64,23 +64,6 @@ public abstract class AbstractDefaultFlowService implements FlowBaseService {
         this.iFileService = iFileService;
     }
 
-
-    /**
-     * 一般审批包含角色
-     * 包括：部门审批人(deptManager)，技术负责人(techManager)，总经理(ceo)，财务总监(fiManager)，税务(texOfficer)，会计(accountancy)，下一个审批人(nextAssignee)
-     */
-    public Map<String, Object> defaultAssignee(Map<String, Object> processVars, FlowForm form) {
-        processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
-        processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
-        processVars.put(FlowableConstant.PV_CEO, form.getCeo());
-        processVars.put(FlowableConstant.PV_FI_MANAGER, form.getFiManager());
-        processVars.put(FlowableConstant.PV_TAX_OFFICER, form.getTaxOfficer());
-        processVars.put(FlowableConstant.PV_ACCOUNTANCY, form.getAccountancy());
-        processVars.put(FlowableConstant.PV_NEXT_ASSIGNEE, form.getNextAssignee());
-
-        return processVars;
-    }
-
     ProcessInstance getActiveProcessInstance(String procId) {
         return runtimeService.createProcessInstanceQuery().active().processInstanceId(procId).singleResult();
     }

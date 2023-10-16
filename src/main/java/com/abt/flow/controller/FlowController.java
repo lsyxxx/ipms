@@ -1,12 +1,11 @@
 package com.abt.flow.controller;
 
-import com.abt.ApplicationContextHolder;
+import com.abt.sys.config.ApplicationContextHolder;
 import com.abt.common.model.R;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.flow.model.FlowInfoVo;
 import com.abt.flow.model.FlowRequestForm;
-import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.model.entity.FlowOperationLog;
 import com.abt.flow.model.entity.FlowScheme;
 import com.abt.flow.service.FlowEntry;
@@ -19,11 +18,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.task.Comment;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,7 +32,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequestMapping("/wf/base")
 @Tag(name = "FlowController", description = "流程相关")
-@CrossOrigin
 public class FlowController {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
@@ -105,6 +101,7 @@ public class FlowController {
         final FlowEntry bean = (FlowEntry) ApplicationContextHolder.getBean(service);
         return R.success(bean.get(id));
     }
+
 
 
 

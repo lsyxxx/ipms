@@ -100,6 +100,7 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
         setVoucherNum(form.getVoucherNum());
         setReason(form.getReason());
         setFormId(form.getFlowType().getFormId());
+        
         setProcessDefinitionId(form.getFlowType().getProcDefId());
 
         setCategoryId(form.getFlowType().getId());

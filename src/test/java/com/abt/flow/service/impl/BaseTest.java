@@ -1,7 +1,10 @@
 package com.abt.flow.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.impl.cfg.StandaloneProcessEngineConfiguration;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
@@ -18,6 +21,17 @@ import java.util.function.Consumer;
 @Slf4j
 public class BaseTest {
 
+
+    public static ProcessEngine getProcessEngine() {
+        ProcessEngineConfiguration cfg = new StandaloneProcessEngineConfiguration()
+                .setJdbcUrl("jdbc:sqlserver://localhost:1433;database=abt_flow;trustServerCertificate=true")
+                .setJdbcUsername("sa")
+                .setJdbcPassword("123456")
+                .setJdbcDriver("com.mysql.cj.jdbc.Driver")
+                .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);
+
+        return cfg.buildProcessEngine();
+    }
 
     public static void notEmpty(List list) {
         Assert.notEmpty(list, "---------- List is null!");

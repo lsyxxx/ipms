@@ -7,6 +7,7 @@ import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.model.entity.FlowScheme;
 import org.flowable.engine.task.Comment;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -40,4 +41,10 @@ public interface FlowInfoService {
     List<Comment> getComments(String procId);
 
     List<FlowScheme> getFlowScheme();
+
+    /**
+     * 获取流程定义流程图
+     * @param processDefinitionId 流程定义id
+     */
+    void generateProcessDefPng(String processDefinitionId) throws IOException;
 }

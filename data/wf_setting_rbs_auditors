@@ -7,3 +7,17 @@ fiManager|U20230406013|冯雅琴
 taxOfficer|U20230406007|叶冼婷
 accountancy|U20230406007|叶冼婷
 cashier|U20230406007|叶冼婷
+
+
+
+#---- 预设领导角色
+key|value|remark|type
+flowSkipManager|U20230406026|耿丽珍|defaultManager
+flowSkipManager|U20230406020|张亚芹|defaultManager
+flowSkipManager|U20230406016|刘启|defaultManager
+flowSkipManager|U20230406011|闫旭光|defaultManager
+flowSkipManager|U20230406007|叶冼婷|defaultManager
+flowSkipManager|U20230406013|冯雅琴|defaultManager
+flowSkipManager|20230406002|何爱平|defaultManager
+flowSkipManager|U20230406006|何爱生|defaultManager
+flowSkipManager|U20230406034|李佳璐|defaultManager

@@ -1,35 +1,40 @@
 package com.abt.flow.service.impl;
 
 import com.abt.common.model.User;
+import com.abt.common.util.FileUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.FlowInfoVo;
-import com.abt.flow.model.entity.FlowCategory;
 import com.abt.flow.model.entity.FlowScheme;
 import com.abt.flow.repository.FlowSchemeRepository;
 import com.abt.flow.service.FlowInfoService;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.RepositoryService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.task.Comment;
+import org.flowable.image.impl.DefaultProcessDiagramGenerator;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.variable.api.history.HistoricVariableInstance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -38,7 +43,6 @@ import java.util.List;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class FlowInfoServiceImpl implements FlowInfoService {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
@@ -48,13 +52,13 @@ public class FlowInfoServiceImpl implements FlowInfoService {
     public static final String ORDERBY_CRTDATE = "createDate";
     public static final String ORDERBY_SORT= "sortCode";
 
-    private final Example<FlowCategory> enabledExample;
-
     private final HistoryService historyService;
 
     private final TaskService taskService;
     private final UserRepository userRepository;
     private final FlowSchemeRepository flowSchemeRepository;
+    private final RepositoryService repositoryService;
+    private FlowableConstant flowableConstant;
 
     /**
      * 已处理
@@ -68,6 +72,15 @@ public class FlowInfoServiceImpl implements FlowInfoService {
 
     @Value("${webapi.http.api.flowschemes}")
     private String flowSchemeApi;
+
+    public FlowInfoServiceImpl(HistoryService historyService, TaskService taskService, UserRepository userRepository, FlowSchemeRepository flowSchemeRepository, RepositoryService repositoryService, FlowableConstant flowableConstant) {
+        this.historyService = historyService;
+        this.taskService = taskService;
+        this.userRepository = userRepository;
+        this.flowSchemeRepository = flowSchemeRepository;
+        this.repositoryService = repositoryService;
+        this.flowableConstant = flowableConstant;
+    }
 
     @Override
     public List<FlowInfoVo> getUserApplyFlows(FlowRequestForm form) {
@@ -222,6 +235,15 @@ public class FlowInfoServiceImpl implements FlowInfoService {
     @Override
     public List<FlowScheme> getFlowScheme() {
         return flowSchemeRepository.findAllEnabled();
+    }
+
+    @Override
+    public void generateProcessDefPng(String processDefinitionId) throws IOException {
+        DefaultProcessDiagramGenerator generator = new DefaultProcessDiagramGenerator();
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
+        final InputStream inputStream = generator.generatePngDiagram(bpmnModel, false);
+        FileUtils.copyInputStreamToFile(inputStream, new File("processes/def_pic/" + processDefinitionId + ".png"));
+
     }
 
 }

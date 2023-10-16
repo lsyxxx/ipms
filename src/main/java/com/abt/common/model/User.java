@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -30,6 +31,11 @@ public class User implements Serializable {
      * 编号，比如工号
      */
     private String code;
+
+    /**
+     * 是否是管理人员
+     */
+    private boolean isManager = false;
 
     public User(UserView user) {
         this.id = user.getId();
