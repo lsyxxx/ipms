@@ -1,44 +1,25 @@
-------------------------------------
---- FlowScheme添加ProcDefId字段
-------------------------------------
-ALTER TABLE [dbo].[FlowScheme] DROP COLUMN [ProcDefId]
-GO
 
-ALTER TABLE [dbo].[FlowScheme] ADD [ProcDefId] varchar(128) NULL
-GO
-
-EXEC sp_addextendedproperty
-     'MS_Description', N'Flowable对应procdef:id',
-     'SCHEMA', N'dbo',
-     'TABLE', N'FlowScheme',
-     'COLUMN', N'ProcDefId'
-
-
-------------------------------------
---- FlowScheme添加Service字段
-------------------------------------
-ALTER TABLE [dbo].[FlowScheme] DROP COLUMN [Service]
-GO
-
-ALTER TABLE [dbo].[FlowScheme] ADD [Service] varchar(255) NULL
-GO
-
-EXEC sp_addextendedproperty
-     'MS_Description', N'业务对应服务',
-     'SCHEMA', N'dbo',
-     'TABLE', N'FlowScheme',
-     'COLUMN', N'Service'
 
 
 ------------------------------------
 --- 导入t_flow_setting: 常用审批人预设
 ------------------------------------
-INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_]) VALUES ('3d0874de-fef2-42d8-81e0-f858687c3e44', '2023-10-16 10:13:12.364369', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.364369', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'cashier', '叶冼婷', 'defaultAuditor', 'U20230406007');
-INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_]) VALUES ('8698aaa3-cd1d-4456-b467-0a9a345a5db1', '2023-10-16 10:13:12.360346', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.360346', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'accountancy', '叶冼婷', 'defaultAuditor', 'U20230406007');
-INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_]) VALUES ('b9263a7d-071e-42f8-a97d-74a04a52d549', '2023-10-16 10:13:12.313954', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.313954', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'fiManager', '冯雅琴', 'defaultAuditor', 'U20230406013');
-INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_]) VALUES ('c3c3843d-5ac9-470f-aae8-a3282cd50b48', '2023-10-16 10:13:12.357352', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.357352', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'taxOfficer', '叶冼婷', 'defaultAuditor', 'U20230406007');
-INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_]) VALUES ('e534175b-e50f-452a-86c2-9d05e8670f08', '2023-10-16 10:13:12.354842', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.354842', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'ceo', '何爱平', 'defaultAuditor', 'U20230406002');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('3d0874de-fef2-42d8-81e0-f858687c3e44', '2023-10-16 10:13:12.364369', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.364369', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'cashier', '叶冼婷', 'defaultAuditor', 'U20230406007', '默认审批人');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('8698aaa3-cd1d-4456-b467-0a9a345a5db1', '2023-10-16 10:13:12.360346', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.360346', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'accountancy', '叶冼婷', 'defaultAuditor', 'U20230406007', '默认审批人');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('b9263a7d-071e-42f8-a97d-74a04a52d549', '2023-10-16 10:13:12.313954', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.313954', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'fiManager', '冯雅琴', 'defaultAuditor', 'U20230406013', '默认审批人');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('c3c3843d-5ac9-470f-aae8-a3282cd50b48', '2023-10-16 10:13:12.357352', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.357352', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'taxOfficer', '叶冼婷', 'defaultAuditor', 'U20230406007', '默认审批人');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('e534175b-e50f-452a-86c2-9d05e8670f08', '2023-10-16 10:13:12.354842', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-16 10:13:12.354842', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'ceo', '何爱平', 'defaultAuditor', 'U20230406002', '默认审批人');
+
 
 ------------------------------------
---- 导入t_flow_setting: 预设领导
+--- 导入t_flow_setting: 预设领导，跳过技术负责人和主管审批
 ------------------------------------
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('ce7827c9-6d76-4699-bd5e-b2986a6568c9', '2023-10-17 09:46:36.351524', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.351524', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '刘启', 'rbsFlowSkipManager', 'U20230406016', '日常报销跳过技术负责人和主管审批');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('d06b4c3e-3a7a-4028-bab2-e12b6977e38c', '2023-10-17 09:46:36.351524', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.351524', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '张亚芹', 'rbsFlowSkipManager', 'U20230406020', '日常报销跳过技术负责人和主管审批');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('e0686d65-b5d5-459c-88ff-3b53cd31111b', '2023-10-17 09:46:36.352521', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.352521', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '叶冼婷', 'rbsFlowSkipManager', 'U20230406007', '日常报销跳过技术负责人和主管审批');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('90f1caf0-a3f0-4f83-8d85-a9f737a3c612', '2023-10-17 09:46:36.353487', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.353487', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '李佳璐', 'rbsFlowSkipManager', 'U20230406034', '日常报销跳过技术负责人和主管审批');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('9716489c-65f6-4232-84e7-14e975b98277', '2023-10-17 09:46:36.352521', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.352521', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '冯雅琴', 'rbsFlowSkipManager', 'U20230406013', '日常报销跳过技术负责人和主管审批');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('a86b5e28-b0a8-4b7d-b1b7-124a6edd9ae1', '2023-10-17 09:46:36.352521', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.352521', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '闫旭光', 'rbsFlowSkipManager', 'U20230406011', '日常报销跳过技术负责人和主管审批');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('498321d8-6b09-447d-adb4-cd8d9e28c536', '2023-10-17 09:46:36.352521', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.352521', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '何爱平', 'rbsFlowSkipManager', '20230406002', '日常报销跳过技术负责人和主管审批');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('5efc3066-e85c-4e4a-ae63-a0cabd3266da', '2023-10-17 09:46:36.353487', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.353487', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '何爱生', 'rbsFlowSkipManager', 'U20230406006', '日常报销跳过技术负责人和主管审批');
+INSERT INTO [dbo].[t_flow_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [key_], [remark], [type_], [value_], [description]) VALUES ('5fde7f59-e6c3-411f-ba25-30c9e768e179', '2023-10-17 09:46:36.341520', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', '2023-10-17 09:46:36.341520', '45af5ac3-9c89-4244-9f8d-ddc056b0e7b1', '阿伯塔管理员', 'rbsFlowSkipManager', '耿丽珍', 'rbsFlowSkipManager', 'U20230406026', '日常报销跳过技术负责人和主管审批');

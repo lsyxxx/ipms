@@ -43,8 +43,8 @@ public class FlowSettingController {
     }
 
 
-    @GetMapping("/addrbs")
+    @GetMapping("/test/addrbs")
     public void addReimburseAuditor() {
-        flowSettingService.addReimburseAuditor();
+        flowSettingService.addDefaultFlowSkip();
     }
 }

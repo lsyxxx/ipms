@@ -37,16 +37,6 @@ public class FlowBusinessConfig {
 
     @Bean
     @Lazy
-    public Example<FlowCategory> enabledExample() {
-        FlowCategory prop = new FlowCategory();
-        prop.setEnable(true);
-        prop.setDeleted(false);
-        return Example.of(prop);
-    }
-
-
-    @Bean
-    @Lazy
     public Map<String, List<String>> flowSettingList() {
         List<FlowSetting> all = flowSettingRepository.findAll();
         return all.stream()
@@ -73,6 +63,19 @@ public class FlowBusinessConfig {
     public List<FlowSetting>  oaAuthList() {
         return flowSettingRepository.findByTypeOrderByCreateDate(OA_AUTH);
     }
+
+    /**
+     * 跳过基础审批（主管审批、技术审批）的管理人员Map：key=userid, value=User
+     * @return
+     */
+    @Bean(name = "flowSkipManagerMap")
+    @Lazy
+    public Map<String, User> flowSkipManager() {
+        List<FlowSetting> list = flowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_SKIP);
+        return list.stream()
+                .collect(toMap(FlowSetting::getValue, i -> new User(i.getValue(), i.getRemark())));
+    }
+
 
 
 }

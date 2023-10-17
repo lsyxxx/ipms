@@ -44,9 +44,14 @@ public class FlowSetting extends AuditInfo {
     private String type;
 
 
-    @Schema(description = "说明")
+    @Schema(description = "备注")
     @Column(columnDefinition = "VARCHAR(128)")
     private String remark;
+
+    @Schema(description = "设置说明")
+    @Column(columnDefinition = "VARCHAR(128)")
+    private String description;
+
 
     public FlowSetting(String key, String value) {
         this.key = key;

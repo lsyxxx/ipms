@@ -104,5 +104,20 @@ public class FlowController {
 
 
 
+    /**
+     * 打开流程实例详情
+     * @return
+     */
+    @Operation(summary = "提交审批")
+    @Parameter(name = "id", description = "流程实例id")
+    @Parameter(name = "service", description = "业务对应service beanName")
+    @GetMapping("/get")
+    public void apply(String service) {
+        final FlowEntry bean = (FlowEntry) ApplicationContextHolder.getBean(service);
+        
+    }
+
+
+
 
 }

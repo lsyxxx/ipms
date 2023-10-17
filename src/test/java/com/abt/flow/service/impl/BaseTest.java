@@ -27,7 +27,7 @@ public class BaseTest {
                 .setJdbcUrl("jdbc:sqlserver://localhost:1433;database=abt_flow;trustServerCertificate=true")
                 .setJdbcUsername("sa")
                 .setJdbcPassword("123456")
-                .setJdbcDriver("com.mysql.cj.jdbc.Driver")
+                .setJdbcDriver("com.microsoft.sqlserver.jdbc.SQLServerDriver")
                 .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);
 
         return cfg.buildProcessEngine();

@@ -46,8 +46,6 @@ public class FlowableConfig implements EngineConfigurationConfigurer<SpringProce
                 Map.of(FlowableEngineEventType.TASK_COMPLETED.name(), List.of(globalTaskCompleteListener),
                         FlowableEngineEventType.PROCESS_CANCELLED.name(), List.of(processDeleteListener));
         engineConfiguration.setTypedEventListeners(typedListeners);
-
-
     }
 
 

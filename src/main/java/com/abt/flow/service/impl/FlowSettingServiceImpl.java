@@ -5,10 +5,12 @@ import com.abt.flow.model.entity.FlowSetting;
 import com.abt.flow.repository.FlowSettingRepository;
 import com.abt.flow.service.FlowSettingService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.abt.flow.config.FlowBusinessConfig.DEFAULT_AUDITOR;
 import static com.abt.flow.config.FlowBusinessConfig.DEFAULT_SKIP;
@@ -21,9 +23,12 @@ import static com.abt.flow.config.FlowBusinessConfig.DEFAULT_SKIP;
 public class FlowSettingServiceImpl implements FlowSettingService {
 
     private final FlowSettingRepository flowSettingRepository;
+    private final Map<String, User> flowSkipManager;
 
-    public FlowSettingServiceImpl(FlowSettingRepository flowSettingRepository) {
+
+    public FlowSettingServiceImpl(FlowSettingRepository flowSettingRepository, @Qualifier("flowSkipManagerMap") Map<String, User> flowSkipManager) {
         this.flowSettingRepository = flowSettingRepository;
+        this.flowSkipManager = flowSkipManager;
     }
 
     @Override
@@ -81,6 +86,7 @@ public class FlowSettingServiceImpl implements FlowSettingService {
             FlowSetting s = new FlowSetting(split[0], split[1]);
             s.setRemark(split[2]);
             s.setType(DEFAULT_SKIP);
+            s.setDescription("日常报销跳过技术负责人和主管审批");
             list.add(s);
         });
         flowSettingRepository.saveAll(list);
@@ -88,8 +94,9 @@ public class FlowSettingServiceImpl implements FlowSettingService {
 
     @Override
     public boolean isManager(User user) {
-        return false;
+        return flowSkipManager.containsKey(user.getId());
     }
+
 
 
 }

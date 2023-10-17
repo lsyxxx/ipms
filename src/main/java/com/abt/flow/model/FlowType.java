@@ -49,7 +49,7 @@ public class FlowType extends AuditInfo {
     /**
      * 对应表单类型
      */
-    private String formType;
+    private int formType;
 
     /**
      * 流程所需权限，暂时有权限显示

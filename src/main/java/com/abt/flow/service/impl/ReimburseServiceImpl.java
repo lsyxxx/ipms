@@ -10,6 +10,7 @@ import com.abt.common.validator.ValidatorChain;
 import com.abt.flow.config.FlowableConstant;
 import com.abt.flow.controller.ReimburseController;
 import com.abt.flow.model.*;
+import com.abt.flow.model.entity.FlowScheme;
 import com.abt.flow.model.entity.Form;
 import com.abt.flow.model.entity.Reimburse;
 import com.abt.flow.repository.FlowCategoryRepository;
@@ -18,6 +19,7 @@ import com.abt.flow.repository.FormRepository;
 import com.abt.flow.repository.ReimburseRepository;
 import com.abt.flow.service.FlowEntry;
 import com.abt.flow.service.FlowOperationLogService;
+import com.abt.flow.service.FlowSettingService;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.exception.BadRequestParameterException;
 import com.abt.sys.exception.BusinessException;
@@ -61,6 +63,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     private final IFileService iFileService;
     private final FlowSchemeRepository flowSchemeRepository;
     private final FormRepository formRepository;
+    private final FlowSettingService flowSettingService;
 
 
     //报销事由,报销金额,票据数量,报销日期
@@ -78,7 +81,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
 
 
-    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, FlowSchemeRepository flowSchemeRepository, FormRepository formRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor, OAAdminValidator oaAdminValidator) {
+    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, FlowSchemeRepository flowSchemeRepository, FormRepository formRepository, FlowSettingService flowSettingService, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor, OAAdminValidator oaAdminValidator) {
         super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService, iFileService);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
@@ -88,6 +91,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         this.iFileService = iFileService;
         this.flowSchemeRepository = flowSchemeRepository;
         this.formRepository = formRepository;
+        this.flowSettingService = flowSettingService;
         this.applyFormValidatorChain = applyFormValidatorChain;
         this.commonDecisionValidatorChain = commonDecisionValidatorChain;
         this.userTaskCheckValidator = userTaskCheckValidator;
@@ -112,9 +116,14 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         Reimburse rbs = new Reimburse();
         rbs.create(applyForm, user);
 
+        //流程类型
+        FlowScheme flowScheme = flowSchemeRepository.findById(applyForm.getFlowType().getId());
+        buildApplyForm(flowScheme, applyForm);
+
         //添加流程参数
+        User u = isManager(user);
+        applyForm.setApplicant(u);
         Map<String, Object> processVars = initProcessVars(applyForm);
-        processVars.put(FlowableConstant.PV_APPLICANT, new User(user));
 
         ProcessInstance processInstance = start(user, applyForm.getFlowType().getProcDefId(), rbs.getId(), processVars);
         String procId = processInstance.getId();
@@ -132,6 +141,24 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         reimburseRepository.save(rbs);
 
     }
+
+    private User isManager(UserView user) {
+        User u = new User(user);
+        u.setManager(flowSettingService.isManager(u));
+        return u;
+    }
+
+
+    private void buildApplyForm(FlowScheme flowScheme, ReimburseApplyForm applyForm) {
+        applyForm.getFlowType().setName(flowScheme.getSchemeName());
+        applyForm.getFlowType().setCode(flowScheme.getSchemeCode());
+        applyForm.getFlowType().setType(flowScheme.getSchemeType());
+        applyForm.getFlowType().setService(flowScheme.getService());
+        applyForm.getFlowType().setProcDefId(flowScheme.getProcessDefId());
+        applyForm.getFlowType().setFormType(flowScheme.getFrmType());
+        applyForm.getFlowType().setFormId(flowScheme.getFrmId());
+    }
+
     /**
      * 初始化流程参数
      * 一般审批包含角色
@@ -155,9 +182,10 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         processVars.put(FlowableConstant.PV_ACCOUNTANCY, defaultAuditor.get(FlowableConstant.PV_ACCOUNTANCY));
         processVars.put(FlowableConstant.PV_CASHIER, defaultAuditor.get(FlowableConstant.PV_CASHIER));
 
-
         processVars.put(FlowableConstant.PV_DES, form.getReason());
         processVars.put(FlowableConstant.PV_COST, form.getCost());
+        processVars.put(FlowableConstant.PV_IS_MANAGER, form.getApplicant().isManager());
+        processVars.put(FlowableConstant.PV_APPLICANT, form.getApplicant());
 
         return processVars;
     }
