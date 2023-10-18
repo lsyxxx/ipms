@@ -15,7 +15,12 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Accessors(chain = true)
-public class FlowForm extends AutoForm {
+public class FlowForm<T> extends AutoForm {
+
+    /**
+     * 业务数据对象
+     */
+    private T data;
 
     /**
      * 流程业务
@@ -79,7 +84,5 @@ public class FlowForm extends AutoForm {
      */
     private String customName;
     private String processDefId;
-
-
 
 }

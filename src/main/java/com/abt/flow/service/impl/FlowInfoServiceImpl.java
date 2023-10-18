@@ -243,7 +243,6 @@ public class FlowInfoServiceImpl implements FlowInfoService {
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
         final InputStream inputStream = generator.generatePngDiagram(bpmnModel, false);
         FileUtils.copyInputStreamToFile(inputStream, new File("processes/def_pic/" + processDefinitionId + ".png"));
-
     }
 
 }

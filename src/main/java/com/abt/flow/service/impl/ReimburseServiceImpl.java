@@ -1,6 +1,7 @@
 package com.abt.flow.service.impl;
 
 import com.abt.common.model.User;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.validator.OAAdminValidator;
@@ -25,7 +26,10 @@ import com.abt.sys.exception.BadRequestParameterException;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.exception.IllegalUserException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.repository.UserRepository;
 import com.abt.sys.service.IFileService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.v3.core.util.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.HistoryService;
@@ -51,7 +55,7 @@ import static com.abt.flow.model.ProcessState.Active;
  */
 @Service
 @Slf4j
-public class ReimburseServiceImpl extends AbstractDefaultFlowService implements ReimburseService, FlowEntry<ReimburseApplyForm> {
+public class ReimburseServiceImpl extends AbstractDefaultFlowService implements ReimburseService, FlowEntry<Reimburse> {
 
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
@@ -64,6 +68,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     private final FlowSchemeRepository flowSchemeRepository;
     private final FormRepository formRepository;
     private final FlowSettingService flowSettingService;
+
+    private final UserRepository userRepository;
 
 
     //报销事由,报销金额,票据数量,报销日期
@@ -81,7 +87,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
 
 
-    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, FlowSchemeRepository flowSchemeRepository, FormRepository formRepository, FlowSettingService flowSettingService, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor, OAAdminValidator oaAdminValidator) {
+    public ReimburseServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, RepositoryService repositoryService, FlowOperationLogService flowOperationLogService, FlowableConstant flowableConstant, ReimburseRepository reimburseRepository, FlowCategoryRepository flowCategoryRepository, IFileService iFileService, FlowSchemeRepository flowSchemeRepository, FormRepository formRepository, FlowSettingService flowSettingService, UserRepository userRepository, ValidatorChain applyFormValidatorChain, ValidatorChain commonDecisionValidatorChain, UserTaskCheckValidator userTaskCheckValidator, @Qualifier("flowDefaultAuditorMap") Map<String, User> defaultAuditor, OAAdminValidator oaAdminValidator) {
         super(runtimeService, taskService, historyService, repositoryService, flowableConstant, flowOperationLogService, iFileService);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
@@ -92,6 +98,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         this.flowSchemeRepository = flowSchemeRepository;
         this.formRepository = formRepository;
         this.flowSettingService = flowSettingService;
+        this.userRepository = userRepository;
         this.applyFormValidatorChain = applyFormValidatorChain;
         this.commonDecisionValidatorChain = commonDecisionValidatorChain;
         this.userTaskCheckValidator = userTaskCheckValidator;
@@ -190,8 +197,42 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         return processVars;
     }
 
+    private Map<String, Object> initProcessVars(ApplyForm<Reimburse> form) {
+        Map<String, Object> processVars = new HashMap<>();
+        processVars.put(FlowableConstant.PV_BIZ_NAME, form.getFlowScheme().getSchemeName());
+        processVars.put(FlowableConstant.PV_BIZ_ID, form.getFlowScheme().getId());
+        processVars.put(FlowableConstant.PV_BIZ_CODE, form.getFlowScheme().getSchemeCode());
+        processVars.put(FlowableConstant.PV_FORM_ID, form.getFlowScheme().getFrmId());
+        processVars.put(FlowableConstant.PV_SERVICE, form.getFlowScheme().getService());
+
+        processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
+        processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
+        processVars.put(FlowableConstant.PV_HIS_INVOKERS, "");
+        processVars.put(FlowableConstant.PV_CEO, defaultAuditor.get(FlowableConstant.PV_CEO));
+        processVars.put(FlowableConstant.PV_FI_MANAGER, defaultAuditor.get(FlowableConstant.PV_FI_MANAGER));
+        processVars.put(FlowableConstant.PV_TAX_OFFICER, defaultAuditor.get(FlowableConstant.PV_TAX_OFFICER));
+        processVars.put(FlowableConstant.PV_ACCOUNTANCY, defaultAuditor.get(FlowableConstant.PV_ACCOUNTANCY));
+        processVars.put(FlowableConstant.PV_CASHIER, defaultAuditor.get(FlowableConstant.PV_CASHIER));
+
+        processVars.put(FlowableConstant.PV_DES, form.getData().getReason());
+        processVars.put(FlowableConstant.PV_COST, form.getData().getCost());
+        processVars.put(FlowableConstant.PV_IS_MANAGER, form.getApplicant().isManager());
+        processVars.put(FlowableConstant.PV_APPLICANT, form.getApplicant());
+
+        return processVars;
+    }
+
     private void validateApplyForm(ReimburseApplyForm applyForm) {
         ValidationResult result = applyFormValidatorChain.validate(applyForm.getReason(), applyForm.getCost(), applyForm.getVoucherNum(), applyForm.getRbsDate());
+        if (!result.isValid()) {
+            log.error("申请表单参数验证失败！错误信息 - {}", result.getErrorMessage());
+            throw new BadRequestParameterException(result.getErrorMessage());
+        }
+    }
+
+    private void validateApplyForm(ApplyForm<Reimburse> applyForm) {
+        Reimburse rbs = applyForm.getData();
+        ValidationResult result = applyFormValidatorChain.validate(rbs.getReason(), rbs.getCost(), rbs.getVoucherNum(), rbs.getReimburseDate());
         if (!result.isValid()) {
             log.error("申请表单参数验证失败！错误信息 - {}", result.getErrorMessage());
             throw new BadRequestParameterException(result.getErrorMessage());
@@ -334,7 +375,7 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     }
 
     @Override
-    public ReimburseApplyForm get(String id) {
+    public ApplyForm<Reimburse> get(String id) {
         final HistoricProcessInstance process = historyService.createHistoricProcessInstanceQuery().processInstanceId(id).singleResult();
         String rbsId = process.getBusinessKey();
         final Optional<Reimburse> byId = reimburseRepository.findById(rbsId);
@@ -354,7 +395,48 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         final String contentData = formRepository.findById(reimburse.getFormId()).getContentData();;
         form.setFormJson(contentData);
 
-        return form;
+        return new ApplyForm<>();
+
+    }
+
+    @Override
+    public void apply(ApplyForm<Map<String, Object>> requestForm, UserView user) throws JsonProcessingException {
+        log.info("开始执行[报销流程] - [申请], 申请用户: {}, 流程类型: {}", user.simpleInfo(), requestForm.getFlowScheme().getSchemeName());
+        ApplyForm<Reimburse> applyForm = new ApplyForm<>();
+
+
+        //TODO
+        Map<String, Object> map = requestForm.getData();
+        Reimburse rbs = convert(requestForm.getData());
+        validateApplyForm(applyForm);
+
+
+
+        //流程类型
+        FlowScheme flowScheme = flowSchemeRepository.findById(applyForm.getFlowScheme().getId());
+        applyForm.setFlowScheme(flowScheme);
+
+        User u = isManager(user);
+        applyForm.setApplicant(u);
+        if (!u.isManager()) {
+            User deptManager = userRepository.getSimpleUserInfo(applyForm.getDeptManager().getId());
+            applyForm.setDeptManager(deptManager);
+            User techManager = userRepository.getSimpleUserInfo(applyForm.getTechManager().getId());
+            applyForm.setTechManager(techManager);
+        }
+
+        Map<String, Object> processVars = initProcessVars(applyForm);
+
+        ProcessInstance processInstance = start(user, flowScheme.getProcessDefId(), rbs.getId(), processVars);
+        String procId = processInstance.getId();
+        //verify
+        verifyRunningProcess(procId, messages.getMessage("flow.service.ReimburseServiceImpl.apply.start.error"));
+        Task activeTask = getActiveTask(procId, messages.getMessage("flow.service.ReimburseServiceImpl.apply.start.error1"));
+        completeTask(activeTask.getId());
+        rbs.update(procId, activeTask, user.getId(), user.getName(), Active.value(), null);
+
+        runtimeService.updateBusinessStatus(processInstance.getId(), businessKey(null, Active.value()));
+        reimburseRepository.save(rbs);
 
     }
 
@@ -370,6 +452,15 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
         //2. 删除
         deleteRunningProcess(procId, null, user);
+    }
+
+    @Override
+    public Reimburse convert(Map<String, Object> form) throws JsonProcessingException {
+        Reimburse rbs = new Reimburse();
+        String json = JsonUtil.toJson(form);
+        rbs = (Reimburse) JsonUtil.toObject(json, rbs.getClass());
+        return rbs;
+
     }
 
 }

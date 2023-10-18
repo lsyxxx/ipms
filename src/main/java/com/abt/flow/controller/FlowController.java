@@ -1,5 +1,9 @@
 package com.abt.flow.controller;
 
+import com.abt.common.util.JsonUtil;
+import com.abt.flow.model.ApplyForm;
+import com.abt.flow.model.FlowForm;
+import com.abt.flow.model.entity.Reimburse;
 import com.abt.sys.config.ApplicationContextHolder;
 import com.abt.common.model.R;
 import com.abt.common.util.MessageUtil;
@@ -12,12 +16,15 @@ import com.abt.flow.service.FlowEntry;
 import com.abt.flow.service.FlowInfoService;
 import com.abt.flow.service.FlowOperationLogService;
 import com.abt.sys.model.dto.UserView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.task.Comment;
+import org.flowable.spring.boot.app.App;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.web.bind.annotation.*;
 
@@ -108,16 +115,15 @@ public class FlowController {
      * 打开流程实例详情
      * @return
      */
-    @Operation(summary = "提交审批")
-    @Parameter(name = "id", description = "流程实例id")
-    @Parameter(name = "service", description = "业务对应service beanName")
-    @GetMapping("/get")
-    public void apply(String service) {
-        final FlowEntry bean = (FlowEntry) ApplicationContextHolder.getBean(service);
-        
+    @Operation(summary = "提交申请")
+    @Parameter(name = "form", description = "业务申请表单")
+    @PostMapping("/apply")
+    public R apply(@RequestBody ApplyForm form) throws JsonProcessingException {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        final FlowEntry bean = (FlowEntry) ApplicationContextHolder.getBean(form.getFlowScheme().getService());
+        bean.apply(form, user);
+        return R.success();
     }
-
-
 
 
 }

@@ -91,6 +91,10 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
     @Column(name = "form_id", columnDefinition = "VARCHAR(255)")
     private String formId;
 
+    @Schema(description = "是否是管理人员，跳过部门/技术审批")
+    @Column(name = "is_mgr", columnDefinition = "BIT")
+    private boolean isManager = false;
+
     public Reimburse create(ReimburseApplyForm form, UserView user) {
         setId(TimeUtil.idGenerator());
 
