@@ -24,7 +24,7 @@ public interface FlowEntry<T>{
     void apply(ApplyForm<Map<String, Object>> applyForm, UserView user) throws JsonProcessingException;
 
     /**
-     * 将参数map转为对应类
+     * 将ApplyForm中参数map转为对应类
      */
     T convert(Map<String, Object> map) throws JsonProcessingException;
 

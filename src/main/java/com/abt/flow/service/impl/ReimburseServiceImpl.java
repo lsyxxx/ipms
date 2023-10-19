@@ -404,13 +404,9 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         log.info("开始执行[报销流程] - [申请], 申请用户: {}, 流程类型: {}", user.simpleInfo(), requestForm.getFlowScheme().getSchemeName());
         ApplyForm<Reimburse> applyForm = new ApplyForm<>();
 
-
-        //TODO
         Map<String, Object> map = requestForm.getData();
         Reimburse rbs = convert(requestForm.getData());
         validateApplyForm(applyForm);
-
-
 
         //流程类型
         FlowScheme flowScheme = flowSchemeRepository.findById(applyForm.getFlowScheme().getId());
