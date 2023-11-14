@@ -10,15 +10,9 @@ import java.io.InputStream;
 /**
  * 报销
  */
-public interface ReimburseService{
+public interface ReimburseService extends FlowEntry<Reimburse>{
 
 
-    /**
-     * 申请报销
-     * @param user 申请用户
-     * @param applyForm 申请表单
-     */
-    void apply(UserView user, ReimburseApplyForm applyForm);
 
     /**
      * 启动部门审查

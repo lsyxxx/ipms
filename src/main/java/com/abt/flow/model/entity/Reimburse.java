@@ -2,12 +2,13 @@ package com.abt.flow.model.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.common.util.TimeUtil;
+import com.abt.flow.model.ApplyForm;
 import com.abt.flow.model.FlowType;
 import com.abt.flow.model.ReimburseApplyForm;
 import com.abt.sys.model.dto.UserView;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -50,6 +51,7 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
      */
     @Schema(description = "报销事由")
     @Column(columnDefinition = "VARCHAR(255)")
+    @NotBlank(message = "[报销事由]不能为空!")
     private String reason;
 
     /**
@@ -57,6 +59,7 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
      */
     @Schema(description = "报销费用")
     @Column(columnDefinition = "DECIMAL(18,2)")
+    @PositiveOrZero(message = "[报销金额]不能小于0")
     private double cost;
 
     /**
@@ -64,6 +67,8 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
      */
     @Schema(description = "票据数量")
     @Column(name = "vch_num", columnDefinition = "SMALLINT")
+    @Max(value = 99, message = "[票据数量]最大不能超过99")
+    @PositiveOrZero(message = "[票据数量]必须大于0")
     private int voucherNum;
 
     /**
@@ -78,6 +83,7 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
      */
     @Schema(description = "报销日期")
     @Column(name = "rbs_date", columnDefinition = "VARCHAR(255)")
+    @PastOrPresent(message = "[报销日期]只能是过去或者现在的日期")
     private Date reimburseDate;
 
     /**
@@ -95,25 +101,23 @@ public class Reimburse extends FlowBusinessBase implements Serializable {
     @Column(name = "is_mgr", columnDefinition = "BIT")
     private boolean isManager = false;
 
-    public Reimburse create(ReimburseApplyForm form, UserView user) {
+    public Reimburse create(ApplyForm<Reimburse> form, UserView user) {
         setId(TimeUtil.idGenerator());
+        Reimburse rbs = form.getData();
+        if (rbs == null) {
+            rbs = new Reimburse();
+        }
+        rbs.setFormId(form.getFlowScheme().getFrmId());
 
-        setCost(form.getCost());
-        setProject(form.getProject());
-        setReimburseDate(form.getRbsDate());
-        setVoucherNum(form.getVoucherNum());
-        setReason(form.getReason());
-        setFormId(form.getFlowType().getFormId());
-        
-        setProcessDefinitionId(form.getFlowType().getProcDefId());
+        rbs.setProcessDefinitionId(form.getFlowScheme().getProcessDefId());
 
-        setCategoryId(form.getFlowType().getId());
-        setCategoryCode(form.getFlowType().getCode());
-        setCategoryName(form.getFlowType().getName());
+        rbs.setCategoryId(form.getFlowScheme().getId());
+        rbs.setCategoryCode(form.getFlowScheme().getSchemeCode());
+        rbs.setCategoryName(form.getFlowScheme().getSchemeName());
 
-        create(user.getId(), user.getUsername());
+        rbs.create(user.getId(), user.getUsername());
 
-        return this;
+        return rbs;
     }
 
 

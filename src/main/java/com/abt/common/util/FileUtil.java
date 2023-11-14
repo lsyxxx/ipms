@@ -3,6 +3,7 @@ package com.abt.common.util;
 import com.abt.sys.exception.BusinessException;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,15 +29,18 @@ public class FileUtil {
         }
     }
 
-    public static void saveFile(MultipartFile file, String savedRoot) {
+    public static void saveFile(MultipartFile file, String path) {
         if (file == null) {
             return;
         }
 
         String fileName = file.getOriginalFilename();
+        File directory = new File(path);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
 
-        String filePath = uploadPath(savedRoot, fileName);
-        File dest = new File(filePath);
+        File dest = new File(directory, fileName);
         try {
             file.transferTo(dest);
         } catch (IOException e) {

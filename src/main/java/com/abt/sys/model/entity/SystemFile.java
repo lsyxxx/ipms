@@ -10,6 +10,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.datetime.DateFormatter;
+import org.springframework.util.StringUtils;
+
+import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 文件系统
@@ -24,7 +30,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Setter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class SystemFile extends  AuditInfo {
+public class SystemFile extends AuditInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -80,4 +86,21 @@ public class SystemFile extends  AuditInfo {
         this.relationId1 = requestFile.getRelationId1();
         this.relationId2 = requestFile.getRelationId2();
     }
+
+    /**
+     * 路径规则：root/service/日期(20231011格式)/relationId1(ifExists)/relationId2(ifExists)
+     * @return url
+     */
+    public String createPath(String root) {
+        String path = root + File.separator + service + File.separator + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + File.separator;
+        if (StringUtils.hasLength(this.relationId1)) {
+            path = path + relationId1 + File.separator;
+        }
+        if (StringUtils.hasLength(this.relationId2)) {
+            path = path + relationId2 + File.separator;
+        }
+        this.url = path;
+        return path;
+    }
+
 }

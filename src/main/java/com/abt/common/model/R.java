@@ -90,6 +90,10 @@ public class R<T> {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
     }
 
+    public static<T> R<T> success(T data, int count, String msg) {
+        return new R<>(data, ResCode.SUCCESS.getCode(), msg, count);
+    }
+
     public static<T> R<T> success() {
         return new R<>(null, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage());
     }
@@ -149,6 +153,11 @@ public class R<T> {
     public static<T> R<T> fileNotFound() {
         return new R<>(null, ResCode.FAIL.getCode(), ResCode.FILE_NOT_FOUND.getMessage());
     }
+
+    public static<T> R<T> invalidParameters(String message) {
+        return new R<>(null, ResCode.BAD_REQUEST.getCode(), message);
+    }
+
 
 
 

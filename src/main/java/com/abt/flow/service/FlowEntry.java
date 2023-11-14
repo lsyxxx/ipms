@@ -1,8 +1,6 @@
 package com.abt.flow.service;
 
 import com.abt.flow.model.ApplyForm;
-import com.abt.flow.model.FlowForm;
-import com.abt.flow.model.entity.Reimburse;
 import com.abt.sys.model.dto.UserView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -21,11 +19,12 @@ public interface FlowEntry<T>{
      */
     ApplyForm<T> get(String procId);
 
-    void apply(ApplyForm<Map<String, Object>> applyForm, UserView user) throws JsonProcessingException;
 
     /**
-     * 将ApplyForm中参数map转为对应类
+     * 申请流程业务
+     * @param user 申请用户
+     * @param applyForm 申请表单
      */
-    T convert(Map<String, Object> map) throws JsonProcessingException;
+    void apply(ApplyForm<T> applyForm, UserView user);
 
 }

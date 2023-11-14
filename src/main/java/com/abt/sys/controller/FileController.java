@@ -38,7 +38,7 @@ public class FileController {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
-    @Value("com.abt.file.upload.save")
+    @Value("${com.abt.file.upload.save}")
     private String savedRoot;
 
     private final IFileService fileService;
@@ -48,11 +48,14 @@ public class FileController {
     }
 
     @Operation(summary = "上传文件")
-    @Parameter(name = "form", description = "文件信息")
-    @Parameter(name = "fileType", description = "附件类型")
-    @PostMapping("/upload/{service}")
-    public R<String> upload(@RequestParam("file") MultipartFile[] files, @PathVariable String service,
-                            @RequestParam String bizType,
+    @Parameter(name = "bizType", description = "业务类型")
+    @Parameter(name = "service", description = "应用服务模块")
+    @Parameter(name = "relationId1", description = "关联id1")
+    @Parameter(name = "relationId2", description = "关联id2")
+    @PostMapping("/upload")
+    public R<List<String>> upload(@RequestParam("file") MultipartFile[] files,
+                            @RequestParam String service,
+                            @RequestParam(required = false) String bizType,
                             @RequestParam(required = false) String relationId1, @RequestParam(required = false) String relationId2) {
         UserView user = TokenUtil.getUserFromAuthToken();
         if (files == null || files.length < 1) {
@@ -61,12 +64,14 @@ public class FileController {
         }
         String failed = null;
         String msg = null;
+        List<String> fileIds = new ArrayList<>();
         for (MultipartFile file : files) {
             if (file.isEmpty()) {
                 continue;
             }
             try {
-                fileService.saveFile(user, file, create(bizType, service, relationId1, relationId2));
+                final SystemFile systemFile = fileService.saveFile(user, file, create(bizType, service, relationId1, relationId2));
+                fileIds.add(systemFile.getId());
             } catch (Exception e) {
                 log.error("保存文件失败", e);
                 if (failed != null) {
@@ -78,7 +83,7 @@ public class FileController {
             }
         }
 
-        return R.success(msg == null ? ResCode.SUCCESS.getMessage() : msg);
+        return R.success(fileIds, fileIds.size(), msg == null ? ResCode.SUCCESS.getMessage() : msg);
     }
 
     @Operation(summary = "删除一个上传文件")

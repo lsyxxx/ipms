@@ -34,17 +34,18 @@ public class FileServiceImpl implements IFileService {
     }
 
     @Override
-    public void saveFile(UserView user, MultipartFile file, RequestFile requestFile) {
+    public SystemFile saveFile(UserView user, MultipartFile file, RequestFile requestFile) {
         log.info("开始执行saveFile()...");
         if (StringUtils.isBlank(requestFile.getFileName())) {
             requestFile.setFileName(file.getOriginalFilename());
         }
         SystemFile systemFile = new SystemFile(requestFile);
         systemFile.setOriginalName(file.getOriginalFilename());
-        systemFile.setUrl(FileUtil.getFileExtension(requestFile.getFileName()));
+        String path = systemFile.createPath(requestFile.getSavedRoot());
+        systemFile.setUrl(path);
 
-        FileUtil.saveFile(file, requestFile.getSavedRoot());
-        systemFileRepository.save(systemFile);
+        FileUtil.saveFile(file, systemFile.createPath(requestFile.getSavedRoot()));
+        return systemFileRepository.save(systemFile);
     }
 
     @Override

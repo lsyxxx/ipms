@@ -2,6 +2,7 @@ package com.abt.flow.model;
 
 import com.abt.common.model.User;
 import com.abt.flow.model.entity.FlowScheme;
+import jakarta.validation.Valid;
 import lombok.Data;
 
 /**
@@ -13,6 +14,7 @@ public class ApplyForm<T> {
      * 业务数据对象
      * 对应业务实体对象: Reimburse
      */
+    @Valid
     private T data;
 
     private String service;
@@ -25,7 +27,7 @@ public class ApplyForm<T> {
     /**
      * 流程实例id
      */
-    private String procId;
+    private String processInstanceId;
 
     /**
      * 部门主管

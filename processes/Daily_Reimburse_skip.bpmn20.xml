@@ -2,35 +2,35 @@
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:flowable="http://flowable.org/bpmn" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
   <process id="Daily_Reimburse_Skip" name="Daily_Reimburse_Skip" isExecutable="true">
     <startEvent id="daily_reimburse_startevent" name="流程开始"/>
-    <userTask id="daily_reimburse_apply" name="申请报销" activiti:assignee="${applicant.id}" flowable:skipExpression="${applicant.isManager}">
+    <userTask id="daily_reimburse_apply" name="申请报销" flowable:assignee="${applicant.id}">
       <documentation>申请报销</documentation>
     </userTask>
     <sequenceFlow id="flow1" sourceRef="daily_reimburse_startevent" targetRef="daily_reimburse_apply"/>
-    <userTask id="daily_reimburse_deptManager" name="部门主管" activiti:assignee="${deptManager.id}" flowable:skipExpression="${applicant.isManager}">
+    <userTask id="daily_reimburse_deptManager" name="部门主管" flowable:assignee="${deptManager.id}" flowable:skipExpression="${applicant.isManager == false}">
       <documentation>部门主管审批</documentation>
     </userTask>
     <sequenceFlow id="flow2" name="员工" sourceRef="daily_reimburse_apply" targetRef="daily_reimburse_deptManager">
       <conditionExpression xsi:type="tFormalExpression"/>
     </sequenceFlow>
-    <userTask id="daily_reimburse_techManager" name="技术负责人" activiti:assignee="${techManager.id}" flowable:skipExpression="${applicant.isManager}">
+    <userTask id="daily_reimburse_techManager" name="技术负责人" flowable:assignee="${techManager.id}" flowable:skipExpression="${applicant.isManager == false}">
       <documentation>技术负责人审批</documentation>
     </userTask>
     <sequenceFlow id="flow3" sourceRef="daily_reimburse_deptManager" targetRef="daily_reimburse_techManager"/>
-    <userTask id="daily_reimburse_fiManager" name="财务主管" activiti:assignee="${fiManager.id}">
+    <userTask id="daily_reimburse_fiManager" name="财务主管" flowable:assignee="${fiManager.id}">
       <documentation>财务主管审批</documentation>
     </userTask>
     <sequenceFlow id="flow4" sourceRef="daily_reimburse_techManager" targetRef="daily_reimburse_fiManager"/>
-    <userTask id="daily_reimburse_ceo" name="总经理" activiti:assignee="${ceo.id}">
+    <userTask id="daily_reimburse_ceo" name="总经理" flowable:assignee="${ceo.id}">
       <documentation>总经理审批</documentation>
     </userTask>
     <sequenceFlow id="flow5" sourceRef="daily_reimburse_fiManager" targetRef="daily_reimburse_ceo"/>
-    <userTask id="daily_reimburse_chairman" name="董事长审批" activiti:assignee="${chairman.id}">
+    <userTask id="daily_reimburse_chairman" name="董事长审批" flowable:assignee="${chairman.id}">
       <documentation>董事长审批</documentation>
     </userTask>
     <sequenceFlow id="flow6" name="大于等于5000元" sourceRef="daily_reimburse_ceo" targetRef="daily_reimburse_chairman">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${cost>=5000}]]></conditionExpression>
     </sequenceFlow>
-    <userTask id="daily_reimburse_act" name="财务会计" activiti:assignee="${accountancy.id}">
+    <userTask id="daily_reimburse_act" name="财务会计" flowable:assignee="${accountancy.id}">
       <documentation>财务会计审批</documentation>
     </userTask>
     <endEvent id="daily_reimburse_endevent" name="流程结束"/>
@@ -39,9 +39,6 @@
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${cost<5000}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="flow12" sourceRef="daily_reimburse_chairman" targetRef="daily_reimburse_act"/>
-    <sequenceFlow id="flow13" name="部门经理" sourceRef="daily_reimburse_apply" targetRef="daily_reimburse_fiManager">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${applicant.isManager == true}]]></conditionExpression>
-    </sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Daily_Reimburse">
     <bpmndi:BPMNPlane bpmnElement="Daily_Reimburse" id="BPMNPlane_Daily_Reimburse">
@@ -117,16 +114,6 @@
         <omgdi:waypoint x="640.0" y="507.0"/>
         <omgdi:waypoint x="402.0" y="507.0"/>
         <omgdi:waypoint x="402.0" y="398.0"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow13" id="BPMNEdge_flow13">
-        <omgdi:waypoint x="242.0" y="180.0"/>
-        <omgdi:waypoint x="242.0" y="47.0"/>
-        <omgdi:waypoint x="692.0" y="47.0"/>
-        <omgdi:waypoint x="692.0" y="109.0"/>
-        <omgdi:waypoint x="692.0" y="180.0"/>
-        <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="14.0" width="100.0" x="444.0" y="51.0"/>
-        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

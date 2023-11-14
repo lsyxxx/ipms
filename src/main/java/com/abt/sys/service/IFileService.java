@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface IFileService {
-    void saveFile(UserView user, MultipartFile file, RequestFile requestFile);
+    SystemFile saveFile(UserView user, MultipartFile file, RequestFile requestFile);
 
     List<SystemFile> findBy(SystemFile condition);
 

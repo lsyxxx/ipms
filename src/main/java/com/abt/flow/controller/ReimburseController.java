@@ -3,16 +3,19 @@ package com.abt.flow.controller;
 import com.abt.common.model.R;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
+import com.abt.flow.model.ApplyForm;
 import com.abt.flow.model.FlowInfoVo;
 import com.abt.flow.model.FlowRequestForm;
 import com.abt.flow.model.ReimburseApplyForm;
-import com.abt.flow.service.FlowEntry;
+import com.abt.flow.model.entity.Reimburse;
 import com.abt.flow.service.FlowInfoService;
 import com.abt.flow.service.ReimburseService;
 import com.abt.sys.model.dto.UserView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +23,7 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.InputStream;
@@ -30,7 +34,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/wf/rb")
+@RequestMapping("/wf/rbs")
 @Tag(name = "ReimburseController", description = "报销流程")
 public class ReimburseController {
 
@@ -50,17 +54,15 @@ public class ReimburseController {
     }
 
 
-
     @Operation(summary = "报销流程申请")
     @Parameter(name = "applyForm", description = "申请业务数据form")
     @PostMapping("/apply")
-    public R apply(@RequestBody ReimburseApplyForm applyForm) {
+    public R apply(@Validated @RequestBody  ApplyForm<Reimburse> applyForm) {
         UserView user = TokenUtil.getUserFromAuthToken();
-
-        reimburseService.apply(user, applyForm);
-
-        return R.success(messages.getMessage("common.apply.success"));
+        reimburseService.apply(applyForm, user);
+        return R.success();
     }
+
 
     @Operation(summary = "部门审批")
     @Parameter(name = "applyForm", description = "业务数据form")

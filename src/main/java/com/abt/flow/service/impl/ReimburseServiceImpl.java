@@ -18,7 +18,6 @@ import com.abt.flow.repository.FlowCategoryRepository;
 import com.abt.flow.repository.FlowSchemeRepository;
 import com.abt.flow.repository.FormRepository;
 import com.abt.flow.repository.ReimburseRepository;
-import com.abt.flow.service.FlowEntry;
 import com.abt.flow.service.FlowOperationLogService;
 import com.abt.flow.service.FlowSettingService;
 import com.abt.flow.service.ReimburseService;
@@ -29,7 +28,6 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.sys.repository.UserRepository;
 import com.abt.sys.service.IFileService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.v3.core.util.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.HistoryService;
@@ -55,7 +53,7 @@ import static com.abt.flow.model.ProcessState.Active;
  */
 @Service
 @Slf4j
-public class ReimburseServiceImpl extends AbstractDefaultFlowService implements ReimburseService, FlowEntry<Reimburse> {
+public class ReimburseServiceImpl extends AbstractDefaultFlowService implements ReimburseService {
 
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
@@ -107,47 +105,6 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         this.oaAdminValidator = oaAdminValidator;
     }
 
-    /**
-     * 0. 创建业务对象
-     * 1. 启动流程
-     * 2. 完成申请task
-     * 3. 更新业务对象
-     * @param user 申请用户
-     * @param applyForm 申请表单
-     */
-    @Override
-    public void apply(UserView user, ReimburseApplyForm applyForm) {
-        log.info("开始执行[报销流程] - [申请], 申请用户: {}, 流程类型: {}", user.simpleInfo(), applyForm.getFlowType().getName());
-        validateApplyForm(applyForm);
-
-        Reimburse rbs = new Reimburse();
-        rbs.create(applyForm, user);
-
-        //流程类型
-        FlowScheme flowScheme = flowSchemeRepository.findById(applyForm.getFlowType().getId());
-        buildApplyForm(flowScheme, applyForm);
-
-        //添加流程参数
-        User u = isManager(user);
-        applyForm.setApplicant(u);
-        Map<String, Object> processVars = initProcessVars(applyForm);
-
-        ProcessInstance processInstance = start(user, applyForm.getFlowType().getProcDefId(), rbs.getId(), processVars);
-        String procId = processInstance.getId();
-
-        //verify
-        verifyRunningProcess(procId, messages.getMessage("flow.service.ReimburseServiceImpl.apply.start.error"));
-
-        Task activeTask = getActiveTask(procId, messages.getMessage("flow.service.ReimburseServiceImpl.apply.start.error1"));
-
-        completeTask(activeTask.getId());
-
-        rbs.update(procId, activeTask, user.getId(), user.getName(), Active.value(), null);
-
-        runtimeService.updateBusinessStatus(processInstance.getId(), businessKey(null, Active.value()));
-        reimburseRepository.save(rbs);
-
-    }
 
     private User isManager(UserView user) {
         User u = new User(user);
@@ -156,47 +113,12 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
     }
 
 
-    private void buildApplyForm(FlowScheme flowScheme, ReimburseApplyForm applyForm) {
-        applyForm.getFlowType().setName(flowScheme.getSchemeName());
-        applyForm.getFlowType().setCode(flowScheme.getSchemeCode());
-        applyForm.getFlowType().setType(flowScheme.getSchemeType());
-        applyForm.getFlowType().setService(flowScheme.getService());
-        applyForm.getFlowType().setProcDefId(flowScheme.getProcessDefId());
-        applyForm.getFlowType().setFormType(flowScheme.getFrmType());
-        applyForm.getFlowType().setFormId(flowScheme.getFrmId());
-    }
-
     /**
      * 初始化流程参数
      * 一般审批包含角色
      * 包括：部门审批人(deptManager)，技术负责人(techManager)，总经理(ceo)，财务总监(fiManager)，税务(texOfficer)，会计(accountancy)
-     * 下一个审批人(nextAssignee，这个流程没有)
+     * 下一个审批人(nextAssignee)
      */
-    private Map<String, Object> initProcessVars(ReimburseApplyForm form) {
-        Map<String, Object> processVars = new HashMap<>();
-        processVars.put(FlowableConstant.PV_BIZ_NAME, form.getFlowType().getName());
-        processVars.put(FlowableConstant.PV_BIZ_ID, form.getFlowType().getId());
-        processVars.put(FlowableConstant.PV_BIZ_CODE, form.getFlowType().getCode());
-        processVars.put(FlowableConstant.PV_FORM_ID, form.getFlowType().getFormId());
-        processVars.put(FlowableConstant.PV_SERVICE, form.getFlowType().getService());
-
-        processVars.put(FlowableConstant.PV_DEPT_MANAGER, form.getDeptManager());
-        processVars.put(FlowableConstant.PV_TECH_MANAGER, form.getTechManager());
-        processVars.put(FlowableConstant.PV_HIS_INVOKERS, "");
-        processVars.put(FlowableConstant.PV_CEO, defaultAuditor.get(FlowableConstant.PV_CEO));
-        processVars.put(FlowableConstant.PV_FI_MANAGER, defaultAuditor.get(FlowableConstant.PV_FI_MANAGER));
-        processVars.put(FlowableConstant.PV_TAX_OFFICER, defaultAuditor.get(FlowableConstant.PV_TAX_OFFICER));
-        processVars.put(FlowableConstant.PV_ACCOUNTANCY, defaultAuditor.get(FlowableConstant.PV_ACCOUNTANCY));
-        processVars.put(FlowableConstant.PV_CASHIER, defaultAuditor.get(FlowableConstant.PV_CASHIER));
-
-        processVars.put(FlowableConstant.PV_DES, form.getReason());
-        processVars.put(FlowableConstant.PV_COST, form.getCost());
-        processVars.put(FlowableConstant.PV_IS_MANAGER, form.getApplicant().isManager());
-        processVars.put(FlowableConstant.PV_APPLICANT, form.getApplicant());
-
-        return processVars;
-    }
-
     private Map<String, Object> initProcessVars(ApplyForm<Reimburse> form) {
         Map<String, Object> processVars = new HashMap<>();
         processVars.put(FlowableConstant.PV_BIZ_NAME, form.getFlowScheme().getSchemeName());
@@ -220,14 +142,6 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         processVars.put(FlowableConstant.PV_APPLICANT, form.getApplicant());
 
         return processVars;
-    }
-
-    private void validateApplyForm(ReimburseApplyForm applyForm) {
-        ValidationResult result = applyFormValidatorChain.validate(applyForm.getReason(), applyForm.getCost(), applyForm.getVoucherNum(), applyForm.getRbsDate());
-        if (!result.isValid()) {
-            log.error("申请表单参数验证失败！错误信息 - {}", result.getErrorMessage());
-            throw new BadRequestParameterException(result.getErrorMessage());
-        }
     }
 
     private void validateApplyForm(ApplyForm<Reimburse> applyForm) {
@@ -399,18 +313,23 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
 
     }
 
-    @Override
-    public void apply(ApplyForm<Map<String, Object>> requestForm, UserView user) throws JsonProcessingException {
-        log.info("开始执行[报销流程] - [申请], 申请用户: {}, 流程类型: {}", user.simpleInfo(), requestForm.getFlowScheme().getSchemeName());
-        ApplyForm<Reimburse> applyForm = new ApplyForm<>();
 
-        Map<String, Object> map = requestForm.getData();
-        Reimburse rbs = convert(requestForm.getData());
-        validateApplyForm(applyForm);
+    /**
+     * 0. 创建业务对象
+     * 1. 启动流程
+     * 2. 完成申请task
+     * 3. 更新业务对象
+     * @param user 申请用户
+     * @param applyForm 申请表单
+     */
+    @Override
+    public void apply(ApplyForm<Reimburse> applyForm, UserView user) {
+        log.info("开始执行[报销流程] - [申请], 申请用户: {}, 流程类型: {}", user.simpleInfo(), applyForm.getFlowScheme().getSchemeName());
 
         //流程类型
         FlowScheme flowScheme = flowSchemeRepository.findById(applyForm.getFlowScheme().getId());
         applyForm.setFlowScheme(flowScheme);
+        Reimburse rbs =  applyForm.getData();
 
         User u = isManager(user);
         applyForm.setApplicant(u);
@@ -432,6 +351,8 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         rbs.update(procId, activeTask, user.getId(), user.getName(), Active.value(), null);
 
         runtimeService.updateBusinessStatus(processInstance.getId(), businessKey(null, Active.value()));
+
+        rbs.create(applyForm, user);
         reimburseRepository.save(rbs);
 
     }
@@ -450,13 +371,5 @@ public class ReimburseServiceImpl extends AbstractDefaultFlowService implements 
         deleteRunningProcess(procId, null, user);
     }
 
-    @Override
-    public Reimburse convert(Map<String, Object> form) throws JsonProcessingException {
-        Reimburse rbs = new Reimburse();
-        String json = JsonUtil.toJson(form);
-        rbs = (Reimburse) JsonUtil.toObject(json, rbs.getClass());
-        return rbs;
-
-    }
 
 }

@@ -21,7 +21,7 @@ import java.io.FileNotFoundException;
 @Slf4j
 public class DeploymentTest {
     private RepositoryService repositoryService;
-    public static String bpmFile = "processes/Daily_Reimburse.bpmn20.xml";
+    public static String bpmFile = "processes/Daily_Reimburse_skip.bpmn20.xml";
 
 
     @BeforeEach
@@ -38,8 +38,8 @@ public class DeploymentTest {
                 //todo: 不知道具体哪一步激活的
                 .addInputStream(bpmFile, new FileInputStream(bpmFile))
                 //act_re_deployment:key_
-                .name("Daily_Reimburse")
-                .key("Daily_Reimburse_")
+                .name("Daily_Reimburse_skip")
+                .key("Daily_Reimburse_skip")
                 .deploy();
         log.info("================= deploy -- id: {}, key: {} =================", deployment.getId(), deployment.getKey());
 

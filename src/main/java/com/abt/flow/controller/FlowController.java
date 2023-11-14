@@ -1,9 +1,6 @@
 package com.abt.flow.controller;
 
-import com.abt.common.util.JsonUtil;
 import com.abt.flow.model.ApplyForm;
-import com.abt.flow.model.FlowForm;
-import com.abt.flow.model.entity.Reimburse;
 import com.abt.sys.config.ApplicationContextHolder;
 import com.abt.common.model.R;
 import com.abt.common.util.MessageUtil;
@@ -23,9 +20,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.task.Comment;
-import org.flowable.spring.boot.app.App;
-import org.springframework.beans.BeanUtils;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -118,7 +114,7 @@ public class FlowController {
     @Operation(summary = "提交申请")
     @Parameter(name = "form", description = "业务申请表单")
     @PostMapping("/apply")
-    public R apply(@RequestBody ApplyForm form) throws JsonProcessingException {
+    public R apply(@RequestBody @Validated ApplyForm<Map<String, Object>> form) throws JsonProcessingException {
         UserView user = TokenUtil.getUserFromAuthToken();
         final FlowEntry bean = (FlowEntry) ApplicationContextHolder.getBean(form.getFlowScheme().getService());
         bean.apply(form, user);

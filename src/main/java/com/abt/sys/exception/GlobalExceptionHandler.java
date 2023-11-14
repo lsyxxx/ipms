@@ -6,9 +6,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.stream.Collectors;
 
 /**
  * 全局异常处理
@@ -77,6 +82,19 @@ public class GlobalExceptionHandler {
         log.error("文件未找到! - ", e);
         return R.fileNotFound();
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public R<Exception> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error("参数校验失败 ", e);
+        BindingResult bindingResult = e.getBindingResult();
+        String messages = bindingResult.getAllErrors()
+                .stream()
+                .map(ObjectError::getDefaultMessage)
+                .collect(Collectors.joining("；"));
+        return R.invalidParameters(messages);
+    }
+
 
 
 }

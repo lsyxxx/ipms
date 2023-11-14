@@ -4,6 +4,8 @@ import com.abt.flow.model.entity.Reimburse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -75,6 +77,7 @@ public class ReimburseApplyForm extends FlowForm{
     /**
      * 报销事由
      */
+    @NotBlank(message = "报销事由不能为空")
     private String reason;
 
     /**
