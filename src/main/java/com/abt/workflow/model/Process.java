@@ -39,7 +39,10 @@ public class Process extends BaseNode{
      */
     private int currentIndex = 0;
 
-    private Map<Object, Object> context = new HashMap<>();
+    /**
+     * 用于存放流程中的数据等
+     */
+    private Map<String, Object> context = new HashMap<>();
 
     public Process() {
         super();
@@ -55,6 +58,15 @@ public class Process extends BaseNode{
     public Process addNoes(BaseNode ...nodes) {
         this.nodes.addAll(Arrays.stream(nodes).toList());
         return this;
+    }
+
+    public Process addVars(Map<String, Object> vars) {
+        this.context.putAll(vars);
+        return this;
+    }
+
+    public Object getVar(String key) {
+        return this.context.get(key);
     }
 
     public void printAll() {

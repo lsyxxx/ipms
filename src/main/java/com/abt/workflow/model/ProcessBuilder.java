@@ -80,5 +80,17 @@ public class ProcessBuilder {
         return builder;
     }
 
+    public Process createProcessInstance(Process model) throws Exception {
+        Process newInstance = Util.newInstance(model.getClass());
+        //复制信息
+        newInstance.setCode(model.getId());
+        newInstance.setCodeName(model.getName());
+        newInstance.setType(model.getType());
+        newInstance.setName(model.getName());
+        newInstance.setGroup(model.getGroup());
+        newInstance.setSort(model.getSort());
+        return newInstance;
+    }
+
 
 }

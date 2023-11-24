@@ -25,6 +25,9 @@ public class Config {
         init();
     }
 
+    /**
+     * TODO: 其它方式将模型读入内存
+     */
     public static void init() {
         processMap.put("commonReimburseLt5000", buildReimburse());
     }
@@ -45,7 +48,8 @@ public class Config {
         UserNode ceo = UserNode.build("ceo");
         UserNode tax = UserNode.build("tax");
         UserNode acc = UserNode.build("acc");
-        Process process = ProcessBuilder.defaultAuditProcess("commonReimburseLt5000").id("commonReimburseLt5000")
+        Process process = ProcessBuilder.defaultAuditProcess("commonReimburseLt5000")
+                .id("commonReimburseLt5000")
                 .addUserNodeGroup("layer1", "tech", "dept")
                 .addUserNodeGroup("layer2", "finMgr", "ceo", "tax")
                 .get()
@@ -57,6 +61,12 @@ public class Config {
         return Config.processMap;
     }
 
+
+    /**
+     * 从内存中获取流程模型
+     * @param code
+     * @return
+     */
     public static Process getProcessModel(String code) {
         Process process = Config.processMap.get(code);
         if (process != null) {

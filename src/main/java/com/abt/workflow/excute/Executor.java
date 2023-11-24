@@ -1,11 +1,16 @@
 package com.abt.workflow.excute;
 
 import com.abt.workflow.Util;
+import com.abt.workflow.model.BaseNode;
 import com.abt.workflow.model.ProcessBuilder;
 import com.abt.workflow.model.Process;
 import com.abt.workflow.model.UserNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
+import static com.alibaba.compileflow.engine.common.util.ClassUtils.newInstance;
 
 /**
  * 流程处理器
@@ -30,22 +35,42 @@ public class Executor {
     }
 
     /**
-     * 启动一个流程
+     * 启动一个流程，返回流程实例
      */
-    public void start(String processId) throws Exception {
-        Process model = Config.getProcessModel(processId);
+    public Process start(String code) throws Exception {
+        Process model = Config.getProcessModel(code);
         log.info("-------------- print model");
         model.printAll();
-        Process processInstance = Util.newInstance(model.getClass());
-        log.info("------------- print new instance");
+        Process processInstance = newProcessInstance(code, null);
         processInstance.printAll();
 
+        return processInstance;
     }
 
 
     /**
-     * 组装结构
+     * 创建流程实例
+     * @param code 流程模型code
+     * @param vars 流程参数
      */
+    public Process newProcessInstance(String code, Map<String, Object> vars) throws Exception {
+        Process model = Config.getProcessModel(code);
+        Process newInstance = ProcessBuilder.builder().createProcessInstance(model);
+        newInstance.addVars(vars);
+        return newInstance;
+    }
+
+    public BaseNode newBaseNodeInstance(BaseNode model) throws Exception {
+        BaseNode newInstance = Util.newInstance(model.getClass());
+        newInstance.id();
+        newInstance.setType(model.getType());
+        newInstance.setName(model.getName());
+        newInstance.setGroup(model.getGroup());
+        newInstance.setSort(model.getSort());
+        return newInstance;
+    }
+
+
 
 
     public static void main(String[] args) throws Exception {

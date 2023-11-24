@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 
 /**
- * 节点
+ * 用户审批节点
  * 设计参考钉钉的流程审批
  */
 @Data

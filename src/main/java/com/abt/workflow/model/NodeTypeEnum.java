@@ -1,14 +1,13 @@
 package com.abt.workflow.model;
 
 
-import lombok.Data;
-
 /**
  * 类型
  */
 public enum NodeTypeEnum {
     //---- 节点类型
     USER("user", "用户节点", UserNode.class),
+    SWITCH("switch", "选择节点", SwitchNode.class),
 
 
     //--- 流程类型
