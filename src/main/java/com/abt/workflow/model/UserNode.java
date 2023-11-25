@@ -33,6 +33,7 @@ public class UserNode extends BaseNode {
         UserNode node = new UserNode();
         node.id();
         node.setName(nodeName);
+        node.defaultGroup();
         return node;
     }
 

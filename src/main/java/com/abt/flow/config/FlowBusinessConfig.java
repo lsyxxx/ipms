@@ -48,7 +48,6 @@ public class FlowBusinessConfig {
      * 默认审批用户
      */
     @Bean(name = "flowDefaultAuditorMap")
-    @Lazy
     public Map<String, User> defaultAuditor() {
         List<FlowSetting> list = flowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_AUDITOR);
         return list.stream()
@@ -59,7 +58,6 @@ public class FlowBusinessConfig {
      * 获取OA审批权限
      */
     @Bean(name = "oaAuthList")
-    @Lazy
     public List<FlowSetting>  oaAuthList() {
         return flowSettingRepository.findByTypeOrderByCreateDate(OA_AUTH);
     }
@@ -69,12 +67,13 @@ public class FlowBusinessConfig {
      * @return
      */
     @Bean(name = "flowSkipManagerMap")
-    @Lazy
     public Map<String, User> flowSkipManager() {
         List<FlowSetting> list = flowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_SKIP);
         return list.stream()
                 .collect(toMap(FlowSetting::getValue, i -> new User(i.getValue(), i.getRemark())));
     }
+
+
 
 
 

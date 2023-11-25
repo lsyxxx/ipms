@@ -6,6 +6,8 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -40,9 +42,25 @@ public class Process extends BaseNode{
     private int currentIndex = 0;
 
     /**
+     * 流程上下文
      * 用于存放流程中的数据等
      */
     private Map<String, Object> context = new HashMap<>();
+
+    /**
+     * 流程启动人
+     */
+    private String starter;
+
+    /**
+     * 流程实例启动时间
+     */
+    private LocalDateTime startTime;
+
+    /**
+     * 流程结束时间
+     */
+    private LocalDateTime endTime;
 
     public Process() {
         super();
@@ -61,6 +79,8 @@ public class Process extends BaseNode{
     }
 
     public Process addVars(Map<String, Object> vars) {
+        if (vars == null)
+            return this;
         this.context.putAll(vars);
         return this;
     }

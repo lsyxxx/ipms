@@ -1,6 +1,7 @@
 package com.abt.workflow.excute;
 
 import com.abt.sys.exception.BusinessException;
+import com.abt.workflow.model.IfNode;
 import com.abt.workflow.model.Process;
 import com.abt.workflow.model.ProcessBuilder;
 import com.abt.workflow.model.UserNode;
@@ -50,6 +51,24 @@ public class Config {
         UserNode acc = UserNode.build("acc");
         Process process = ProcessBuilder.defaultAuditProcess("commonReimburseLt5000")
                 .id("commonReimburseLt5000")
+                .addUserNodeGroup("layer1", "tech", "dept")
+                .addUserNodeGroup("layer2", "finMgr", "ceo", "tax")
+                .get()
+                ;
+        return process;
+    }
+
+
+    public static Process buildReimburseWithSwitch() {
+        UserNode tech = UserNode.build("tech");
+        UserNode dept = UserNode.build("dept");
+        UserNode finMgr = UserNode.build("finMgr");
+        UserNode ceo = UserNode.build("ceo");
+        UserNode tax = UserNode.build("tax");
+        UserNode acc = UserNode.build("acc");
+        Process process = ProcessBuilder.defaultAuditProcess("commonReimburseLt5000")
+                .id("commonReimburseLt5000")
+//                .addNodes(ifLeader)
                 .addUserNodeGroup("layer1", "tech", "dept")
                 .addUserNodeGroup("layer2", "finMgr", "ceo", "tax")
                 .get()

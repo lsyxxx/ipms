@@ -1,6 +1,6 @@
 package com.abt.workflow.model;
 
-public interface NodeBehaviour<T extends BaseNode> {
+public interface NodeBehaviour{
 
     void id();
 
@@ -14,5 +14,12 @@ public interface NodeBehaviour<T extends BaseNode> {
      * @return 新的实例
      */
 //    T newInstance(T model);
+
+    /**
+     * 节点执行方法
+     */
+//    void execute();
+
+
 
 }

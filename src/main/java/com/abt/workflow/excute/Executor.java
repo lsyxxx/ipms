@@ -49,6 +49,16 @@ public class Executor {
 
 
     /**
+     * 模拟执行一个流程
+     */
+//    public Process simc() {
+//        //1. 选择一个model
+//        String code = "commonReimburseLt5000";
+//
+//    }
+
+
+    /**
      * 创建流程实例
      * @param code 流程模型code
      * @param vars 流程参数
