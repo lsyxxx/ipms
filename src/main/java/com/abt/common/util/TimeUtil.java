@@ -18,7 +18,7 @@ public class TimeUtil {
      * yyyyMMdd+timestamp
      * @return
      */
-    public synchronized static String idGenerator() {
+    public static String idGenerator() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         return LocalDate.now().format(formatter) + System.currentTimeMillis();
     }

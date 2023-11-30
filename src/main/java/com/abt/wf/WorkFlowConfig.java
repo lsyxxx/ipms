@@ -1,8 +1,8 @@
 package com.abt.wf;
 
 import com.abt.common.model.User;
-import com.abt.sys.model.entity.SystemSetting;
-import com.abt.sys.repository.SystemSettingRepository;
+import com.abt.sys.model.entity.FlowSetting;
+import com.abt.sys.repository.FlowSettingRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -26,19 +26,17 @@ public class WorkFlowConfig {
     public static final String DEFAULT_SKIP = "flowSkipManager";
     public static final String OA_AUTH = "oaAuth";
 
-    private final SystemSettingRepository systemSettingRepository;
+    private final FlowSettingRepository FlowSettingRepository;
 
-    public WorkFlowConfig(SystemSettingRepository systemSettingRepository) {
-        this.systemSettingRepository = systemSettingRepository;
+    public WorkFlowConfig(FlowSettingRepository FlowSettingRepository) {
+        this.FlowSettingRepository = FlowSettingRepository;
     }
 
     @Bean
     @Lazy
-    public Map<String, List<String>> SystemSettingList() {
-        List<SystemSetting> all = systemSettingRepository.findAll();
-        return all.stream()
-                .collect(groupingBy(SystemSetting::getKey
-                        , mapping(SystemSetting::getValue, toList())));
+    public Map<String, List<String>> FlowSettingList() {
+        List<FlowSetting> all = FlowSettingRepository.findAll();
+        return all.stream().collect(groupingBy(FlowSetting::getKey, mapping(FlowSetting::getValue, toList())));
     }
 
     /**
@@ -46,17 +44,17 @@ public class WorkFlowConfig {
      */
     @Bean(name = "flowDefaultAuditorMap")
     public Map<String, User> defaultAuditor() {
-        List<SystemSetting> list = systemSettingRepository.findByTypeOrderByCreateDate(DEFAULT_AUDITOR);
+        List<FlowSetting> list = FlowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_AUDITOR);
         return list.stream()
-                .collect(toMap(SystemSetting::getKey, i -> new User(i.getValue(), i.getRemark())));
+                .collect(toMap(FlowSetting::getKey, i -> new User(i.getValue(), i.getRemark())));
     }
 
     /**
      * 获取OA审批权限
      */
     @Bean(name = "oaAuthList")
-    public List<SystemSetting>  oaAuthList() {
-        return systemSettingRepository.findByTypeOrderByCreateDate(OA_AUTH);
+    public List<FlowSetting>  oaAuthList() {
+        return FlowSettingRepository.findByTypeOrderByCreateDate(OA_AUTH);
     }
 
     /**
@@ -65,9 +63,9 @@ public class WorkFlowConfig {
      */
     @Bean(name = "flowSkipManagerMap")
     public Map<String, User> flowSkipManager() {
-        List<SystemSetting> list = systemSettingRepository.findByTypeOrderByCreateDate(DEFAULT_SKIP);
+        List<FlowSetting> list = FlowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_SKIP);
         return list.stream()
-                .collect(toMap(SystemSetting::getValue, i -> new User(i.getValue(), i.getRemark())));
+                .collect(toMap(FlowSetting::getValue, i -> new User(i.getValue(), i.getRemark())));
     }
 
 

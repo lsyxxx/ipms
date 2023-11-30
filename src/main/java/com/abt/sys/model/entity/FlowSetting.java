@@ -19,7 +19,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @Setter
 @ToString
-public class SystemSetting extends AuditInfo {
+public class FlowSetting extends AuditInfo {
 
 
     @Id
@@ -42,13 +42,13 @@ public class SystemSetting extends AuditInfo {
     private String description;
 
 
-    public SystemSetting(String key, String value) {
+    public FlowSetting(String key, String value) {
         this.key = key;
         this.value = value;
     }
 
 
-    public SystemSetting() {
+    public FlowSetting() {
         super();
     }
 }
