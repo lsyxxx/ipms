@@ -14,7 +14,6 @@ class WorkFlowServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        this.processEngine = 
     }
 
     @AfterEach
