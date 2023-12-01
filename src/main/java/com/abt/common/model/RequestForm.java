@@ -1,6 +1,5 @@
 package com.abt.common.model;
 
-import com.abt.flow.model.FlowRequestForm;
 import com.abt.sys.model.dto.UserView;
 import lombok.Data;
 import lombok.experimental.Accessors;
