@@ -1,9 +1,11 @@
 package com.abt.wf.service.taskimpl;
 
 import com.abt.common.model.User;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -11,14 +13,19 @@ import java.util.Map;
 /**
  * 处理申请的ServiceTask
  */
-@Service
+@Service("reimburseApplyTaskImpl")
 @Slf4j
 public class ReimburseApplyTaskImpl implements JavaDelegate {
-    private final Map<String, User> flowSkipManagerMap;
+    @Autowired
+    private Map<String, User> flowSkipManagerMap;
 
-    public ReimburseApplyTaskImpl(Map<String, User> flowSkipManagerMap) {
-        this.flowSkipManagerMap = flowSkipManagerMap;
+    public ReimburseApplyTaskImpl() {
+        super();
     }
+
+//    public ReimburseApplyTaskImpl(Map<String, User> flowSkipManagerMap) {
+//        this.flowSkipManagerMap = flowSkipManagerMap;
+//    }
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {

@@ -7,12 +7,16 @@ import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.impl.ProcessEngineImpl;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.test.Deployment;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.Assert;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.camunda.bpm.engine.ProcessEngineConfiguration.HISTORY_FULL;
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,13 +44,14 @@ class WorkFlowServiceImplTest {
 
     ProcessEngine init() {
         return ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
-                .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE)
+                .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE)
                 .setJdbcUrl("jdbc:mysql://localhost:3306/camunda?useUnicode=true&character_set_server=utf8mb4&allowMutiQueries=true")
                 .setJdbcDriver("com.mysql.cj.jdbc.Driver")
                 .setJdbcUsername("root")
                 .setJdbcPassword("123456")
                 .setJobExecutorActivate(false)
                 .setHistory(HISTORY_FULL)
+                .setJobExecutorActivate(false)
                 .buildProcessEngine();
     }
 
@@ -56,7 +61,15 @@ class WorkFlowServiceImplTest {
 
 
     @Test
+    @Deployment(resources = "rbsAll2.bpmn")
     void apply() {
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("isLeader", true);
+        vars.put("cost", 60000.00);
+        vars.put("starter", "user_starter");
+        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("rbsAll2", vars);
+
+
     }
 
     @Test

@@ -16,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 
 
@@ -34,18 +35,37 @@ public class SecurityConfig {
     private final TokenAuthenticationHandler tokenAuthenticationHandler;
     private final ABTAuthorizationManager abtAuthorizationManager;
 
+    /**
+     * 白名单
+     * 不需要认证&授权
+     *
+     * @return String[]
+     */
+    public static String[] whiteList() {
+        return new String[]{
+                "/", "/home", "/error",
+                //swagger
+//                "/swagger-ui.html", "/swagger-ui/**", "/swagger-resource/**", "/v3/api-docs/**", "/v2/api-docs/**", "/webjars/**", "/doc.html",
+                //测试使用
+                "/test/**",
+                "/static/**", //静态资源
+                "/camunda/**",
+                "/favicon.ico"
+        };
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         RequestCache nullRequestCache = new NullRequestCache();
-        http
-                //授权，而不是认证
-                .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers(whiteList()).permitAll()
-                        //应用内转发不需要授权
-                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-                        .anyRequest()
+        http.authorizeHttpRequests((authorize) -> authorize
+                                .requestMatchers(new AntPathRequestMatcher("/test/**"), new AntPathRequestMatcher("/public/**"),
+                                        new AntPathRequestMatcher("/camunda/**"), new AntPathRequestMatcher("/favicon.ico")).permitAll()
+//                        .requestMatchers("/home", "/error", "/test/**", "/public/**").permitAll()
+                                //应用内转发不需要授权
+                                .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+                                .anyRequest()
 //                        .authenticated()
-                        .access(abtAuthorizationManager)
+                                .access(abtAuthorizationManager)
                 )
 
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -72,9 +92,9 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     /**
      * 用户认证管理
+     *
      * @return ProviderManager
      */
     @Bean
@@ -85,23 +105,6 @@ public class SecurityConfig {
 
     public ABTWebApiTokenAuthenticationFilter abtWebApiTokenAuthenticationFilter() {
         return new ABTWebApiTokenAuthenticationFilter(this.authenticationManager(), tokenAuthenticationHandler, WebApiToken.of());
-    }
-
-
-    /**
-     * 白名单
-     * 不需要认证&授权
-     * @return String[]
-     */
-    public static String[] whiteList() {
-        return new String[]{
-                "/", "/home", "/error",
-                //swagger
-                "/swagger-ui.html", "/swagger-ui/**", "/swagger-resource/**", "/v3/api-docs/**", "/v2/api-docs/**", "/webjars/**", "/doc.html",
-                //测试使用
-                "/test/**",
-                "/static/**", //静态资源
-        };
     }
 
 

@@ -20,23 +20,24 @@ import javax.sql.DataSource;
 /**
  * 数据源配置
  */
-@Configuration(proxyBeanMethods = false)
+//@Configuration(proxyBeanMethods = false)
 @Slf4j
+@Deprecated
 public class DBConfig {
 
     /**
      * 主数据库
      */
 
-    @Bean
-    @ConfigurationProperties(prefix = "spring.datasource.biz")
+//    @Bean
+//    @ConfigurationProperties(prefix = "spring.datasource.biz")
     public DataSourceProperties primaryDataSourceProperties() {
         return new DataSourceProperties();
     }
 
 
-    @Primary
-    @Bean(name = "dataSource")
+//    @Primary
+//    @Bean(name = "dataSource")
     public DataSource dataSource(DataSourceProperties primaryDataSourceProperties) {
         return primaryDataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
@@ -44,32 +45,32 @@ public class DBConfig {
     /**
      * 流程引擎数据库
      */
-    @Bean
-    @ConfigurationProperties("spring.datasource.flowable")
+//    @Bean
+//    @ConfigurationProperties("spring.datasource.flowable")
     public DataSourceProperties flowableDataSourceProperties() {
         return new DataSourceProperties();
     }
 
 
-    @Bean(name = "flowableDataSource")
+//    @Bean(name = "flowableDataSource")
     public DataSource flowableDataSource(@Qualifier("flowableDataSourceProperties") DataSourceProperties flowableDataSourceProperties) {
         log.info("配置abt flowable datasource");
         return flowableDataSourceProperties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
     }
 
-    @Bean(name = "transactionManager")
-    @Primary
+//    @Bean(name = "transactionManager")
+//    @Primary
     public PlatformTransactionManager transactionManager(@Qualifier("dataSource") DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
 
-    @Bean(name = "flowableTransactionManager")
+//    @Bean(name = "flowableTransactionManager")
     public PlatformTransactionManager flowableTransactionManager(@Qualifier("flowableDataSource") DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
 
 
-    @Bean
+//    @Bean
     public JdbcTemplate jdbcTemplate(@Qualifier("dataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }

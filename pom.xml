@@ -91,19 +91,6 @@
             <version>4.5.13</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.flowable/flowable-spring-boot-starter -->
-<!--        <dependency>-->
-<!--            <groupId>org.flowable</groupId>-->
-<!--            <artifactId>flowable-spring-boot-starter</artifactId>-->
-<!--            <version>7.0.0.M2</version>-->
-<!--        </dependency>-->
-        <!-- https://mvnrepository.com/artifact/org.flowable/flowable-spring-boot-starter-process -->
-<!--        <dependency>-->
-<!--            <groupId>org.flowable</groupId>-->
-<!--            <artifactId>flowable-spring-boot-starter-process</artifactId>-->
-<!--            <version>7.0.0.M2</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>

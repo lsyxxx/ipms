@@ -43,6 +43,10 @@ public class WorkFlowServiceImpl implements WorkFlowService {
         this.taskService = taskService;
         this.flowSkipManagerMap = flowSkipManagerMap;
     }
+    public void applyTest(String key, Map<String, Object> vars) {
+        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(key, vars);
+        log.info("启动流程，流程id: {}", processInstance.getId());
+    }
 
 
     public void apply(ReimburseApplyForm form, UserView user) {

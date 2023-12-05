@@ -43,7 +43,7 @@
       <bpmn:outgoing>Flow_0stcxru</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1lmo9li" name="金额大于5000" sourceRef="Activity_1pld53y" targetRef="Activity_1yfkknr">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;5000}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression"><![CDATA[cost<=5000]]></bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:userTask id="Activity_1aun7s6" name="会计" camunda:assignee="user_acc">
       <bpmn:incoming>Flow_0stcxru</bpmn:incoming>
