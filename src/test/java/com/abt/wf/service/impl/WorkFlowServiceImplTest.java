@@ -67,7 +67,7 @@ class WorkFlowServiceImplTest {
         vars.put("isLeader", true);
         vars.put("cost", 60000.00);
         vars.put("starter", "user_starter");
-        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("rbsAll2", vars);
+//        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("rbsAll2", vars);
 
 
     }

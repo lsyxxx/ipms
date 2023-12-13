@@ -11,7 +11,7 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
 /**
  * spring校验配置
  */
-//@Configuration
+@Configuration
 public class ParameterValidatorConfig {
 
     /**
