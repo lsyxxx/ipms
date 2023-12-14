@@ -29,7 +29,7 @@ public class ReimburseApplyForm {
     private String processDefinitionKey;
     private String processDefinitionId;
 
-    //-- submit
+    //-- submit: apply/approve
     private String userid;
     private String username;
 
@@ -37,6 +37,8 @@ public class ReimburseApplyForm {
      * 预览生成的流程实例的id
      */
     private String previewInstanceId;
+
+    private String processInstanceId;
 
     /**
      * 票据数量
@@ -48,11 +50,25 @@ public class ReimburseApplyForm {
 
     public Map<String, Object> variableMap = new HashMap<>();
 
+    private String comment;
+    private String decision;
+
+    public static final String REJECT = "reject";
+    public static final String PASS = "pass";
+
     public Map<String, Object> variableMap() {
         this.variableMap.clear();
         this.variableMap.put("cost", cost);
         this.variableMap.put("isLeader", isLeader);
         return this.variableMap;
+    }
+
+    public boolean isReject() {
+        return REJECT.equals(this.decision) ? true : false;
+    }
+
+    public boolean isPass() {
+        return PASS.equals(this.decision) ? true : false;
     }
 
 

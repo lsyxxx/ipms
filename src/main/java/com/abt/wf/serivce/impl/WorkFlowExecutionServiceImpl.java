@@ -1,7 +1,8 @@
 package com.abt.wf.serivce.impl;
 
-import com.abt.common.model.User;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseApplyForm;
+import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -11,10 +12,9 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
-import org.camunda.commons.utils.StringUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,15 +29,17 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     private final TaskService taskService;
     private final HistoryService historyService;
 
+    private final ReimburseService reimburseService;
 
-    public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService) {
+    public static final String VARS_STARTER = "starter";
+
+
+    public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, ReimburseService reimburseService) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
         this.historyService = historyService;
+        this.reimburseService = reimburseService;
     }
-
-
-
 
     /**
      * 预览流程图key
@@ -53,6 +55,7 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     /**
      * 预览流程图
      */
+    @Override
     public List<HistoricTaskInstance> previewFlow(ReimburseApplyForm form) {
         log.info("预览流程图...previewProcessInstanceId: {}", form.getPreviewInstanceId());
         if (StringUtils.isNotBlank(form.getPreviewInstanceId())) {
@@ -85,6 +88,8 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
      * 申请
      * @param form 申请表单
      */
+    @Override
+    @Transactional
     public void apply(ReimburseApplyForm form) {
         String procDefId = form.getProcessDefinitionId();
         Map<String, Object> vars = form.variableMap();
@@ -93,7 +98,26 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         final Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
         taskService.setAssignee(task.getId(), form.getUserid());
         taskService.complete(task.getId(), vars);
-        //save rbs data
+
+        form.setProcessInstanceId(processInstance.getId());
+
+        reimburseService.saveEntity(form);
+    }
+
+    public void approve(ReimburseApplyForm form) {
+        String procId = form.getProcessInstanceId();
+        final Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
+
+        taskService.claim(task.getId(), form.getUserid());
+        taskService.setDescription(task.getId(), form.getDecision());
+        taskService.createComment(task.getId(), form.getProcessInstanceId(), form.getComment());
+
+        if (form.isReject()) {
+
+        }
+
+
+
     }
 
 
