@@ -24,10 +24,10 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
     @Override
     public List<TaskDTO> findByStartUserid(String userid) {
         return jdbcTemplate.query("select p.PROC_INST_ID_, p.BUSINESS_KEY_, p.START_USER_ID_, p.START_TIME_ as PROC_START_TIME_, p.END_TIME_ as PROC_END_TIME_, p.PROC_DEF_ID_, p.PROC_DEF_KEY_, p.DELETE_REASON_ as PROC_DELETE_REASON_, p.STATE_, " +
-                "t.ID_ AS TASK_ID_, t.TASK_DEF_KEY_, t.NAME_, t.ASSIGNEE_, t.DESCRIPTION_, t.START_TIME_ as TASK_START_TIME_, t.END_TIME_ as TASK_END_TIME_, t.DELETE_REASON_ as TASK_DELETE_REASON_" +
+                "t.ID_ AS TASK_ID_, t.TASK_DEF_KEY_, t.NAME_, t.ASSIGNEE_, t.DESCRIPTION_, t.START_TIME_ as TASK_START_TIME_, t.END_TIME_ as TASK_END_TIME_, t.DELETE_REASON_ as TASK_DELETE_REASON_ " +
                 "from ACT_HI_PROCINST p " +
                 "left join ACT_HI_TASKINST t on p.PROC_INST_ID_ = t.PROC_INST_ID_ " +
-                "left join User u on p.START_USER_ID = u." +
+                "left join [dbo].[User] u on p.START_USER_ID_ = u.Id " +
                 "where p.START_USER_ID_ = ? " +
                 "and BUSINESS_KEY_ not like '%PREVIEW_USER_%' ORDER BY PROC_START_TIME_, TASK_START_TIME_",
                 new Object[]{userid}, new TaskDTORowMapper());

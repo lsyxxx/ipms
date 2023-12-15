@@ -41,7 +41,7 @@ public class ReimburseServiceImpl implements ReimburseService {
     @Override
     public List<ReimburseDTO> queryByStater(String starterId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Reimburse> pageData = reimburseRepository.findByStarterIdOrdOrderByCreateDateDesc(starterId, pageRequest);
+        Page<Reimburse> pageData = reimburseRepository.findByStarterIdOrderByCreateDateDesc(starterId, pageRequest);
         List<ReimburseDTO> vos = new ArrayList<>();
         for (Reimburse reimburse : pageData.getContent()) {
             ReimburseDTO vo = ReimburseDTO.from(reimburse);

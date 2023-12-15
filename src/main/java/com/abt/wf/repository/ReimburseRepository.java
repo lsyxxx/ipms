@@ -12,6 +12,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface ReimburseRepository extends JpaRepository<Reimburse, String> {
 
-    Page<Reimburse> findByStarterIdOrdOrderByCreateDateDesc(@Param("starterId") String starterId, Pageable pageable);
+    Page<Reimburse> findByStarterIdOrderByCreateDateDesc(@Param("starterId") String starterId, Pageable pageable);
 
 }

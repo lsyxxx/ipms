@@ -3,12 +3,15 @@ package com.abt.wf.serivce.impl;
 import com.abt.wf.model.TaskDTO;
 import com.abt.wf.repository.WorkFlowRepository;
 import com.abt.wf.serivce.WorkFlowQueryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
  *
  */
+@Service
 public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
 
     private final WorkFlowRepository workFlowRepository;
@@ -18,8 +21,8 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
     }
 
     public List<TaskDTO> queryMyRbs(String starter, String starterName, int page, int size) {
-        List<TaskDTO> taskDTOS = queryTaskListByStartUserid(starter, page, size);
-
+        List<TaskDTO> tasks = queryTaskListByStartUserid(starter, page, size);
+        return tasks;
     }
 
 
