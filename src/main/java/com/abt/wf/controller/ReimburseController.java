@@ -6,6 +6,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseApplyForm;
+import com.abt.wf.model.TaskDTO;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import com.abt.wf.serivce.WorkFlowQueryService;
@@ -14,6 +15,7 @@ import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -66,15 +68,38 @@ public class ReimburseController {
     }
 
     /**
-     * 我的报销
+     * 我申请的报销
+     * @param page 页数
+     * @param size 单页条数
+     * @param startDay 开始日期 yyyy-MM-dd
+     *
      */
-    @PostMapping("/myrbs")
-    public void myReimburseList() {
+    @GetMapping("/myrbs")
+    public R<List<TaskDTO>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("size") int size,
+                                                 @RequestParam("startDay") LocalDate startDay,
+                                                 @RequestParam("endDay") LocalDate endDay) {
 //        UserView userView = TokenUtil.getUserFromAuthToken();
         //code|cost|reason|rbsDate|state|currentTaskName|
-
-
+        String userid = "";
+        String username = "";
+        List<TaskDTO> list = workFlowQueryService.queryMyRbs(userid, startDay, endDay, page, size);
+        return R.success(list);
     }
+
+    /**
+     * 我的待办
+     *
+     */
+    @GetMapping("/rbstodo")
+    public R<List<TaskDTO>> myReimburseTodoList(@RequestParam("page") int page, @RequestParam("size") int size,
+                                                @RequestParam("startDay") LocalDate startDay,
+                                                @RequestParam("endDay") LocalDate endDay) {
+        String userid = "";
+        String username = "";
+        List<TaskDTO> tasks = workFlowQueryService.queryTaskListByStartUserid(userid, startDay, endDay, page, size);
+        return R.success(tasks);
+    }
+
 
 
     private User testUser1() {

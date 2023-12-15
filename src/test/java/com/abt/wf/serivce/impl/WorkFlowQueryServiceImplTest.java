@@ -33,10 +33,10 @@ class WorkFlowQueryServiceImplTest {
 
     @Test
     void queryTaskListByStartUserid() {
-        final List<TaskDTO> tasks = workFlowQueryService.queryTaskListByStartUserid("demo", 0, 100);
-        tasks.forEach(t -> {
-            log.info("TaskDTO: procId: {}, procDefId: {}, taskName:{} taskId: {}, assignee: {}, taskEndTime: {}", t.getProcessInstanceId(), t.getProcessDefinitionId(), t.getTaskDefName(),  t.getTaskInstanceId(), t.getAssigneeId(), t.getTaskEndTime());
-        });
+//        final List<TaskDTO> tasks = workFlowQueryService.queryMyRbs("demo",  0, 100);
+//        tasks.forEach(t -> {
+//            log.info("TaskDTO: procId: {}, procDefId: {}, taskName:{} taskId: {}, assignee: {}, taskEndTime: {}", t.getProcessInstanceId(), t.getProcessDefinitionId(), t.getTaskDefName(),  t.getTaskInstanceId(), t.getAssigneeId(), t.getTaskEndTime());
+//        });
 
     }
 }

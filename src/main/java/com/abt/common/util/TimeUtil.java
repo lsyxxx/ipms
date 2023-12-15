@@ -12,6 +12,7 @@ import java.util.Date;
  */
 public class TimeUtil {
 
+    public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
      * 根据当前时间生成ID
@@ -44,5 +45,17 @@ public class TimeUtil {
         return ts.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
+    /**
+     * 转为yyyy-MM-dd格式字符串
+     * @param localDate 日期
+     */
+    public static String yyyy_MM_ddString(LocalDate localDate) {
+        return localDate.format(dateFormatter);
+    }
+
+    public static void main(String[] args) {
+        LocalDate date = LocalDate.now();
+        System.out.println(date.toString());
+    }
 
 }
