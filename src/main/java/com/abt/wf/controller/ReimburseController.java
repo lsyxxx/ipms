@@ -1,11 +1,14 @@
 package com.abt.wf.controller;
 
+import com.abt.common.model.R;
 import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseApplyForm;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
+import com.abt.wf.serivce.WorkFlowQueryService;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.springframework.validation.annotation.Validated;
@@ -22,21 +25,22 @@ import java.util.List;
 public class ReimburseController {
 
     private final WorkFlowExecutionService workFlowExecutionService;
+    private final WorkFlowQueryService workFlowQueryService;
     private final ReimburseService reimburseService;
 
-    public ReimburseController(WorkFlowExecutionService workFlowExecutionService, ReimburseService reimburseService) {
+    public ReimburseController(WorkFlowExecutionService workFlowExecutionService, WorkFlowQueryService workFlowQueryService, ReimburseService reimburseService) {
         this.workFlowExecutionService = workFlowExecutionService;
+        this.workFlowQueryService = workFlowQueryService;
         this.reimburseService = reimburseService;
     }
 
     @PostMapping("/preview")
-    public void previewFlow(@Validated @RequestBody ReimburseApplyForm form) {
+    public R<List<HistoricTaskInstance>> previewFlow(@Validated @RequestBody ReimburseApplyForm form) {
 //        getUserFromToken(form)
         //preview
         List<HistoricTaskInstance> previewList = workFlowExecutionService.previewFlow(form);
         //Necessary params: assigneeName, executeTime, taskName, comment,
-        //TODO
-        //return VO OR List<HistoricTaskInstance> ?
+        return R.success(previewList);
     }
     
 
@@ -44,12 +48,10 @@ public class ReimburseController {
      * 申请
      */
     @PostMapping("/apply")
-    public void apply(@Validated @RequestBody ReimburseApplyForm form) {
+    public R<String> apply(@Validated @RequestBody ReimburseApplyForm form) {
 //        getUserFromToken(form);
-        workFlowExecutionService.apply(form);
-        reimburseService.saveEntity(form);
-        //TODO: ?
-//        return ?
+        Reimburse reimburse = workFlowExecutionService.apply(form);
+        return R.success(reimburse.getProcessInstanceId());
     }
 
     /**
@@ -57,11 +59,23 @@ public class ReimburseController {
      * @param form 申请表单
      */
     @PostMapping("/approve")
-    public void approve(@RequestBody ReimburseApplyForm form) {
+    public R approve(@RequestBody ReimburseApplyForm form) {
         //UserView userView = getUserFromAuthToken()
+        workFlowExecutionService.apply(form);
+        return R.success();
+    }
+
+    /**
+     * 我的报销
+     */
+    @PostMapping("/myrbs")
+    public void myReimburseList() {
+//        UserView userView = TokenUtil.getUserFromAuthToken();
+        //code|cost|reason|rbsDate|state|currentTaskName|
 
 
     }
+
 
     private User testUser1() {
         User user = new User();
@@ -77,5 +91,7 @@ public class ReimburseController {
         form.setUsername(userView.getUsername());
         return form;
     }
+
+
 
 }

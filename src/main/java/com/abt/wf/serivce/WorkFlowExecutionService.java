@@ -1,5 +1,6 @@
 package com.abt.wf.serivce;
 
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseApplyForm;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 
@@ -11,5 +12,5 @@ import java.util.List;
 public interface WorkFlowExecutionService {
     List<HistoricTaskInstance> previewFlow(ReimburseApplyForm form);
 
-    void apply(ReimburseApplyForm form);
+    Reimburse apply(ReimburseApplyForm form);
 }

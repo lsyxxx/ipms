@@ -30,11 +30,11 @@ public class TimeUtil {
     }
 
 
-    public static LocalDateTime from(java.sql.Date date) {
-        if (date == null) {
+    public static LocalDateTime from(java.sql.Date sqlDate) {
+        if (sqlDate == null) {
             return null;
         }
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        return sqlDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     public static LocalDateTime from(Timestamp ts) {

@@ -41,6 +41,11 @@ public class ReimburseApplyForm {
     private String processInstanceId;
 
     /**
+     * 业务实例id
+     */
+    private String entityId;
+
+    /**
      * 票据数量
      */
     @Max(value = 99, message = "票据数量不能超过99")

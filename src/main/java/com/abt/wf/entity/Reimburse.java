@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.common.util.TimeUtil;
 import com.abt.wf.model.ReimburseApplyForm;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
@@ -26,7 +27,7 @@ import java.time.LocalDateTime;
 public class Reimburse extends AuditInfo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private double cost;
@@ -66,7 +67,7 @@ public class Reimburse extends AuditInfo {
 
     //-- start
     @Column(name="starter_id", columnDefinition="VARCHAR(128)")
-    private String staterId;
+    private String starterId;
     
     @Column(name="starter_name", columnDefinition="VARCHAR(128)")
     private String starterName;
@@ -95,13 +96,14 @@ public class Reimburse extends AuditInfo {
      */
     public static Reimburse create(ReimburseApplyForm form) {
         Reimburse rbs = new Reimburse();
+        rbs.setId(TimeUtil.idGenerator());
         rbs.setCost(form.getCost());
         rbs.setReason(form.getReason());
         rbs.setRbsDate(form.getRbsDate());
         rbs.setProcessDefinitionId(form.getProcessDefinitionId());
         rbs.setProcessDefinitionKey(form.getProcessDefinitionKey());
         rbs.setProcessInstanceId(form.getProcessInstanceId());
-        rbs.setStaterId(form.getUserid());
+        rbs.setStarterId(form.getUserid());
         rbs.setStarterName(form.getUsername());
         rbs.setStartTime(LocalDateTime.now());
         rbs.setState(STATE_APPROVING);

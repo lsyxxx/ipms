@@ -1,12 +1,14 @@
 package com.abt.wf.serivce.impl;
 
 import com.abt.wf.entity.Reimburse;
+import com.abt.wf.exception.RequiredParameterException;
 import com.abt.wf.model.ReimburseApplyForm;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
@@ -31,14 +33,17 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
     private final ReimburseService reimburseService;
 
+    private final IdentityService identityService;
+
     public static final String VARS_STARTER = "starter";
 
 
-    public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, ReimburseService reimburseService) {
+    public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, ReimburseService reimburseService, IdentityService identityService) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
         this.historyService = historyService;
         this.reimburseService = reimburseService;
+        this.identityService = identityService;
     }
 
     /**
@@ -86,11 +91,15 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
     /**
      * 申请
+     *
      * @param form 申请表单
+     * @return 业务实体
      */
     @Override
     @Transactional
-    public void apply(ReimburseApplyForm form) {
+    public Reimburse apply(ReimburseApplyForm form) {
+        ensureProcessDefinitionId(form);
+        setAuthUser(form.getUserid());
         String procDefId = form.getProcessDefinitionId();
         Map<String, Object> vars = form.variableMap();
         vars.put("starter", form.getUserid());
@@ -101,23 +110,59 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
         form.setProcessInstanceId(processInstance.getId());
 
-        reimburseService.saveEntity(form);
+        Reimburse reimburse = reimburseService.saveEntity(form);
+        clearAuthUser();
+        return reimburse;
     }
 
+    public static final String DELETE_REASON_REJECT_BY = "Reject_by_ ";
+
+    public String deleteReasonReject(String userid) {
+        return DELETE_REASON_REJECT_BY + userid;
+    }
+
+    public void setAuthUser(String userid) {
+        identityService.setAuthenticatedUserId(userid);
+    }
+
+    public void clearAuthUser() {
+        identityService.clearAuthentication();
+    }
+
+
     public void approve(ReimburseApplyForm form) {
+        ensureProcessId(form);
+        setAuthUser(form.getUserid());
         String procId = form.getProcessInstanceId();
         final Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
-
         taskService.claim(task.getId(), form.getUserid());
         taskService.setDescription(task.getId(), form.getDecision());
-        taskService.createComment(task.getId(), form.getProcessInstanceId(), form.getComment());
-
-        if (form.isReject()) {
-
+        if (StringUtils.isNotBlank(form.getComment())) {
+            taskService.createComment(task.getId(), form.getProcessInstanceId(), form.getComment());
         }
 
+        if (form.isReject()) {
+            runtimeService.deleteProcessInstance(form.getProcessInstanceId(), deleteReasonReject(form.getUserid()));
+        } else {
+            //pass
+            taskService.complete(task.getId());
+        }
 
+        clearAuthUser();
+    }
 
+    public static void ensureProcessId(ReimburseApplyForm form) {
+        if (StringUtils.isNotBlank(form.getProcessInstanceId())) {
+            return;
+        }
+        throw new RequiredParameterException("ProcessInstanceId(流程实例id)");
+    }
+
+    public static void ensureProcessDefinitionId(ReimburseApplyForm form) {
+        if (StringUtils.isNotBlank(form.getProcessDefinitionId())) {
+            return;
+        }
+        throw new RequiredParameterException("ProcessDefinitionId(流程定义id)");
     }
 
 
