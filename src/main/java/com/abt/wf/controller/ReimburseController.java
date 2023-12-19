@@ -4,6 +4,7 @@ import com.abt.common.model.R;
 import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.FlowSetting;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseApplyForm;
 import com.abt.wf.model.TaskDTO;
@@ -23,7 +24,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/rbs")
+@RequestMapping("/test/wf/rbs")
 public class ReimburseController {
 
     private final WorkFlowExecutionService workFlowExecutionService;
@@ -63,41 +64,63 @@ public class ReimburseController {
     @PostMapping("/approve")
     public R approve(@RequestBody ReimburseApplyForm form) {
         //UserView userView = getUserFromAuthToken()
-        workFlowExecutionService.apply(form);
+        workFlowExecutionService.approve(form);
         return R.success();
     }
 
     /**
      * 我申请的报销
-     * @param page 页数
-     * @param size 单页条数
-     * @param startDay 开始日期 yyyy-MM-dd
      *
+     * @param page     页数
+     * @param size     单页条数
+     * @param startDay 开始日期 yyyy-MM-dd
      */
-    @GetMapping("/myrbs")
+    @GetMapping("/applylist")
     public R<List<TaskDTO>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("size") int size,
-                                                 @RequestParam("startDay") LocalDate startDay,
-                                                 @RequestParam("endDay") LocalDate endDay) {
+                                                 @RequestParam(value = "startDay", required = false) LocalDate startDay,
+                                                 @RequestParam(value = "endDay", required = false) LocalDate endDay,
+                                                 @RequestParam("userid") String userid) {
 //        UserView userView = TokenUtil.getUserFromAuthToken();
         //code|cost|reason|rbsDate|state|currentTaskName|
-        String userid = "";
+//        String userid = "";
         String username = "";
         List<TaskDTO> list = workFlowQueryService.queryMyRbs(userid, startDay, endDay, page, size);
-        return R.success(list);
+        return R.success(list, list.size());
     }
 
     /**
      * 我的待办
      *
      */
-    @GetMapping("/rbstodo")
+    @GetMapping("/todo")
     public R<List<TaskDTO>> myReimburseTodoList(@RequestParam("page") int page, @RequestParam("size") int size,
-                                                @RequestParam("startDay") LocalDate startDay,
-                                                @RequestParam("endDay") LocalDate endDay) {
-        String userid = "";
+                                                @RequestParam(value = "startDay", required = false) LocalDate startDay,
+                                                @RequestParam(value = "endDay", required = false) LocalDate endDay,
+                                                @RequestParam("userid") String userid) {
+//        String userid = "";
         String username = "";
-        List<TaskDTO> tasks = workFlowQueryService.queryTaskListByStartUserid(userid, startDay, endDay, page, size);
-        return R.success(tasks);
+        List<TaskDTO> tasks = workFlowQueryService.queryMyTodoList(userid, startDay, endDay, page, size);
+        return R.success(tasks, tasks.size());
+    }
+
+    @GetMapping("/types")
+    public R<List<FlowSetting>> getRbsTypes() {
+        final List<FlowSetting> rbsTypes = reimburseService.queryRbsTypes();
+        return R.success(rbsTypes, rbsTypes.size());
+    }
+
+    /**
+     * 已完成
+     */
+    @GetMapping("/done")
+    public R<List<TaskDTO>> myTasksDone(@RequestParam("page") int page, @RequestParam("size") int size,
+                                        @RequestParam(value = "startDay", required = false) LocalDate startDay,
+                                        @RequestParam(value = "endDay", required = false) LocalDate endDay,
+                                        @RequestParam("userid") String userid) {
+        String username = "";
+        final List<TaskDTO> tasks = workFlowQueryService.queryMyDoneList(userid, startDay, endDay, page, size);
+        return R.success(tasks, tasks.size());
+
     }
 
 
@@ -116,7 +139,4 @@ public class ReimburseController {
         form.setUsername(userView.getUsername());
         return form;
     }
-
-
-
 }

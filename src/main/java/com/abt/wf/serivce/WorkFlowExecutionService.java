@@ -13,4 +13,6 @@ public interface WorkFlowExecutionService {
     List<HistoricTaskInstance> previewFlow(ReimburseApplyForm form);
 
     Reimburse apply(ReimburseApplyForm form);
+
+    void approve(ReimburseApplyForm form);
 }

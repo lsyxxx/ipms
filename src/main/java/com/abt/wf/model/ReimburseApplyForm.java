@@ -1,10 +1,12 @@
 package com.abt.wf.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -23,7 +25,18 @@ public class ReimburseApplyForm {
      * 报销日期
      */
     @NotNull
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rbsDate;
+    /**
+     * 票据数量
+     */
+    @Max(value = 99, message = "票据数量不能超过99")
+    private int voucherNum;
+    /**
+     * 报销类型
+     */
+    private String rbsType;
 
     //-- processDefinition
     private String processDefinitionKey;
@@ -45,11 +58,6 @@ public class ReimburseApplyForm {
      */
     private String entityId;
 
-    /**
-     * 票据数量
-     */
-    @Max(value = 99, message = "票据数量不能超过99")
-    private int voucherNum;
 
     private boolean isLeader = false;
 

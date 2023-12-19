@@ -1,5 +1,6 @@
 package com.abt.wf.serivce;
 
+import com.abt.sys.model.entity.FlowSetting;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseApplyForm;
 import com.abt.wf.model.ReimburseDTO;
@@ -17,4 +18,6 @@ public interface ReimburseService {
     Optional<Reimburse> queryBy(String id);
 
     List<ReimburseDTO> queryByStater(String starterId, int page, int size);
+
+    List<FlowSetting> queryRbsTypes();
 }

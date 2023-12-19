@@ -31,11 +31,11 @@ public class TimeUtil {
     }
 
 
-    public static LocalDateTime from(java.sql.Date sqlDate) {
+    public static LocalDate from(java.sql.Date sqlDate) {
         if (sqlDate == null) {
             return null;
         }
-        return sqlDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        return sqlDate.toLocalDate();
     }
 
     public static LocalDateTime from(Timestamp ts) {
@@ -50,6 +50,9 @@ public class TimeUtil {
      * @param localDate 日期
      */
     public static String yyyy_MM_ddString(LocalDate localDate) {
+        if (localDate == null) {
+            return null;
+        }
         return localDate.format(dateFormatter);
     }
 

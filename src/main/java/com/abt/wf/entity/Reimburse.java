@@ -45,6 +45,16 @@ public class Reimburse extends AuditInfo {
     @Column(name="voucher_num", columnDefinition="TINYINT")
     private int voucherNum;
 
+    /**
+     * 报销类型
+     * 0: 其他
+     * 1: 差旅费
+     * 2: 交通费
+     * 3:
+     */
+    @Column(name="rbs_type", columnDefinition="VARCHAR(64)")
+    private String rbsType;
+
 
     //-- processDefinition
     @Column(name="proc_def_key", columnDefinition="VARCHAR(128)")
@@ -100,6 +110,7 @@ public class Reimburse extends AuditInfo {
         rbs.setCost(form.getCost());
         rbs.setReason(form.getReason());
         rbs.setRbsDate(form.getRbsDate());
+        rbs.setVoucherNum(form.getVoucherNum());
         rbs.setProcessDefinitionId(form.getProcessDefinitionId());
         rbs.setProcessDefinitionKey(form.getProcessDefinitionKey());
         rbs.setProcessInstanceId(form.getProcessInstanceId());
@@ -107,6 +118,7 @@ public class Reimburse extends AuditInfo {
         rbs.setStarterName(form.getUsername());
         rbs.setStartTime(LocalDateTime.now());
         rbs.setState(STATE_APPROVING);
+        rbs.setRbsType(form.getRbsType());
 
         return rbs;
     }

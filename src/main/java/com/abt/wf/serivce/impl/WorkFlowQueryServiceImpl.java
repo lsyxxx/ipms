@@ -35,19 +35,21 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
                 page, size);
     }
 
-
     @Override
-    public List<TaskDTO> queryTaskListByStartUserid(String taskAssignee, LocalDate taskStartDay, LocalDate taskEndDay, int page, int size) {
-        return workFlowRepository.findTaskByAssigneeAndDayRange(taskAssignee,
-                TimeUtil.yyyy_MM_ddString(taskStartDay),
-                TimeUtil.yyyy_MM_ddString(taskEndDay),
-                page, size);
-    }
-
     public List<TaskDTO> queryMyTodoList(String userid, LocalDate taskStartTime, LocalDate taskEndTime, int page, int size) {
         return workFlowRepository.findTaskByAssigneeAndDayRange(userid,
                 TimeUtil.yyyy_MM_ddString(taskStartTime),
                 TimeUtil.yyyy_MM_ddString(taskEndTime),
+                false,
+                page, size);
+    }
+
+    @Override
+    public List<TaskDTO> queryMyDoneList(String userid, LocalDate taskStartTime, LocalDate taskEndTime, int page, int size) {
+        return workFlowRepository.findTaskByAssigneeAndDayRange(userid,
+                TimeUtil.yyyy_MM_ddString(taskStartTime),
+                TimeUtil.yyyy_MM_ddString(taskEndTime),
+                true,
                 page, size);
     }
 

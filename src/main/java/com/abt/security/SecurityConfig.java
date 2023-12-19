@@ -50,7 +50,8 @@ public class SecurityConfig {
                 "/test/**",
                 "/static/**", //静态资源
                 "/camunda/**",
-                "/favicon.ico"
+                "/favicon.ico",
+                //TEST
         };
     }
 

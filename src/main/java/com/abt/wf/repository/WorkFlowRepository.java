@@ -13,9 +13,6 @@ import java.util.List;
 public interface WorkFlowRepository{
     List<TaskDTO> findProcessByStartUseridAndDayRange(String userid, String processStartDate, String processEndDay, int page, int size);
 
-//    List<TaskDTO> findByStartUserid(String userid);
+    List<TaskDTO> findTaskByAssigneeAndDayRange(String userid, String taskStartDay, String taskEndDay, boolean isFinished, int page, int size);
 
-    List<TaskDTO> findTaskByAssigneeAndDayRange(String userid, String taskStartDay, String taskEndDay, int page, int size);
-
-//    List<TaskDTO> findByAssignee(String userid);
 }

@@ -26,6 +26,10 @@ public class ReimburseDTO extends TaskDTO{
     private double cost;
     private int stateCode;
     private String stateDesc;
+    /**
+     * 报销类型
+     */
+    private String rbsType;
 
     public static final String STATE_APPROVING = "审批中";
     public static final String STATE_REJECT = "已拒绝";
