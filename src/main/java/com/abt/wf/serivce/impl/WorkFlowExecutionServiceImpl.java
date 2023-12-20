@@ -2,7 +2,9 @@ package com.abt.wf.serivce.impl;
 
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.exception.RequiredParameterException;
+import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.ReimburseApplyForm;
+import com.abt.wf.model.TaskDTO;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +19,11 @@ import org.camunda.bpm.engine.task.Task;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  *
@@ -61,7 +66,7 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
      * 预览流程图
      */
     @Override
-    public List<HistoricTaskInstance> previewFlow(ReimburseApplyForm form) {
+    public List<TaskDTO> previewFlow(ReimburseApplyForm form) {
         log.info("预览流程图...previewProcessInstanceId: {}", form.getPreviewInstanceId());
         if (StringUtils.isNotBlank(form.getPreviewInstanceId())) {
             try {
@@ -81,11 +86,16 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         }
 
         final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(procId).finished().orderByHistoricActivityInstanceStartTime().asc().list();
-        return list;
+        List<TaskDTO> dtos = new ArrayList<>();
+        list.forEach(i -> {
+            TaskDTO t = TaskDTO.from(i);
+            dtos.add(t);
+        });
+        return dtos;
     }
 
-    public String userApplyBusinessKey(String username) {
-        return "USER_APPLY_" + username;
+    public String userApplyBusinessKey(String username, String userid) {
+        return "USER_APPLY_" + userid + "_" + username;
     }
 
 
@@ -103,10 +113,13 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         String procDefId = form.getProcessDefinitionId();
         Map<String, Object> vars = form.variableMap();
         vars.put("starter", form.getUserid());
-        final ProcessInstance processInstance = runtimeService.startProcessInstanceById(procDefId, userApplyBusinessKey(form.getUsername()), vars);
+        final ProcessInstance processInstance = runtimeService.startProcessInstanceById(procDefId, userApplyBusinessKey(form.getUserid(), form.getUsername()), vars);
         final Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
-        taskService.setAssignee(task.getId(), form.getUserid());
-        taskService.complete(task.getId(), vars);
+//        taskService.setAssignee(task.getId(), form.getUserid());
+//        taskService.complete(task.getId(), vars);
+        task.setAssignee(form.getUserid());
+        task.setDescription(ActionEnum.SUBMIT.getAction());
+        taskService.saveTask(task);
 
         form.setProcessInstanceId(processInstance.getId());
 
@@ -115,7 +128,7 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         return reimburse;
     }
 
-    public static final String DELETE_REASON_REJECT_BY = "Reject_by_ ";
+    public static final String DELETE_REASON_REJECT_BY = "Reject_by_";
 
     public String deleteReasonReject(String userid) {
         return DELETE_REASON_REJECT_BY + userid;
@@ -135,20 +148,26 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         ensureProcessId(form);
         setAuthUser(form.getUserid());
         String procId = form.getProcessInstanceId();
-        final Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
-        taskService.claim(task.getId(), form.getUserid());
-        taskService.setDescription(task.getId(), form.getDecision());
+        Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
+        task.setAssignee(form.getUserid());
         if (StringUtils.isNotBlank(form.getComment())) {
             taskService.createComment(task.getId(), form.getProcessInstanceId(), form.getComment());
         }
 
+        Reimburse reimburse = reimburseService.queryBy(form.getEntityId()).get();
         if (form.isReject()) {
+            task.setDescription(ActionEnum.REJECT.getAction());
+            taskService.saveTask(task);
             runtimeService.deleteProcessInstance(form.getProcessInstanceId(), deleteReasonReject(form.getUserid()));
+            reimburse.setState(Reimburse.STATE_REJECT);
+            reimburse.setEndTime(LocalDateTime.now());
         } else {
             //pass
+            task.setDescription(ActionEnum.APPROVE.getAction());
+            taskService.saveTask(task);
             taskService.complete(task.getId());
         }
-
+        reimburseService.saveEntity(reimburse);
         clearAuthUser();
     }
 

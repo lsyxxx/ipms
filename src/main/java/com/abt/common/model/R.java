@@ -42,10 +42,8 @@ public class R<T> {
      * 等于msg，以msg为准
      * 因为前端有的是msg, 有的是message
      */
-//    private String message = msg;
-    //eg: 2023-07-25T11:31:14.214514600
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp = LocalDateTime.now();
     private String token;
     private String httpCode;
@@ -53,7 +51,12 @@ public class R<T> {
      * 记录条数
      */
     private int count = 0;
-
+    private int page = 1;
+    /**
+     * 单页数量
+     */
+    public static final int DEFAULT_LIMIT = 20;
+    private int limit = DEFAULT_LIMIT;
 
     public R(T data, int code, String message) {
         super();
@@ -70,15 +73,30 @@ public class R<T> {
         this.code = code;
         this.msg = message;
         this.count = count;
-//        this.message = message;
-//        this.result = data;
+    }
+
+    public R(T data, int code, String message, int count, int limit) {
+        super();
+        this.data = data;
+        this.code = code;
+        this.msg = message;
+        this.count = count;
+        this.limit = limit;
+    }
+
+    public R(T data, int code, String message, int count, int page, int limit) {
+        super();
+        this.data = data;
+        this.code = code;
+        this.msg = message;
+        this.count = count;
+        this.page = page;
+        this.limit = limit;
     }
 
     public T get() {
         return data;
     }
-
-
 
 
 
@@ -92,6 +110,15 @@ public class R<T> {
 
     public static<T> R<T> success(T data, int count, String msg) {
         return new R<>(data, ResCode.SUCCESS.getCode(), msg, count);
+    }
+
+    public static<T> R<T> success(T data, int count, int limit) {
+        return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count, limit);
+    }
+
+
+    public static<T> R<T> success(T data, int count, int page, int limit) {
+        return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count, page, limit);
     }
 
     public static<T> R<T> success() {

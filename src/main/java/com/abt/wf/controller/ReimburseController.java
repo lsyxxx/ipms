@@ -12,7 +12,6 @@ import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import com.abt.wf.serivce.WorkFlowQueryService;
 import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,12 +37,12 @@ public class ReimburseController {
     }
 
     @PostMapping("/preview")
-    public R<List<HistoricTaskInstance>> previewFlow(@Validated @RequestBody ReimburseApplyForm form) {
+    public R<List<TaskDTO>> previewFlow(@Validated @RequestBody ReimburseApplyForm form) {
 //        getUserFromToken(form)
         //preview
-        List<HistoricTaskInstance> previewList = workFlowExecutionService.previewFlow(form);
+        List<TaskDTO> previewList = workFlowExecutionService.previewFlow(form);
         //Necessary params: assigneeName, executeTime, taskName, comment,
-        return R.success(previewList);
+        return R.success(previewList, previewList.size());
     }
     
 
@@ -85,7 +84,7 @@ public class ReimburseController {
 //        String userid = "";
         String username = "";
         List<TaskDTO> list = workFlowQueryService.queryMyRbs(userid, startDay, endDay, page, size);
-        return R.success(list, list.size());
+        return R.success(list, list.size(), size);
     }
 
     /**
@@ -120,7 +119,20 @@ public class ReimburseController {
         String username = "";
         final List<TaskDTO> tasks = workFlowQueryService.queryMyDoneList(userid, startDay, endDay, page, size);
         return R.success(tasks, tasks.size());
+    }
 
+
+    /**
+     * 一个流程实例的执行记录
+     *
+     * @param processInstanceId
+     * @return
+     */
+    @GetMapping("/log")
+    public R<List<TaskDTO>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId,
+                                               @RequestParam("userid") String userid) {
+        final List<TaskDTO> taskDTOS = workFlowQueryService.queryProcessInstanceLog(processInstanceId, userid);
+        return R.success(taskDTOS);
     }
 
 

@@ -15,6 +15,8 @@ public interface ReimburseService {
 
     Reimburse saveEntity(ReimburseApplyForm applyForm);
 
+    Reimburse saveEntity(Reimburse entity);
+
     Optional<Reimburse> queryBy(String id);
 
     List<ReimburseDTO> queryByStater(String starterId, int page, int size);

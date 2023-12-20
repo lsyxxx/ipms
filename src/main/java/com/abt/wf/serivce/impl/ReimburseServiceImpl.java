@@ -36,6 +36,11 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
     @Override
+    public Reimburse saveEntity(Reimburse entity) {
+        return reimburseRepository.save(entity);
+    }
+
+    @Override
     public Optional<Reimburse> queryBy(String id) {
         return reimburseRepository.findById(id);
     }

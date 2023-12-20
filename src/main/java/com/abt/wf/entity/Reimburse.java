@@ -45,12 +45,13 @@ public class Reimburse extends AuditInfo {
     @Column(name="voucher_num", columnDefinition="TINYINT")
     private int voucherNum;
 
+
     /**
      * 报销类型
      * 0: 其他
      * 1: 差旅费
      * 2: 交通费
-     * 3:
+     * 3: ...
      */
     @Column(name="rbs_type", columnDefinition="VARCHAR(64)")
     private String rbsType;
@@ -82,14 +83,14 @@ public class Reimburse extends AuditInfo {
     @Column(name="starter_name", columnDefinition="VARCHAR(128)")
     private String starterName;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
 
     //-- end
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private String endTime;
+    private LocalDateTime endTime;
 
     /**
      * 审批中

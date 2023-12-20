@@ -35,6 +35,8 @@ public interface WorkFlowQueryService {
 
     List<TaskDTO> queryMyDoneList(String userid, LocalDate taskStartTime, LocalDate taskEndTime, int page, int size);
 
+    List<TaskDTO> queryProcessInstanceLog(String processInstanceId, String userid);
+
 //    List<TaskDTO> queryTaskListByStartUserid(String taskAssignee, LocalDate taskStartDay, LocalDate taskEndDay, int page, int size);
 
 }
