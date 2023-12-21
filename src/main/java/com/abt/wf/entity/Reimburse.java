@@ -32,7 +32,7 @@ public class Reimburse extends AuditInfo {
 
     private double cost;
 
-    @Column(name="reason_", columnDefinition="VARCHAR(1000)")
+    @Column(name="reason_", columnDefinition="VARCHAR(500)")
     private String reason;
 
     /**

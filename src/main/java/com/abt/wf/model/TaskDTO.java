@@ -72,6 +72,7 @@ public class TaskDTO {
         dto.setTaskDescription(task.getDescription());
         dto.setTaskDeleteReason(task.getDeleteReason());
         dto.setAssigneeId(task.getAssignee());
+        dto.convertDbState(dto.getState());
         return dto;
     }
 

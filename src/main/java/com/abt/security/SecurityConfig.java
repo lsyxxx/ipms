@@ -8,9 +8,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -18,6 +20,12 @@ import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -34,6 +42,7 @@ public class SecurityConfig {
     private final ABTWebApiTokenAuthenticationProvider abtWebApiTokenAuthenticationProvider;
     private final TokenAuthenticationHandler tokenAuthenticationHandler;
     private final ABTAuthorizationManager abtAuthorizationManager;
+    private final CorsFilter corsFilter;
 
     /**
      * 白名单
@@ -59,15 +68,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         RequestCache nullRequestCache = new NullRequestCache();
         http.authorizeHttpRequests((authorize) -> authorize
+                //授权不是验证
                                 .requestMatchers(new AntPathRequestMatcher("/test/**"), new AntPathRequestMatcher("/public/**"),
                                         new AntPathRequestMatcher("/camunda/**"), new AntPathRequestMatcher("/favicon.ico")).permitAll()
-//                        .requestMatchers("/home", "/error", "/test/**", "/public/**").permitAll()
                                 //应用内转发不需要授权
                                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                                 .anyRequest()
 //                        .authenticated()
                                 .access(abtAuthorizationManager)
                 )
+                .cors(corsConfigurer -> {
+                    corsConfigurer.configurationSource(corsConfigurationSource());
+                })
 
                 .formLogin(AbstractHttpConfigurer::disable)
                 .anonymous(AbstractHttpConfigurer::disable)
@@ -107,6 +119,18 @@ public class SecurityConfig {
     public ABTWebApiTokenAuthenticationFilter abtWebApiTokenAuthenticationFilter() {
         return new ABTWebApiTokenAuthenticationFilter(this.authenticationManager(), tokenAuthenticationHandler, WebApiToken.of());
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowedOrigins(List.of("*"));
+        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS", "PUT", "DELETE"));
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setAllowedHeaders(List.of("tenantid", "x-token"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+        return source;
+     }
 
 
 }

@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -66,6 +67,10 @@ public class ABTWebApiTokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("拦截 URL: {}, 开始获取用户token认证原始凭证", request.getRequestURI());
+
+        if (HttpMethod.OPTIONS.name().equals(request.getMethod())) {
+            return;
+        }
 
         //不进行认证
         if (ignore.matches(request)) {

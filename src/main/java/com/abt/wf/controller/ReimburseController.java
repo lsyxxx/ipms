@@ -23,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/test/wf/rbs")
+@RequestMapping("/wf/rbs")
 public class ReimburseController {
 
     private final WorkFlowExecutionService workFlowExecutionService;
@@ -38,7 +38,7 @@ public class ReimburseController {
 
     @PostMapping("/preview")
     public R<List<TaskDTO>> previewFlow(@Validated @RequestBody ReimburseApplyForm form) {
-//        getUserFromToken(form)
+        getUserFromToken(form);
         //preview
         List<TaskDTO> previewList = workFlowExecutionService.previewFlow(form);
         //Necessary params: assigneeName, executeTime, taskName, comment,
@@ -51,7 +51,7 @@ public class ReimburseController {
      */
     @PostMapping("/apply")
     public R<String> apply(@Validated @RequestBody ReimburseApplyForm form) {
-//        getUserFromToken(form);
+        getUserFromToken(form);
         Reimburse reimburse = workFlowExecutionService.apply(form);
         return R.success(reimburse.getProcessInstanceId());
     }
@@ -62,7 +62,7 @@ public class ReimburseController {
      */
     @PostMapping("/approve")
     public R approve(@RequestBody ReimburseApplyForm form) {
-        //UserView userView = getUserFromAuthToken()
+        getUserFromToken(form);
         workFlowExecutionService.approve(form);
         return R.success();
     }
@@ -71,20 +71,17 @@ public class ReimburseController {
      * 我申请的报销
      *
      * @param page     页数
-     * @param size     单页条数
+     * @param limit     单页条数
      * @param startDay 开始日期 yyyy-MM-dd
      */
     @GetMapping("/applylist")
-    public R<List<TaskDTO>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("size") int size,
+    public R<List<TaskDTO>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("limit") int limit,
                                                  @RequestParam(value = "startDay", required = false) LocalDate startDay,
-                                                 @RequestParam(value = "endDay", required = false) LocalDate endDay,
-                                                 @RequestParam("userid") String userid) {
-//        UserView userView = TokenUtil.getUserFromAuthToken();
+                                                 @RequestParam(value = "endDay", required = false) LocalDate endDay) {
+        UserView userView = TokenUtil.getUserFromAuthToken();
         //code|cost|reason|rbsDate|state|currentTaskName|
-//        String userid = "";
-        String username = "";
-        List<TaskDTO> list = workFlowQueryService.queryMyRbs(userid, startDay, endDay, page, size);
-        return R.success(list, list.size(), size);
+        List<TaskDTO> list = workFlowQueryService.queryMyRbs(userView.getId(), startDay, endDay, page, limit);
+        return R.success(list, list.size(), limit);
     }
 
     /**
@@ -92,13 +89,11 @@ public class ReimburseController {
      *
      */
     @GetMapping("/todo")
-    public R<List<TaskDTO>> myReimburseTodoList(@RequestParam("page") int page, @RequestParam("size") int size,
+    public R<List<TaskDTO>> myReimburseTodoList(@RequestParam("page") int page, @RequestParam("limit") int limit,
                                                 @RequestParam(value = "startDay", required = false) LocalDate startDay,
-                                                @RequestParam(value = "endDay", required = false) LocalDate endDay,
-                                                @RequestParam("userid") String userid) {
-//        String userid = "";
-        String username = "";
-        List<TaskDTO> tasks = workFlowQueryService.queryMyTodoList(userid, startDay, endDay, page, size);
+                                                @RequestParam(value = "endDay", required = false) LocalDate endDay) {
+        UserView userView = TokenUtil.getUserFromAuthToken();
+        List<TaskDTO> tasks = workFlowQueryService.queryMyTodoList(userView.getId(), startDay, endDay, page, limit);
         return R.success(tasks, tasks.size());
     }
 
@@ -112,12 +107,11 @@ public class ReimburseController {
      * 已完成
      */
     @GetMapping("/done")
-    public R<List<TaskDTO>> myTasksDone(@RequestParam("page") int page, @RequestParam("size") int size,
+    public R<List<TaskDTO>> myTasksDone(@RequestParam("page") int page, @RequestParam("limit") int limit,
                                         @RequestParam(value = "startDay", required = false) LocalDate startDay,
-                                        @RequestParam(value = "endDay", required = false) LocalDate endDay,
-                                        @RequestParam("userid") String userid) {
-        String username = "";
-        final List<TaskDTO> tasks = workFlowQueryService.queryMyDoneList(userid, startDay, endDay, page, size);
+                                        @RequestParam(value = "endDay", required = false) LocalDate endDay) {
+        UserView userView = TokenUtil.getUserFromAuthToken();
+        final List<TaskDTO> tasks = workFlowQueryService.queryMyDoneList(userView.getId(), startDay, endDay, page, limit);
         return R.success(tasks, tasks.size());
     }
 
@@ -125,24 +119,13 @@ public class ReimburseController {
     /**
      * 一个流程实例的执行记录
      *
-     * @param processInstanceId
-     * @return
+     * @param processInstanceId 流程实例
      */
     @GetMapping("/log")
-    public R<List<TaskDTO>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId,
-                                               @RequestParam("userid") String userid) {
-        final List<TaskDTO> taskDTOS = workFlowQueryService.queryProcessInstanceLog(processInstanceId, userid);
+    public R<List<TaskDTO>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId) {
+        UserView userView = TokenUtil.getUserFromAuthToken();
+        final List<TaskDTO> taskDTOS = workFlowQueryService.queryProcessInstanceLog(processInstanceId, userView.getId());
         return R.success(taskDTOS);
-    }
-
-
-
-    private User testUser1() {
-        User user = new User();
-        user.setId("abttest");
-        user.setUsername("刘宋菀");
-        user.setCode("abttest");
-        return user;
     }
 
     public ReimburseApplyForm getUserFromToken(ReimburseApplyForm form) {
