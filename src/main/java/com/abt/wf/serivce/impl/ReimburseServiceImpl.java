@@ -53,11 +53,19 @@ public class ReimburseServiceImpl implements ReimburseService {
         List<ReimburseDTO> vos = new ArrayList<>();
         for (Reimburse reimburse : pageData.getContent()) {
             ReimburseDTO vo = ReimburseDTO.from(reimburse);
-
             vos.add(vo);
         }
         return vos;
     }
+
+    @Override
+    public List<ReimburseDTO> queryByStater(String starterId) {
+        List<Reimburse> list = reimburseRepository.findAllByStarterIdOrderByCreateDateDesc(starterId);
+        List<ReimburseDTO> vos = new ArrayList<>();
+        list.forEach(ReimburseDTO::from);
+        return vos;
+    }
+
 
     @Override
     public List<FlowSetting> queryRbsTypes() {

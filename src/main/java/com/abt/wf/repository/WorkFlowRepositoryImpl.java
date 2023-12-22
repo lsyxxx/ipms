@@ -1,5 +1,6 @@
 package com.abt.wf.repository;
 
+import com.abt.common.util.QueryUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.wf.model.TaskDTO;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
                 "t.ID_ AS TASK_ID_, t.TASK_DEF_KEY_, t.NAME_, t.ASSIGNEE_, t.DESCRIPTION_, t.START_TIME_ as TASK_START_TIME_, t.END_TIME_ as TASK_END_TIME_, t.DELETE_REASON_ as TASK_DELETE_REASON_, " +
                 "u.Name as ASSIGNEE_NAME_ " +
                 "from ACT_HI_PROCINST p " +
-                "left join ACT_HI_TASKINST t on p.PROC_INST_ID_ = t.PROC_INST_ID_ " +
+                "left join ACT_HI_TASKINST t on p.PROC_INST_ID_ = t.PROC_INST_ID_ and t.END_TIME_ is null " +
                 "left join [dbo].[User] u on p.START_USER_ID_ = u.Id " +
 //                "left join User u on t.ASSIGNEE_ = u.Id " +
                 "where p.START_USER_ID_ = ? " +
@@ -41,11 +42,14 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
             params.add(processStartDate);
         }
         if (processEndDay != null) {
-            sql += "and PROC_END_TIME_ <= ?";
+            sql += "and PROC_END_TIME_ <= ? ";
             params.add(processEndDay);
         }
-        sql = sql + "order by PROC_START_TIME_ desc, TASK_START_TIME_ desc " +
-             " OFFSET " + skip + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+        sql = sql + "order by PROC_START_TIME_ desc, TASK_START_TIME_ desc ";
+        //分页
+        if (page > QueryUtil.NO_PAGING || size > QueryUtil.NO_PAGING) {
+            sql += " OFFSET " + skip + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+        }
         return jdbcTemplate.query(sql, params.toArray(), new TaskDTORowMapper());
     }
 
@@ -74,8 +78,12 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
             //camunda api 通过endTime判断isFinished
             sql += "and TASK_END_TIME_ is not null ";
         }
-        sql = sql + "order by PROC_START_TIME_ desc, TASK_START_TIME_ desc " +
-                " OFFSET " + skip + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+
+        sql = sql + "order by PROC_START_TIME_ desc, TASK_START_TIME_ desc ";
+        //分页
+        if (page > QueryUtil.NO_PAGING || size > QueryUtil.NO_PAGING) {
+            sql += " OFFSET " + skip + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+        }
         return jdbcTemplate.query(sql, params.toArray(), new TaskDTORowMapper());
     }
 

@@ -33,6 +33,7 @@ public class TaskDTO {
     private String startUserid;
     private String startUsername;
     private String state;
+    private String stateDesc;
     private String processDeleteReason;
 
     //--- processDefinition
@@ -72,22 +73,22 @@ public class TaskDTO {
         dto.setTaskDescription(task.getDescription());
         dto.setTaskDeleteReason(task.getDeleteReason());
         dto.setAssigneeId(task.getAssignee());
-        dto.convertDbState(dto.getState());
+        dto.convertDbState();
         return dto;
     }
 
-    private String convertDbState(String state) {
-        switch (state) {
-            case HistoricProcessInstance.STATE_ACTIVE -> this.state = "审批中";
-            case HistoricProcessInstance.STATE_SUSPENDED -> this.state = "已挂起";
-            case HistoricProcessInstance.STATE_COMPLETED ->this.state = "已通过";
+    public String convertDbState() {
+        switch (this.state) {
+            case HistoricProcessInstance.STATE_ACTIVE -> this.stateDesc = "审批中";
+            case HistoricProcessInstance.STATE_SUSPENDED -> this.stateDesc = "已挂起";
+            case HistoricProcessInstance.STATE_COMPLETED ->this.stateDesc = "已通过";
             case HistoricProcessInstance.STATE_INTERNALLY_TERMINATED -> {
                 if (this.processDeleteReason != null && this.processDeleteReason.contains(WorkFlowExecutionServiceImpl.DELETE_REASON_REJECT_BY)) {
-                    this.state = "已拒绝";
+                    this.stateDesc = "已拒绝";
                 }
             }
-            default -> this.state = state;
+            default -> this.stateDesc = state;
         }
-        return this.state;
+        return this.stateDesc;
     }
 }

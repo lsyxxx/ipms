@@ -12,4 +12,6 @@ import java.util.Date;
  */
 public class QueryUtil {
 
+    public static final int NO_PAGING = 0;
+
 }

@@ -21,5 +21,7 @@ public interface ReimburseService {
 
     List<ReimburseDTO> queryByStater(String starterId, int page, int size);
 
+    List<ReimburseDTO> queryByStater(String starterId);
+
     List<FlowSetting> queryRbsTypes();
 }

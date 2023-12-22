@@ -1,12 +1,12 @@
 package com.abt.wf.controller;
 
 import com.abt.common.model.R;
-import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseApplyForm;
+import com.abt.wf.model.ReimburseDTO;
 import com.abt.wf.model.TaskDTO;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
@@ -71,16 +71,16 @@ public class ReimburseController {
      * 我申请的报销
      *
      * @param page     页数
-     * @param limit     单页条数
+     * @param limit    单页条数
      * @param startDay 开始日期 yyyy-MM-dd
      */
     @GetMapping("/applylist")
-    public R<List<TaskDTO>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("limit") int limit,
-                                                 @RequestParam(value = "startDay", required = false) LocalDate startDay,
-                                                 @RequestParam(value = "endDay", required = false) LocalDate endDay) {
+    public R<List<ReimburseDTO>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("limit") int limit,
+                                                      @RequestParam(value = "startDay", required = false) LocalDate startDay,
+                                                      @RequestParam(value = "endDay", required = false) LocalDate endDay) {
         UserView userView = TokenUtil.getUserFromAuthToken();
         //code|cost|reason|rbsDate|state|currentTaskName|
-        List<TaskDTO> list = workFlowQueryService.queryMyRbs(userView.getId(), startDay, endDay, page, limit);
+        List<ReimburseDTO> list = workFlowQueryService.queryMyRbs(userView.getId(), startDay, endDay, page, limit);
         return R.success(list, list.size(), limit);
     }
 

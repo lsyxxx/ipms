@@ -41,6 +41,9 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     private final IdentityService identityService;
 
     public static final String VARS_STARTER = "starter";
+    public static final String VARS_IS_LEADER = "isLeader";
+    public static final String VARS_COST = "cost";
+    public static final String VARS_ENTITY_ID = "entityId";
 
 
     public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, ReimburseService reimburseService, IdentityService identityService) {
@@ -115,8 +118,6 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         vars.put("starter", form.getUserid());
         final ProcessInstance processInstance = runtimeService.startProcessInstanceById(procDefId, userApplyBusinessKey(form.getUserid(), form.getUsername()), vars);
         final Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
-//        taskService.setAssignee(task.getId(), form.getUserid());
-//        taskService.complete(task.getId(), vars);
         task.setAssignee(form.getUserid());
         task.setDescription(ActionEnum.SUBMIT.getAction());
         taskService.saveTask(task);
@@ -124,11 +125,14 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         form.setProcessInstanceId(processInstance.getId());
 
         Reimburse reimburse = reimburseService.saveEntity(form);
+        String id = reimburse.getId();
+        runtimeService.setVariable(processInstance.getId(), VARS_ENTITY_ID, id);
+
         clearAuthUser();
         return reimburse;
     }
 
-    public static final String DELETE_REASON_REJECT_BY = "Reject_by_";
+    public static final String DELETE_REASON_REJECT_BY = "REJECT_BY_";
 
     public String deleteReasonReject(String userid) {
         return DELETE_REASON_REJECT_BY + userid;

@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 
 /**
  *
@@ -13,5 +15,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ReimburseRepository extends JpaRepository<Reimburse, String> {
 
     Page<Reimburse> findByStarterIdOrderByCreateDateDesc(@Param("starterId") String starterId, Pageable pageable);
+    List<Reimburse> findAllByStarterIdOrderByCreateDateDesc(@Param("starterId") String starterId);
 
 }

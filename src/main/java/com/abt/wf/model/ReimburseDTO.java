@@ -50,6 +50,30 @@ public class ReimburseDTO extends TaskDTO{
         return this.getStateDesc();
     }
 
+    public ReimburseDTO setTaskDTO(TaskDTO task) {
+        this.setState(task.getState());
+        this.setAssigneeId(task.getAssigneeId());
+        this.setProcessDefinitionId(task.getProcessDefinitionId());
+        this.setProcessDefinitionKey(task.getProcessDefinitionKey());
+        this.setProcessInstanceId(task.getProcessInstanceId());
+        this.setTaskDefKey(task.getTaskDefKey());
+        this.setTaskDefName(task.getTaskDefName());
+        this.setTaskDeleteReason(task.getTaskDeleteReason());
+        this.setTaskDescription(task.getTaskDescription());
+        this.setTaskEndTime(task.getTaskEndTime());
+        this.setTaskInstanceId(task.getTaskInstanceId());
+        this.setTaskStartTime(task.getTaskStartTime());
+        this.setAssigneeName(task.getAssigneeName());
+        this.setBusinessKey(task.getBusinessKey());
+        this.setComments(task.getComments());
+        this.setProcessDeleteReason(task.getProcessDeleteReason());
+        this.setProcessEndTime(task.getProcessEndTime());
+        this.setProcessStartTime(task.getProcessStartTime());
+        this.setStartUserid(task.getStartUserid());
+        this.setStartUsername(task.getStartUsername());
+        return this;
+    }
+
     public static ReimburseDTO from(Reimburse entity) {
         ReimburseDTO vo = new ReimburseDTO();
         vo.setId(entity.getId());
@@ -63,5 +87,31 @@ public class ReimburseDTO extends TaskDTO{
         vo.setStartUsername(entity.getStarterName());
         return vo;
     }
+
+    public static ReimburseDTO from(TaskDTO task) {
+        ReimburseDTO dto = new ReimburseDTO();
+        dto.setState(task.getState());
+        dto.setAssigneeId(task.getAssigneeId());
+        dto.setProcessDefinitionId(task.getProcessDefinitionId());
+        dto.setProcessDefinitionKey(task.getProcessDefinitionKey());
+        dto.setProcessInstanceId(task.getProcessInstanceId());
+        dto.setTaskDefKey(task.getTaskDefKey());
+        dto.setTaskDefName(task.getTaskDefName());
+        dto.setTaskDeleteReason(task.getTaskDeleteReason());
+        dto.setTaskDescription(task.getTaskDescription());
+        dto.setTaskEndTime(task.getTaskEndTime());
+        dto.setTaskInstanceId(task.getTaskInstanceId());
+        dto.setTaskStartTime(task.getTaskStartTime());
+        dto.setAssigneeName(task.getAssigneeName());
+        dto.setBusinessKey(task.getBusinessKey());
+        dto.setComments(task.getComments());
+        dto.setProcessDeleteReason(task.getProcessDeleteReason());
+        dto.setProcessEndTime(task.getProcessEndTime());
+        dto.setProcessStartTime(task.getProcessStartTime());
+        dto.setStartUserid(task.getStartUserid());
+        dto.setStartUsername(task.getStartUsername());
+        return dto;
+    }
+
 
 }

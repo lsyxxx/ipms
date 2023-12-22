@@ -33,7 +33,7 @@ public class RequestForm {
     /**
      * 按类型查询时
      */
-    private String type = "";
+    private String type;
 
     /**
      * 搜索参数
@@ -60,7 +60,6 @@ public class RequestForm {
 
     /**
      * 是否分页
-     * @return
      */
     public boolean isPaging() {
         return !noPaging();
@@ -68,7 +67,6 @@ public class RequestForm {
 
     /**
      * 没分页
-     * @return
      */
     public boolean noPaging() {
        return limit == 0;

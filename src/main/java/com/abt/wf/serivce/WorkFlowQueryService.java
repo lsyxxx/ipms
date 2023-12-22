@@ -1,9 +1,9 @@
 package com.abt.wf.serivce;
 
+import com.abt.wf.model.ReimburseDTO;
 import com.abt.wf.model.TaskDTO;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,13 +14,14 @@ public interface WorkFlowQueryService {
 
     /**
      * 我申请的报销流程列表
-     * @param starter 申请人
+     *
+     * @param starter         申请人
      * @param processStartDay 搜索流程开始日期1
-     * @param processEndDay 搜索流程开始日期2
-     * @param page 页数
-     * @param size 单页数量
+     * @param processEndDay   搜索流程开始日期2
+     * @param page            页数
+     * @param size            单页数量
      */
-    List<TaskDTO> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size);
+    List<ReimburseDTO> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size);
 
     /**
      * 查询我的待办
