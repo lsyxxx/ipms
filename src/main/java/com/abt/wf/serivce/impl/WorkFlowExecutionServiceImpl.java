@@ -9,11 +9,9 @@ import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.camunda.bpm.engine.HistoryService;
-import org.camunda.bpm.engine.IdentityService;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.springframework.stereotype.Service;
@@ -40,18 +38,21 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
     private final IdentityService identityService;
 
+    private final RepositoryService repositoryService;
+
     public static final String VARS_STARTER = "starter";
     public static final String VARS_IS_LEADER = "isLeader";
     public static final String VARS_COST = "cost";
     public static final String VARS_ENTITY_ID = "entityId";
 
 
-    public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, ReimburseService reimburseService, IdentityService identityService) {
+    public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, ReimburseService reimburseService, IdentityService identityService, RepositoryService repositoryService) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
         this.historyService = historyService;
         this.reimburseService = reimburseService;
         this.identityService = identityService;
+        this.repositoryService = repositoryService;
     }
 
     /**
@@ -73,6 +74,7 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         log.info("预览流程图...previewProcessInstanceId: {}", form.getPreviewInstanceId());
         if (StringUtils.isNotBlank(form.getPreviewInstanceId())) {
             try {
+                log.trace("删除已有预览图, 重新生成预览图...");
                 //已有预览流程图则删除
                 runtimeService.deleteProcessInstance(form.getPreviewInstanceId(), DELETE_PREVIEW_REASON);
             } catch (Exception e) {
@@ -80,6 +82,10 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
             }
         }
         Map<String, Object> vars = form.variableMap();
+        if (StringUtils.isBlank(form.getProcessDefinitionId())) {
+            final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().singleResult();
+            form.setProcessDefinitionId(processDefinition.getId());
+        }
         final ProcessInstance previewInstance = runtimeService.startProcessInstanceByKey(form.getProcessDefinitionKey(), previewBusinessKey(form.getUsername(), form.getProcessDefinitionId()), vars);
         String procId = previewInstance.getId();
         Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();

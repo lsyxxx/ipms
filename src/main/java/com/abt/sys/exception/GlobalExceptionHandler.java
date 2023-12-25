@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<Exception> handleException(Exception e) {
         log.error("Uncaught exception! - ", e);
-        return R.fail();
+        return R.fail(e.getMessage());
     }
 
 
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BadRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public R<Exception> handleBadRequestParameterException(BadRequestParameterException e) {
+    public R<BadRequestParameterException> handleBadRequestParameterException(BadRequestParameterException e) {
         log.error("Client请求参数错误 - ", e);
         return R.badRequest(e.getMessage());
     }
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SystemFileNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public R<Exception> handleSystemFileNotFoundException(SystemFileNotFoundException e) {
+    public R<SystemFileNotFoundException> handleSystemFileNotFoundException(SystemFileNotFoundException e) {
         log.error("文件未找到! - ", e);
         return R.fileNotFound();
     }

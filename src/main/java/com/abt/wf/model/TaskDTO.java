@@ -47,6 +47,7 @@ public class TaskDTO {
     private String taskDefKey;
     private String assigneeId;
     private String assigneeName;
+    private String taskResult;      //节点审批结果
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime taskStartTime;
@@ -78,6 +79,9 @@ public class TaskDTO {
     }
 
     public String convertDbState() {
+        if (this.state == null) {
+            return "";
+        }
         switch (this.state) {
             case HistoricProcessInstance.STATE_ACTIVE -> this.stateDesc = "审批中";
             case HistoricProcessInstance.STATE_SUSPENDED -> this.stateDesc = "已挂起";

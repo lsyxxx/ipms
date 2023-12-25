@@ -16,6 +16,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,10 +39,13 @@ public class ReimburseController {
     }
 
     @PostMapping("/preview")
-    public R<List<TaskDTO>> previewFlow(@Validated @RequestBody ReimburseApplyForm form) {
-        getUserFromToken(form);
+    public R<List<TaskDTO>> previewFlow(@RequestBody ReimburseApplyForm rbsApplyForm) {
+        getUserFromToken(rbsApplyForm);
+        if (rbsApplyForm.getCost() < 0) {
+            return R.fail("报销金额必填，且不能小于0");
+        }
         //preview
-        List<TaskDTO> previewList = workFlowExecutionService.previewFlow(form);
+        List<TaskDTO> previewList = workFlowExecutionService.previewFlow(rbsApplyForm);
         //Necessary params: assigneeName, executeTime, taskName, comment,
         return R.success(previewList, previewList.size());
     }
@@ -52,6 +57,9 @@ public class ReimburseController {
     @PostMapping("/apply")
     public R<String> apply(@Validated @RequestBody ReimburseApplyForm form) {
         getUserFromToken(form);
+        if (form.getRbsDate() == null) {
+            form.setRbsDate(LocalDateTime.now());
+        }
         Reimburse reimburse = workFlowExecutionService.apply(form);
         return R.success(reimburse.getProcessInstanceId());
     }
