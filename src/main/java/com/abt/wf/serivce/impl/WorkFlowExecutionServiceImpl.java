@@ -4,13 +4,11 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.exception.RequiredParameterException;
 import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.ReimburseApplyForm;
-import com.abt.wf.model.TaskDTO;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
-import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
@@ -18,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  *
@@ -68,9 +63,11 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
     /**
      * 预览流程图
+     *
+     * @return
      */
     @Override
-    public List<TaskDTO> previewFlow(ReimburseApplyForm form) {
+    public String previewFlow(ReimburseApplyForm form) {
         log.info("预览流程图...previewProcessInstanceId: {}", form.getPreviewInstanceId());
         if (StringUtils.isNotBlank(form.getPreviewInstanceId())) {
             try {
@@ -86,21 +83,15 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
             final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().singleResult();
             form.setProcessDefinitionId(processDefinition.getId());
         }
-        final ProcessInstance previewInstance = runtimeService.startProcessInstanceByKey(form.getProcessDefinitionKey(), previewBusinessKey(form.getUsername(), form.getProcessDefinitionId()), vars);
+        final String businessKey = previewBusinessKey(form.getUsername(), form.getProcessDefinitionId());
+        final ProcessInstance previewInstance = runtimeService.startProcessInstanceByKey(form.getProcessDefinitionKey(), businessKey, vars);
         String procId = previewInstance.getId();
         Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
         while(task != null) {
             taskService.complete(task.getId(), vars);
             task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
         }
-
-        final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(procId).finished().orderByHistoricActivityInstanceStartTime().asc().list();
-        List<TaskDTO> dtos = new ArrayList<>();
-        list.forEach(i -> {
-            TaskDTO t = TaskDTO.from(i);
-            dtos.add(t);
-        });
-        return dtos;
+        return procId;
     }
 
     public String userApplyBusinessKey(String username, String userid) {

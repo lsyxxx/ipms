@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,13 +38,15 @@ public class ReimburseController {
     }
 
     @PostMapping("/preview")
-    public R<List<TaskDTO>> previewFlow(@RequestBody ReimburseApplyForm rbsApplyForm) {
+    public R<List<List<TaskDTO>>> previewFlow(@RequestBody ReimburseApplyForm rbsApplyForm) {
         getUserFromToken(rbsApplyForm);
         if (rbsApplyForm.getCost() < 0) {
             return R.fail("报销金额必填，且不能小于0");
         }
         //preview
-        List<TaskDTO> previewList = workFlowExecutionService.previewFlow(rbsApplyForm);
+        final String previewId = workFlowExecutionService.previewFlow(rbsApplyForm);
+        final List<List<TaskDTO>> previewList = workFlowQueryService.queryProcessInstanceLog(previewId);
+
         //Necessary params: assigneeName, executeTime, taskName, comment,
         return R.success(previewList, previewList.size());
     }
@@ -126,13 +127,13 @@ public class ReimburseController {
 
     /**
      * 一个流程实例的执行记录
-     *
      * @param processInstanceId 流程实例
      */
     @GetMapping("/log")
-    public R<List<TaskDTO>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId) {
+    public R<List<List<TaskDTO>>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId) {
         UserView userView = TokenUtil.getUserFromAuthToken();
-        final List<TaskDTO> taskDTOS = workFlowQueryService.queryProcessInstanceLog(processInstanceId, userView.getId());
+        //TODO
+        final List<List<TaskDTO>> taskDTOS = workFlowQueryService.queryProcessInstanceLog(processInstanceId);
         return R.success(taskDTOS);
     }
 

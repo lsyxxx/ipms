@@ -11,13 +11,10 @@ import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
-import org.camunda.bpm.engine.task.Comment;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -82,19 +79,37 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
     }
 
 
-    @Override
-    public List<TaskDTO> queryProcessInstanceLog(String processInstanceId, String userid) {
-        List<TaskDTO> tasks = new ArrayList<>();
-        final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
-        //节点名称,审批人,审批结果, 审批意见, 审批时间
-        list.forEach(i -> {
-            final List<Comment> taskComments = taskService.getTaskComments(i.getId());
-            TaskDTO dto = TaskDTO.from(i);
-            dto.setComments(taskComments);
-            tasks.add(dto);
-        });
+//    @Override
+//    public List<TaskDTO> queryProcessInstanceLog(String processInstanceId, String userid) {
+//        List<TaskDTO> tasks = new ArrayList<>();
+//        final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
+//        //节点名称,审批人,审批结果, 审批意见, 审批时间
+//        list.forEach(i -> {
+//            final List<Comment> taskComments = taskService.getTaskComments(i.getId());
+//            TaskDTO dto = TaskDTO.from(i);
+//            dto.setComments(taskComments);
+//            tasks.add(dto);
+//        });
+//
+//        return tasks;
+//    }
 
-        return tasks;
+    /**
+     * 多实例流程记录查询
+     *
+     * @param processInstanceId 流程实例id
+     */
+    @Override
+    public List<List<TaskDTO>> queryProcessInstanceLog(String processInstanceId) {
+        final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
+        LinkedHashMap<String, List<TaskDTO>> temp = new LinkedHashMap<>();
+        for (HistoricTaskInstance historicTaskInstance : list) {
+            String taskDefinitionKey = historicTaskInstance.getTaskDefinitionKey();
+            List<TaskDTO> taskDTOList = temp.getOrDefault(taskDefinitionKey, new ArrayList<>());
+            taskDTOList.add(TaskDTO.from(historicTaskInstance));
+            temp.put(taskDefinitionKey, taskDTOList);
+        }
+        return new ArrayList<>(temp.values());
     }
 
 }

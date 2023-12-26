@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,6 +45,7 @@ public class ReimburseApplyForm {
     //-- submit: apply/approve
     private String userid;
     private String username;
+    private List<String> selectUsers;
 
     /**
      * 预览生成的流程实例的id
@@ -72,6 +74,7 @@ public class ReimburseApplyForm {
         this.variableMap.clear();
         this.variableMap.put("cost", cost);
         this.variableMap.put("isLeader", isLeader);
+        this.variableMap.put("managerList", selectUsers);
         return this.variableMap;
     }
 
