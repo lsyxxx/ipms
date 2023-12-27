@@ -3,6 +3,7 @@ package com.abt.wf.serivce.impl;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.exception.RequiredParameterException;
 import com.abt.wf.model.ActionEnum;
+import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseApplyForm;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
@@ -184,6 +185,11 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
             return;
         }
         throw new RequiredParameterException("ProcessDefinitionId(流程定义id)");
+    }
+
+    public ApprovalTask createApprovalTask() {
+        ApprovalTask approvalTask = new ApprovalTask();
+        return approvalTask;
     }
 
 

@@ -5,6 +5,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.wf.entity.Reimburse;
+import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseApplyForm;
 import com.abt.wf.model.ReimburseDTO;
 import com.abt.wf.model.TaskDTO;
@@ -38,14 +39,14 @@ public class ReimburseController {
     }
 
     @PostMapping("/preview")
-    public R<List<List<TaskDTO>>> previewFlow(@RequestBody ReimburseApplyForm rbsApplyForm) {
+    public R<List<ApprovalTask>> previewFlow(@RequestBody ReimburseApplyForm rbsApplyForm) {
         getUserFromToken(rbsApplyForm);
         if (rbsApplyForm.getCost() < 0) {
             return R.fail("报销金额必填，且不能小于0");
         }
         //preview
         final String previewId = workFlowExecutionService.previewFlow(rbsApplyForm);
-        final List<List<TaskDTO>> previewList = workFlowQueryService.queryProcessInstanceLog(previewId);
+        final List<ApprovalTask> previewList = workFlowQueryService.queryProcessInstanceLog(previewId);
 
         //Necessary params: assigneeName, executeTime, taskName, comment,
         return R.success(previewList, previewList.size());
@@ -130,11 +131,10 @@ public class ReimburseController {
      * @param processInstanceId 流程实例
      */
     @GetMapping("/log")
-    public R<List<List<TaskDTO>>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId) {
+    public R<List<ApprovalTask>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId) {
         UserView userView = TokenUtil.getUserFromAuthToken();
-        //TODO
-        final List<List<TaskDTO>> taskDTOS = workFlowQueryService.queryProcessInstanceLog(processInstanceId);
-        return R.success(taskDTOS);
+        final List<ApprovalTask> list = workFlowQueryService.queryProcessInstanceLog(processInstanceId);
+        return R.success(list);
     }
 
     public ReimburseApplyForm getUserFromToken(ReimburseApplyForm form) {

@@ -7,6 +7,13 @@
     </bpmn:startEvent>
     <bpmn:userTask id="rbsMulti_managers" name="技术负责人及主管" camunda:assignee="${manager}">
       <bpmn:documentation>技术负责人及主管审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="0" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_employee</bpmn:incoming>
       <bpmn:outgoing>Flow_06au5dy</bpmn:outgoing>
       <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="managerList" camunda:elementVariable="manager">
@@ -16,12 +23,26 @@
     <bpmn:sequenceFlow id="Flow_06au5dy" sourceRef="rbsMulti_managers" targetRef="rbsMulti_finMgr" />
     <bpmn:userTask id="rbsMulti_finMgr" name="财务主管" camunda:assignee="user_finMgr">
       <bpmn:documentation>财务主管审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_leader</bpmn:incoming>
       <bpmn:incoming>Flow_06au5dy</bpmn:incoming>
       <bpmn:outgoing>Flow_1nyqywr</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="rbsMulti_ceo" name="总经理" camunda:assignee="user_ceo">
       <bpmn:documentation>总经理审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1nyqywr</bpmn:incoming>
       <bpmn:outgoing>Flow_1lmo9li</bpmn:outgoing>
       <bpmn:outgoing>Flow_17nj8cv</bpmn:outgoing>
@@ -29,6 +50,13 @@
     <bpmn:sequenceFlow id="Flow_1nyqywr" sourceRef="rbsMulti_finMgr" targetRef="rbsMulti_ceo" />
     <bpmn:userTask id="rbsMulti_chief" name="董事" camunda:assignee="user_chief">
       <bpmn:documentation>董事审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1lmo9li</bpmn:incoming>
       <bpmn:outgoing>Flow_0stcxru</bpmn:outgoing>
     </bpmn:userTask>
@@ -37,6 +65,13 @@
     </bpmn:sequenceFlow>
     <bpmn:userTask id="rbsMulti_acct" name="会计" camunda:assignee="user_acc">
       <bpmn:documentation>会计审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0stcxru</bpmn:incoming>
       <bpmn:incoming>Flow_17nj8cv</bpmn:incoming>
       <bpmn:outgoing>Flow_1u8y9j1</bpmn:outgoing>
@@ -44,6 +79,13 @@
     <bpmn:sequenceFlow id="Flow_0stcxru" sourceRef="rbsMulti_chief" targetRef="rbsMulti_acct" />
     <bpmn:userTask id="rbsMulti_tax" name="税务" camunda:assignee="user_tax">
       <bpmn:documentation>税务审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1u8y9j1</bpmn:incoming>
       <bpmn:outgoing>Flow_1e3z015</bpmn:outgoing>
     </bpmn:userTask>
@@ -58,6 +100,11 @@
     <bpmn:sequenceFlow id="Flow_1qcaapv" sourceRef="StartEvent_1" targetRef="rbsMulti_apply" />
     <bpmn:userTask id="rbsMulti_apply" name="申请">
       <bpmn:documentation>提交申请</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="taskType" value="apply" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1qcaapv</bpmn:incoming>
       <bpmn:outgoing>Flow_employee</bpmn:outgoing>
       <bpmn:outgoing>Flow_leader</bpmn:outgoing>

@@ -1,5 +1,6 @@
 package com.abt.wf.serivce;
 
+import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseDTO;
 import com.abt.wf.model.TaskDTO;
 
@@ -36,5 +37,6 @@ public interface WorkFlowQueryService {
 
     List<TaskDTO> queryMyDoneList(String userid, LocalDate taskStartTime, LocalDate taskEndTime, int page, int size);
 
-    List<List<TaskDTO>> queryProcessInstanceLog(String processInstanceId);
+    List<ApprovalTask> queryProcessInstanceLog(String processInstanceId);
+
 }
