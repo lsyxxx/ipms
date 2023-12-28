@@ -45,7 +45,7 @@ public class ReimburseApplyForm {
     //-- submit: apply/approve
     private String userid;
     private String username;
-    private List<String> selectUsers;
+    private List<String> managerList;
 
     /**
      * 预览生成的流程实例的id
@@ -74,16 +74,16 @@ public class ReimburseApplyForm {
         this.variableMap.clear();
         this.variableMap.put("cost", cost);
         this.variableMap.put("isLeader", isLeader);
-        this.variableMap.put("managerList", selectUsers);
+        this.variableMap.put("managerList", managerList);
         return this.variableMap;
     }
 
     public boolean isReject() {
-        return REJECT.equals(this.decision) ? true : false;
+        return REJECT.equals(this.decision);
     }
 
     public boolean isPass() {
-        return PASS.equals(this.decision) ? true : false;
+        return PASS.equals(this.decision);
     }
 
 

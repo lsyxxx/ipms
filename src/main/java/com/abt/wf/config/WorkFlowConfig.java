@@ -2,6 +2,7 @@ package com.abt.wf.config;
 
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.repository.FlowSettingRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
@@ -22,6 +23,7 @@ import java.util.Map;
  *
  */
 @Component
+@Slf4j
 public class WorkFlowConfig {
 
     private final FlowSettingRepository flowSettingRepository;
@@ -59,12 +61,14 @@ public class WorkFlowConfig {
     @Bean("processDefinitionMap")
     @Order(50)
     public Map<String, ProcessDefinition> processDefinitionMap() {
+        log.info("processDefinitionMap bean init...");
         return this.processDefinitionMap;
     }
 
     @Bean("rbsBpmnModelInstance")
     @Order(100)
     public BpmnModelInstance rbsBpmnModelInstance() {
+        log.info("rbsBpmnModelInstance bean init...");
         ProcessDefinition rbsDef = this.processDefinitionMap.get(DEF_KEY_RBS);
         if (rbsDef == null) {
             rbsDef = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_RBS).latestVersion().singleResult();
@@ -78,6 +82,7 @@ public class WorkFlowConfig {
     @Bean("bpmnModelInstanceMap")
     @Order(150)
     public Map<String, BpmnModelInstance> getBpmnModelInstanceMap() {
+        log.info("getBpmnModelInstanceMap bean init...");
         return bpmnModelInstanceMap;
     }
 }

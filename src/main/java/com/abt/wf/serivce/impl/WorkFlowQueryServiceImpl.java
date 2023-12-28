@@ -54,7 +54,7 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
      */
     private int queryTime;
 
-    public WorkFlowQueryServiceImpl(WorkFlowRepository workFlowRepository, HistoryService historyService, RuntimeService runtimeService, TaskService taskService, ReimburseService reimburseService, RepositoryService repositoryService, @Qualifier("processDefinitionMap") Map<String, ProcessDefinition> processDefinitionMap, @Qualifier("bpmnInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap) {
+    public WorkFlowQueryServiceImpl(WorkFlowRepository workFlowRepository, HistoryService historyService, RuntimeService runtimeService, TaskService taskService, ReimburseService reimburseService, RepositoryService repositoryService, @Qualifier("processDefinitionMap") Map<String, ProcessDefinition> processDefinitionMap, @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap) {
         this.workFlowRepository = workFlowRepository;
         this.historyService = historyService;
         this.runtimeService = runtimeService;
@@ -120,18 +120,27 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
         List<ApprovalTask> apprList = new ArrayList<>();
         final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
         final String processDefinitionKey = list.get(0).getProcessDefinitionKey();
+        final String processDefinitionId = list.get(0).getProcessDefinitionId();
         Map<String, ApprovalTask> map = new HashMap<>();
         for (HistoricTaskInstance historicTaskInstance : list) {
             TaskDTO dto = TaskDTO.from(historicTaskInstance);
             String taskDefId = dto.getTaskDefKey();
+            String taskName = dto.getTaskDefName();
             ApprovalTask approvalTask = map.get(taskDefId);
             if (approvalTask == null) {
                 approvalTask = new ApprovalTask();
+                approvalTask.setTaskDefId(taskDefId);
+                approvalTask.setTaskDefName(taskName);
+                approvalTask.setProcessInstanceId(dto.getProcessInstanceId());
+                approvalTask.setProcessDefKey(processDefinitionKey);
+                approvalTask.setProcessDefId(processDefinitionId);
                 BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(processDefinitionKey);
                 final Collection<CamundaProperty> extensionProperties = queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, taskDefId);
                 approvalTask.setProperties(extensionProperties);
             }
+
             approvalTask.addTask(dto);
+            apprList.add(approvalTask);
         }
         return apprList;
     }

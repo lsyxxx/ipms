@@ -34,6 +34,13 @@ public class ApprovalTask {
     private String taskType;
     private List<TaskDTO> taskList = new ArrayList<>();
 
+    private String taskDefId;
+    private String taskDefName;
+
+    private String processInstanceId;
+    private String processDefKey;
+    private String processDefId;
+
     public ApprovalTask setProperties(Collection<CamundaProperty> collection) {
         collection.forEach(i -> {
             final String name = i.getCamundaName();
