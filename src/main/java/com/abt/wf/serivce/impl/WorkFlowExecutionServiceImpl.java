@@ -89,6 +89,10 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         String procId = previewInstance.getId();
         Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
         while(task != null) {
+            if (task.getTaskDefinitionKey().contains("apply")) {
+                task.setAssignee(form.getUserid());
+                taskService.saveTask(task);
+            }
             taskService.complete(task.getId(), vars);
             task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
         }
