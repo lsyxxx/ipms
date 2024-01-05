@@ -75,6 +75,7 @@ public class ReimburseApplyForm {
         this.variableMap.put("cost", cost);
         this.variableMap.put("isLeader", isLeader);
         this.variableMap.put("managerList", managerList);
+        this.variableMap.put("starter", userid);
         return this.variableMap;
     }
 

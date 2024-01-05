@@ -113,12 +113,12 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     @Override
     @Transactional
     public Reimburse apply(ReimburseApplyForm form) {
-        ensureProcessDefinitionId(form);
+        ensureProcessDefinitionKey(form);
         setAuthUser(form.getUserid());
-        String procDefId = form.getProcessDefinitionId();
         Map<String, Object> vars = form.variableMap();
-        vars.put("starter", form.getUserid());
-        final ProcessInstance processInstance = runtimeService.startProcessInstanceById(procDefId, userApplyBusinessKey(form.getUserid(), form.getUsername()), vars);
+        final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().active().singleResult();
+        form.setProcessDefinitionId(processDefinition.getId());
+        final ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId(), userApplyBusinessKey(form.getUserid(), form.getUsername()), vars);
         final Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
         task.setAssignee(form.getUserid());
         task.setDescription(ActionEnum.SUBMIT.getAction());
@@ -189,6 +189,13 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
             return;
         }
         throw new RequiredParameterException("ProcessDefinitionId(流程定义id)");
+    }
+
+    public static void ensureProcessDefinitionKey(ReimburseApplyForm form) {
+        if (StringUtils.isNotBlank(form.getProcessDefinitionKey())) {
+            return;
+        }
+        throw new RequiredParameterException("ProcessDefinitionKey(流程定义key)");
     }
 
     public ApprovalTask createApprovalTask() {

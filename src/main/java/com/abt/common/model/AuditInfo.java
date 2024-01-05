@@ -25,7 +25,6 @@ import java.util.Date;
 @EntityListeners(AuditingEntityListener.class)
 public class AuditInfo {
     @Schema(description = "最后更新时间")
-//    @Column(name = "update_date", columnDefinition = "DATETIME")
     @LastModifiedDate
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
