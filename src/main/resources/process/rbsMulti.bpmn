@@ -21,7 +21,7 @@
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_06au5dy" sourceRef="rbsMulti_managers" targetRef="rbsMulti_finMgr" />
-    <bpmn:userTask id="rbsMulti_finMgr" name="财务主管" camunda:assignee="user_finMgr">
+    <bpmn:userTask id="rbsMulti_finMgr" name="财务主管" camunda:assignee="U20230406013">
       <bpmn:documentation>财务主管审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -34,7 +34,7 @@
       <bpmn:incoming>Flow_06au5dy</bpmn:incoming>
       <bpmn:outgoing>Flow_1nyqywr</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="rbsMulti_ceo" name="总经理" camunda:assignee="abt002">
+    <bpmn:userTask id="rbsMulti_ceo" name="总经理" camunda:assignee="U20230406002">
       <bpmn:documentation>总经理审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -48,7 +48,7 @@
       <bpmn:outgoing>Flow_17nj8cv</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1nyqywr" sourceRef="rbsMulti_finMgr" targetRef="rbsMulti_ceo" />
-    <bpmn:userTask id="rbsMulti_chief" name="董事" camunda:assignee="abt001">
+    <bpmn:userTask id="rbsMulti_chief" name="董事" camunda:assignee="U20230406001">
       <bpmn:documentation>董事审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -63,7 +63,7 @@
     <bpmn:sequenceFlow id="Flow_1lmo9li" name="金额大于5000" sourceRef="rbsMulti_ceo" targetRef="rbsMulti_chief">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;5000}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:userTask id="rbsMulti_acct" name="会计" camunda:assignee="abt013">
+    <bpmn:userTask id="rbsMulti_acct" name="会计" camunda:assignee="U20230406013">
       <bpmn:documentation>会计审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -77,7 +77,7 @@
       <bpmn:outgoing>Flow_1u8y9j1</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_0stcxru" sourceRef="rbsMulti_chief" targetRef="rbsMulti_acct" />
-    <bpmn:userTask id="rbsMulti_tax" name="税务" camunda:assignee="abt007">
+    <bpmn:userTask id="rbsMulti_tax" name="税务" camunda:assignee="U20230406007">
       <bpmn:documentation>税务审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>

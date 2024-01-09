@@ -8,8 +8,10 @@ import java.time.LocalDateTime;
 /**
  * 用户信息表
  * 懒得改了就这样吧
+ * 统一使用UserView
  */
 @Data
+@Deprecated
 public class SystemUser {
 
     private String Account;

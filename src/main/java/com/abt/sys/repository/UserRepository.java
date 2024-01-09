@@ -2,13 +2,13 @@ package com.abt.sys.repository;
 
 
 import com.abt.common.model.User;
-import com.abt.sys.model.entity.SystemUser;
+import com.abt.sys.model.dto.UserView;
 
 /**
  * 用户信息
  */
 public interface UserRepository {
-    SystemUser getUserBy(String userId);
+    UserView getUserBy(String userId);
 
     /**
      * 仅获取用户id,Account,Name

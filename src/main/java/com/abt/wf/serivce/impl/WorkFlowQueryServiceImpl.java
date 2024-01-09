@@ -1,13 +1,16 @@
 package com.abt.wf.serivce.impl;
 
+import com.abt.common.model.User;
 import com.abt.common.util.QueryUtil;
 import com.abt.common.util.TimeUtil;
+import com.abt.sys.service.UserService;
 import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseDTO;
 import com.abt.wf.model.TaskDTO;
 import com.abt.wf.repository.WorkFlowRepository;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowQueryService;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
@@ -45,7 +48,7 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
 
     private final Map<String, BpmnModelInstance> bpmnModelInstanceMap;
 
-
+    private final UserService sqlServerUserService;
 
 
     /**
@@ -54,7 +57,7 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
      */
     private int queryTime;
 
-    public WorkFlowQueryServiceImpl(WorkFlowRepository workFlowRepository, HistoryService historyService, RuntimeService runtimeService, TaskService taskService, ReimburseService reimburseService, RepositoryService repositoryService, @Qualifier("processDefinitionMap") Map<String, ProcessDefinition> processDefinitionMap, @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap) {
+    public WorkFlowQueryServiceImpl(WorkFlowRepository workFlowRepository, HistoryService historyService, RuntimeService runtimeService, TaskService taskService, ReimburseService reimburseService, RepositoryService repositoryService, @Qualifier("processDefinitionMap") Map<String, ProcessDefinition> processDefinitionMap, @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap, @Qualifier("sqlServerUserService") UserService sqlServerUserService) {
         this.workFlowRepository = workFlowRepository;
         this.historyService = historyService;
         this.runtimeService = runtimeService;
@@ -63,6 +66,7 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
         this.repositoryService = repositoryService;
         this.processDefinitionMap = processDefinitionMap;
         this.bpmnModelInstanceMap = bpmnModelInstanceMap;
+        this.sqlServerUserService = sqlServerUserService;
     }
 
     @Override
@@ -97,18 +101,6 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
                 page, size);
     }
 
-//    @Override
-//    public List<List<TaskDTO>> queryProcessInstanceLog(String processInstanceId) {
-//        final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
-//        LinkedHashMap<String, List<TaskDTO>> temp = new LinkedHashMap<>();
-//        for (HistoricTaskInstance historicTaskInstance : list) {
-//            String taskDefinitionKey = historicTaskInstance.getTaskDefinitionKey();
-//            List<TaskDTO> taskDTOList = temp.getOrDefault(taskDefinitionKey, new ArrayList<>());
-//            taskDTOList.add(TaskDTO.from(historicTaskInstance));
-//            temp.put(taskDefinitionKey, taskDTOList);
-//        }
-//        return new ArrayList<>(temp.values());
-//    }
 
     /**
      * 多实例流程记录查询
@@ -138,7 +130,10 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
                 final Collection<CamundaProperty> extensionProperties = queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, taskDefId);
                 approvalTask.setProperties(extensionProperties);
             }
-
+            if (StringUtils.isNotBlank(dto.getAssigneeId())) {
+                final User simpleUserInfo = sqlServerUserService.getSimpleUserInfo(new User(dto.getAssigneeId()));
+                dto.setAssigneeName(simpleUserInfo.getUsername());
+            }
             approvalTask.addTask(dto);
             apprList.add(approvalTask);
         }

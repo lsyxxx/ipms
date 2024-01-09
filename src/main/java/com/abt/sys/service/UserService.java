@@ -1,7 +1,7 @@
 package com.abt.sys.service;
 
+import com.abt.common.model.User;
 import com.abt.http.dto.WebApiToken;
-import com.abt.sys.model.dto.UserView;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
@@ -26,4 +26,6 @@ public interface UserService<T, E> {
       * @return
       */
      WebApiToken getToken(HttpServletRequest request);
+
+     User getSimpleUserInfo(E e);
 }

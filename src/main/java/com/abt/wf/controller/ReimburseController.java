@@ -12,6 +12,7 @@ import com.abt.wf.model.TaskDTO;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import com.abt.wf.serivce.WorkFlowQueryService;
+import jakarta.servlet.ServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -63,7 +64,7 @@ public class ReimburseController {
             form.setRbsDate(LocalDateTime.now());
         }
         Reimburse reimburse = workFlowExecutionService.apply(form);
-        return R.success(reimburse.getProcessInstanceId());
+        return R.success(reimburse.getProcessInstanceId(), 0);
     }
 
     /**

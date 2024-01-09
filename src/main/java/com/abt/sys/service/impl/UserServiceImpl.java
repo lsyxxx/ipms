@@ -1,5 +1,6 @@
 package com.abt.sys.service.impl;
 
+import com.abt.common.model.User;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.http.dto.WebApiDto;
@@ -13,11 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -26,6 +25,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
+@Primary
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService<UserView, WebApiToken> {
     private final HttpConnectService<WebApiDto> httpConnectService;
@@ -40,6 +40,13 @@ public class UserServiceImpl implements UserService<UserView, WebApiToken> {
         token.setTokenValue(tokenValue);
         return token;
     }
+
+    @Override
+    public User getSimpleUserInfo(WebApiToken webApiToken) {
+        final Optional<UserView> optional = this.userInfoBy(webApiToken);
+        return new User(optional.get());
+    }
+
 
 
     /**

@@ -69,13 +69,17 @@ public class ReimburseApplyForm {
 
     public static final String REJECT = "reject";
     public static final String PASS = "pass";
+    public static final String KEY_COST = "cost";
+    public static final String KEY_IS_LEADER = "isLeader";
+    public static final String KEY_MANAGER_LIST = "managerList";
+    public static final String KEY_STARTER = "starter";
 
     public Map<String, Object> variableMap() {
         this.variableMap.clear();
-        this.variableMap.put("cost", cost);
-        this.variableMap.put("isLeader", isLeader);
-        this.variableMap.put("managerList", managerList);
-        this.variableMap.put("starter", userid);
+        this.variableMap.put(KEY_COST, cost);
+        this.variableMap.put(KEY_IS_LEADER, isLeader);
+        this.variableMap.put(KEY_MANAGER_LIST, managerList);
+        this.variableMap.put(KEY_STARTER, userid);
         return this.variableMap;
     }
 

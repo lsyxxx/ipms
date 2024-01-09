@@ -2,7 +2,7 @@ package com.abt.sys.repository;
 
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
-import com.abt.sys.model.entity.SystemUser;
+import com.abt.sys.model.dto.UserView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -22,9 +22,9 @@ public class UserRepositoryImpl implements UserRepository{
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public SystemUser getUserBy(String userId) {
+    public UserView getUserBy(String userId) {
         return jdbcTemplate.queryForObject("select * from [User] where Id = ?",
-                new SystemUserRowMapper(), userId);
+                new UserViewRowMapper(), userId);
     }
 
     @Override
@@ -38,13 +38,13 @@ public class UserRepositoryImpl implements UserRepository{
         }, userId);
     }
 
-    class SystemUserRowMapper implements RowMapper<SystemUser> {
-
+    class UserViewRowMapper implements RowMapper<UserView> {
 
         @Nullable
         @Override
-        public SystemUser mapRow(ResultSet rs, int rowNum) throws SQLException {
-            SystemUser user = new SystemUser();
+        public UserView mapRow(ResultSet rs, int rowNum) throws SQLException {
+            UserView user = new UserView();
+            user.setId(rs.getString("Id"));
             user.setAccount(rs.getString("Account"));
             user.setPassword(rs.getString("Password"));
             user.setName(rs.getString("Name"));
@@ -57,32 +57,32 @@ public class UserRepositoryImpl implements UserRepository{
             user.setTypeId(rs.getString("TypeId"));
             user.setTel(rs.getString("Tel"));
             user.setTman(rs.getString("Tman"));
-            user.setLevelpost(rs.getString("Levelpost"));
+            user.setLevelPost(rs.getString("Levelpost"));
             user.setPapers(rs.getString("Papers"));
             user.setMobile(rs.getString("Mobile"));
-            user.setIDCARD(rs.getString("IDCARD"));
+            user.setIdCard(rs.getString("IDCARD"));
             user.setEdu(rs.getString("Edu"));
             user.setAddress(rs.getString("Address"));
-            user.setRZDay(rs.getString("RZDay"));
-            user.setNative(rs.getString("Native"));
+            user.setRzDay(TimeUtil.from(rs.getTimestamp("RZDay")));
+            user.setNativeStr(rs.getString("Native"));
             user.setThpapers(rs.getString("Thpapers"));
             user.setSpec(rs.getString("Spec"));
-            user.setZPImage(rs.getString("ZPImage"));
-            user.setBirthday(rs.getString("Birthday"));
+            user.setZpImage(rs.getString("ZPImage"));
+            user.setBirthday(TimeUtil.from(rs.getTimestamp("Birthday")));
             user.setFnote(rs.getString("Fnote"));
             user.setJpost(rs.getString("Jpost"));
             user.setDman(rs.getString("Dman"));
             user.setFaAddress(rs.getString("FaAddress"));
             user.setAtel(rs.getString("Atel"));
             user.setUserSign(rs.getString("UserSign"));
-            user.setEmailaddress(rs.getString("emailaddress"));
+            user.setEmailAddress(rs.getString("emailaddress"));
             user.setOrgFromId(rs.getString("OrgFromId"));
             user.setOrgFromIdName(rs.getString("orgFromIdName"));
             user.setBypapers(rs.getString("bypapers"));
             user.setEdupapers(rs.getString("edupapers"));
             user.setIdcardzhengmian(rs.getString("idcardzhengmian"));
             user.setIdcardfanmianpapers(rs.getString("idcardfanmianpapers"));
-            user.setIdcardqitapapers(rs.getString("idcardqitapapers"));
+            user.setIdcardfanmianpapers(rs.getString("idcardqitapapers"));
             user.setTpost(rs.getString("tpost"));
             user.setEmpnum(rs.getString("empnum"));
 

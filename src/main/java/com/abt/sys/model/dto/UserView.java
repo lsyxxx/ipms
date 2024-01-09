@@ -43,9 +43,12 @@ public class UserView implements UserDetails{
     private int sex;
     private int status;
     private int type;
+    private String typeName;
+    private String typeId;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
+    private String createId;
     private String createUser;
     private String organizations;
     private String organizationIds;
@@ -79,6 +82,7 @@ public class UserView implements UserDetails{
     private String jpost;
     private String dman;
     private String faAddress;
+    private String bizCode;
 
 
     /**

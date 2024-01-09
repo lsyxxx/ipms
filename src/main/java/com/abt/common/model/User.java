@@ -13,7 +13,6 @@ import java.util.List;
  *
  */
 @Data
-@NoArgsConstructor
 @Accessors(chain = true)
 public class User implements Serializable {
 
@@ -36,6 +35,10 @@ public class User implements Serializable {
      * 是否是管理人员
      */
     private boolean isManager = false;
+
+    public User() {
+        super();
+    }
 
     public User(UserView user) {
         this.id = user.getId();

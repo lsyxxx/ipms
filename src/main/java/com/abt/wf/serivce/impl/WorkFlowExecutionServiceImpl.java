@@ -36,9 +36,6 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
     private final RepositoryService repositoryService;
 
-    public static final String VARS_STARTER = "starter";
-    public static final String VARS_IS_LEADER = "isLeader";
-    public static final String VARS_COST = "cost";
     public static final String VARS_ENTITY_ID = "entityId";
 
 
@@ -54,18 +51,13 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     /**
      * 预览流程图key
      * @param username 用户名
-     * @return
      */
     public String previewBusinessKey(String username, String procDefId) {
         return "PREVIEW_" + username + "_" + procDefId;
     }
 
-    public static final String DELETE_PREVIEW_REASON = "AUTO_DELETE_PREVIEW_";
-
     /**
      * 预览流程图
-     *
-     * @return
      */
     @Override
     public String previewFlow(ReimburseApplyForm form) {
@@ -74,7 +66,7 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
             try {
                 log.trace("删除已有预览图, 重新生成预览图...");
                 //已有预览流程图则删除
-                runtimeService.deleteProcessInstance(form.getPreviewInstanceId(), DELETE_PREVIEW_REASON);
+                historyService.deleteHistoricProcessInstance(form.getPreviewInstanceId());
             } catch (Exception e) {
                 log.error("删除预览流程失败! - ", e);
             }
@@ -106,7 +98,6 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
     /**
      * 申请
-     *
      * @param form 申请表单
      * @return 业务实体
      */

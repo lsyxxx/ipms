@@ -8,6 +8,7 @@ import com.abt.common.util.MessageUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -29,7 +30,6 @@ import java.util.function.Supplier;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ABTAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
@@ -37,6 +37,11 @@ public class ABTAuthorizationManager implements AuthorizationManager<RequestAuth
 
     private final PermissionService permissionService;
     private final UserService userService;
+
+    public ABTAuthorizationManager(PermissionService permissionService,  UserService userService) {
+        this.permissionService = permissionService;
+        this.userService = userService;
+    }
 
     @Override
     public void verify(Supplier<Authentication> authentication, RequestAuthorizationContext object) {
