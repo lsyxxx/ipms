@@ -48,10 +48,6 @@ public class Reimburse extends AuditInfo {
 
     /**
      * 报销类型
-     * 0: 其他
-     * 1: 差旅费
-     * 2: 交通费
-     * 3: ...
      */
     @Column(name="rbs_type", columnDefinition="VARCHAR(64)")
     private String rbsType;

@@ -121,7 +121,7 @@ public class FileController {
         requestFile.setBizType(bizType);
         requestFile.setService(service);
         requestFile.setRelationId1(relationId1);
-        requestFile.setRelationId1(relationId2);
+        requestFile.setRelationId2(relationId2);
         requestFile.setSavedRoot(savedRoot);
         return requestFile;
     }
