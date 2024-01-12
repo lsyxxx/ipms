@@ -1,40 +1,37 @@
 package com.abt.chemicals.model;
 
-import com.abt.chemicals.entity.Contact;
+import com.abt.chemicals.entity.*;
+import com.abt.sys.model.entity.SystemFile;
 import lombok.Data;
 
 import java.util.List;
 
 /**
  * 化学品产品
+ * 包含所有
  */
 @Data
 public class ChemicalProduct {
 
     private String id;
     private String name;
-    private String chemicalName;
-    /**
-     * 检测标准
-     */
-    private List<String> standardCode;
-    /**
-     * 用途
-     */
+    private ChemicalType type1;
+    private ChemicalType type2;
+    private List<Standard> standards;
     private String usage;
+    private List<Material> mainMaterials;
+    private List<Material> auxiliaryMaterials;
     /**
-     * 主材料
+     * 使用说明书附件id
      */
-    private List<String> mainMaterials;
-    private List<String> auxiliaryMaterials;
-    /**
-     * 生产工艺
-     */
+    private List<SystemFile> instructions;
     private String manufacturing;
-    //--- 生产
 
+    //--- 生产 producer
+    private List<Producer> producers;
 
-    //--- 采购
+    //--- 采购 buyer
+    private List<Buyer> buyers;
 
 
 
