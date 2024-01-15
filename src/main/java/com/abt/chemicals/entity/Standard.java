@@ -1,5 +1,6 @@
 package com.abt.chemicals.entity;
 
+import com.abt.chemicals.model.StandardType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ public class Standard {
     private String description;
     /**
      * 国标/行标/企业标准/地方/...
+     * @see StandardType
      */
     private String type;
     /**

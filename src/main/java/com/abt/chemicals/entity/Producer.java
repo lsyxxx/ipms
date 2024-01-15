@@ -1,9 +1,10 @@
 package com.abt.chemicals.entity;
 
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.List;
 
@@ -13,7 +14,14 @@ import java.util.List;
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
+@Table(name = "chm_producer")
+@Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Producer extends Company{
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     /**
      * 化学品型号
@@ -24,4 +32,5 @@ public class Producer extends Company{
     private List<Contact> contactList;
     @Transient
     private List<Price> priceList;
+
 }

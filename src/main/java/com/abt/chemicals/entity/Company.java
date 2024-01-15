@@ -1,5 +1,6 @@
 package com.abt.chemicals.entity;
 
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.List;
  */
 @Data
 public class Company {
-    private String id;
     /**
      * 全称（正式）
      */
@@ -21,9 +21,14 @@ public class Company {
     private String address;
     private int sort;
     private boolean enable;
+    /**
+     * 备注
+     */
+    private String note;
 
     /**
      * 营业执照附件id
      */
+    @Transient
     private List<String> license;
 }
