@@ -21,4 +21,5 @@ public class Product {
     private String type1;
     private String type2;
     private String usage;
+    private String manufacturing;
 }

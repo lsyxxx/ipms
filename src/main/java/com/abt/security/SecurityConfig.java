@@ -60,6 +60,7 @@ public class SecurityConfig {
                 "/camunda/**",
                 "/favicon.ico",
                 //TEST
+                "/test/**",
         };
     }
 
