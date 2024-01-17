@@ -8,5 +8,7 @@ import java.util.List;
 
 public interface TypeRepository extends JpaRepository<ChemicalType, String> {
 
-    List<ChemicalType> findByLevelAndNameLikeOrderBySortAsc(@Param("level") int level, @Param("word") String word);
+    List<ChemicalType> findByLevelAndNameContainingOrderBySortAsc(@Param("level_") int level, @Param("name_") String name);
+
+    List<ChemicalType> findByLevel(@Param("level_") int level);
 }
