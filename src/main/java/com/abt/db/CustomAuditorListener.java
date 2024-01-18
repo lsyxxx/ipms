@@ -24,7 +24,7 @@ public class CustomAuditorListener implements AuditorAware<String> {
                 return Optional.of(user.getId());
             }
         } catch (Exception e) {
-            log.error("获取用户认证失败! -- 错误信息：{}, 不添加审计用户信息", e.getMessage());
+            log.error("未获取用户信息! -- 错误信息：{}, 不添加审计用户信息", e.getMessage());
         }
 
         return Optional.empty();

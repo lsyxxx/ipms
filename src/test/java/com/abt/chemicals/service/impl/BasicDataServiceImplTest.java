@@ -44,7 +44,7 @@ class BasicDataServiceImplTest {
 
     @Test
     void queryType2() {
-        final List<ChemicalType> list = basicDataService.queryType("采", 2, null);
+        final List<ChemicalType> list = basicDataService.queryType(null, 2, null);
         Assert.notEmpty(list, "list is empty");
         list.forEach(i -> {
             log.info("id: {}, parentId: {}, name: {}, childrenSize: {}, parent: {}", i.getId(), i.getParentId(), i.getName(), i.getChildren().size(), i.getParent() == null ? null : i.getParent().getName());
@@ -54,5 +54,28 @@ class BasicDataServiceImplTest {
     @Test
     void deleteType() {
         basicDataService.deleteType("");
+    }
+
+    @Test
+    void editType() {
+        ChemicalType form = new ChemicalType();
+        //add type1
+//        form.setName("测试123132");
+//        form.setLevel(1);
+//        basicDataService.editType(form);
+        //edit type1
+//        form.setId("e70834af-3307-42bf-829b-6403a3ef9df4");
+//        form.setName("测试编辑111");
+//        form.setNote("备注jaofjasf");
+//        form.setSort(0);
+//        basicDataService.editType(form);
+        //add type2
+//        form.setName("测试添加功能");
+//        basicDataService.addType(form);
+        //edit type2
+        form.setName("测试111222");
+        form.setLevel(2);
+        form.setParentId("e70834af-3307-42bf-829b-6403a3ef9df4");
+        basicDataService.editType(form);
     }
 }

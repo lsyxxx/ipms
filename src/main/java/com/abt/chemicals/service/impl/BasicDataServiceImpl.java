@@ -1,10 +1,15 @@
 package com.abt.chemicals.service.impl;
 
 import com.abt.chemicals.entity.ChemicalType;
+import com.abt.chemicals.entity.Company;
+import com.abt.chemicals.repository.CompanyRepository;
 import com.abt.chemicals.repository.TypeRepository;
 import com.abt.chemicals.service.BasicDataService;
+import com.abt.common.util.MessageUtil;
 import com.abt.sys.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
@@ -22,9 +27,13 @@ import java.util.stream.Collectors;
 public class BasicDataServiceImpl implements BasicDataService {
 
     private final TypeRepository typeRepository;
+    private final CompanyRepository companyRepository;
 
-    public BasicDataServiceImpl(TypeRepository typeRepository) {
+    protected MessageSourceAccessor messages = MessageUtil.getAccessor();
+
+    public BasicDataServiceImpl(TypeRepository typeRepository, CompanyRepository companyRepository) {
         this.typeRepository = typeRepository;
+        this.companyRepository = companyRepository;
     }
 
 
@@ -33,7 +42,9 @@ public class BasicDataServiceImpl implements BasicDataService {
         ChemicalType condition = new ChemicalType();
         condition.setLevel(level);
         condition.setParentId(type1Id);
-        condition.setName(name);
+        if (StringUtils.isNotBlank(name)) {
+            condition.setName(name);
+        }
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("name", ExampleMatcher.GenericPropertyMatcher::contains)
                 .withIgnorePaths("enable", "sort");
@@ -69,14 +80,57 @@ public class BasicDataServiceImpl implements BasicDataService {
     }
 
     @Override
-    public void deleteType(String id) {
+    public long deleteType(String id) {
         final boolean exists = typeRepository.existsById(id);
+        long deleted = 0L;
         if(exists) {
             typeRepository.deleteById(id);
+            typeRepository.deleteByParentId(id);
         } else {
-            log.warn("未查询到化学品类型(id: " + id + ")");
-            throw new BusinessException("未查询到化学品类型(id: " + id + ")");
+            log.warn(messages.getMessage("chm.type.notExists", new Object[]{id, ""}));
+            throw new BusinessException(messages.getMessage("chm.type.notExists", new Object[]{id, ""}));
+        }
+        return deleted;
+    }
+
+    @Override
+    public ChemicalType editType(ChemicalType form) {
+        ensureLevel(form);
+        ensureParentId(form);
+        if (StringUtils.isNotBlank(form.getId())) {
+            final boolean exists = typeRepository.existsById(form.getId());
+            if (!exists) {
+                throw new BusinessException(messages.getMessage("chm.type.notExists", new Object[]{form.getId(), form.getName()}));
+            }
+        }
+        return typeRepository.save(form);
+    }
+
+    private void ensureParentId(ChemicalType form) {
+        if (form.getLevel() == ChemicalType.LEVEL_2) {
+            if (StringUtils.isBlank(form.getParentId())) {
+                throw new BusinessException(messages.getMessage("chm.type.parentId.blank", new Object[]{form.getId(), form.getName()}));
+            }
+        }
+    }
+    private void ensureLevel(ChemicalType form) {
+        if (form.getLevel() != ChemicalType.LEVEL_1 && form.getLevel() != ChemicalType.LEVEL_2) {
+            throw new BusinessException(messages.getMessage("chm.type.level.error", new Object[]{form.getLevel()}));
         }
     }
 
+    @Override
+    public List<Company> queryAllCompanyByType(String type) {
+        return companyRepository.findByType(type);
+    }
+
+    public List<Company> queryCompany(String type, String name) {
+        Company condition = new Company();
+        condition.setType(type);
+        condition.setName(name);
+        condition.setFullName(name);
+
+        return null;
+
+    }
 }

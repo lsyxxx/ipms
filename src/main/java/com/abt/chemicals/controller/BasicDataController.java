@@ -1,24 +1,21 @@
 package com.abt.chemicals.controller;
 
 import com.abt.chemicals.entity.ChemicalType;
+import com.abt.chemicals.entity.Company;
 import com.abt.chemicals.service.BasicDataService;
 import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
  */
 @RestController
 @Slf4j
-@RequestMapping("/test/chm")
+@RequestMapping("/chm")
 public class BasicDataController {
 
     private final BasicDataService basicDataService;
@@ -41,12 +38,40 @@ public class BasicDataController {
         return R.success(list, list.size());
     }
 
+    @GetMapping("/type/all")
+    public R<List<ChemicalType>> queryAllType() {
+        final List<ChemicalType> list = basicDataService.queryAllTypes();
+        return R.success(list, list.size());
+    }
+
     @GetMapping("/type/del")
-    public R<String> deleteType(@RequestParam String id) {
+    public R<Long> deleteType(@RequestParam String id) {
         if (StringUtils.isBlank(id)) {
             return R.fail("类型Id不允许为空");
         }
-        basicDataService.deleteType(id);
-        return R.success("删除成功");
+        final long deleted = basicDataService.deleteType(id);
+        return R.success(deleted);
     }
+
+    /**
+     * 编辑/新增化学品类型
+     * @param typeForm 表单
+     */
+    @PostMapping("/type/edit")
+    public R<ChemicalType> editType(@RequestBody ChemicalType typeForm) {
+        final ChemicalType type = basicDataService.editType(typeForm);
+        return R.success(type);
+    }
+
+    @GetMapping("/com/all")
+    public R<List<Company>> queryAllCompanyByType(@RequestParam String type) {
+        final List<Company> companies = basicDataService.queryAllCompanyByType(type);
+        return R.success(companies, companies.size());
+    }
+
+    @GetMapping("/com/search")
+    public void queryCompany(@RequestParam String type) {
+
+    }
+
 }
