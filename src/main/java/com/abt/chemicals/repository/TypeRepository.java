@@ -13,6 +13,8 @@ public interface TypeRepository extends JpaRepository<ChemicalType, String> {
     List<ChemicalType> findByLevelAndNameContainingOrderBySortAsc(@Param("level_") int level, @Param("name_") String name);
     List<ChemicalType> findByLevel(@Param("level_") int level);
 
+    List<ChemicalType> findByLevelAndEnableOrderBySortAsc(@Param("level_") int level, @Param("enable") boolean enable);
+
     @Modifying
     @Transactional
     long deleteByParentId(@Param("parent_id") String parentId);

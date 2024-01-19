@@ -65,6 +65,13 @@ public class BasicDataServiceImpl implements BasicDataService {
         return buildTypeTree(type1, type2);
     }
 
+    @Override
+    public List<ChemicalType> queryAllTypesEnabled() {
+        final List<ChemicalType> type1 = typeRepository.findByLevelAndEnableOrderBySortAsc(ChemicalType.LEVEL_1, true);
+        final List<ChemicalType> type2 = typeRepository.findByLevelAndEnableOrderBySortAsc(ChemicalType.LEVEL_2, true);
+        return buildTypeTree(type1, type2);
+    }
+
     /**
      * 组装tree
      */
@@ -121,16 +128,27 @@ public class BasicDataServiceImpl implements BasicDataService {
 
     @Override
     public List<Company> queryAllCompanyByType(String type) {
-        return companyRepository.findByType(type);
+        return companyRepository.findByTypeOrderBySortAsc(type);
     }
 
+    @Override
     public List<Company> queryCompany(String type, String name) {
-        Company condition = new Company();
-        condition.setType(type);
-        condition.setName(name);
-        condition.setFullName(name);
+        return companyRepository.findByTypeAndNameContainingOrderBySortAsc(type, name);
 
-        return null;
+    }
 
+    @Override
+    public Company editCompany(Company form) {
+        if (StringUtils.isBlank(form.getName())) {
+            throw new BusinessException(messages.getMessage("chm.company.name.blank"));
+        }
+        return companyRepository.save(form);
+    }
+
+
+    @Override
+    public void deleteCompany(String id) {
+        companyRepository.deleteById(id);
+        //TODO: 删除其他关联
     }
 }

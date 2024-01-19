@@ -8,8 +8,11 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.experimental.Accessors;
+import org.hibernate.annotations.DynamicInsert;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,9 +24,12 @@ import java.util.List;
 @Table(name = "chm_company")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@DynamicInsert
+@Accessors(chain = true)
 public class Company extends AuditInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @NotBlank(message = "id不能为空", groups = {ValidateGroup.Update.class})
     private String id;
 
     /**
@@ -32,13 +38,14 @@ public class Company extends AuditInfo {
     @Column(name="full_name", columnDefinition="VARCHAR(128)")
     private String fullName;
 
-    @NotBlank(message = "单位名称不能为空!")
+    @NotBlank(message = "单位名称不能为空!", groups = {ValidateGroup.Save.class})
     @Column(name="name_", columnDefinition="VARCHAR(128)")
     private String name;
 
     @Column(name="address_", columnDefinition="VARCHAR(256)")
     private String address;
 
+    @NotBlank(message = "type不能为空", groups = {ValidateGroup.Save.class})
     @Column(name="type_", columnDefinition="VARCHAR(128)")
     private String type;
 
@@ -58,9 +65,14 @@ public class Company extends AuditInfo {
      * 营业执照附件id
      */
     @Transient
-    private List<String> licenseList;
+    private List<String> licenseList = new ArrayList<>();
 
     public static final String TYPE_BUYER = "buyer";
     public static final String TYPE_PRODUCER = "producer";
+
+    @Transient
+    private List<Contact> contactList = new ArrayList<>();
+    @Transient
+    private List<Price> priceList = new ArrayList<>();
 
 }

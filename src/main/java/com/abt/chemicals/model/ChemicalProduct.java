@@ -28,10 +28,10 @@ public class ChemicalProduct {
     private String manufacturing;
 
     //--- 生产 producer
-    private List<Producer> producers;
+    private List<Company> producers;
 
     //--- 采购 buyer
-    private List<Buyer> buyers;
+    private List<Company> buyers;
 
 
 

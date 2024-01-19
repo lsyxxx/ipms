@@ -78,4 +78,9 @@ class BasicDataServiceImplTest {
         form.setParentId("e70834af-3307-42bf-829b-6403a3ef9df4");
         basicDataService.editType(form);
     }
+
+    @Test
+    void queryCompany() {
+        basicDataService.queryAllCompanyByType("producer");
+    }
 }

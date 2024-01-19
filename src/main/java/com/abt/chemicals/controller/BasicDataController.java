@@ -6,6 +6,7 @@ import com.abt.chemicals.service.BasicDataService;
 import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/chm")
+@RequestMapping("/test/chm")
 public class BasicDataController {
 
     private final BasicDataService basicDataService;
@@ -32,15 +33,20 @@ public class BasicDataController {
      * TODO: 高级搜索
      */
     @GetMapping("/type/search")
-    public R<List<ChemicalType>> queryType(@RequestParam String word, @RequestParam int level,
+    public R<List<ChemicalType>> queryType(@RequestParam(required = false) String word, @RequestParam int level,
                                            @RequestParam(required = false) String type1Id) {
         final List<ChemicalType> list = basicDataService.queryType(word, level, type1Id);
         return R.success(list, list.size());
     }
 
     @GetMapping("/type/all")
-    public R<List<ChemicalType>> queryAllType() {
-        final List<ChemicalType> list = basicDataService.queryAllTypes();
+    public R<List<ChemicalType>> queryAllType(@RequestParam(required = false) boolean enabled) {
+        final List<ChemicalType> list;
+        if (enabled) {
+            list = basicDataService.queryAllTypesEnabled();
+        } else {
+            list = basicDataService.queryAllTypes();
+        }
         return R.success(list, list.size());
     }
 
@@ -70,8 +76,29 @@ public class BasicDataController {
     }
 
     @GetMapping("/com/search")
-    public void queryCompany(@RequestParam String type) {
-
+    public R<List<Company>> queryCompany(@RequestParam String type, @RequestParam String name) {
+        final List<Company> list = basicDataService.queryCompany(type, name);
+        return R.success(list, list.size());
     }
+
+    @PostMapping("/com/edit")
+    public R<Company> editCompany(@RequestBody Company form) {
+        final Company company = basicDataService.editCompany(form);
+        return R.success(company);
+    }
+
+    @PostMapping("/com/add")
+    public R<Company> addCompany(@RequestBody @Validated(ValidateGroup.Insert.class) Company form) {
+        final Company company = basicDataService.editCompany(form);
+        return R.success(company);
+    }
+
+    @GetMapping("/com/del")
+    public R deleteCompany(@RequestParam String id) {
+        basicDataService.deleteCompany(id);
+        return R.success();
+    }
+
+
 
 }

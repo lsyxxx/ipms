@@ -10,6 +10,8 @@ public interface BasicDataService {
 
     List<ChemicalType> queryAllTypes();
 
+    List<ChemicalType> queryAllTypesEnabled();
+
     /**
      * 删除一级分类及该分类下所有二级分类
      *
@@ -21,4 +23,10 @@ public interface BasicDataService {
     ChemicalType editType(ChemicalType form);
 
     List<Company> queryAllCompanyByType(String type);
+
+    List<Company> queryCompany(String type, String name);
+
+    Company editCompany(Company form);
+
+    void deleteCompany(String id);
 }

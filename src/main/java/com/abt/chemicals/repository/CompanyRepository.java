@@ -9,5 +9,6 @@ import java.util.List;
 
 public interface CompanyRepository extends JpaRepository<Company, String> {
 
-    List<Company> findByType(@Param("type_") String type);
+    List<Company> findByTypeOrderBySortAsc(@Param("type_") String type);
+    List<Company> findByTypeAndNameContainingOrderBySortAsc(@Param("type_") String type, @Param("name_") String name);
 }
