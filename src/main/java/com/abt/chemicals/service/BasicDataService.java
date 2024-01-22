@@ -2,6 +2,7 @@ package com.abt.chemicals.service;
 
 import com.abt.chemicals.entity.ChemicalType;
 import com.abt.chemicals.entity.Company;
+import com.abt.chemicals.entity.Product;
 
 import java.util.List;
 
@@ -20,13 +21,25 @@ public interface BasicDataService {
      */
     long deleteType(String id);
 
-    ChemicalType editType(ChemicalType form);
+    /**
+     * save or update
+     */
+    ChemicalType saveType(ChemicalType form);
 
     List<Company> queryAllCompanyByType(String type);
 
+    List<Company> queryAllCompanyEnabled();
+
     List<Company> queryCompany(String type, String name);
 
-    Company editCompany(Company form);
+    Company saveCompany(Company form);
 
     void deleteCompany(String id);
+
+    /**
+     * save or update
+     */
+    void saveProduct(Product form);
+
+    List<Company> dynamicCompanyQuery(String name, String type, Boolean enable, int page, int size);
 }

@@ -1,22 +1,21 @@
 package com.abt.chemicals.service.impl;
 
-import com.abt.chemicals.entity.ChemicalType;
-import com.abt.chemicals.entity.Company;
-import com.abt.chemicals.repository.CompanyRepository;
-import com.abt.chemicals.repository.TypeRepository;
+import com.abt.chemicals.entity.*;
+import com.abt.chemicals.repository.*;
 import com.abt.chemicals.service.BasicDataService;
+import com.abt.common.config.QueryConfig;
 import com.abt.common.util.MessageUtil;
 import com.abt.sys.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -28,18 +27,28 @@ public class BasicDataServiceImpl implements BasicDataService {
 
     private final TypeRepository typeRepository;
     private final CompanyRepository companyRepository;
+    private final ProductRepository productRepository;
+    private final MaterialRepository materialRepository;
+    private final CompanyRelationRepository companyRelationRepository;
+    private final PriceRepository priceRepository;
+    private final ContactRepository contactRepository;
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
-    public BasicDataServiceImpl(TypeRepository typeRepository, CompanyRepository companyRepository) {
+    public BasicDataServiceImpl(TypeRepository typeRepository, CompanyRepository companyRepository, ProductRepository productRepository, MaterialRepository materialRepository, CompanyRelationRepository companyRelationRepository, PriceRepository priceRepository, ContactRepository contactRepository) {
         this.typeRepository = typeRepository;
         this.companyRepository = companyRepository;
+        this.productRepository = productRepository;
+        this.materialRepository = materialRepository;
+        this.companyRelationRepository = companyRelationRepository;
+        this.priceRepository = priceRepository;
+        this.contactRepository = contactRepository;
     }
 
 
     @Override
     public List<ChemicalType> queryType(String name, int level, String type1Id) {
-        ChemicalType condition = new ChemicalType();
+        ChemicalType condition = ChemicalType.condition();
         condition.setLevel(level);
         condition.setParentId(type1Id);
         if (StringUtils.isNotBlank(name)) {
@@ -101,7 +110,7 @@ public class BasicDataServiceImpl implements BasicDataService {
     }
 
     @Override
-    public ChemicalType editType(ChemicalType form) {
+    public ChemicalType saveType(ChemicalType form) {
         ensureLevel(form);
         ensureParentId(form);
         if (StringUtils.isNotBlank(form.getId())) {
@@ -132,23 +141,152 @@ public class BasicDataServiceImpl implements BasicDataService {
     }
 
     @Override
+    public List<Company> queryAllCompanyEnabled() {
+        return companyRepository.findAllByEnableIsTrueOrderByTypeAsc(Sort.by("sort"));
+    }
+
+    @Override
     public List<Company> queryCompany(String type, String name) {
         return companyRepository.findByTypeAndNameContainingOrderBySortAsc(type, name);
 
     }
 
+
     @Override
-    public Company editCompany(Company form) {
+    public Company saveCompany(Company form) {
         if (StringUtils.isBlank(form.getName())) {
             throw new BusinessException(messages.getMessage("chm.company.name.blank"));
         }
-        return companyRepository.save(form);
+        return companyRepository.save(form.prepare());
     }
 
 
     @Override
     public void deleteCompany(String id) {
         companyRepository.deleteById(id);
-        //TODO: 删除其他关联
+        priceRepository.deleteByCompanyId(id);
+        contactRepository.deleteByCompanyId(id);
+    }
+
+
+    @Override
+    public void saveProduct(Product form) {
+        Product product = productRepository.save(form);
+        form.setId(product.getId());
+        final List<Material> materials = createMaterials(form);
+        materialRepository.saveAllAndFlush(materials);
+        final List<CompanyRelation> relations = createCompanyRelations(form);
+        companyRelationRepository.saveAllAndFlush(relations);
+        final List<Price> price = createPrice(form);
+        priceRepository.saveAllAndFlush(price);
+        final List<Contact> contact = createContact(form);
+        contactRepository.saveAllAndFlush(contact);
+    }
+
+    private List<Contact> createContact(Product form) {
+        ensureProductId(form.getId());
+        List<Contact> list = new ArrayList<>();
+        form.getProducers().forEach(company -> {
+            company.getContactList().forEach(i -> {
+                i.setCompanyId(company.getId());
+                i.setChemicalId(form.getId());
+                list.add(i);
+            });
+        });
+        form.getBuyers().forEach(company -> {
+            company.getContactList().forEach(i -> {
+                i.setCompanyId(company.getId());
+                i.setChemicalId(form.getId());
+                list.add(i);
+            });
+        });
+        return list;
+    }
+
+    private List<Material> createMaterials(Product form) {
+        ensureProductId(form.getId());
+        List<Material> list = new ArrayList<>();
+        if (!form.getMainMaterial().isEmpty()) {
+            form.getMainMaterial().forEach(i -> {
+                list.add(Material.of(i, Material.TYPE_MAIN, form.getId()));
+            });
+        }
+        if (!form.getAuxMaterial().isEmpty()) {
+            form.getAuxMaterial().forEach(i -> {
+                list.add(Material.of(i, Material.TYPE_AUX, form.getId()));
+            });
+        }
+        return list;
+    }
+
+    private List<Price> createPrice(Product form) {
+        ensureProductId(form.getId());
+        List<Price> list = new ArrayList<>();
+        form.getProducers().forEach(company -> {
+            company.getPriceList().forEach(p -> {
+                p.setChemicalId(form.getId());
+                p.setCompanyId(company.getId());
+                list.add(p);
+            });
+        });
+        form.getBuyers().forEach(company -> {
+            company.getPriceList().forEach(p -> {
+                p.setChemicalId(form.getId());
+                p.setCompanyId(company.getId());
+                list.add(p);
+            });
+        });
+        return list;
+    }
+
+    private List<CompanyRelation> createCompanyRelations(Product form) {
+        ensureProductId(form.getId());
+        List<CompanyRelation> list = new ArrayList<>();
+        if (!form.getProducers().isEmpty()) {
+            form.getProducers().forEach(i -> {
+                i.setType(Company.TYPE_PRODUCER);
+                list.add(CompanyRelation.of(form.getId(), i));
+            });
+        }
+        if (!form.getBuyers().isEmpty()) {
+            form.getBuyers().forEach(i -> {
+                i.setType(Company.TYPE_BUYER);
+                list.add(CompanyRelation.of(form.getId(), i));
+            });
+        }
+        return list;
+    }
+
+    private void ensureProductId(String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("化学品Id不能为空!");
+        }
+    }
+
+    @Override
+    public List<Company> dynamicCompanyQuery(String name, String type, Boolean enable, int page, int size) {
+        Company condition = Company.condition();
+        List<Company> list = new ArrayList<>();
+        if (StringUtils.isNotBlank(name)) {
+            condition.setName(name);
+        }
+        if (Company.validateType(type)) {
+            condition.setType(type);
+        }
+        if (!Objects.isNull(enable)) {
+            condition.setEnable(enable);
+        }
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("name", ExampleMatcher.GenericPropertyMatcher::contains);
+        Example<Company> example = Example.of(condition, matcher);
+        Sort sort = Sort.by("type", "sort");
+        if (size != QueryConfig.SIZE_QUERY_ALL) {
+            PageRequest pageRequest = PageRequest.of(page, size, sort);
+            list = companyRepository.findAll(example, pageRequest).getContent();
+        } else {
+            list = companyRepository.findAll(example, sort);
+        }
+
+        return list;
     }
 }

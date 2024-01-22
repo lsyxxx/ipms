@@ -2,7 +2,9 @@ package com.abt.chemicals.controller;
 
 import com.abt.chemicals.entity.ChemicalType;
 import com.abt.chemicals.entity.Company;
+import com.abt.chemicals.entity.Product;
 import com.abt.chemicals.service.BasicDataService;
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +67,7 @@ public class BasicDataController {
      */
     @PostMapping("/type/edit")
     public R<ChemicalType> editType(@RequestBody ChemicalType typeForm) {
-        final ChemicalType type = basicDataService.editType(typeForm);
+        final ChemicalType type = basicDataService.saveType(typeForm);
         return R.success(type);
     }
 
@@ -76,26 +78,34 @@ public class BasicDataController {
     }
 
     @GetMapping("/com/search")
-    public R<List<Company>> queryCompany(@RequestParam String type, @RequestParam String name) {
-        final List<Company> list = basicDataService.queryCompany(type, name);
+    public R<List<Company>> queryCompany(@RequestParam(required = false) String type, @RequestParam(required = false, defaultValue = "") String name,
+                                         @RequestParam(required = false) Boolean enable,
+                                         @RequestParam(required = false) int page, @RequestParam(required = false, defaultValue = "0") int size) {
+        final List<Company> list = basicDataService.dynamicCompanyQuery(name, type, enable, page, size);
         return R.success(list, list.size());
     }
 
     @PostMapping("/com/edit")
-    public R<Company> editCompany(@RequestBody Company form) {
-        final Company company = basicDataService.editCompany(form);
+    public R<Company> editCompany(@RequestBody @Validated(ValidateGroup.Update.class) Company form) {
+        final Company company = basicDataService.saveCompany(form);
         return R.success(company);
     }
 
     @PostMapping("/com/add")
     public R<Company> addCompany(@RequestBody @Validated(ValidateGroup.Insert.class) Company form) {
-        final Company company = basicDataService.editCompany(form);
+        final Company company = basicDataService.saveCompany(form);
         return R.success(company);
     }
 
     @GetMapping("/com/del")
-    public R deleteCompany(@RequestParam String id) {
+    public R<Object> deleteCompany(@RequestParam String id) {
         basicDataService.deleteCompany(id);
+        return R.success();
+    }
+
+    @PostMapping("/prd/add")
+    public R<Object> add(@RequestBody Product form) {
+        basicDataService.saveProduct(form);
         return R.success();
     }
 

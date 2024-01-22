@@ -1,4 +1,4 @@
-package com.abt.chemicals.controller;
+package com.abt.common.config;
 
 import jakarta.validation.GroupSequence;
 

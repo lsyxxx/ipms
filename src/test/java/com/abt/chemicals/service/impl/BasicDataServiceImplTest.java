@@ -1,6 +1,7 @@
 package com.abt.chemicals.service.impl;
 
 import com.abt.chemicals.entity.ChemicalType;
+import com.abt.chemicals.entity.Company;
 import com.abt.chemicals.repository.TypeRepository;
 import com.abt.chemicals.service.BasicDataService;
 import lombok.extern.slf4j.Slf4j;
@@ -76,11 +77,18 @@ class BasicDataServiceImplTest {
         form.setName("测试111222");
         form.setLevel(2);
         form.setParentId("e70834af-3307-42bf-829b-6403a3ef9df4");
-        basicDataService.editType(form);
+        basicDataService.saveType(form);
     }
 
     @Test
     void queryCompany() {
         basicDataService.queryAllCompanyByType("producer");
+    }
+
+    @Test
+    void dynamicCompanyQuery() {
+        final List<Company> companies = basicDataService.dynamicCompanyQuery("", null, true, 0, 100);
+        companies.forEach(i -> log.info(i.toString()));
+
     }
 }

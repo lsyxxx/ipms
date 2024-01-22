@@ -1,6 +1,6 @@
 package com.abt.chemicals.entity;
 
-import com.abt.chemicals.controller.ValidateGroup;
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -9,11 +9,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 公司信息
@@ -50,11 +52,11 @@ public class Company extends AuditInfo {
     private String type;
 
     @Column(name="enable_", columnDefinition="BIT")
-    private boolean enable;
+    private Boolean enable;
 
     @Column(name="sort_", columnDefinition="TINYINT")
     @Max(value = 255, message = "序号最大不能超过255", groups = {ValidateGroup.All.class})
-    private int sort = 0;
+    private Integer sort;
     /**
      * 备注
      */
@@ -70,9 +72,39 @@ public class Company extends AuditInfo {
     public static final String TYPE_BUYER = "buyer";
     public static final String TYPE_PRODUCER = "producer";
 
+    public static boolean validateType(String type) {
+        if (StringUtils.isBlank(type)) {
+            return false;
+        }
+        if (TYPE_BUYER.equals(type) || TYPE_PRODUCER.equals(type)) {
+            return true;
+        }
+        return false;
+    }
+
     @Transient
     private List<Contact> contactList = new ArrayList<>();
     @Transient
     private List<Price> priceList = new ArrayList<>();
+
+    public Company prepare() {
+        if (Objects.isNull(this.enable)) {
+            this.enable = true;
+        }
+        if (Objects.isNull(this.sort)) {
+            this.sort = 1;
+        }
+        return this;
+    }
+
+    public static Company create() {
+        Company company = new Company();
+        company.prepare();
+        return company;
+    }
+
+    public static Company condition() {
+        return new Company();
+    }
 
 }
