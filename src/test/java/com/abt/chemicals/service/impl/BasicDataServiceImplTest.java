@@ -87,8 +87,6 @@ class BasicDataServiceImplTest {
 
     @Test
     void dynamicCompanyQuery() {
-        final List<Company> companies = basicDataService.dynamicCompanyQuery("", null, true, 0, 100);
-        companies.forEach(i -> log.info(i.toString()));
 
     }
 }

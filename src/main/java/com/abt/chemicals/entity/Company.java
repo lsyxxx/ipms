@@ -76,10 +76,7 @@ public class Company extends AuditInfo {
         if (StringUtils.isBlank(type)) {
             return false;
         }
-        if (TYPE_BUYER.equals(type) || TYPE_PRODUCER.equals(type)) {
-            return true;
-        }
-        return false;
+        return TYPE_BUYER.equals(type) || TYPE_PRODUCER.equals(type);
     }
 
     @Transient

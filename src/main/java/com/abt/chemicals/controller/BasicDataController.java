@@ -8,6 +8,7 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -80,11 +81,11 @@ public class BasicDataController {
     @GetMapping("/com/search")
     public R<List<Company>> queryCompany(@RequestParam(required = false) String type, @RequestParam(required = false, defaultValue = "") String name,
                                          @RequestParam(required = false) Boolean enable,
-                                         @RequestParam(required = false) int page, @RequestParam(required = false, defaultValue = "0") int size) {
-        final List<Company> list = basicDataService.dynamicCompanyQuery(name, type, enable, page, size);
-        return R.success(list, list.size());
+                                         @RequestParam(required = false, defaultValue = "0") Integer page, @RequestParam(required = false, defaultValue = "0") Integer size) {
+        final Page<Company> result = basicDataService.dynamicCompanyQuery(name, type, enable, page, size);
+        log.info("total: {}", result.getTotalElements());
+        return R.successPage(result.getContent(), result.getContent().size(), result.getTotalPages(), result.getTotalElements());
     }
-
     @PostMapping("/com/edit")
     public R<Company> editCompany(@RequestBody @Validated(ValidateGroup.Update.class) Company form) {
         final Company company = basicDataService.saveCompany(form);

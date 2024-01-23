@@ -3,6 +3,7 @@ package com.abt.chemicals.service;
 import com.abt.chemicals.entity.ChemicalType;
 import com.abt.chemicals.entity.Company;
 import com.abt.chemicals.entity.Product;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -15,11 +16,9 @@ public interface BasicDataService {
 
     /**
      * 删除一级分类及该分类下所有二级分类
-     *
-     * @param id 一级分类id
-     * @return
+     * @param type1Id 一级分类id
      */
-    long deleteType(String id);
+    long deleteType(String type1Id);
 
     /**
      * save or update
@@ -41,5 +40,5 @@ public interface BasicDataService {
      */
     void saveProduct(Product form);
 
-    List<Company> dynamicCompanyQuery(String name, String type, Boolean enable, int page, int size);
+    Page<Company> dynamicCompanyQuery(String name, String type, Boolean enable, Integer page, Integer size);
 }

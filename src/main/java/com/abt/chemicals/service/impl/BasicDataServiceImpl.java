@@ -264,9 +264,9 @@ public class BasicDataServiceImpl implements BasicDataService {
     }
 
     @Override
-    public List<Company> dynamicCompanyQuery(String name, String type, Boolean enable, int page, int size) {
+    public Page<Company> dynamicCompanyQuery(String name, String type, Boolean enable, Integer page, Integer size) {
         Company condition = Company.condition();
-        List<Company> list = new ArrayList<>();
+        Page<Company> list;
         if (StringUtils.isNotBlank(name)) {
             condition.setName(name);
         }
@@ -282,11 +282,10 @@ public class BasicDataServiceImpl implements BasicDataService {
         Sort sort = Sort.by("type", "sort");
         if (size != QueryConfig.SIZE_QUERY_ALL) {
             PageRequest pageRequest = PageRequest.of(page, size, sort);
-            list = companyRepository.findAll(example, pageRequest).getContent();
+            return companyRepository.findAll(example, pageRequest);
         } else {
-            list = companyRepository.findAll(example, sort);
+            final List<Company> all = companyRepository.findAll(example, sort);
+            return new PageImpl<>(all);
         }
-
-        return list;
     }
 }

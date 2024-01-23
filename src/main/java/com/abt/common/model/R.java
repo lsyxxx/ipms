@@ -38,23 +38,19 @@ public class R<T> {
      * 异常信息
      */
     private String msg;
-    /**
-     * 等于msg，以msg为准
-     * 因为前端有的是msg, 有的是message
-     */
+
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp = LocalDateTime.now();
     private String token;
     private String httpCode;
     /**
-     * 记录条数
+     * 当前页记录条数
      */
     private int count = 0;
     private int page = 1;
-    /**
-     * 单页数量
-     */
+    private int maxPage = 0;
+    private long maxSize = 0;
     public static final int DEFAULT_LIMIT = 20;
     private int limit = DEFAULT_LIMIT;
 
@@ -63,8 +59,6 @@ public class R<T> {
         this.data = data;
         this.code = code;
         this.msg = message;
-//        this.message = message;
-//        this.result = data;
     }
 
     public R(T data, int code, String message, int count) {
@@ -74,7 +68,6 @@ public class R<T> {
         this.msg = message;
         this.count = count;
     }
-
     public R(T data, int code, String message, int count, int limit) {
         super();
         this.data = data;
@@ -84,7 +77,7 @@ public class R<T> {
         this.limit = limit;
     }
 
-    public R(T data, int code, String message, int count, int page, int limit) {
+    public R(T data, int code, String message, int count, int page, int limit, int maxPage, long maxSize) {
         super();
         this.data = data;
         this.code = code;
@@ -92,6 +85,8 @@ public class R<T> {
         this.count = count;
         this.page = page;
         this.limit = limit;
+        this.maxPage = maxPage;
+        this.maxSize = maxSize;
     }
 
     public T get() {
@@ -108,17 +103,19 @@ public class R<T> {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
     }
 
+    public static<T> R<T> successPage(T data, int count, int maxPage, long maxSize) {
+        final R<T> r = new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
+        r.setMaxPage(maxPage);
+        r.setMaxSize(maxSize);
+        return r;
+    }
+
     public static<T> R<T> success(T data, int count, String msg) {
         return new R<>(data, ResCode.SUCCESS.getCode(), msg, count);
     }
 
     public static<T> R<T> success(T data, int count, int limit) {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count, limit);
-    }
-
-
-    public static<T> R<T> success(T data, int count, int page, int limit) {
-        return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count, page, limit);
     }
 
     public static<T> R<T> success() {
