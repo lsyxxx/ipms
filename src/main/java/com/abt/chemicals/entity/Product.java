@@ -44,13 +44,13 @@ public class Product extends AuditInfo {
     private String manufacturing;
 
     @Transient
-    private List<String> standards = new ArrayList<>();
+    private List<Standard> standards = new ArrayList<>();
 
     @Transient
-    private List<String> mainMaterial = new ArrayList<>();
+    private List<Material> mainMaterial = new ArrayList<>();
 
     @Transient
-    private List<String> auxMaterial = new ArrayList<>();
+    private List<Material> auxMaterial = new ArrayList<>();
 
     @Transient
     private List<Company> producers = new ArrayList<>();

@@ -12,10 +12,7 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,9 +30,11 @@ public class BasicDataServiceImpl implements BasicDataService {
     private final PriceRepository priceRepository;
     private final ContactRepository contactRepository;
 
+    private final StandardRepository standardRepository;
+
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
-    public BasicDataServiceImpl(TypeRepository typeRepository, CompanyRepository companyRepository, ProductRepository productRepository, MaterialRepository materialRepository, CompanyRelationRepository companyRelationRepository, PriceRepository priceRepository, ContactRepository contactRepository) {
+    public BasicDataServiceImpl(TypeRepository typeRepository, CompanyRepository companyRepository, ProductRepository productRepository, MaterialRepository materialRepository, CompanyRelationRepository companyRelationRepository, PriceRepository priceRepository, ContactRepository contactRepository, StandardRepository standardRepository) {
         this.typeRepository = typeRepository;
         this.companyRepository = companyRepository;
         this.productRepository = productRepository;
@@ -43,6 +42,7 @@ public class BasicDataServiceImpl implements BasicDataService {
         this.companyRelationRepository = companyRelationRepository;
         this.priceRepository = priceRepository;
         this.contactRepository = contactRepository;
+        this.standardRepository = standardRepository;
     }
 
 
@@ -170,17 +170,60 @@ public class BasicDataServiceImpl implements BasicDataService {
 
 
     @Override
-    public void saveProduct(Product form) {
+    public Product saveProduct(Product form) {
         Product product = productRepository.save(form);
         form.setId(product.getId());
-        final List<Material> materials = createMaterials(form);
-        materialRepository.saveAllAndFlush(materials);
+
+        final List<Material> materials = saveMaterials(form);
+        List<Standard> standards = createStandards(form);
+        standards = standardRepository.saveAllAndFlush(standards);
+
         final List<CompanyRelation> relations = createCompanyRelations(form);
         companyRelationRepository.saveAllAndFlush(relations);
-        final List<Price> price = createPrice(form);
-        priceRepository.saveAllAndFlush(price);
-        final List<Contact> contact = createContact(form);
-        contactRepository.saveAllAndFlush(contact);
+        List<Company> company = companyRelationRepository.findCompanyByChemicalId(form.getId());
+
+        List<Price> price = createPrice(form);
+        price = priceRepository.saveAllAndFlush(price);
+
+         List<Contact> contact = createContact(form);
+        contact = contactRepository.saveAllAndFlush(contact);
+        buildProduct(product, standards, materials, company, price, contact);
+
+        return product;
+    }
+
+    private List<Material> saveMaterials(Product form) {
+        final List<Material> materials = createMaterials(form);
+        materialRepository.deleteByChemicalId(form.getId());
+        return materialRepository.saveAllAndFlush(materials);
+    }
+
+    private void buildProduct(Product product, List<Standard> standard, List<Material> materials, List<Company> company, List<Price> price, List<Contact> contact) {
+        String chemicalId = product.getId();
+        product.setStandards(standard);
+        product.setMainMaterial(materials.stream().filter(m -> Material.TYPE_MAIN.equals(m.getType())).collect(Collectors.toList()));
+        product.setAuxMaterial(materials.stream().filter(m -> Material.TYPE_AUX.equals(m.getType())).collect(Collectors.toList()));
+
+        buildCompany(company, price, contact, chemicalId);
+        product.setProducers(company.stream().filter(c -> Company.TYPE_PRODUCER.equals(c.getType())).collect(Collectors.toList()));
+        product.setBuyers((company.stream().filter(c -> Company.TYPE_BUYER.equals(c.getType())).collect(Collectors.toList())));
+    }
+
+    private void buildCompany(List<Company> company, List<Price> price, List<Contact> contact, String chemicalId) {
+        company.forEach(i -> {
+            i.setChemicalId(chemicalId);
+            i.setContactList(contact.stream().filter(c -> c.getCompanyId().equals(i.getId())).collect(Collectors.toList()));
+            i.setPriceList(price.stream().filter(p -> p.getCompanyId().equals(i.getId())).collect(Collectors.toList()));
+        });
+    }
+
+    private List<Standard> createStandards(Product form) {
+        ensureProductId(form.getId());
+        List<Standard> list = new ArrayList<>();
+        form.getStandards().forEach(s -> {
+            list.add(Standard.of(s.getCode(), form.getId(), s.getId()));
+        });
+        return list;
     }
 
     private List<Contact> createContact(Product form) {
@@ -287,5 +330,42 @@ public class BasicDataServiceImpl implements BasicDataService {
             final List<Company> all = companyRepository.findAll(example, sort);
             return new PageImpl<>(all);
         }
+    }
+
+
+    @Override
+    public void saveCompanyRelation(Product form) {
+        if (StringUtils.isNotBlank(form.getId())) {
+            //1. 判断化学品是否保存
+            final boolean hasProduct = productRepository.existsById(form.getId());
+            if (!hasProduct) {
+                saveProduct(form);
+            } else {
+                // 仅保存company relation
+                companyRelationRepository.saveAllAndFlush(createCompanyRelations(form));
+                priceRepository.saveAllAndFlush(createPrice(form));
+                contactRepository.saveAllAndFlush(createContact(form));
+                buil
+            }
+        } else {
+            //新增product
+            saveProduct(form);
+        }
+    }
+
+    public void queryProductById(String id) {
+        final Optional<Product> optionalProduct = productRepository.findById(id);
+        if (optionalProduct.isEmpty()) {
+            throw new BusinessException("未查询到该化学品(id=" + id + ")");
+        }
+        Product product = optionalProduct.get();
+        String chemicalId = product.getId();
+        final List<Material> materials = materialRepository.findByChemicalId(chemicalId);
+        final List<Standard> standards = standardRepository.findByChemicalIdOrderByNameAsc(chemicalId);
+        List<Company> company = companyRelationRepository.findCompanyByChemicalId(chemicalId);
+        final List<Price> prices = priceRepository.findByChemicalIdOrderByCompanyIdAndDateDesc(chemicalId);
+        final List<Contact> contacts = contactRepository.findByChemicalIdOrderByCompanyIdAsc(chemicalId);
+
+        buildProduct(product, standards, materials, company, prices, contacts);
     }
 }

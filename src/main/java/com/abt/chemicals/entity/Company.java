@@ -5,9 +5,7 @@ import com.abt.common.model.AuditInfo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
@@ -72,17 +70,30 @@ public class Company extends AuditInfo {
     public static final String TYPE_BUYER = "buyer";
     public static final String TYPE_PRODUCER = "producer";
 
-    public static boolean validateType(String type) {
-        if (StringUtils.isBlank(type)) {
-            return false;
-        }
-        return TYPE_BUYER.equals(type) || TYPE_PRODUCER.equals(type);
-    }
-
     @Transient
     private List<Contact> contactList = new ArrayList<>();
     @Transient
     private List<Price> priceList = new ArrayList<>();
+    @Transient
+    private String chemicalId;
+
+//    public Company() {
+//        super();
+//    }
+//
+//    public Company(String id, String fullName, String name, String address, String type, Boolean enable, Integer sort, String note, String chemicalId) {
+//        super();
+//        this.id = id;
+//        this.fullName = fullName;
+//        this.name = name;
+//        this.address = address;
+//        this.type = type;
+//        this.enable = enable;
+//        this.sort = sort;
+//        this.note = note;
+//        this.chemicalId = chemicalId;
+//    }
+
 
     public Company prepare() {
         if (Objects.isNull(this.enable)) {
@@ -92,6 +103,13 @@ public class Company extends AuditInfo {
             this.sort = 1;
         }
         return this;
+    }
+
+    public static boolean validateType(String type) {
+        if (StringUtils.isBlank(type)) {
+            return false;
+        }
+        return TYPE_BUYER.equals(type) || TYPE_PRODUCER.equals(type);
     }
 
     public static Company create() {

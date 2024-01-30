@@ -110,6 +110,16 @@ public class BasicDataController {
         return R.success();
     }
 
+    /**
+     * 仅添加单位到化学品
+     * !!form中仅包含需要添加的单位
+     */
+    @PostMapping("/prd/rel/add")
+    public void addCompanyRelation(@RequestBody Product form) {
+//        basicDataService.addCompanyRelation(form);
+//        return R.success();
+    }
+
 
 
 }

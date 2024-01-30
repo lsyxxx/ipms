@@ -28,6 +28,7 @@ public class Price extends AuditInfo {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(name="price", columnDefinition="MONEY")
     private double price;
 
     @Column(name="unit_", columnDefinition="VARCHAR(32)")

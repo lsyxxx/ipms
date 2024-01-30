@@ -38,7 +38,9 @@ public interface BasicDataService {
     /**
      * save or update
      */
-    void saveProduct(Product form);
+    Product saveProduct(Product form);
 
     Page<Company> dynamicCompanyQuery(String name, String type, Boolean enable, Integer page, Integer size);
+
+    void saveCompanyRelation(Product form);
 }
