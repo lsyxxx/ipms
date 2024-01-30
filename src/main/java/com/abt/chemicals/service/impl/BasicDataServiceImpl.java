@@ -193,7 +193,9 @@ public class BasicDataServiceImpl implements BasicDataService {
     }
 
     private List<Material> saveMaterials(Product form) {
-        final List<Material> materials = createMaterials(form);
+        List<Material> materials = new ArrayList<>();
+        materials.addAll(form.getMainMaterial());
+        materials.addAll(form.getAuxMaterial());
         materialRepository.deleteByChemicalId(form.getId());
         return materialRepository.saveAllAndFlush(materials);
     }
@@ -243,22 +245,6 @@ public class BasicDataServiceImpl implements BasicDataService {
                 list.add(i);
             });
         });
-        return list;
-    }
-
-    private List<Material> createMaterials(Product form) {
-        ensureProductId(form.getId());
-        List<Material> list = new ArrayList<>();
-        if (!form.getMainMaterial().isEmpty()) {
-            form.getMainMaterial().forEach(i -> {
-                list.add(Material.of(i, Material.TYPE_MAIN, form.getId()));
-            });
-        }
-        if (!form.getAuxMaterial().isEmpty()) {
-            form.getAuxMaterial().forEach(i -> {
-                list.add(Material.of(i, Material.TYPE_AUX, form.getId()));
-            });
-        }
         return list;
     }
 
@@ -333,26 +319,8 @@ public class BasicDataServiceImpl implements BasicDataService {
     }
 
 
-    @Override
-    public void saveCompanyRelation(Product form) {
-        if (StringUtils.isNotBlank(form.getId())) {
-            //1. 判断化学品是否保存
-            final boolean hasProduct = productRepository.existsById(form.getId());
-            if (!hasProduct) {
-                saveProduct(form);
-            } else {
-                // 仅保存company relation
-                companyRelationRepository.saveAllAndFlush(createCompanyRelations(form));
-                priceRepository.saveAllAndFlush(createPrice(form));
-                contactRepository.saveAllAndFlush(createContact(form));
-                buil
-            }
-        } else {
-            //新增product
-            saveProduct(form);
-        }
-    }
 
+    @Override
     public void queryProductById(String id) {
         final Optional<Product> optionalProduct = productRepository.findById(id);
         if (optionalProduct.isEmpty()) {
