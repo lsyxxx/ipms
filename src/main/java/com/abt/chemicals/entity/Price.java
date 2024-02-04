@@ -48,4 +48,8 @@ public class Price extends AuditInfo {
     @Column(name="chm_id", columnDefinition="VARCHAR(128)")
     private String chemicalId;
 
+    public static Price of(double price, String unit, LocalDate date) {
+        return new Price().setPrice(price).setUnit(unit).setDate(date);
+    }
+
 }

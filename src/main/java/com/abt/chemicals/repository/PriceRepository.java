@@ -9,5 +9,5 @@ import java.util.List;
 public interface PriceRepository extends JpaRepository<Price, String> {
 
     long deleteByCompanyId(@Param("companyId") String companyId);
-    List<Price> findByChemicalIdOrderByCompanyIdAndDateDesc(String chemicalId);
+    List<Price> findByChemicalIdOrderByCompanyIdAsc(String chemicalId);
 }

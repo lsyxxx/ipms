@@ -40,4 +40,16 @@ public class Material {
         m.setName(name).setType(type).setChemicalId(chemicalId);
         return m;
     }
+
+    public static Material main(String name) {
+        Material m = new Material();
+        m.setName(name).setType(TYPE_MAIN);
+        return m;
+    }
+
+    public static Material aux(String name) {
+        Material m = new Material();
+        m.setName(name).setType(TYPE_AUX);
+        return m;
+    }
 }

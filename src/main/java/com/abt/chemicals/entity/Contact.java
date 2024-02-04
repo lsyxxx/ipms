@@ -44,4 +44,8 @@ public class Contact extends AuditInfo {
     private String companyId;
     @Column(name="chm_id", columnDefinition="VARCHAR(128)")
     private String chemicalId;
+
+    public static Contact of(String name, String tel1, String tel2) {
+        return new Contact().setName(name).setTel1(tel1).setTel2(tel2);
+    }
 }

@@ -196,6 +196,7 @@ public class BasicDataServiceImpl implements BasicDataService {
         List<Material> materials = new ArrayList<>();
         materials.addAll(form.getMainMaterial());
         materials.addAll(form.getAuxMaterial());
+        materials.forEach(i -> i.setChemicalId(form.getId()));
         materialRepository.deleteByChemicalId(form.getId());
         return materialRepository.saveAllAndFlush(materials);
     }
@@ -321,7 +322,7 @@ public class BasicDataServiceImpl implements BasicDataService {
 
 
     @Override
-    public void queryProductById(String id) {
+    public Product queryProductById(String id) {
         final Optional<Product> optionalProduct = productRepository.findById(id);
         if (optionalProduct.isEmpty()) {
             throw new BusinessException("未查询到该化学品(id=" + id + ")");
@@ -331,9 +332,11 @@ public class BasicDataServiceImpl implements BasicDataService {
         final List<Material> materials = materialRepository.findByChemicalId(chemicalId);
         final List<Standard> standards = standardRepository.findByChemicalIdOrderByNameAsc(chemicalId);
         List<Company> company = companyRelationRepository.findCompanyByChemicalId(chemicalId);
-        final List<Price> prices = priceRepository.findByChemicalIdOrderByCompanyIdAndDateDesc(chemicalId);
+        final List<Price> prices = priceRepository.findByChemicalIdOrderByCompanyIdAsc(chemicalId);
         final List<Contact> contacts = contactRepository.findByChemicalIdOrderByCompanyIdAsc(chemicalId);
 
         buildProduct(product, standards, materials, company, prices, contacts);
+
+        return product;
     }
 }

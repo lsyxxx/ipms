@@ -58,4 +58,15 @@ public class Product extends AuditInfo {
     @Transient
     private List<Company> buyers = new ArrayList<>();
 
+    public String baseInfo() {
+        return "Product{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", type1='" + type1 + '\'' +
+                ", type2='" + type2 + '\'' +
+                ", usage='" + usage + '\'' +
+                ", manufacturing='" + manufacturing + '\'' +
+                "} ";
+    }
+
 }

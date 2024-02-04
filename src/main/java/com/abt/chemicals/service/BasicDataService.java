@@ -42,5 +42,5 @@ public interface BasicDataService {
 
     Page<Company> dynamicCompanyQuery(String name, String type, Boolean enable, Integer page, Integer size);
 
-    void queryProductById(String id);
+    Product queryProductById(String id);
 }

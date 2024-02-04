@@ -77,24 +77,6 @@ public class Company extends AuditInfo {
     @Transient
     private String chemicalId;
 
-//    public Company() {
-//        super();
-//    }
-//
-//    public Company(String id, String fullName, String name, String address, String type, Boolean enable, Integer sort, String note, String chemicalId) {
-//        super();
-//        this.id = id;
-//        this.fullName = fullName;
-//        this.name = name;
-//        this.address = address;
-//        this.type = type;
-//        this.enable = enable;
-//        this.sort = sort;
-//        this.note = note;
-//        this.chemicalId = chemicalId;
-//    }
-
-
     public Company prepare() {
         if (Objects.isNull(this.enable)) {
             this.enable = true;

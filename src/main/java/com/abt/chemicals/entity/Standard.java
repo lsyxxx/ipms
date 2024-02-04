@@ -65,4 +65,10 @@ public class Standard {
         }
         return standard;
     }
+
+    public static Standard of(String code, String chemicalId, String id, String name) {
+        Standard standard = Standard.of(code, chemicalId, id);
+        standard.setName(name);
+        return standard;
+    }
 }
