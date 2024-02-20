@@ -33,8 +33,6 @@ public class TokenAuthenticationHandler extends SimpleUrlAuthenticationSuccessHa
      * @param request that resulted in an <code>AuthenticationException</code>
      * @param response so that the user agent can begin authentication
      * @param authException that caused the invocation
-     * @throws IOException
-     * @throws ServletException
      */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
@@ -48,8 +46,6 @@ public class TokenAuthenticationHandler extends SimpleUrlAuthenticationSuccessHa
      * @param request that resulted in an <code>AccessDeniedException</code>
      * @param response so that the user agent can be advised of the failure
      * @param accessDeniedException that caused the invocation
-     * @throws IOException
-     * @throws ServletException
      */
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
@@ -64,8 +60,6 @@ public class TokenAuthenticationHandler extends SimpleUrlAuthenticationSuccessHa
      * @param response the response.
      * @param exception the exception which was thrown to reject the authentication
      * request.
-     * @throws IOException
-     * @throws ServletException
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
@@ -79,13 +73,10 @@ public class TokenAuthenticationHandler extends SimpleUrlAuthenticationSuccessHa
      * @param response the response
      * @param authentication the <tt>Authentication</tt> object which was created during
      * the authentication process.
-     * @throws IOException
-     * @throws ServletException
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("认证成功! -- url: {}, token: {}", request.getRequestURI(), authentication.getCredentials());
-//        response.sendRedirect(request.getRequestURI());
         setDefaultTargetUrl(request.getRequestURI());
         super.onAuthenticationSuccess(request, response, authentication);
     }
@@ -99,8 +90,6 @@ public class TokenAuthenticationHandler extends SimpleUrlAuthenticationSuccessHa
     /**
      * Session超时
      * @param event
-     * @throws IOException
-     * @throws ServletException
      */
     @Override
     public void onExpiredSessionDetected(SessionInformationExpiredEvent event) throws IOException, ServletException {

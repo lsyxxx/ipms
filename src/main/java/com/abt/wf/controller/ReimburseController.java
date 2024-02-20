@@ -26,7 +26,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/wf/rbs")
+@RequestMapping("/test/wf/rbs")
 public class ReimburseController {
 
     private final WorkFlowExecutionService workFlowExecutionService;

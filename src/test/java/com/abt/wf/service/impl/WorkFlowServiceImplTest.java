@@ -74,7 +74,6 @@ class WorkFlowServiceImplTest {
 
     @Test
     void approve() {
-
         historyService.createHistoricTaskInstanceQuery().finished().list();
     }
 
