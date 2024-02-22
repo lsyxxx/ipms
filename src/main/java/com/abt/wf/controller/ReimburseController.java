@@ -26,7 +26,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/test/wf/rbs")
+@RequestMapping("/wf/rbs")
 public class ReimburseController {
 
     private final WorkFlowExecutionService workFlowExecutionService;
@@ -46,11 +46,29 @@ public class ReimburseController {
             return R.fail("报销金额必填，且不能小于0");
         }
         //preview
-        final String previewId = workFlowExecutionService.previewFlow(rbsApplyForm);
-        final List<ApprovalTask> previewList = workFlowQueryService.queryProcessInstanceLog(previewId);
-
+        final List<ApprovalTask> previewList = workFlowExecutionService.previewFlow(rbsApplyForm);
         //Necessary params: assigneeName, executeTime, taskName, comment,
         return R.success(previewList, previewList.size());
+    }
+
+    /**
+     * 暂存表单，不校验
+     */
+    @PostMapping("/tempsave")
+    public R<String> tempSave(@RequestBody ReimburseApplyForm form) {
+        getUserFromToken(form);
+        final String rbsId = reimburseService.tempSave(form);
+        return R.success(rbsId);
+    }
+
+    /**
+     * 读取
+     * @param rbsId
+     */
+    @PostMapping("/load/{rbsId}")
+    public void load(@PathVariable String rbsId) {
+        UserView userView = TokenUtil.getUserFromAuthToken();
+
     }
     
 

@@ -129,6 +129,7 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
                 BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(processDefinitionKey);
                 final Collection<CamundaProperty> extensionProperties = queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, taskDefId);
                 approvalTask.setProperties(extensionProperties);
+                map.put(taskDefId, approvalTask);
             }
             if (StringUtils.isNotBlank(dto.getAssigneeId())) {
                 final User simpleUserInfo = sqlServerUserService.getSimpleUserInfo(new User(dto.getAssigneeId()));
@@ -142,14 +143,13 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
 
 
 
-    public Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
+    public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
         UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
         ExtensionElements extensionElements = userTaskModel.getExtensionElements();
-        Collection<CamundaProperty> properties = extensionElements.getElementsQuery()
+        return extensionElements.getElementsQuery()
                 .filterByType(CamundaProperties.class)
                 .singleResult()
                 .getCamundaProperties();
-        return properties;
     }
 
 

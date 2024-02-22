@@ -1,10 +1,14 @@
 package com.abt.wf.serivce.impl;
 
+import com.abt.common.model.User;
+import com.abt.sys.exception.BusinessException;
+import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.exception.RequiredParameterException;
 import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseApplyForm;
+import com.abt.wf.model.TaskDTO;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +17,22 @@ import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
+import org.camunda.bpm.impl.juel.ExpressionFactoryImpl;
+import org.camunda.bpm.impl.juel.SimpleContext;
+import org.camunda.bpm.impl.juel.jakarta.el.ExpressionFactory;
+import org.camunda.bpm.impl.juel.jakarta.el.ValueExpression;
+import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.model.bpmn.impl.instance.StartEventImpl;
+import org.camunda.bpm.model.bpmn.instance.*;
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,17 +51,23 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     private final IdentityService identityService;
 
     private final RepositoryService repositoryService;
+    private final Map<String, BpmnModelInstance> bpmnModelInstanceMap;
+    private final Map<String, ProcessDefinition> processDefinitionMap;
+    private final UserService<User, User> userService;
 
     public static final String VARS_ENTITY_ID = "entityId";
 
 
-    public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, ReimburseService reimburseService, IdentityService identityService, RepositoryService repositoryService) {
+    public WorkFlowExecutionServiceImpl(RuntimeService runtimeService, TaskService taskService, HistoryService historyService, ReimburseService reimburseService, IdentityService identityService, RepositoryService repositoryService, @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap, @Qualifier("processDefinitionMap") Map<String, ProcessDefinition> processDefinitionMap, @Qualifier("sqlServerUserService") UserService userService) {
         this.runtimeService = runtimeService;
         this.taskService = taskService;
         this.historyService = historyService;
         this.reimburseService = reimburseService;
         this.identityService = identityService;
         this.repositoryService = repositoryService;
+        this.bpmnModelInstanceMap = bpmnModelInstanceMap;
+        this.processDefinitionMap = processDefinitionMap;
+        this.userService = userService;
     }
 
     /**
@@ -59,8 +81,7 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     /**
      * 预览流程图
      */
-    @Override
-    public String previewFlow(ReimburseApplyForm form) {
+    public String previewFlow2(ReimburseApplyForm form) {
         log.info("预览流程图...previewProcessInstanceId: {}", form.getPreviewInstanceId());
         if (StringUtils.isNotBlank(form.getPreviewInstanceId())) {
             try {
@@ -91,16 +112,123 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         return procId;
     }
 
+
+    @Override
+    public List<ApprovalTask> previewFlow(ReimburseApplyForm form) {
+        String procDefKey = form.getProcessDefinitionKey();
+        if (StringUtils.isBlank(procDefKey)) {
+            throw new BusinessException("未获取到流程定义key(processDefinitionKey)");
+        }
+
+        Map<String, Object> vars = form.variableMap();
+        BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
+        final Collection<StartEvent> startEvents = bpmnModelInstance.getModelElementsByType(StartEvent.class);
+        StartEventImpl startEvent = (StartEventImpl) startEvents.iterator().next();
+        List<FlowNode> previewList = new ArrayList<>();
+        findActivityNodes(startEvent, previewList, vars);
+
+        //生成返回给前端的对象
+        List<ApprovalTask> list = new ArrayList<>();
+        for(FlowNode node : previewList) {
+            ApprovalTask task = new ApprovalTask();
+            TaskDTO dto = new TaskDTO();
+            dto.setProcessDefinitionKey(procDefKey);
+            dto.setProcessDefinitionId(form.getProcessDefinitionId());
+            dto.setTaskDefKey(node.getId());
+            dto.setTaskDefName(node.getName());
+            if (node instanceof UserTask u) {
+                final Collection<CamundaProperty> extensionProperties = WorkFlowQueryServiceImpl.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, node.getId());
+                task.setProperties(extensionProperties);
+                if (task.isApplyNode()) {
+                    dto.setAssigneeId(form.getUserid());
+                    dto.setAssigneeName(form.getUsername());
+                } else {
+                    String assigneeId = u.getCamundaAssignee();
+                    //TODO: ${manager}也会作为assignee
+                    final User simpleUserInfo = userService.getSimpleUserInfo(new User(assigneeId));
+                    dto.setAssigneeId(assigneeId);
+                    dto.setAssigneeName(simpleUserInfo.getUsername());
+                }
+            }
+            task.addTask(dto);
+            task.setTaskDefId(node.getId());
+            task.setTaskDefName(node.getName());
+            list.add(task);
+        }
+        return list;
+    }
+
+
+    /**
+     * 递归查找node
+     * @param startNode 起始node，一般为startEvent
+     * @param list 查找的所有node集合
+     * @param vars 流程参数
+     */
+    public void findActivityNodes(FlowNode startNode, List<FlowNode> list, Map<String, Object> vars) {
+        list.add(startNode);
+        final FlowNode nextNode = findUniqueNode(startNode, vars);
+        if (nextNode != null) {
+            findActivityNodes(nextNode, list, vars);
+        }
+    }
+
+    /**
+     * 根据流程参数寻找node连接的唯一node
+     * @param node 起始node
+     * @param vars 流程参数map
+     * @return 连接node
+     */
+    public FlowNode findUniqueNode(FlowNode node, Map<String, Object> vars) {
+        final Collection<SequenceFlow> outgoing = node.getOutgoing();
+        if (outgoing.isEmpty()) {
+            return null;
+        } else if (outgoing.size() == 1) {
+            return node.getSucceedingNodes().singleResult();
+        } else {
+            //多条连线
+            ExpressionFactory factory = new ExpressionFactoryImpl();
+            SimpleContext context = new SimpleContext();
+            for (SequenceFlow sequenceFlow : outgoing) {
+                final ConditionExpression conditionExpression = sequenceFlow.getConditionExpression();
+                if (conditionExpression == null) {
+                    //没有表达式
+                    continue;
+                }
+                final String type = conditionExpression.getType();
+                if (!"bpmn:tFormalExpression".equals(type)) {
+                    throw new BusinessException("条件不是juel表达式，无法解析 - " + conditionExpression.getTextContent());
+                }
+                //--- 暂时仅解析el表达式
+                //其他类型可能需要用到elResolver
+                final String text = conditionExpression.getTextContent();
+                for(Map.Entry<String, Object> entry : vars.entrySet()) {
+                    String k = entry.getKey();
+                    //判断表达式中是否包含参数。
+                    //不包含的话，exp.getValue(context) 报错：找不到property
+                    if (text.contains(k)) {
+                        Object v = entry.getValue();
+                        context.setVariable(k, factory.createValueExpression(v, v.getClass()));
+                        ValueExpression exp = factory.createValueExpression(context, conditionExpression.getTextContent(), Boolean.class);
+                        Object value = exp.getValue(context);
+                        String result = value.toString();
+                        if (Boolean.parseBoolean(result)) {
+                            return sequenceFlow.getTarget();
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+
     public String userApplyBusinessKey(String username, String userid) {
         return "USER_APPLY_" + userid + "_" + username;
     }
 
 
-    /**
-     * 申请
-     * @param form 申请表单
-     * @return 业务实体
-     */
     @Override
     @Transactional
     public Reimburse apply(ReimburseApplyForm form) {
@@ -188,12 +316,5 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         }
         throw new RequiredParameterException("ProcessDefinitionKey(流程定义key)");
     }
-
-    public ApprovalTask createApprovalTask() {
-        ApprovalTask approvalTask = new ApprovalTask();
-        return approvalTask;
-    }
-
-
 
 }

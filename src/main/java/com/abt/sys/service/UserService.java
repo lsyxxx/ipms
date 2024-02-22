@@ -9,6 +9,7 @@ import java.util.Optional;
 /**
  * 基本用户信息
  * @param <T> 用户对象
+ * @param <E> 查询条件
  */
 public interface UserService<T, E> {
 
@@ -21,9 +22,6 @@ public interface UserService<T, E> {
 
      /**
       * 从request header中获取token
-      *
-      * @param request
-      * @return
       */
      WebApiToken getToken(HttpServletRequest request);
 

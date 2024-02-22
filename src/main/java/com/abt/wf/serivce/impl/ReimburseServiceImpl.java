@@ -1,5 +1,6 @@
 package com.abt.wf.serivce.impl;
 
+import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseApplyForm;
@@ -70,6 +71,20 @@ public class ReimburseServiceImpl implements ReimburseService {
     @Override
     public List<FlowSetting> queryRbsTypes() {
         return this.queryReimburseType;
+    }
+
+
+
+
+    @Override
+    public String tempSave(ReimburseApplyForm form) {
+        Reimburse rbs = Reimburse.createTemp(form);
+        return rbs.getId();
+    }
+
+
+    public void load(String rbsId, UserView userView) {
+        final Optional<Reimburse> entity = reimburseRepository.findById(rbsId);
     }
 
 }

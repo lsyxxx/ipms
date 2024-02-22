@@ -41,6 +41,9 @@ public class ApprovalTask {
     private String processDefKey;
     private String processDefId;
 
+    public static final String TASK_TYPE_APPLY = "apply";
+    public static final String TASK_TYPE_APPROVAL = "approval";
+
     public ApprovalTask setProperties(Collection<CamundaProperty> collection) {
         collection.forEach(i -> {
             final String name = i.getCamundaName();
@@ -58,5 +61,20 @@ public class ApprovalTask {
     public ApprovalTask addTask(TaskDTO dto) {
         this.taskList.add(dto);
         return this;
+    }
+
+
+    /**
+     * 是否是申请节点
+     */
+    public boolean isApplyNode() {
+        return TASK_TYPE_APPLY.equals(this.taskType);
+    }
+
+    /**
+     * 是否审批节点
+     */
+    public boolean isApprovalNode() {
+        return TASK_TYPE_APPROVAL.equals(this.taskType);
     }
 }

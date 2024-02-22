@@ -68,6 +68,7 @@ public class Reimburse extends AuditInfo {
      * 0：审批中
      * 1. 已通过(整个流程完成)
      * 2. 已拒绝(整个流程完成)
+     * 99. 暂存
      */
     @Column(name="state_", columnDefinition="TINYINT")
     private int state;
@@ -95,6 +96,8 @@ public class Reimburse extends AuditInfo {
     public static final int STATE_PASS = 1;
     public static final int STATE_REJECT = 2;
 
+    public static final int STATE_TEMP = 99;
+
 
 
     /**
@@ -117,6 +120,12 @@ public class Reimburse extends AuditInfo {
         rbs.setState(STATE_APPROVING);
         rbs.setRbsType(form.getRbsType());
 
+        return rbs;
+    }
+
+    public static Reimburse createTemp(ReimburseApplyForm form) {
+        Reimburse rbs = create(form);
+        rbs.setState(Reimburse.STATE_TEMP);
         return rbs;
     }
 

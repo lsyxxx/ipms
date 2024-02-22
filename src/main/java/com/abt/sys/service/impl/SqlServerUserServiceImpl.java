@@ -46,8 +46,7 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
 
     @Override
     public User getSimpleUserInfo(User user) {
-        final User simpleUserInfo = userRepository.getSimpleUserInfo(user.getId());
-        return simpleUserInfo;
+        return userRepository.getSimpleUserInfo(user.getId());
     }
 
 }

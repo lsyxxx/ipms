@@ -24,4 +24,15 @@ public interface ReimburseService {
     List<ReimburseDTO> queryByStater(String starterId);
 
     List<FlowSetting> queryRbsTypes();
+
+    /**
+     * 暂存
+     * 1. 暂存表单信息(但是不校验必填信息)
+     * 2. 暂存附件
+     * 3. 无流程信息
+     * 4. 状态为暂存
+     * 5. 生成一个wf_rbs的ID
+     * @param form 申请表单
+     */
+    String tempSave(ReimburseApplyForm form);
 }
