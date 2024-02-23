@@ -44,6 +44,15 @@ public class ApprovalTask {
     public static final String TASK_TYPE_APPLY = "apply";
     public static final String TASK_TYPE_APPROVAL = "approval";
 
+    /**
+     * 选择用户方式-用户自选
+     */
+    public static final int SELECT_USER_TYPE_MANUAL = 0;
+    /**
+     * 选择用户方式-指定用户
+     */
+    public static final int SELECT_USER_TYPE_SPECIFIC = 1;
+
     public ApprovalTask setProperties(Collection<CamundaProperty> collection) {
         collection.forEach(i -> {
             final String name = i.getCamundaName();
@@ -56,6 +65,10 @@ public class ApprovalTask {
             }
         });
         return this;
+    }
+
+    public boolean isSpecific() {
+        return SELECT_USER_TYPE_SPECIFIC == this.selectUserType;
     }
 
     public ApprovalTask addTask(TaskDTO dto) {

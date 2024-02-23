@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.Assert;
 
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ class WorkFlowServiceImplTest {
         this.repositoryService = processEngine.getRepositoryService();
     }
 
-    ProcessEngine init() {
+    ProcessEngine init2() {
         return ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
                 .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE)
                 .setJdbcUrl("jdbc:mysql://localhost:3306/camunda?useUnicode=true&character_set_server=utf8mb4&allowMutiQueries=true")
@@ -55,19 +56,35 @@ class WorkFlowServiceImplTest {
                 .buildProcessEngine();
     }
 
+    ProcessEngine init() {
+        return ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
+                .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE)
+                .setJdbcUrl("jdbc:sqlserver://localhost:1433;database=abt_biz;trustServerCertificate=true")
+                .setJdbcDriver("com.microsoft.sqlserver.jdbc.SQLServerDriver")
+                .setJdbcUsername("sa")
+                .setJdbcPassword("123456")
+                .setJobExecutorActivate(false)
+                .setHistory(HISTORY_FULL)
+                .buildProcessEngine();
+    }
+
     @AfterEach
     void tearDown() {
     }
 
+    void deploy() {
+    }
+
 
     @Test
-    @Deployment(resources = "rbsAll2.bpmn")
+    @Deployment(resources = "rbsMulti.bpmn")
     void apply() {
         Map<String, Object> vars = new HashMap<>();
         vars.put("isLeader", true);
         vars.put("cost", 60000.00);
-        vars.put("starter", "user_starter");
+        vars.put("starter", "abt112");
 //        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("rbsAll2", vars);
+
 
 
     }

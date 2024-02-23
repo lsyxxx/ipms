@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * 查询用户信息
@@ -29,13 +30,18 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public User getSimpleUserInfo(String userId) {
-        return jdbcTemplate.queryForObject("select [Id], [Account], [Name] from [dbo].[User] where Id = ?", (rs, rowNum) -> {
+        List<User> list = jdbcTemplate.query("select [Id], [Account], [Name] from [dbo].[User] where Id = ?", (rs, rowNum) -> {
             User user = new User();
             user.setCode(rs.getString("Account"));
             user.setId(rs.getString("Id"));
             user.setUsername(rs.getString("Name"));
             return user;
         }, userId);
+        if (list.isEmpty()) {
+            return null;
+        } else {
+            return list.get(0);
+        }
     }
 
     class UserViewRowMapper implements RowMapper<UserView> {

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -126,6 +127,8 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         StartEventImpl startEvent = (StartEventImpl) startEvents.iterator().next();
         List<FlowNode> previewList = new ArrayList<>();
         findActivityNodes(startEvent, previewList, vars);
+        //去掉startEvent和endEvent
+        previewList = previewList.stream().filter(i -> !(i instanceof StartEvent && i instanceof EndEvent)).collect(Collectors.toList());
 
         //生成返回给前端的对象
         List<ApprovalTask> list = new ArrayList<>();
@@ -144,10 +147,17 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
                     dto.setAssigneeName(form.getUsername());
                 } else {
                     String assigneeId = u.getCamundaAssignee();
-                    //TODO: ${manager}也会作为assignee
-                    final User simpleUserInfo = userService.getSimpleUserInfo(new User(assigneeId));
-                    dto.setAssigneeId(assigneeId);
-                    dto.setAssigneeName(simpleUserInfo.getUsername());
+                    //指定用户才能解析
+                    if (task.isSpecific()) {
+                        final User simpleUserInfo = userService.getSimpleUserInfo(new User(assigneeId));
+                        if (simpleUserInfo != null) {
+                            dto.setAssigneeId(assigneeId);
+                            dto.setAssigneeName(simpleUserInfo.getUsername());
+                        } else {
+                            log.warn("未查询到用户-" + assigneeId);
+                        }
+                    }
+
                 }
             }
             task.addTask(dto);
@@ -155,7 +165,8 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
             task.setTaskDefName(node.getName());
             list.add(task);
         }
-        return list;
+
+         return list;
     }
 
 
