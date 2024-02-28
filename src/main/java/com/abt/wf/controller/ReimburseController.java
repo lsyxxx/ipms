@@ -47,18 +47,7 @@ public class ReimburseController {
         }
         //preview
         final List<ApprovalTask> previewList = workFlowExecutionService.previewFlow(rbsApplyForm);
-        //Necessary params: assigneeName, executeTime, taskName, comment,
         return R.success(previewList, previewList.size());
-    }
-
-    /**
-     * 暂存表单，不校验
-     */
-    @PostMapping("/tempsave")
-    public R<String> tempSave(@RequestBody ReimburseApplyForm form) {
-        getUserFromToken(form);
-        final String rbsId = reimburseService.tempSave(form);
-        return R.success(rbsId);
     }
 
     /**

@@ -4,7 +4,7 @@ import com.abt.common.model.User;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Reimburse;
-import com.abt.wf.exception.RequiredParameterException;
+import com.abt.wf.exception.MissingRequiredParameterException;
 import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseApplyForm;
@@ -79,41 +79,6 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         return "PREVIEW_" + username + "_" + procDefId;
     }
 
-    /**
-     * 预览流程图
-     */
-    public String previewFlow2(ReimburseApplyForm form) {
-        log.info("预览流程图...previewProcessInstanceId: {}", form.getPreviewInstanceId());
-        if (StringUtils.isNotBlank(form.getPreviewInstanceId())) {
-            try {
-                log.trace("删除已有预览图, 重新生成预览图...");
-                //已有预览流程图则删除
-                historyService.deleteHistoricProcessInstance(form.getPreviewInstanceId());
-            } catch (Exception e) {
-                log.error("删除预览流程失败! - ", e);
-            }
-        }
-        Map<String, Object> vars = form.variableMap();
-        if (StringUtils.isBlank(form.getProcessDefinitionId())) {
-            final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().singleResult();
-            form.setProcessDefinitionId(processDefinition.getId());
-        }
-        final String businessKey = previewBusinessKey(form.getUsername(), form.getProcessDefinitionId());
-        final ProcessInstance previewInstance = runtimeService.startProcessInstanceByKey(form.getProcessDefinitionKey(), businessKey, vars);
-        String procId = previewInstance.getId();
-        Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
-        while(task != null) {
-            if (task.getTaskDefinitionKey().contains("apply")) {
-                task.setAssignee(form.getUserid());
-                taskService.saveTask(task);
-            }
-            taskService.complete(task.getId(), vars);
-            task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
-        }
-        return procId;
-    }
-
-
     @Override
     public List<ApprovalTask> previewFlow(ReimburseApplyForm form) {
         String procDefKey = form.getProcessDefinitionKey();
@@ -128,7 +93,7 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         List<FlowNode> previewList = new ArrayList<>();
         findActivityNodes(startEvent, previewList, vars);
         //去掉startEvent和endEvent
-        previewList = previewList.stream().filter(i -> !(i instanceof StartEvent && i instanceof EndEvent)).collect(Collectors.toList());
+        previewList = previewList.stream().filter(i -> !(i instanceof StartEvent || i instanceof EndEvent)).collect(Collectors.toList());
 
         //生成返回给前端的对象
         List<ApprovalTask> list = new ArrayList<>();
@@ -311,21 +276,21 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         if (StringUtils.isNotBlank(form.getProcessInstanceId())) {
             return;
         }
-        throw new RequiredParameterException("ProcessInstanceId(流程实例id)");
+        throw new MissingRequiredParameterException("ProcessInstanceId(流程实例id)");
     }
 
     public static void ensureProcessDefinitionId(ReimburseApplyForm form) {
         if (StringUtils.isNotBlank(form.getProcessDefinitionId())) {
             return;
         }
-        throw new RequiredParameterException("ProcessDefinitionId(流程定义id)");
+        throw new MissingRequiredParameterException("ProcessDefinitionId(流程定义id)");
     }
 
     public static void ensureProcessDefinitionKey(ReimburseApplyForm form) {
         if (StringUtils.isNotBlank(form.getProcessDefinitionKey())) {
             return;
         }
-        throw new RequiredParameterException("ProcessDefinitionKey(流程定义key)");
+        throw new MissingRequiredParameterException("ProcessDefinitionKey(流程定义key)");
     }
 
 }

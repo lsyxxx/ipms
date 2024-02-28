@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -29,20 +30,41 @@ public class FileUtil {
         }
     }
 
-    public static void saveFile(MultipartFile file, String path) {
-        if (file == null) {
-            return;
+    public static boolean deleteFile(String path) {
+        Assert.hasLength(path, "文件路径不能为空");
+        File file = new File(path);
+        if (file.exists()) {
+            return file.delete();
         }
+        return false;
+    }
+
+    /**
+     * 重命名文件，防止文件名重复
+     * @param originalFileName 原文件名，带后缀
+     */
+    public static String rename(String originalFileName) {
+        return TimeUtil.idGenerator() + originalFileName;
+    }
+
+    public static String saveFile(MultipartFile file, String path, boolean isRename) {
+        if (file == null) {
+            return "";
+        }
+
 
         String fileName = file.getOriginalFilename();
         File directory = new File(path);
         if (!directory.exists()) {
             directory.mkdirs();
         }
-
+        if (isRename) {
+            fileName = rename(fileName);
+        }
         File dest = new File(directory, fileName);
         try {
             file.transferTo(dest);
+            return fileName;
         } catch (IOException e) {
             log.error("保存文件失败", e);
             throw new BusinessException(e);

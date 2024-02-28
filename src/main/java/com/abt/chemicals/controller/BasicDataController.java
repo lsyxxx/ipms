@@ -6,12 +6,15 @@ import com.abt.chemicals.entity.Product;
 import com.abt.chemicals.service.BasicDataService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.http.HttpRequest;
 import java.util.List;
 
 /**
@@ -115,7 +118,6 @@ public class BasicDataController {
         final Product product = basicDataService.queryProductById(id);
         return R.success(product);
     }
-
 
 
 }

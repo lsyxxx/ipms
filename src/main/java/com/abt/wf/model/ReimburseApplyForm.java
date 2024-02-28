@@ -47,10 +47,6 @@ public class ReimburseApplyForm {
     private String username;
     private List<String> managerList;
 
-    /**
-     * 预览生成的流程实例的id
-     */
-    private String previewInstanceId;
 
     private String processInstanceId;
 

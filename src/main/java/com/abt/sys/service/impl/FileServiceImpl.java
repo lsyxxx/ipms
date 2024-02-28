@@ -1,21 +1,15 @@
 package com.abt.sys.service.impl;
 
-import com.abt.common.model.RequestFile;
 import com.abt.common.util.FileUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.sys.exception.SystemFileNotFoundException;
-import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.SystemFile;
-import com.abt.sys.repository.SystemFileRepository;
 import com.abt.sys.service.IFileService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -27,48 +21,24 @@ public class FileServiceImpl implements IFileService {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 
-    private final SystemFileRepository systemFileRepository;
-
-    public FileServiceImpl(SystemFileRepository systemFileRepository) {
-        this.systemFileRepository = systemFileRepository;
+    /**
+     * 仅保存文件到服务器，不保存信息到数据库
+     * @param file 文件
+     * @param filePath 公共目录
+     * @return SystemFile 保存文件的信息
+     */
+    @Override
+    public SystemFile saveFile(MultipartFile file, String filePath, String service, boolean isRename) {
+        SystemFile systemFile = new SystemFile(file, service, filePath);
+        final String newName = FileUtil.saveFile(file, systemFile.getUrl(), isRename);
+        systemFile.rename(newName);
+        return systemFile;
     }
 
     @Override
-    public SystemFile saveFile(UserView user, MultipartFile file, RequestFile requestFile) {
-        log.info("开始执行saveFile()...");
-        if (StringUtils.isBlank(requestFile.getFileName())) {
-            requestFile.setFileName(file.getOriginalFilename());
-        }
-        SystemFile systemFile = new SystemFile(requestFile);
-        systemFile.setOriginalName(file.getOriginalFilename());
-        String path = systemFile.createPath(requestFile.getSavedRoot());
-        systemFile.setUrl(path);
-
-        FileUtil.saveFile(file, systemFile.createPath(requestFile.getSavedRoot()));
-        return systemFileRepository.save(systemFile);
-    }
-
-    @Override
-    public List<SystemFile> findBy(SystemFile condition) {
-        Example<SystemFile> example = Example.of(condition);
-        return systemFileRepository.findAll(example);
-    }
-
-    @Override
-    public void delete(String id, String name) {
-        log.info("开始执行delete()...");
-        final Optional<SystemFile> sysFile = systemFileRepository.findById(id);
-
-        findFileException(sysFile, id, name);
-
-        systemFileRepository.softDelete(id);
-    }
-
-    @Override
-    public SystemFile findById(String id, String name) {
-        final Optional<SystemFile> byId = systemFileRepository.findById(id);
-        findFileException(byId, id, name);
-        return byId.get();
+    public boolean delete(String fullUrl) {
+        log.info("开始执行delete()... fullUrl: {}", fullUrl);
+        return FileUtil.deleteFile(fullUrl);
     }
 
     private void findFileException(Optional<SystemFile> systemFile, String id, String name) {
@@ -77,5 +47,6 @@ public class FileServiceImpl implements IFileService {
             throw new SystemFileNotFoundException(MessageUtil.format("com.abt.sys.FileController.delete.noFile", name));
         }
     }
+
 
 }

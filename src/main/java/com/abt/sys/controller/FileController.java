@@ -33,7 +33,6 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequestMapping("/sys/file")
-@Tag(name = "FileController", description = "文件相关")
 public class FileController {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
@@ -47,35 +46,34 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @Operation(summary = "上传文件")
-    @Parameter(name = "bizType", description = "业务类型")
-    @Parameter(name = "service", description = "应用服务模块")
-    @Parameter(name = "relationId1", description = "关联id1")
-    @Parameter(name = "relationId2", description = "关联id2")
+
+    /**
+     * 上传文件，但不保存文件信息到数据库。仅上传目录
+     * @param files 上传的文件
+     * @param service 文件所属服务
+     */
     @PostMapping("/upload")
-    public R<List<String>> upload(@RequestParam("file") MultipartFile[] files,
-                            @RequestParam String service,
-                            @RequestParam(required = false) String bizType,
-                            @RequestParam(required = false) String relationId1, @RequestParam(required = false) String relationId2) {
+    public R<List<SystemFile>> upload(@RequestParam("file") MultipartFile[] files
+            , @RequestParam("service") String service) {
         UserView user = TokenUtil.getUserFromAuthToken();
         if (files == null || files.length < 1) {
             log.warn("用户没有上传文件");
-            return R.success(messages.getMessage("com.abt.sys.FileController.upload.empty"));
+            return R.noFileUpload();
         }
         String failed = null;
         String msg = null;
-        List<String> fileIds = new ArrayList<>();
+        List<SystemFile> saved = new ArrayList<>();
         for (MultipartFile file : files) {
             if (file.isEmpty()) {
                 continue;
             }
             try {
-                final SystemFile systemFile = fileService.saveFile(user, file, create(bizType, service, relationId1, relationId2));
-                fileIds.add(systemFile.getId());
+                SystemFile systemFile = fileService.saveFile(file, savedRoot, service, true);
+                saved.add(systemFile);
             } catch (Exception e) {
                 log.error("保存文件失败", e);
                 if (failed != null) {
-                    failed = " ," + failed + file.getName();
+                    failed = " ," + failed + file.getOriginalFilename();
                 } else {
                     failed = file.getName();
                 }
@@ -83,30 +81,51 @@ public class FileController {
             }
         }
 
-        return R.success(fileIds, fileIds.size(), msg == null ? ResCode.SUCCESS.getMessage() : msg);
+        return R.success(saved, saved.size(), msg);
     }
 
-    @Operation(summary = "删除一个上传文件")
-    @Parameter(name = "id", description = "文件id")
+    /**
+     * 删除单个文件
+     * @param fullUrl 文件完整地址
+     */
     @GetMapping("/del")
-    public R delete(String id, @RequestParam(required = false) String name) {
-        fileService.delete(id, name);
-        return R.success();
+    public R delete(@RequestParam String fullUrl) {
+        final boolean delete = fileService.delete(fullUrl);
+        if (delete) {
+            return R.success();
+        } else {
+            return R.fail("删除文件失败 - " + fullUrl);
+        }
     }
 
-    @Operation(summary = "下载文件")
-    @Parameter(name = "id", description = "文件id")
-    @GetMapping("/download")
-    public ResponseEntity<Resource> download(String id, @RequestParam(required = false) String name) {
 
-        final SystemFile systemFile = fileService.findById(id, name);
-        String url = systemFile.getUrl();
+    /**
+     * 删除多个为念
+     * @param urlList 文件完整地址集合
+     */
+    public R deleteAll(@RequestParam String[] urlList) {
+        StringBuilder msg = new StringBuilder();
+        for (String url : urlList) {
+            final boolean delete = fileService.delete(url);
+            if (!delete) {
+                msg.append(url).append(" 删除失败");
+            }
+        }
+        if (msg.isEmpty()) {
+            return R.success("删除文件成功");
+        }
+        return R.success(msg);
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<Resource> download(@RequestParam String url, @RequestParam String name) {
+
         File file = new File(url);
 
         // 设置HTTP响应头
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", systemFile.getName());
+        headers.setContentDispositionFormData("attachment", name);
 
         FileSystemResource resource = new FileSystemResource(file);
 
@@ -115,15 +134,5 @@ public class FileController {
                 .body(resource);
     }
 
-
-    private RequestFile create(String bizType, String service, String relationId1, String relationId2) {
-        RequestFile requestFile = new RequestFile();
-        requestFile.setBizType(bizType);
-        requestFile.setService(service);
-        requestFile.setRelationId1(relationId1);
-        requestFile.setRelationId2(relationId2);
-        requestFile.setSavedRoot(savedRoot);
-        return requestFile;
-    }
 
 }

@@ -1,5 +1,6 @@
 package com.abt.common.model;
 
+import com.abt.sys.model.entity.SystemFile;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,6 +15,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 请求返回数据
@@ -25,11 +28,6 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class R<T> {
     private T data;
-    /**
-     * 等于data，以data为准
-     * 因为前端有的是data, 有的是result
-     */
-//    private T result = data;
     /**
      * 业务异常代码
      */
@@ -178,9 +176,15 @@ public class R<T> {
         return new R<>(null, ResCode.FAIL.getCode(), ResCode.FILE_NOT_FOUND.getMessage());
     }
 
+    public static R<List<SystemFile>> noFileUpload() {
+        return new R<>(new ArrayList<>(), ResCode.SUCCESS.getCode(), ResCode.FILE_NOT_FOUND.getMessage(), 0, 0);
+    }
+
     public static<T> R<T> invalidParameters(String message) {
         return new R<>(null, ResCode.BAD_REQUEST.getCode(), message);
     }
+
+
 
 
 
