@@ -68,7 +68,7 @@ public class ReimburseController {
     public R<String> apply(@Validated @RequestBody ReimburseApplyForm form) {
         getUserFromToken(form);
         if (form.getRbsDate() == null) {
-            form.setRbsDate(LocalDateTime.now());
+            form.setRbsDate(LocalDate.now());
         }
         Reimburse reimburse = workFlowExecutionService.apply(form);
         return R.success(reimburse.getProcessInstanceId(), 0);

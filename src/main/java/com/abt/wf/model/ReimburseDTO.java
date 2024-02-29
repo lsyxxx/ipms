@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -21,7 +22,7 @@ public class ReimburseDTO extends TaskDTO{
      * 业务实例id
      */
     private String id;
-    private LocalDateTime rbsDate;
+    private LocalDate rbsDate;
     private String reason;
     private double cost;
     private int stateCode;

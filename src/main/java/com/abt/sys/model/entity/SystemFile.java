@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 /**
  * 文件系统
@@ -57,6 +58,7 @@ public class SystemFile extends AuditInfo {
 
     public SystemFile(MultipartFile file, String service, String filePath) {
         super();
+        this.id = UUID.randomUUID().toString();
         this.originalName = file.getOriginalFilename();
         this.name = file.getOriginalFilename();
         this.service = service;

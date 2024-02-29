@@ -1,6 +1,9 @@
 package com.abt.wf.model;
 
+import com.abt.common.util.JsonUtil;
+import com.abt.sys.model.entity.SystemFile;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -8,7 +11,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +30,14 @@ public class ReimburseApplyForm {
     /**
      * 报销日期
      */
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime rbsDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate rbsDate;
     /**
      * 票据数量
      */
     @Max(value = 99, message = "票据数量不能超过99")
+    @Min(value = 0, message = "票据数量最小为0")
     private int voucherNum;
     /**
      * 报销类型
@@ -63,6 +69,8 @@ public class ReimburseApplyForm {
     private String comment;
     private String decision;
 
+    private List<SystemFile> attachments;
+
     public static final String REJECT = "reject";
     public static final String PASS = "pass";
     public static final String KEY_COST = "cost";
@@ -86,7 +94,6 @@ public class ReimburseApplyForm {
     public boolean isPass() {
         return PASS.equals(this.decision);
     }
-
 
 
 

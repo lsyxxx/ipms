@@ -1,19 +1,31 @@
 package com.abt.common.util;
 
 import com.abt.http.dto.WebApiDto;
+import com.abt.sys.exception.BusinessException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.abt.common.model.R;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *  JSON相关工具类
  */
+@Slf4j
 public class JsonUtil {
 
     public static String toJson(Object object) throws JsonProcessingException {
         ObjectMapper objectMapper = ObjectMapper();
         return objectMapper.writeValueAsString(object);
+    }
+
+    public static String convertJson(Object object) {
+        try {
+            return toJson(object);
+        } catch (Exception e) {
+            log.info("Json转换失败!", e);
+            throw new BusinessException(e.getMessage());
+        }
     }
 
     public static ObjectMapper ObjectMapper() {

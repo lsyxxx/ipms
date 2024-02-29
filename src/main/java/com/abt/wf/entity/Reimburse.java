@@ -1,9 +1,11 @@
 package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.wf.model.ReimburseApplyForm;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,7 +13,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -38,9 +42,9 @@ public class Reimburse extends AuditInfo {
     /**
      * 报销日期
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime rbsDate;
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate rbsDate;
 
     @Column(name="voucher_num", columnDefinition="TINYINT")
     private int voucherNum;
@@ -90,6 +94,12 @@ public class Reimburse extends AuditInfo {
     private LocalDateTime endTime;
 
     /**
+     * 附件信息，json格式保存
+     */
+    @Column(columnDefinition="VARCHAR(1000)")
+    private String fileList;
+
+    /**
      * 审批中
      */
     public static final int STATE_APPROVING = 0;
@@ -119,6 +129,9 @@ public class Reimburse extends AuditInfo {
         rbs.setStartTime(LocalDateTime.now());
         rbs.setState(STATE_APPROVING);
         rbs.setRbsType(form.getRbsType());
+        if (!CollectionUtils.isEmpty(form.getAttachments())) {
+            rbs.setFileList(JsonUtil.convertJson(form.getAttachments()));
+        }
 
         return rbs;
     }
