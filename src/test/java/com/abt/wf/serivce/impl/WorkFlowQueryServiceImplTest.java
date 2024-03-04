@@ -29,6 +29,8 @@ class WorkFlowQueryServiceImplTest {
 
     @Test
     void queryMyRbs() {
+//        workFlowQueryService.queryMyRbs("621faa40-f45c-4da8-9a8f-65b0c5353f40", 0, 20);
+
     }
 
     @Test
@@ -38,5 +40,25 @@ class WorkFlowQueryServiceImplTest {
 //            log.info("TaskDTO: procId: {}, procDefId: {}, taskName:{} taskId: {}, assignee: {}, taskEndTime: {}", t.getProcessInstanceId(), t.getProcessDefinitionId(), t.getTaskDefName(),  t.getTaskInstanceId(), t.getAssigneeId(), t.getTaskEndTime());
 //        });
 
+    }
+
+    @Test
+    void testQueryMyRbs() {
+    }
+
+    @Test
+    void queryMyTodoList() {
+    }
+
+    @Test
+    void queryMyDoneList() {
+    }
+
+    @Test
+    void queryProcessInstanceLog() {
+    }
+
+    @Test
+    void queryUserTaskBpmnModelExtensionProperties() {
     }
 }

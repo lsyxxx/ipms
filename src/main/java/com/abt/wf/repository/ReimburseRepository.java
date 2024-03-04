@@ -15,6 +15,9 @@ import java.util.List;
 public interface ReimburseRepository extends JpaRepository<Reimburse, String> {
 
     Page<Reimburse> findByStarterIdOrderByCreateDateDesc(@Param("starterId") String starterId, Pageable pageable);
+
+    List<Reimburse> findByStarterId(@Param("starterId") String starterId);
+
     List<Reimburse> findAllByStarterIdOrderByCreateDateDesc(@Param("starterId") String starterId);
 
 }

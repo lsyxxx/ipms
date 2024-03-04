@@ -103,9 +103,22 @@ public class Reimburse extends AuditInfo {
      * 审批中
      */
     public static final int STATE_APPROVING = 0;
+    /**
+     * 审批通过
+     */
     public static final int STATE_PASS = 1;
+    /**
+     * 审批拒绝
+     */
     public static final int STATE_REJECT = 2;
+    /**
+     * 撤销
+     */
+    public static final int STATE_CANCEL = 4;
 
+    /**
+     * 暂存
+     */
     public static final int STATE_TEMP = 99;
 
 

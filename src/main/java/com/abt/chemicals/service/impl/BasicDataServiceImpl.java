@@ -311,7 +311,7 @@ public class BasicDataServiceImpl implements BasicDataService {
         Example<Company> example = Example.of(condition, matcher);
         Sort sort = Sort.by("type", "sort");
         if (size != QueryConfig.SIZE_QUERY_ALL) {
-            PageRequest pageRequest = PageRequest.of(page, size, sort);
+            Pageable pageRequest = PageRequest.of(page, size, sort);
             return companyRepository.findAll(example, pageRequest);
         } else {
             final List<Company> all = companyRepository.findAll(example, sort);

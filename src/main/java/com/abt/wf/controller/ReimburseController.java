@@ -96,6 +96,8 @@ public class ReimburseController {
     public R<List<ReimburseDTO>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("limit") int limit,
                                                       @RequestParam(value = "startDay", required = false) LocalDate startDay,
                                                       @RequestParam(value = "endDay", required = false) LocalDate endDay) {
+        //前端是从1开始，jpa分页从0开始
+        page = page - 1;
         UserView userView = TokenUtil.getUserFromAuthToken();
         //code|cost|reason|rbsDate|state|currentTaskName|
         List<ReimburseDTO> list = workFlowQueryService.queryMyRbs(userView.getId(), startDay, endDay, page, limit);

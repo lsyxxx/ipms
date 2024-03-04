@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,8 +24,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,20 +120,19 @@ public class FileController {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<Resource> download(@RequestParam String url, @RequestParam String name) {
+    public ResponseEntity<InputStreamResource> download(@RequestParam String url, @RequestParam String name) throws UnsupportedEncodingException, FileNotFoundException {
 
-        File file = new File(url);
+        FileInputStream fis = new FileInputStream(url);
+        InputStreamResource iss = new InputStreamResource(fis);
 
         // 设置HTTP响应头
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", name);
-
-        FileSystemResource resource = new FileSystemResource(file);
+        headers.add("Content-Disposition", "attachment; filename=" + URLEncoder.encode(name, "UTF-8"));
 
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(resource);
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(iss);
     }
 
 

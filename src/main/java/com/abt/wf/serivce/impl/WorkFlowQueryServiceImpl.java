@@ -69,6 +69,15 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
         this.sqlServerUserService = sqlServerUserService;
     }
 
+    public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
+        UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
+        ExtensionElements extensionElements = userTaskModel.getExtensionElements();
+        return extensionElements.getElementsQuery()
+                .filterByType(CamundaProperties.class)
+                .singleResult()
+                .getCamundaProperties();
+    }
+
     @Override
     public List<ReimburseDTO> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size) {
         List<ReimburseDTO> entities = reimburseService.queryByStater(starter, page, size);
@@ -76,7 +85,7 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
                 TimeUtil.yyyy_MM_ddString(processStartDay),
                 TimeUtil.yyyy_MM_ddString(processEndDay),
                 QueryUtil.NO_PAGING, QueryUtil.NO_PAGING);
-       Map<String, TaskDTO> temp = list.stream().collect(Collectors.toMap(TaskDTO::getProcessInstanceId, taskDTO -> taskDTO));
+        Map<String, TaskDTO> temp = list.stream().collect(Collectors.toMap(TaskDTO::getProcessInstanceId, taskDTO -> taskDTO));
         entities.forEach(i -> {
             i.setTaskDTO(temp.get(i.getProcessInstanceId()));
         });
@@ -100,7 +109,6 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
                 true,
                 page, size);
     }
-
 
     /**
      * 多实例流程记录查询
@@ -140,18 +148,6 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
         }
         return apprList;
     }
-
-
-
-    public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
-        UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
-        ExtensionElements extensionElements = userTaskModel.getExtensionElements();
-        return extensionElements.getElementsQuery()
-                .filterByType(CamundaProperties.class)
-                .singleResult()
-                .getCamundaProperties();
-    }
-
 
 
 }
