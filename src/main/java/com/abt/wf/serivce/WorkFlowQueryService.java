@@ -2,6 +2,7 @@ package com.abt.wf.serivce;
 
 import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseDTO;
+import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.TaskDTO;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public interface WorkFlowQueryService {
      * @param page            页数
      * @param size            单页数量
      */
-    List<ReimburseDTO> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size);
+    List<ReimburseForm> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size);
 
     /**
      * 查询我的待办
@@ -38,5 +39,4 @@ public interface WorkFlowQueryService {
     List<TaskDTO> queryMyDoneList(String userid, LocalDate taskStartTime, LocalDate taskEndTime, int page, int size);
 
     List<ApprovalTask> queryProcessInstanceLog(String processInstanceId);
-
 }

@@ -1,13 +1,13 @@
 package com.abt.wf.serivce.impl;
 
-import com.abt.sys.model.dto.UserView;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.FlowSetting;
+import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Reimburse;
-import com.abt.wf.model.ReimburseApplyForm;
-import com.abt.wf.model.ReimburseDTO;
+import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.serivce.ReimburseService;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,15 +27,17 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     private final List<FlowSetting> queryReimburseType;
 
-    public ReimburseServiceImpl(ReimburseRepository reimburseRepository, List<FlowSetting> queryReimburseType) {
+    private final UserService userService;
+
+    public ReimburseServiceImpl(ReimburseRepository reimburseRepository, List<FlowSetting> queryReimburseType, @Qualifier("sqlServerUserService") UserService userService) {
         this.reimburseRepository = reimburseRepository;
         this.queryReimburseType = queryReimburseType;
+        this.userService = userService;
     }
 
     @Override
-    public Reimburse saveEntity(ReimburseApplyForm applyForm) {
-        Reimburse entity = Reimburse.create(applyForm);
-        return reimburseRepository.save(entity);
+    public Reimburse saveEntity(ReimburseForm applyForm) {
+        return reimburseRepository.save(applyForm);
     }
 
     @Override
@@ -50,22 +52,22 @@ public class ReimburseServiceImpl implements ReimburseService {
 
 
     @Override
-    public List<ReimburseDTO> queryByStater(String starterId, int page, int size) {
+    public List<ReimburseForm> queryByStater(String starterId, int page, int size) {
         Pageable pageRequest = PageRequest.of(page, size);
         Page<Reimburse> pageData = reimburseRepository.findByStarterIdOrderByCreateDateDesc(starterId, pageRequest);
-        List<ReimburseDTO> vos = new ArrayList<>();
+        List<ReimburseForm> vos = new ArrayList<>();
         for (Reimburse reimburse : pageData.getContent()) {
-            ReimburseDTO vo = ReimburseDTO.from(reimburse);
+            ReimburseForm vo = ReimburseForm.from(reimburse);
             vos.add(vo);
         }
         return vos;
     }
 
     @Override
-    public List<ReimburseDTO> queryByStater(String starterId) {
+    public List<ReimburseForm> queryByStater(String starterId) {
         List<Reimburse> list = reimburseRepository.findAllByStarterIdOrderByCreateDateDesc(starterId);
-        List<ReimburseDTO> vos = new ArrayList<>();
-        list.forEach(ReimburseDTO::from);
+        List<ReimburseForm> vos = new ArrayList<>();
+        list.forEach(ReimburseForm::from);
         return vos;
     }
 
@@ -78,15 +80,16 @@ public class ReimburseServiceImpl implements ReimburseService {
 
 
 
+
     @Override
-    public String tempSave(ReimburseApplyForm form) {
-        Reimburse rbs = Reimburse.createTemp(form);
-        return rbs.getId();
-    }
+    public ReimburseForm loadReimburse(String entityId) {
+        final Optional<Reimburse> optionalReimburse = this.queryBy(entityId);
+        if (optionalReimburse.isEmpty()) {
+            throw new BusinessException("未查询到报销流程 - 审批编号: " + entityId);
+        }
+        Reimburse rbs = optionalReimburse.get();
 
-
-    public void load(String rbsId, UserView userView) {
-        final Optional<Reimburse> entity = reimburseRepository.findById(rbsId);
+        return ReimburseForm.from(rbs);
     }
 
 }

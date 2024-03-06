@@ -16,7 +16,9 @@ public class JsonUtil {
 
     public static String toJson(Object object) throws JsonProcessingException {
         ObjectMapper objectMapper = ObjectMapper();
+        // 设置 SerializationFeature.WRITE_NULL_MAP_VALUES 为 false
         return objectMapper.writeValueAsString(object);
+
     }
 
     public static String convertJson(Object object) {

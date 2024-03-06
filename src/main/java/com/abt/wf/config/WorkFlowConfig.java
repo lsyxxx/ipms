@@ -32,6 +32,8 @@ public class WorkFlowConfig {
     public static final String RBS_TYPE = "rbsType";
     public static final String DEF_KEY_RBS = "rbsMulti";
 
+    public static final String SKIP_MANAGER = "rbsFlowSkipManager";
+
     private Map<String, ProcessDefinition> processDefinitionMap = new HashMap<>();
 
     private Map<String, BpmnModelInstance> bpmnModelInstanceMap = new HashMap<>();
@@ -48,6 +50,11 @@ public class WorkFlowConfig {
     @Bean
     public List<FlowSetting> queryReimburseType() {
         return flowSettingRepository.findByTypeOrderByCreateDate(RBS_TYPE);
+    }
+
+    @Bean
+    public List<FlowSetting> queryFlowManagerList() {
+        return flowSettingRepository.findByTypeOrderByCreateDate(SKIP_MANAGER);
     }
 
     @Bean("rbsMultiProcessDefinition")

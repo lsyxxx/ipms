@@ -5,7 +5,7 @@ import com.abt.common.util.QueryUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.service.UserService;
 import com.abt.wf.model.ApprovalTask;
-import com.abt.wf.model.ReimburseDTO;
+import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.TaskDTO;
 import com.abt.wf.repository.WorkFlowRepository;
 import com.abt.wf.serivce.ReimburseService;
@@ -17,6 +17,7 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.ExtensionElements;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
@@ -79,15 +80,19 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
     }
 
     @Override
-    public List<ReimburseDTO> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size) {
-        List<ReimburseDTO> entities = reimburseService.queryByStater(starter, page, size);
+    public List<ReimburseForm> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size) {
+        List<ReimburseForm> entities = reimburseService.queryByStater(starter, page, size);
         List<TaskDTO> list = workFlowRepository.findProcessByStartUseridAndDayRange(starter,
                 TimeUtil.yyyy_MM_ddString(processStartDay),
                 TimeUtil.yyyy_MM_ddString(processEndDay),
                 QueryUtil.NO_PAGING, QueryUtil.NO_PAGING);
         Map<String, TaskDTO> temp = list.stream().collect(Collectors.toMap(TaskDTO::getProcessInstanceId, taskDTO -> taskDTO));
+
         entities.forEach(i -> {
-            i.setTaskDTO(temp.get(i.getProcessInstanceId()));
+            final Task task = taskService.createTaskQuery().active().processInstanceId(i.getProcessInstanceId()).singleResult();
+            if (task != null) {
+                //TODO
+            }
         });
         return entities;
     }
@@ -148,6 +153,5 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
         }
         return apprList;
     }
-
 
 }

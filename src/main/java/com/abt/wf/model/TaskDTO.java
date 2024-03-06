@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * @description 查询流程act_相关表返回结果
+ * 查询流程act_相关表返回结果
  */
 @Data
 public class TaskDTO {

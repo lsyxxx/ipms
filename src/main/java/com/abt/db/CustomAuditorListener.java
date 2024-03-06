@@ -4,6 +4,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -16,6 +17,7 @@ import java.util.Optional;
 public class CustomAuditorListener implements AuditorAware<String> {
 
 
+    @NonNull
     @Override
     public Optional<String> getCurrentAuditor() {
         try {

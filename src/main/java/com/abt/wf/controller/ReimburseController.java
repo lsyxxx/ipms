@@ -6,19 +6,17 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ApprovalTask;
-import com.abt.wf.model.ReimburseApplyForm;
-import com.abt.wf.model.ReimburseDTO;
+import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.TaskDTO;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
 import com.abt.wf.serivce.WorkFlowQueryService;
-import jakarta.servlet.ServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -40,24 +38,26 @@ public class ReimburseController {
     }
 
     @PostMapping("/preview")
-    public R<List<ApprovalTask>> previewFlow(@RequestBody ReimburseApplyForm rbsApplyForm) {
-        getUserFromToken(rbsApplyForm);
-        if (rbsApplyForm.getCost() < 0) {
+    public R<List<ApprovalTask>> previewFlow( @RequestBody ReimburseForm form) {
+        getUserFromToken(form);
+        if (form.getCost() < 0) {
             return R.fail("报销金额必填，且不能小于0");
         }
         //preview
-        final List<ApprovalTask> previewList = workFlowExecutionService.previewFlow(rbsApplyForm);
+        final List<ApprovalTask> previewList = workFlowExecutionService.previewFlow(form);
         return R.success(previewList, previewList.size());
     }
 
     /**
-     * 读取
-     * @param rbsId
+     * 读取数据
      */
-    @PostMapping("/load/{rbsId}")
-    public void load(@PathVariable String rbsId) {
-        UserView userView = TokenUtil.getUserFromAuthToken();
-
+    @PostMapping("/load")
+    public R<ReimburseForm> load(@RequestParam(required = false) String entityId) {
+        ReimburseForm dto = new ReimburseForm();
+        if (StringUtils.isNotBlank(entityId)) {
+            dto = reimburseService.loadReimburse(entityId);
+        }
+        return R.success(dto);
     }
     
 
@@ -65,7 +65,7 @@ public class ReimburseController {
      * 申请
      */
     @PostMapping("/apply")
-    public R<String> apply(@Validated @RequestBody ReimburseApplyForm form) {
+    public R<String> apply(@Validated @RequestBody ReimburseForm form) {
         getUserFromToken(form);
         if (form.getRbsDate() == null) {
             form.setRbsDate(LocalDate.now());
@@ -79,7 +79,7 @@ public class ReimburseController {
      * @param form 申请表单
      */
     @PostMapping("/approve")
-    public R approve(@RequestBody ReimburseApplyForm form) {
+    public R approve(@RequestBody ReimburseForm form) {
         getUserFromToken(form);
         workFlowExecutionService.approve(form);
         return R.success();
@@ -93,14 +93,14 @@ public class ReimburseController {
      * @param startDay 开始日期 yyyy-MM-dd
      */
     @GetMapping("/applylist")
-    public R<List<ReimburseDTO>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("limit") int limit,
+    public R<List<ReimburseForm>> myReimburseApplyList(@RequestParam("page") int page, @RequestParam("limit") int limit,
                                                       @RequestParam(value = "startDay", required = false) LocalDate startDay,
                                                       @RequestParam(value = "endDay", required = false) LocalDate endDay) {
         //前端是从1开始，jpa分页从0开始
         page = page - 1;
         UserView userView = TokenUtil.getUserFromAuthToken();
         //code|cost|reason|rbsDate|state|currentTaskName|
-        List<ReimburseDTO> list = workFlowQueryService.queryMyRbs(userView.getId(), startDay, endDay, page, limit);
+        List<ReimburseForm> list = workFlowQueryService.queryMyRbs(userView.getId(), startDay, endDay, page, limit);
         return R.success(list, list.size(), limit);
     }
 
@@ -141,16 +141,23 @@ public class ReimburseController {
      * @param processInstanceId 流程实例
      */
     @GetMapping("/log")
-    public R<List<ApprovalTask>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId) {
-        UserView userView = TokenUtil.getUserFromAuthToken();
-        final List<ApprovalTask> list = workFlowQueryService.queryProcessInstanceLog(processInstanceId);
+    public R<List<ApprovalTask>> processInstanceLog(@RequestParam("processInstanceId") String processInstanceId,
+                                                    @RequestParam(value = "isFinished", required = false, defaultValue = "false") Boolean isFinished,
+                                                    @RequestParam(value = "entityId") String entityId) {
+        ReimburseForm entity = reimburseService.loadReimburse(entityId);
+//        ReimburseForm form = ReimburseForm
+        List<ApprovalTask> list = workFlowQueryService.queryProcessInstanceLog(processInstanceId);
+        if (!isFinished) {
+//            final List<ApprovalTask> previewList = workFlowExecutionService.previewFlow(rbsApplyForm);
+
+        }
         return R.success(list);
     }
 
-    public ReimburseApplyForm getUserFromToken(ReimburseApplyForm form) {
+    public ReimburseForm getUserFromToken(ReimburseForm form) {
         UserView userView = TokenUtil.getUserFromAuthToken();
-        form.setUserid(userView.getId());
-        form.setUsername(userView.getUsername());
+        form.setSubmitUserid(userView.getId());
+        form.setSubmitUsername(userView.getUsername());
         return form;
     }
 }

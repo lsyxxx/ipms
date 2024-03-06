@@ -7,7 +7,7 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.exception.MissingRequiredParameterException;
 import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.ApprovalTask;
-import com.abt.wf.model.ReimburseApplyForm;
+import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.TaskDTO;
 import com.abt.wf.serivce.ReimburseService;
 import com.abt.wf.serivce.WorkFlowExecutionService;
@@ -71,21 +71,11 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         this.userService = userService;
     }
 
-    /**
-     * 预览流程图key
-     * @param username 用户名
-     */
-    public String previewBusinessKey(String username, String procDefId) {
-        return "PREVIEW_" + username + "_" + procDefId;
-    }
 
     @Override
-    public List<ApprovalTask> previewFlow(ReimburseApplyForm form) {
+    public List<ApprovalTask> previewFlow(ReimburseForm form) {
         String procDefKey = form.getProcessDefinitionKey();
-        if (StringUtils.isBlank(procDefKey)) {
-            throw new BusinessException("未获取到流程定义key(processDefinitionKey)");
-        }
-
+        ensureProcessDefinitionKey(form);
         Map<String, Object> vars = form.variableMap();
         BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
         final Collection<StartEvent> startEvents = bpmnModelInstance.getModelElementsByType(StartEvent.class);
@@ -108,8 +98,8 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
                 final Collection<CamundaProperty> extensionProperties = WorkFlowQueryServiceImpl.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, node.getId());
                 task.setProperties(extensionProperties);
                 if (task.isApplyNode()) {
-                    dto.setAssigneeId(form.getUserid());
-                    dto.setAssigneeName(form.getUsername());
+                    dto.setAssigneeId(form.getStarterId());
+                    dto.setAssigneeName(form.getStarterName());
                 } else {
                     String assigneeId = u.getCamundaAssignee();
                     //指定用户才能解析
@@ -200,22 +190,22 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     }
 
 
-    public String userApplyBusinessKey(String username, String userid) {
+    public String userApplyBusinessKey(String userid, String username) {
         return "USER_APPLY_" + userid + "_" + username;
     }
 
 
     @Override
     @Transactional
-    public Reimburse apply(ReimburseApplyForm form) {
+    public Reimburse apply(ReimburseForm form) {
         ensureProcessDefinitionKey(form);
-        setAuthUser(form.getUserid());
+        setAuthUser(form.getStarterId());
         Map<String, Object> vars = form.variableMap();
         final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().active().singleResult();
         form.setProcessDefinitionId(processDefinition.getId());
-        final ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId(), userApplyBusinessKey(form.getUserid(), form.getUsername()), vars);
+        final ProcessInstance processInstance = runtimeService.startProcessInstanceById(processDefinition.getId(), userApplyBusinessKey(form.getStarterId(), form.getStarterName()), vars);
         final Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
-        task.setAssignee(form.getUserid());
+        task.setAssignee(form.getStarterId());
         task.setDescription(ActionEnum.SUBMIT.getAction());
         taskService.saveTask(task);
 
@@ -245,21 +235,21 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
 
     @Override
-    public void approve(ReimburseApplyForm form) {
+    public void approve(ReimburseForm form) {
         ensureProcessId(form);
-        setAuthUser(form.getUserid());
+        setAuthUser(form.getSubmitUserid());
         String procId = form.getProcessInstanceId();
         Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
-        task.setAssignee(form.getUserid());
+        task.setAssignee(form.getSubmitUserid());
         if (StringUtils.isNotBlank(form.getComment())) {
             taskService.createComment(task.getId(), form.getProcessInstanceId(), form.getComment());
         }
 
-        Reimburse reimburse = reimburseService.queryBy(form.getEntityId()).get();
+        Reimburse reimburse = reimburseService.queryBy(form.getId()).get();
         if (form.isReject()) {
             task.setDescription(ActionEnum.REJECT.getAction());
             taskService.saveTask(task);
-            runtimeService.deleteProcessInstance(form.getProcessInstanceId(), deleteReasonReject(form.getUserid()));
+            runtimeService.deleteProcessInstance(form.getProcessInstanceId(), deleteReasonReject(form.getSubmitUserid()));
             reimburse.setState(Reimburse.STATE_REJECT);
             reimburse.setEndTime(LocalDateTime.now());
         } else {
@@ -272,21 +262,21 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         clearAuthUser();
     }
 
-    public static void ensureProcessId(ReimburseApplyForm form) {
+    public static void ensureProcessId(ReimburseForm form) {
         if (StringUtils.isNotBlank(form.getProcessInstanceId())) {
             return;
         }
         throw new MissingRequiredParameterException("ProcessInstanceId(流程实例id)");
     }
 
-    public static void ensureProcessDefinitionId(ReimburseApplyForm form) {
+    public static void ensureProcessDefinitionId(ReimburseForm form) {
         if (StringUtils.isNotBlank(form.getProcessDefinitionId())) {
             return;
         }
         throw new MissingRequiredParameterException("ProcessDefinitionId(流程定义id)");
     }
 
-    public static void ensureProcessDefinitionKey(ReimburseApplyForm form) {
+    public static void ensureProcessDefinitionKey(ReimburseForm form) {
         if (StringUtils.isNotBlank(form.getProcessDefinitionKey())) {
             return;
         }

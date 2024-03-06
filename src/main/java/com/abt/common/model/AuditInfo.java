@@ -2,6 +2,8 @@ package com.abt.common.model;
 
 import com.abt.db.CustomAuditorListener;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -23,11 +25,13 @@ import java.util.Date;
 @Data
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuditInfo {
     @Schema(description = "最后更新时间")
     @LastModifiedDate
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+
     private LocalDateTime updateDate;
 
     @LastModifiedBy

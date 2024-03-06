@@ -14,8 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @description 流程查询
+ * 流程查询
  */
 @RequiredArgsConstructor
 @Repository
@@ -35,8 +34,8 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
                 "left join ACT_HI_TASKINST t on p.PROC_INST_ID_ = t.PROC_INST_ID_ and t.END_TIME_ is null " +
                 "left join [dbo].[User] u on p.START_USER_ID_ = u.Id " +
 //                "left join User u on t.ASSIGNEE_ = u.Id " +
-                "where p.START_USER_ID_ = ? " +
-                "and BUSINESS_KEY_ not like '%PREVIEW_USER_%' ";
+                "where p.START_USER_ID_ = ? "
+                ;
         if (processStartDate != null) {
             sql += "and PROC_START_TIME_ >= ? ";
             params.add(processStartDate);
@@ -47,8 +46,8 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
         }
         sql = sql + "order by PROC_START_TIME_ desc, TASK_START_TIME_ desc ";
         //分页
-        if (page > QueryUtil.NO_PAGING || size > QueryUtil.NO_PAGING) {
-            sql += " OFFSET " + skip + " ROWS FETCH NEXT " + size + " ROWS ONLY";
+        if (!QueryUtil.isPaging(size)) {
+            sql += " offset " + skip + " rows fetch next " + size + " rows only";
         }
         return jdbcTemplate.query(sql, params.toArray(), new TaskDTORowMapper());
     }
