@@ -83,8 +83,16 @@ class WorkFlowServiceImplTest {
         vars.put("isLeader", true);
         vars.put("cost", 60000.00);
         vars.put("starter", "abt112");
-//        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("rbsAll2", vars);
+        vars.put("managerList", List.of("abt112", "abt001"));
+//        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("rbsMulti", vars);
+//        final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey("rbsMulti").latestVersion().singleResult();
+//        final List<ProcessInstance> list = runtimeService.createProcessInstanceQuery().active().processDefinitionId(processDefinition.getId()).list();
+//        Assert.notEmpty(list, "list is empty");
+//        list.forEach(i -> {
+//            System.out.println(i.getProcessInstanceId());
+//        });
 
+        runtimeService.deleteProcessInstance("3401", "test delete listener");
 
 
     }

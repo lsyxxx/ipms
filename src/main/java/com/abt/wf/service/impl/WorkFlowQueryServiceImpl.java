@@ -1,15 +1,15 @@
-package com.abt.wf.serivce.impl;
+package com.abt.wf.service.impl;
 
 import com.abt.common.model.User;
-import com.abt.common.util.QueryUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.service.UserService;
 import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.TaskDTO;
 import com.abt.wf.repository.WorkFlowRepository;
-import com.abt.wf.serivce.ReimburseService;
-import com.abt.wf.serivce.WorkFlowQueryService;
+import com.abt.wf.service.ReimburseService;
+import com.abt.wf.service.WorkFlowQueryService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RepositoryService;
@@ -28,12 +28,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *
  */
 @Service
+@Slf4j
 public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
 
     private final WorkFlowRepository workFlowRepository;
@@ -82,18 +82,33 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
     @Override
     public List<ReimburseForm> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size) {
         List<ReimburseForm> entities = reimburseService.queryByStater(starter, page, size);
-        List<TaskDTO> list = workFlowRepository.findProcessByStartUseridAndDayRange(starter,
-                TimeUtil.yyyy_MM_ddString(processStartDay),
-                TimeUtil.yyyy_MM_ddString(processEndDay),
-                QueryUtil.NO_PAGING, QueryUtil.NO_PAGING);
-        Map<String, TaskDTO> temp = list.stream().collect(Collectors.toMap(TaskDTO::getProcessInstanceId, taskDTO -> taskDTO));
-
+//        List<TaskDTO> list = workFlowRepository.findProcessByStartUseridAndDayRange(starter,
+//                TimeUtil.yyyy_MM_ddString(processStartDay),
+//                TimeUtil.yyyy_MM_ddString(processEndDay),
+//                QueryUtil.NO_PAGING, QueryUtil.NO_PAGING);
+//        Map<String, TaskDTO> temp = list.stream().collect(Collectors.toMap(TaskDTO::getProcessInstanceId, taskDTO -> taskDTO));
+        Map<String, Task> temp = new HashMap<>();
+        long start = System.currentTimeMillis();
+        //查询当前task
         entities.forEach(i -> {
-            final Task task = taskService.createTaskQuery().active().processInstanceId(i.getProcessInstanceId()).singleResult();
-            if (task != null) {
-                //TODO
+            boolean isFinished = i.isFinished();
+            if (!isFinished) {
+                long t1 = System.currentTimeMillis();
+                //未完成的流程查询当前任务，已完成的不用
+                final Task task = taskService.createTaskQuery().active().processInstanceId(i.getProcessInstanceId()).singleResult();
+                temp.put(task.getProcessInstanceId(), task);
+                long t2 = System.currentTimeMillis();
+                i.setCurrentTask(task);
+                //task assignee
+                i.setCurrentTaskUserid(task.getAssignee());
+                final User taskUser = sqlServerUserService.getSimpleUserInfo(new User(task.getAssignee()));
+                log.debug("currentTaskUser info: {}", taskUser.toString());
+                i.setCurrentTaskUsername(taskUser.getUsername());
+                log.info("查询一个task时间: {}ms", (t2-t1));
             }
         });
+        long end = System.currentTimeMillis();
+        log.info("使用流程api查询所有流程时间: {}ms", (end-start));
         return entities;
     }
 

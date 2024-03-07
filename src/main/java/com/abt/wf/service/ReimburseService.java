@@ -1,4 +1,4 @@
-package com.abt.wf.serivce;
+package com.abt.wf.service;
 
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.wf.entity.Reimburse;
@@ -20,8 +20,6 @@ public interface ReimburseService {
     Optional<Reimburse> queryBy(String id);
 
     List<ReimburseForm> queryByStater(String starterId, int page, int size);
-
-    List<ReimburseForm> queryByStater(String starterId);
 
     List<FlowSetting> queryRbsTypes();
 

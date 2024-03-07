@@ -55,12 +55,16 @@ public class ReimburseForm extends Reimburse {
     private String submitUserid;
     private String submitUsername;
 
-    //当前节点
+    /**
+     *  当前Task节点(正在进行的)
+     *  只有未结束的流程存在
+     */
     private Task currentTask;
 
     //-- 当前节点用户
     private String currentTaskUserid;
     private String currentTaskUsername;
+
 
     public ReimburseForm() {
         super();

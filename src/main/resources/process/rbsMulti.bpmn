@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0k5y7bd" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
-  <bpmn:process id="rbsMulti" name="rbsMulti" isExecutable="true" camunda:versionTag="多实例" camunda:historyTimeToLive="99999">
+  <bpmn:process id="rbsMulti" name="rbsMulti" isExecutable="true" camunda:versionTag="多实例+监听器" camunda:historyTimeToLive="99999">
     <bpmn:documentation>综合日常报销审批</bpmn:documentation>
+    <bpmn:extensionElements>
+      <camunda:executionListener class="com.abt.wf.service.ProcessEndListener" event="end" />
+    </bpmn:extensionElements>
     <bpmn:startEvent id="StartEvent_1" name="报销申请" camunda:initiator="starter">
       <bpmn:outgoing>Flow_1qcaapv</bpmn:outgoing>
     </bpmn:startEvent>

@@ -8,9 +8,9 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.TaskDTO;
-import com.abt.wf.serivce.ReimburseService;
-import com.abt.wf.serivce.WorkFlowExecutionService;
-import com.abt.wf.serivce.WorkFlowQueryService;
+import com.abt.wf.service.ReimburseService;
+import com.abt.wf.service.WorkFlowExecutionService;
+import com.abt.wf.service.WorkFlowQueryService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
@@ -49,7 +49,7 @@ public class ReimburseController {
     }
 
     /**
-     * 读取数据
+     * 读取流程数据
      */
     @PostMapping("/load")
     public R<ReimburseForm> load(@RequestParam(required = false) String entityId) {
@@ -81,6 +81,7 @@ public class ReimburseController {
     @PostMapping("/approve")
     public R approve(@RequestBody ReimburseForm form) {
         getUserFromToken(form);
+        //TODO: 流程正常结束或驳回要改变reimburse实体状态
         workFlowExecutionService.approve(form);
         return R.success();
     }

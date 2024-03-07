@@ -1,4 +1,4 @@
-package com.abt.wf.serivce.impl;
+package com.abt.wf.service.impl;
 
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.FlowSetting;
@@ -6,7 +6,7 @@ import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.repository.ReimburseRepository;
-import com.abt.wf.serivce.ReimburseService;
+import com.abt.wf.service.ReimburseService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,15 +62,6 @@ public class ReimburseServiceImpl implements ReimburseService {
         }
         return vos;
     }
-
-    @Override
-    public List<ReimburseForm> queryByStater(String starterId) {
-        List<Reimburse> list = reimburseRepository.findAllByStarterIdOrderByCreateDateDesc(starterId);
-        List<ReimburseForm> vos = new ArrayList<>();
-        list.forEach(ReimburseForm::from);
-        return vos;
-    }
-
 
     @Override
     public List<FlowSetting> queryRbsTypes() {
