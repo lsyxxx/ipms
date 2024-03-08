@@ -83,4 +83,18 @@ public class ReimburseServiceImpl implements ReimburseService {
         return ReimburseForm.from(rbs);
     }
 
+    @Override
+    public void finish(String entityId, int state, String deleteReason) {
+        final Reimburse reimburse = reimburseRepository.findById(entityId).get();
+        reimburse.finish(state, deleteReason);
+        reimburseRepository.save(reimburse);
+    }
+
+    @Override
+    public void finish(String entityId) {
+        final Reimburse reimburse = reimburseRepository.findById(entityId).get();
+        reimburse.finish();
+        reimburseRepository.save(reimburse);
+    }
+
 }

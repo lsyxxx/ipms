@@ -3,6 +3,7 @@ package com.abt.wf.service.impl;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.service.UserService;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ApprovalTask;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.TaskDTO;
@@ -17,6 +18,7 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.runtime.VariableInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.ExtensionElements;
@@ -25,6 +27,7 @@ import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -121,6 +124,26 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
                 page, size);
     }
 
+
+    public List<ReimburseForm> queryMyTodoList2(String userid, int page, int size) {
+        List<ReimburseForm> list = new ArrayList<>();
+        int firstResult = (page - 1) * size;
+        final List<Task> tasks = taskService.createTaskQuery().active().taskAssignee(userid).listPage(firstResult, size);
+        if (!CollectionUtils.isEmpty(tasks)) {
+            tasks.forEach(i -> {
+                final String entityId = this.getEntityIdFromProcessVariables(i.getProcessInstanceId());
+                try {
+                    ReimburseForm form = reimburseService.loadReimburse(entityId);
+                } catch (Exception e) {
+                    log.error("查询报销实体对象失败: ", e);
+                }
+            });
+        }
+
+
+        return list;
+    }
+
     @Override
     public List<TaskDTO> queryMyDoneList(String userid, LocalDate taskStartTime, LocalDate taskEndTime, int page, int size) {
         return workFlowRepository.findTaskByAssigneeAndDayRange(userid,
@@ -167,6 +190,15 @@ public class WorkFlowQueryServiceImpl implements WorkFlowQueryService {
             apprList.add(approvalTask);
         }
         return apprList;
+    }
+
+    @Override
+    public String getEntityIdFromProcessVariables(String processInstanceId) {
+        final VariableInstance variableInstance = runtimeService.createVariableInstanceQuery().processInstanceIdIn(processInstanceId).variableName(WorkFlowExecutionServiceImpl.VARS_ENTITY_ID).singleResult();
+        if (variableInstance != null) {
+            return variableInstance.getValue().toString();
+        }
+        return null;
     }
 
 }

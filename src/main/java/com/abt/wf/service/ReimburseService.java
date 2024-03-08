@@ -24,4 +24,11 @@ public interface ReimburseService {
     List<FlowSetting> queryRbsTypes();
 
     ReimburseForm loadReimburse(String entityId);
+
+    /**
+     * 更新实体，流程完成
+     */
+    void finish(String entityId, int state, String deleteReason);
+
+    void finish(String entityId);
 }

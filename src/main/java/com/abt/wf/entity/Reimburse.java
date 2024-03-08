@@ -1,8 +1,6 @@
 package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
-import com.abt.common.util.JsonUtil;
-import com.abt.common.util.TimeUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -15,7 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -121,7 +118,10 @@ public class Reimburse extends AuditInfo {
      */
     public static final int STATE_APPROVING = 0;
     /**
-     * 审批通过(流程已完成)
+     * 审批通过，可以是流程完成全部审批通过，也可以是流程未完成
+     * isFinished = true, 表示该流程审批已通过。
+     * isFinished = false, 表示该流程未完成，最近审批人通过
+     *
      */
     public static final int STATE_PASS = 1;
     /**
@@ -145,6 +145,25 @@ public class Reimburse extends AuditInfo {
         this.state = STATE_REJECT;
         this.endTime = LocalDateTime.now();
         this.isFinished = true;
+    }
+
+    /**
+     * 当前任务通过
+     */
+    public void taskPass() {
+        this.state = STATE_PASS;
+    }
+
+    public void finish(int state, String deleteReason) {
+        this.isFinished = true;
+        this.endTime = LocalDateTime.now();
+        this.state = state;
+        this.deleteReason = deleteReason;
+    }
+
+    public void finish() {
+        this.isFinished = true;
+        this.endTime = LocalDateTime.now();
     }
 
 }

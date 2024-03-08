@@ -81,8 +81,18 @@ public class ReimburseController {
     @PostMapping("/approve")
     public R approve(@RequestBody ReimburseForm form) {
         getUserFromToken(form);
-        //TODO: 流程正常结束或驳回要改变reimburse实体状态
         workFlowExecutionService.approve(form);
+        return R.success();
+    }
+
+    @GetMapping("/approve2")
+    public R approve(String decision, String id,
+                     @RequestParam(required = false) String comment) {
+        final ReimburseForm reimburseForm = reimburseService.loadReimburse(id);
+        getUserFromToken(reimburseForm);
+        reimburseForm.setDecision(decision);
+        reimburseForm.setComment(comment);
+        workFlowExecutionService.approve(reimburseForm);
         return R.success();
     }
 

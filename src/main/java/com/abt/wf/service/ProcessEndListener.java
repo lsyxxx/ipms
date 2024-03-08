@@ -1,5 +1,6 @@
 package com.abt.wf.service;
 
+import com.abt.wf.service.impl.WorkFlowExecutionServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
@@ -23,7 +24,11 @@ public class ProcessEndListener implements ExecutionListener {
         log.info("流程结束 -- processInstanceId: {}", execution.getProcessInstanceId());
         //从ApplicationContext获取bean
 //        MyService myService = applicationContext.getBean(MyService.class);
-
-
+        Object variable = execution.getVariable(WorkFlowExecutionServiceImpl.VARS_ENTITY_ID);
+        String entityId = "";
+        if (variable != null) {
+            entityId = variable.toString();
+        }
+        reimburseService.finish(entityId);
     }
 }

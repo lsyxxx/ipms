@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.runtime.VariableInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.impl.juel.ExpressionFactoryImpl;
 import org.camunda.bpm.impl.juel.SimpleContext;
@@ -29,7 +30,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -199,6 +199,8 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
     @Transactional
     public Reimburse apply(ReimburseForm form) {
         ensureProcessDefinitionKey(form);
+        form.setStarterId(form.getSubmitUserid());
+        form.setStarterName(form.getSubmitUsername());
         setAuthUser(form.getStarterId());
         Map<String, Object> vars = form.variableMap();
         final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().active().singleResult();
@@ -219,10 +221,10 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
         return reimburse;
     }
 
-    public static final String DELETE_REASON_REJECT_BY = "REJECT_BY_";
+    public static final String DELETE_REASON_REJECT_BY = "RejectBy_";
 
-    public String deleteReasonReject(String userid) {
-        return DELETE_REASON_REJECT_BY + userid;
+    public String deleteReasonReject(String userid, String username) {
+        return DELETE_REASON_REJECT_BY + userid + "_" + username;
     }
 
     public void setAuthUser(String userid) {
@@ -247,16 +249,17 @@ public class WorkFlowExecutionServiceImpl implements WorkFlowExecutionService {
 
         Reimburse reimburse = reimburseService.queryBy(form.getId()).get();
         if (form.isReject()) {
-            task.setDescription(ActionEnum.REJECT.getAction());
+            task.setDescription(task.getDescription() + ": " + ActionEnum.REJECT.getAction());
             taskService.saveTask(task);
-            runtimeService.deleteProcessInstance(form.getProcessInstanceId(), deleteReasonReject(form.getSubmitUserid()));
-            reimburse.setState(Reimburse.STATE_REJECT);
-            reimburse.setEndTime(LocalDateTime.now());
+            String deleteReason = deleteReasonReject(form.getSubmitUserid(), form.getSubmitUsername());
+            runtimeService.deleteProcessInstance(form.getProcessInstanceId(), deleteReason);
+            reimburse.finish(Reimburse.STATE_REJECT, deleteReason);
         } else {
             //pass
-            task.setDescription(ActionEnum.APPROVE.getAction());
+            task.setDescription(task.getDescription() + ": " + ActionEnum.APPROVE.getAction());
             taskService.saveTask(task);
             taskService.complete(task.getId());
+            reimburse.taskPass();
         }
         reimburseService.saveEntity(reimburse);
         clearAuthUser();
