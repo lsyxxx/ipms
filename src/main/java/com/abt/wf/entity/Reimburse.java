@@ -1,35 +1,39 @@
 package com.abt.wf.entity;
 
-import com.abt.common.model.AuditInfo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
- * 报销业务实体
+ *
  */
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@Table(name = "wf_rbs")
+@Table(name = "wf_rbs2")
+@DynamicInsert
+@DynamicUpdate
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class Reimburse extends AuditInfo {
+public class Reimburse extends WorkFlowBase {
 
     @Id
+    @GeneratedValue(generator  = "timestampIdGenerator")
+    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
 
     @DecimalMin(value = "0.00", message = "报销金额不能小于0.00")
@@ -55,45 +59,17 @@ public class Reimburse extends AuditInfo {
     @Column(name="rbs_type", columnDefinition="VARCHAR(256)")
     private String rbsType;
 
-    //-- processDefinition
-    @Column(name="proc_def_key", columnDefinition="VARCHAR(128)")
-    private String processDefinitionKey;
-    
-    @Column(name="proc_def_id", columnDefinition="VARCHAR(128)")
-    private String processDefinitionId;
-
-    //-- processInstance
-    @Column(name="proc_inst_id", columnDefinition="VARCHAR(128)")
-    private String processInstanceId;
     /**
-     * 流程状态
-     * 参考：STATE_
+     * 公司, abt/grd
      */
-    @Column(name="state_", columnDefinition="TINYINT")
-    private int state;
-
-    //-- starter
-    @Column(name="starter_id", columnDefinition="VARCHAR(128)")
-    private String starterId;
-    
-    @Column(name="starter_name", columnDefinition="VARCHAR(128)")
-    private String starterName;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime startTime;
-
-    //-- end
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime endTime;
-
-    @Size(max = 500, message = "流程删除原因最多输入500字")
+    @Column( columnDefinition="VARCHAR(256)")
+    private String company;
+    /**
+     * 关联项目
+     */
     @Column(columnDefinition="VARCHAR(1000)")
-    private String deleteReason;
+    private String project;
 
-    @Column(columnDefinition="BIT")
-    private boolean isFinished = false;
 
     /**
      * starter is leader
@@ -113,57 +89,6 @@ public class Reimburse extends AuditInfo {
     @Column(columnDefinition="VARCHAR(1000)")
     private String managerList;
 
-    /**
-     * 审批中
-     */
-    public static final int STATE_APPROVING = 0;
-    /**
-     * 审批通过，可以是流程完成全部审批通过，也可以是流程未完成
-     * isFinished = true, 表示该流程审批已通过。
-     * isFinished = false, 表示该流程未完成，最近审批人通过
-     *
-     */
-    public static final int STATE_PASS = 1;
-    /**
-     * 审批拒绝(流程已完成)
-     */
-    public static final int STATE_REJECT = 2;
-    /**
-     * 撤销
-     */
-    public static final int STATE_CANCEL = 3;
 
-    /**
-     * 暂存
-     */
-    public static final int STATE_TEMP = 99;
-
-    /**
-     * 驳回流程
-     */
-    public void reject() {
-        this.state = STATE_REJECT;
-        this.endTime = LocalDateTime.now();
-        this.isFinished = true;
-    }
-
-    /**
-     * 当前任务通过
-     */
-    public void taskPass() {
-        this.state = STATE_PASS;
-    }
-
-    public void finish(int state, String deleteReason) {
-        this.isFinished = true;
-        this.endTime = LocalDateTime.now();
-        this.state = state;
-        this.deleteReason = deleteReason;
-    }
-
-    public void finish() {
-        this.isFinished = true;
-        this.endTime = LocalDateTime.now();
-    }
 
 }

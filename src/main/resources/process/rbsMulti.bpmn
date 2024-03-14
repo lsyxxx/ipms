@@ -3,12 +3,16 @@
   <bpmn:process id="rbsMulti" name="rbsMulti" isExecutable="true" camunda:versionTag="多实例+监听器" camunda:historyTimeToLive="99999">
     <bpmn:documentation>综合日常报销审批</bpmn:documentation>
     <bpmn:extensionElements>
-      <camunda:executionListener class="com.abt.wf.service.ProcessEndListener" event="end" />
+      <camunda:executionListener delegateExpression="${processEndListener}" event="end">
+        <camunda:field name="defaultCarbonCopy">
+          <camunda:string>621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002</camunda:string>
+        </camunda:field>
+      </camunda:executionListener>
     </bpmn:extensionElements>
     <bpmn:startEvent id="StartEvent_1" name="报销申请" camunda:initiator="starter">
       <bpmn:outgoing>Flow_1qcaapv</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="rbsMulti_managers" name="技术负责人及主管" camunda:assignee="${manager}">
+    <bpmn:userTask id="rbsMulti_managers" name="主管及技术负责人" camunda:assignee="${manager}">
       <bpmn:documentation>技术负责人及主管审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -66,7 +70,7 @@
     <bpmn:sequenceFlow id="Flow_1lmo9li" name="金额大于5000" sourceRef="rbsMulti_ceo" targetRef="rbsMulti_chief">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;5000}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:userTask id="rbsMulti_acct" name="会计" camunda:assignee="U20230406013">
+    <bpmn:userTask id="rbsMulti_acct" name="会计/出纳" camunda:assignee="U20230406013">
       <bpmn:documentation>会计审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -80,23 +84,10 @@
       <bpmn:outgoing>Flow_1u8y9j1</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_0stcxru" sourceRef="rbsMulti_chief" targetRef="rbsMulti_acct" />
-    <bpmn:userTask id="rbsMulti_tax" name="税务" camunda:assignee="U20230406007">
-      <bpmn:documentation>税务审批</bpmn:documentation>
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1u8y9j1</bpmn:incoming>
-      <bpmn:outgoing>Flow_1e3z015</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_1u8y9j1" sourceRef="rbsMulti_acct" targetRef="rbsMulti_tax" />
+    <bpmn:sequenceFlow id="Flow_1u8y9j1" sourceRef="rbsMulti_acct" targetRef="EndEvent_1" />
     <bpmn:endEvent id="EndEvent_1" name="报销结束">
-      <bpmn:incoming>Flow_1e3z015</bpmn:incoming>
+      <bpmn:incoming>Flow_1u8y9j1</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1e3z015" sourceRef="rbsMulti_tax" targetRef="EndEvent_1" />
     <bpmn:sequenceFlow id="Flow_17nj8cv" name="金额小于等于5000" sourceRef="rbsMulti_ceo" targetRef="rbsMulti_acct">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;=5000}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
@@ -107,7 +98,9 @@
         <camunda:properties>
           <camunda:property name="taskType" value="apply" />
           <camunda:property name="selectUserType" value="2" />
+          <camunda:property name="carbonCopy" value="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002" />
         </camunda:properties>
+        <camunda:taskListener delegateExpression="${userTaskCompleteListener}" event="complete" id="com.abt.wf.listener.UserTaskCompleteListener" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1qcaapv</bpmn:incoming>
       <bpmn:outgoing>Flow_employee</bpmn:outgoing>
@@ -148,10 +141,6 @@
         <dc:Bounds x="890" y="380" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_06lhi4q_di" bpmnElement="rbsMulti_tax">
-        <dc:Bounds x="630" y="380" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_104br8c_di" bpmnElement="EndEvent_1">
         <dc:Bounds x="472" y="402" width="36" height="36" />
         <bpmndi:BPMNLabel>
@@ -184,10 +173,6 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1u8y9j1_di" bpmnElement="Flow_1u8y9j1">
         <di:waypoint x="890" y="420" />
-        <di:waypoint x="730" y="420" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1e3z015_di" bpmnElement="Flow_1e3z015">
-        <di:waypoint x="630" y="420" />
         <di:waypoint x="508" y="420" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_17nj8cv_di" bpmnElement="Flow_17nj8cv">
