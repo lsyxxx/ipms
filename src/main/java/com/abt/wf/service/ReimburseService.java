@@ -8,6 +8,6 @@ import java.util.List;
 /**
  *
  */
-public interface ReimburseService {
+public interface ReimburseService extends WorkFlowService<ReimburseForm>{
     List<ReimburseForm> queryMyRbs(String starter, LocalDate processStartDay, LocalDate processEndDay, int page, int size);
 }
