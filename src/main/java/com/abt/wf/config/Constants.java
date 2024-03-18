@@ -5,35 +5,12 @@ package com.abt.wf.config;
  */
 public class Constants {
 
-    /**
-     * 审批中
-     */
-    public static final int STATE_APPROVING = 0;
-    /**
-     * 审批通过，可以是流程完成全部审批通过，也可以是流程未完成
-     * isFinished = true, 表示该流程审批已通过。
-     * isFinished = false, 表示该流程未完成，最近审批人通过
-     *
-     */
-    public static final int STATE_PASS = 1;
-    /**
-     * 审批拒绝(流程已完成)
-     */
-    public static final int STATE_REJECT = 2;
-    /**
-     * 撤销
-     */
-    public static final int STATE_CANCEL = 3;
-    /**
-     * 用户删除
-     */
-    public static final int STATE_DELETE = 4;
+    public static final String VAR_KEY_ENTITY = "entityId";
 
-    /**
-     * 暂存
+    /*-----------------------
+     * 流程删除原因
+     * -----------------------
      */
-    public static final int STATE_TEMP = 99;
-
     public static final String DELETE_REASON_REJECT = "用户审批拒绝";
     public static final String DELETE_REASON_REVOKE = "用户撤销流程";
     public static final String DELETE_REASON_AUTO = "流程正常结束";
@@ -44,23 +21,54 @@ public class Constants {
      */
     public static final String TERMINATE_SYS = "system";
 
-    public static final String REJECT = "reject";
-    public static final String PASS = "pass";
+    public static final String DECISION_REJECT = "reject";
+    public static final String DECISION_PASS = "pass";
+
 
     /*-----------------------
-     * 审批状态。参考钉钉
+     * 审批详情中的状态。参考钉钉
      * ----------------------
      */
-    public static final String STATE_DESC_APPROVING = "审批中";
-    public static final String STATE_DESC_FINISHED = "已结束";
-    public static final String STATE_DESC_TERMINATED = "终止";
+    public static final String STATE_DETAIL_REJECT = "已拒绝";
+    public static final String STATE_DETAIL_PASS = "已通过";
+    public static final String STATE_DETAIL_REVOKE = "已撤销";
+    public static final String STATE_DETAIL_DELETE = "已删除";
+
+    public static final String STATE_DETAIL_ACTIVE = "审批中";
+
+    public static final String OPERATOR_SYS = "system";
+    public static final String OPERATE_TYPE_SYS = "system";
+    public static final String OPERATE_TYPE_USER = "user";
 
     /*-----------------------
-     * 审批详情(Task)中的状态。参考钉钉
+     * 流程节点
      * ----------------------
      */
-    public static final String STATE_DESC_REJECT = "已拒绝";
-    public static final String STATE_DESC_PASS = "已通过";
-    public static final String STATE_DESC_CANCEL = "已撤销";
+
+    /**
+     * 审批节点类型：顺序依次审批
+     */
+    public static final int APPROVAL_TYPE_SEQ = 0;
+
+    //--- taskType
+    /**
+     * 申请节点
+     */
+    public static final String TASK_TYPE_APPLY = "apply";
+    /**
+     * 审批节点
+     */
+    public static final String TASK_TYPE_APPROVAL = "approval";
+
+    //--- selectUserType
+    /**
+     * 选择用户方式-用户自选
+     */
+    public static final int SELECT_USER_TYPE_MANUAL = 0;
+    /**
+     * 选择用户方式-指定用户
+     */
+    public static final int SELECT_USER_TYPE_SPECIFIC = 1;
+
 
 }

@@ -24,7 +24,7 @@ import java.time.LocalDate;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@Table(name = "wf_rbs2")
+@Table(name = "wf_rbs")
 @DynamicInsert
 @DynamicUpdate
 @Entity
@@ -37,7 +37,7 @@ public class Reimburse extends WorkFlowBase {
     private String id;
 
     @DecimalMin(value = "0.00", message = "报销金额不能小于0.00")
-    private double cost;
+    private Double cost;
 
     @Column(name="reason_", columnDefinition="VARCHAR(500)")
     private String reason;
@@ -69,6 +69,26 @@ public class Reimburse extends WorkFlowBase {
      */
     @Column(columnDefinition="VARCHAR(1000)")
     private String project;
+
+    /**
+     * 部门
+     */
+    @Column(name="dept_id", columnDefinition="VARCHAR(128)")
+    private String departmentId;
+    @Column(name="dept_name", columnDefinition="VARCHAR(128)")
+    private String departmentName;
+
+    /**
+     * 班组/科室Id
+     */
+    @Column(columnDefinition="VARCHAR(128)")
+    private String teamId;
+    /**
+     * 班组/科室名称
+     */
+    @Column(columnDefinition="VARCHAR(128)")
+    private String teamName;
+
 
 
     /**

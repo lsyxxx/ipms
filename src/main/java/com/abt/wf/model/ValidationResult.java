@@ -13,11 +13,9 @@ import java.util.List;
 public class ValidationResult {
 
     /**
-     * 校验结果
-     * true: 通过
-     * false: 不通过
+     * 校验是否通过
      */
-    private boolean result;
+    private boolean isPass;
     /**
      * 结果描述
      */
@@ -30,13 +28,13 @@ public class ValidationResult {
 
     public static ValidationResult pass() {
         ValidationResult re = new ValidationResult();
-        re.setResult(true);
+        re.setPass(true);
         return re;
     }
 
     public static ValidationResult fail(String description) {
         ValidationResult re = new ValidationResult();
-        re.setResult(false);
+        re.setPass(false);
         re.setDescription(description);
         return re;
     }

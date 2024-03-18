@@ -1,0 +1,283 @@
+package com.abt.wf.service.impl;
+
+import com.abt.common.exception.MissingRequiredParameterException;
+import com.abt.common.util.TokenUtil;
+import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
+import com.abt.wf.config.Constants;
+import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.Reimburse;
+import com.abt.wf.model.ActionEnum;
+import com.abt.wf.model.ReimburseForm;
+import com.abt.wf.model.ValidationResult;
+import com.abt.wf.repository.ReimburseRepository;
+import com.abt.wf.service.FlowOperationLogService;
+import com.abt.wf.service.ReimburseService;
+import com.abt.wf.util.WorkFlowUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.engine.*;
+import org.camunda.bpm.engine.history.HistoricProcessInstance;
+import org.camunda.bpm.engine.history.HistoricTaskInstance;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.task.Comment;
+import org.camunda.bpm.engine.task.Task;
+import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.apache.commons.lang3.StringUtils;
+import org.camunda.bpm.model.bpmn.instance.FlowNode;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ *
+ */
+@Service
+@Slf4j
+public class ReimburseServiceImpl implements ReimburseService {
+
+    private final IdentityService identityService;
+    private final TaskService taskService;
+    private final RuntimeService runtimeService;
+    private final RepositoryService repositoryService;
+
+    private final ReimburseRepository reimburseRepository;
+    private final HistoryService historyService;
+
+    private final FlowOperationLogService flowOperationLogService;
+
+    private final Map<String, BpmnModelInstance> bpmnModelInstanceMap;
+
+    public static final String SERVICE_NAME = "费用报销";
+
+    public ReimburseServiceImpl(IdentityService identityService, TaskService taskService, RuntimeService runtimeService,
+                                RepositoryService repositoryService, ReimburseRepository reimburseRepository,
+                                HistoryService historyService, FlowOperationLogService flowOperationLogService,
+                                @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap) {
+        this.identityService = identityService;
+        this.taskService = taskService;
+        this.runtimeService = runtimeService;
+        this.repositoryService = repositoryService;
+        this.reimburseRepository = reimburseRepository;
+        this.historyService = historyService;
+        this.flowOperationLogService = flowOperationLogService;
+        this.bpmnModelInstanceMap = bpmnModelInstanceMap;
+    }
+
+    @Override
+    public Map<String, Object> createVariableMap(ReimburseForm form) {
+        form.variableMap();
+        return form.getVariableMap();
+    }
+
+
+    /**
+     * starter id/name
+     * @param form 业务数据
+     */
+    @Override
+    public String businessKey(ReimburseForm form) {
+        return "APPLY_USER_" + form.getSubmitUserid() + "_" + form.getSubmitUsername();
+    }
+
+    @Override
+    public Map<String, Object> getVariableMap() {
+        return null;
+    }
+
+    @Override
+    public List<FlowOperationLog> getCompletedOperationLogByEntityId(String entityId) {
+
+
+        return null;
+    }
+
+    @Override
+    public void afterTask(ReimburseForm form) {
+
+    }
+
+    @Override
+    public void apply(ReimburseForm form) {
+        WorkFlowUtil.ensureProcessDefinitionKey(form);
+        form.setCreateUserid(form.getSubmitUserid());
+        form.setCreateUsername(form.getSubmitUsername());
+        Map<String, Object> variableMap = this.createVariableMap(form);
+        final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().active().singleResult();
+        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(form.getProcessDefinitionKey(), businessKey(form), variableMap);
+        Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
+        task.setAssignee(form.getSubmitUserid());
+        taskService.saveTask(task);
+
+        form.setProcessDefinitionId(processDefinition.getId());
+        form.setProcessInstanceId(processInstance.getId());
+        form.setProcessState(HistoricProcessInstance.STATE_ACTIVE);
+        form.setBusinessState(Constants.STATE_DETAIL_ACTIVE);
+        Reimburse rbs = reimburseRepository.save(form);
+        runtimeService.setVariable(processInstance.getId(), Constants.VAR_KEY_ENTITY, rbs.getId());
+        clearAuthUser();
+
+        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);
+        flowOperationLogService.saveLog(optLog);
+    }
+
+    /**
+     * 查询正在进行的task，使用historyService
+     *
+     * @param processInstanceId 流程实例id
+     */
+    private HistoricTaskInstance getActiveTask(String processInstanceId) {
+        return historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).unfinished().singleResult();
+    }
+
+    @Override
+    public void approve(ReimburseForm form) {
+        WorkFlowUtil.ensureProcessId(form);
+        setAuthUser(form.getSubmitUserid());
+        String procId = form.getProcessInstanceId();
+        Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
+        task.setAssignee(form.getSubmitUserid());
+        FlowOperationLog optLog;
+        Reimburse reimburse = findById(form.getId());
+        if (form.isPass()) {
+            taskService.saveTask(task);
+            reimburse.setBusinessState(Constants.STATE_DETAIL_ACTIVE);
+            optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);
+            optLog.setComment(form.getComment());
+            optLog.setTaskResult(form.getDecision());
+        } else if (form.isReject()) {
+            taskService.saveTask(task);
+            runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
+            reimburse.setBusinessState(Constants.STATE_DETAIL_REJECT);
+            optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);
+            optLog.setComment(form.getComment());
+            optLog.setTaskResult(form.getDecision());
+        } else {
+            log.error("审批结果只能是pass/reject, 实际审批结果: {}", form.getDecision());
+            throw new BusinessException("审批结果只能是pass/reject, 实际审批参数:" + form.getDecision());
+        }
+
+        reimburseRepository.save(reimburse);
+        flowOperationLogService.saveLog(optLog);
+        clearAuthUser();
+    }
+
+    @Override
+    public Reimburse findById(String entityId) {
+        final Optional<Reimburse> optionalReimburse = reimburseRepository.findById(entityId);
+        if (optionalReimburse.isEmpty()) {
+            throw new BusinessException("未查询到业务流程(Id: " + entityId + ")");
+        }
+        return optionalReimburse.get();
+    }
+
+    @Override
+    public void saveEntity(Reimburse rbs) {
+        reimburseRepository.save(rbs);
+    }
+
+    @Override
+    public void setAuthUser(String userid) {
+        identityService.setAuthenticatedUserId(userid);
+    }
+
+    @Override
+    public void clearAuthUser() {
+        identityService.clearAuthentication();
+    }
+
+    @Override
+    public void revoke(String entityId) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        final ValidationResult validationResult = this.revokeValidate(entityId);
+        if (validationResult.isPass()) {
+            Reimburse rbs = this.load(entityId);
+            runtimeService.deleteProcessInstance(rbs.getProcessInstanceId(), Constants.DELETE_REASON_REVOKE + "_" + user.getId() + "_" + user.getName());
+            rbs.setBusinessState(Constants.STATE_DETAIL_REVOKE);
+            reimburseRepository.save(rbs);
+
+            FlowOperationLog optLog = FlowOperationLog.create(user.getId(), user.getName(), rbs.getProcessInstanceId(), rbs.getProcessDefinitionId(), rbs.getProcessDefinitionKey(),
+                    SERVICE_NAME);
+            optLog.setAction(ActionEnum.REVOKE.name());
+            flowOperationLogService.saveLog(optLog);
+        } else {
+            throw new BusinessException(validationResult.getDescription());
+        }
+    }
+
+    @Override
+    public void delete(String entityId) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        ValidationResult validationResult = deleteValidate(entityId);
+        if (validationResult.isPass()) {
+            Reimburse rbs = load(entityId);
+            runtimeService.deleteProcessInstance(rbs.getProcessInstanceId(), Constants.DELETE_REASON_DELETE + "_" + user.getId() + "_" + user.getName());
+            rbs.setBusinessState(Constants.STATE_DETAIL_DELETE);
+            reimburseRepository.save(rbs);
+
+            FlowOperationLog optLog = FlowOperationLog.create(user.getId(), user.getName(), rbs.getProcessInstanceId(), rbs.getProcessDefinitionId(), rbs.getProcessDefinitionKey(),
+                    SERVICE_NAME);
+            optLog.setAction(ActionEnum.DELETE.name());
+            flowOperationLogService.saveLog(optLog);
+
+        } else {
+            throw new BusinessException(validationResult.getDescription());
+        }
+    }
+
+    @Override
+    public void preview(ReimburseForm form) {
+        //验证必要参数
+        WorkFlowUtil.ensureProcessDefinitionKey(form);
+        if (form.getCost() == null) {
+            throw new MissingRequiredParameterException("报销金额(cost)");
+        }
+        Map<String, Object> vars = form.variableMap();
+        BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
+        List<FlowNode> list = WorkFlowUtil.getPreviewFlowNode(bpmnModelInstance, vars);
+
+        //生成返回给前端的对象
+
+    }
+
+
+
+    /**
+     * 删除校验
+     * @param entityId 业务实体id
+     */
+    public ValidationResult deleteValidate(String entityId) {
+        return ValidationResult.pass();
+    }
+
+
+    @Override
+    public Reimburse load(String entityId) {
+        final Optional<Reimburse> optionalReimburse = reimburseRepository.findById(entityId);
+        if (optionalReimburse.isEmpty()) {
+            log.info("未查询到业务实体! 实体id: {}", entityId);
+            throw new BusinessException("未查询到流程业务(id: " + entityId + ")");
+        }
+
+        return optionalReimburse.get();
+    }
+
+    /**
+     * 校验撤销
+     * @param entityId 业务实体id
+     */
+    public ValidationResult revokeValidate(String entityId) {
+        //1. 权限校验 -- 用户是否允许撤销/节点是否允许撤销
+        // ValidationChain
+
+        //2. 撤销条件：多少天内允许撤销
+
+
+        return ValidationResult.pass();
+    }
+
+
+}

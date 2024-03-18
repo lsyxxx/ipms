@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -36,8 +37,15 @@ public class WorkFlowBase extends AuditInfo {
     /**
      * 业务状态，需要区别流程状态
      */
-    @Column(name="biz_state", columnDefinition="TINYINT")
+    @Column(name="biz_state", columnDefinition="VARCHAR(128)")
     private String businessState;
+
+    /**
+     * 流程状态，为camunda流程状态
+     * ACTIVE, COMPLETED, SUSPEND,...
+     */
+    @Column(name="proc_state", columnDefinition="VARCHAR(64)")
+    private String processState;
 
     /**
      * 业务是否结束，区别流程
@@ -45,23 +53,11 @@ public class WorkFlowBase extends AuditInfo {
     @Column(columnDefinition="BIT")
     private boolean isFinished;
 
-    //-- 当前正在进行的task
-    @Column(name="cur_task_id", columnDefinition="VARCHAR(128)")
-    private String currentTaskId;
-    @Column(name="cur_task_name", columnDefinition="VARCHAR(128)")
-    private String currentTaskName;
-    @Column(name="cur_task_userid", columnDefinition="VARCHAR(128)")
-    private String currentTaskAssigneeId;
-    @Column(name="cur_task_username", columnDefinition="VARCHAR(128)")
-    private String currentTaskAssigneeName;
-
     /**
-     * 结束流程的人
-     * 正常结束流程是system
-     * @see com.abt.wf.config.Constants
+     * 业务类型，如费用报销，开票确认
      */
-    @Column(columnDefinition="VARCHAR(128)")
-    private String terminateId = Constants.TERMINATE_SYS;
-    @Column(columnDefinition="VARCHAR(128)")
-    private String terminateName = Constants.TERMINATE_SYS;
+    @Column(name="srv_name", columnDefinition="VARCHAR(64)")
+    private String serviceName;
+
+
 }

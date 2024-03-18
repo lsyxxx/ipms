@@ -2,8 +2,7 @@ package com.abt.wf.service;
 
 
 import com.abt.wf.model.ValidationResult;
-import com.abt.wfbak.entity.FlowOperationLog;
-import com.abt.wfbak.model.ApprovalTask;
+import com.abt.wf.entity.FlowOperationLog;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import java.util.List;
@@ -14,15 +13,6 @@ import java.util.Map;
  * @param <T> 业务表单/对象
  */
 public interface WorkFlowService<T> {
-
-    /**
-     * 校验业务数据
-     * @param form 业务数据表单/对象
-     * @param fastQuit true: 一旦出现校验不通过，不再进行后面校验，直接退出
-     *                 false: 出现校验不通过，仍进行后面校验
-     * @return: ValidationResult
-     */
-    ValidationResult validate(T form, boolean fastQuit);
 
     /**
      * 生成流程参数
@@ -37,19 +27,14 @@ public interface WorkFlowService<T> {
      */
     String businessKey(T form);
 
-    /**
-     * 流程处理
-     */
-    ProcessInstance processExecute(T form);
-
     Map<String, Object> getVariableMap();
 
-    /**
-     * 获取流程图
-     * @param form  业务数据表单/对象
-     * @return List<ApprovalTask>
-     */
-    List<ApprovalTask> getPreview(T form);
+//    /**
+//     * 获取流程图
+//     * @param form  业务数据表单/对象
+//     * @return List<ApprovalTask>
+//     */
+//    List<ApprovalTask> getPreview(T form);
 
     /**
      * 获取已进行操作记录
@@ -75,8 +60,28 @@ public interface WorkFlowService<T> {
 
     /**
      * 审批
-     * @param form
      */
     void approve(T form);
+
+    void setAuthUser(String userid);
+
+    void clearAuthUser();
+
+    /**
+     * 撤销
+     * @param entityId 业务实体id
+     */
+    void revoke(String entityId);
+
+    /**
+     * 删除流程
+     * @param entityId 业务实体id
+     */
+    void delete(String entityId);
+
+    /**
+     * 预览流程
+     */
+    void preview(T form);
 
 }

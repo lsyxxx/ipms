@@ -1,9 +1,5 @@
-package com.abt.wfbak.exception;
+package com.abt.common.exception;
 
-/**
- * @author lsy
- * @date 2023/12/14
- */
 public class MissingRequiredParameterException extends RuntimeException{
 
     public MissingRequiredParameterException(String parameterName) {
