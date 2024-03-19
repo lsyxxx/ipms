@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import com.abt.common.exception.MissingRequiredParameterException;
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 
 /**
  *
@@ -28,7 +30,7 @@ public class WorkFlowUtil {
     /**
      * 递归查找node
      * @param startNode 起始node，一般为startEvent
-     * @param list 查找的所有node集合
+     * @param list 查找的所有node集合，包含传入的起始node
      * @param vars 流程参数
      */
     public static void findActivityNodes(FlowNode startNode, List<FlowNode> list, Map<String, Object> vars) {
@@ -124,6 +126,16 @@ public class WorkFlowUtil {
             return;
         }
         throw new MissingRequiredParameterException("ProcessInstanceId(流程实例id)");
+    }
+
+
+    public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
+        UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
+        ExtensionElements extensionElements = userTaskModel.getExtensionElements();
+        return extensionElements.getElementsQuery()
+                .filterByType(CamundaProperties.class)
+                .singleResult()
+                .getCamundaProperties();
     }
 
 }

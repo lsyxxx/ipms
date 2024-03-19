@@ -36,6 +36,7 @@ public class WorkFlowBase extends AuditInfo {
 
     /**
      * 业务状态，需要区别流程状态
+     * Contants.STATE_DETAIL_*
      */
     @Column(name="biz_state", columnDefinition="VARCHAR(128)")
     private String businessState;

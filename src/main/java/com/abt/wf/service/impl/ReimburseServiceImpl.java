@@ -1,36 +1,43 @@
 package com.abt.wf.service.impl;
 
+import com.abt.chemicals.entity.Company;
 import com.abt.common.exception.MissingRequiredParameterException;
+import com.abt.common.model.User;
+import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.repository.EmployeeRepository;
+import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
-import com.abt.wf.model.ActionEnum;
-import com.abt.wf.model.ReimburseForm;
-import com.abt.wf.model.ValidationResult;
+import com.abt.wf.model.*;
 import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.bpm.engine.task.Comment;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.model.bpmn.impl.instance.StartEventImpl;
+import org.camunda.bpm.model.bpmn.instance.EndEvent;
+import org.camunda.bpm.model.bpmn.instance.StartEvent;
+import org.camunda.bpm.model.bpmn.instance.UserTask;
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -51,12 +58,16 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     private final Map<String, BpmnModelInstance> bpmnModelInstanceMap;
 
+    private final UserService<User, User> userService;
+    private final EmployeeRepository employeeRepository;
+
     public static final String SERVICE_NAME = "费用报销";
 
     public ReimburseServiceImpl(IdentityService identityService, TaskService taskService, RuntimeService runtimeService,
                                 RepositoryService repositoryService, ReimburseRepository reimburseRepository,
                                 HistoryService historyService, FlowOperationLogService flowOperationLogService,
-                                @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap) {
+                                @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap,
+                                @Qualifier("sqlServerUserService") UserService userService, EmployeeRepository employeeRepository) {
         this.identityService = identityService;
         this.taskService = taskService;
         this.runtimeService = runtimeService;
@@ -65,6 +76,8 @@ public class ReimburseServiceImpl implements ReimburseService {
         this.historyService = historyService;
         this.flowOperationLogService = flowOperationLogService;
         this.bpmnModelInstanceMap = bpmnModelInstanceMap;
+        this.userService = userService;
+        this.employeeRepository = employeeRepository;
     }
 
     @Override
@@ -90,9 +103,54 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     @Override
     public List<FlowOperationLog> getCompletedOperationLogByEntityId(String entityId) {
+        //已完成的
+        return flowOperationLogService.findLogsByEntityId(entityId);
+    }
 
+    public List<UserTaskDTO> wrapper(List<FlowOperationLog> operationLogs) {
+        List<UserTaskDTO> list = new ArrayList<>();
+        String procDefKey = "";
+        if (!operationLogs.isEmpty()) {
+            procDefKey = operationLogs.get(0).getProcessDefinitionKey();
+        }
+        BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(procDefKey);
+        for (FlowOperationLog opt : operationLogs) {
+            UserTaskDTO dto = (UserTaskDTO) opt;
+            final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, opt.getTaskDefinitionKey());
+            dto.setProperties(extensionProperties);
+            list.add(dto);
+        }
+        return list;
+    }
 
-        return null;
+    public UserTaskDTO createUserTaskWrapper(String procDefKey, String taskDefKey) {
+        BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(procDefKey);
+        final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, taskDefKey);
+        UserTaskDTO wrapper = new UserTaskDTO();
+        wrapper.setProperties(extensionProperties);
+        return wrapper;
+    }
+
+    @Override
+    public List<UserTaskDTO> processRecord(ReimburseForm form) {
+        List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(form.getId());
+        List<UserTaskDTO> record = wrapper(completed);
+        if (record.isEmpty()) {
+            return record;
+        }
+        //最后一个
+        UserTaskDTO lastRecord = record.get(record.size() - 1);
+        BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
+        //TODO: id = taskKey?
+        FlowNode startNode = bpmnModelInstance.getModelElementById(lastRecord.getTaskDefinitionKey());
+        List<FlowNode> list = new ArrayList<>();
+        WorkFlowUtil.findActivityNodes(startNode, list, form.variableMap());
+        for (FlowNode node: list) {
+            UserTaskDTO parent = flowNodeWrapper(node, form, bpmnModelInstance);
+            record.add(parent);
+        }
+
+        return record;
     }
 
     @Override
@@ -228,8 +286,46 @@ public class ReimburseServiceImpl implements ReimburseService {
         }
     }
 
+    /**
+     * 将flowNode包装为UserTaskDTO
+     */
+    public UserTaskDTO flowNodeWrapper(FlowNode node, ReimburseForm form, BpmnModelInstance bpmnModelInstance) {
+        UserTaskDTO parent = new UserTaskDTO();
+        UserTaskDTO child = new UserTaskDTO();
+        parent.setProcessDefinitionKey(form.getProcessDefinitionKey());
+        parent.setProcessDefinitionId(form.getProcessDefinitionId());
+        parent.setTaskDefinitionKey(node.getId());
+        parent.setTaskName(node.getName());
+        child.setProcessDefinitionKey(form.getProcessDefinitionKey());
+        child.setProcessDefinitionId(form.getProcessDefinitionId());
+        if (node instanceof UserTask u) {
+            final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, node.getId());
+            parent.setProperties(extensionProperties);
+            if (parent.isApplyNode()) {
+                child.setOperatorId(form.getSubmitUserid());
+                child.setOperatorName(form.getSubmitUsername());
+            } else {
+                String assigneeId = u.getCamundaAssignee();
+                //指定用户才能解析
+                if (parent.isSpecific()) {
+                    final User simpleUserInfo = userService.getSimpleUserInfo(new User(assigneeId));
+                    if (simpleUserInfo != null) {
+                        child.setOperatorId(assigneeId);
+                        child.setOperatorName(simpleUserInfo.getUsername());
+                    } else {
+                        log.warn("未查询到用户-" + assigneeId);
+                    }
+                }
+            }
+        }
+        parent.addUserTaskDTO(child);
+        return parent;
+    }
+
+
+    //预览和查看完成记录返回对象一致
     @Override
-    public void preview(ReimburseForm form) {
+    public List<UserTaskDTO> preview(ReimburseForm form) {
         //验证必要参数
         WorkFlowUtil.ensureProcessDefinitionKey(form);
         if (form.getCost() == null) {
@@ -237,10 +333,21 @@ public class ReimburseServiceImpl implements ReimburseService {
         }
         Map<String, Object> vars = form.variableMap();
         BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
+        final Collection<StartEvent> startEvents = bpmnModelInstance.getModelElementsByType(StartEvent.class);
         List<FlowNode> list = WorkFlowUtil.getPreviewFlowNode(bpmnModelInstance, vars);
+        StartEventImpl startEvent = (StartEventImpl) startEvents.iterator().next();
+        List<FlowNode> previewList = new ArrayList<>();
+        WorkFlowUtil.findActivityNodes(startEvent, previewList, vars);
+        //去掉startEvent和endEvent
+        previewList = previewList.stream().filter(i -> !(i instanceof StartEvent || i instanceof EndEvent)).collect(Collectors.toList());
 
+        List<UserTaskDTO> returnList = new ArrayList<>();
         //生成返回给前端的对象
-
+        for (FlowNode node : previewList) {
+            UserTaskDTO parent = flowNodeWrapper(node, form, bpmnModelInstance);
+            returnList.add(parent);
+        }
+        return returnList;
     }
 
 
@@ -277,6 +384,39 @@ public class ReimburseServiceImpl implements ReimburseService {
 
 
         return ValidationResult.pass();
+    }
+
+    //query: 分页, 审批编号, 状态，创建人，创建时间
+    public List<ReimburseForm> allList(ReimburseRequestForm requestForm) {
+        //先用单独查询
+        //单页最多40条(参考钉钉)
+        Pageable pageable = PageRequest.of(0, 40, Sort.by("createDate").descending());
+        List<ReimburseForm> list = new ArrayList<>();
+        Reimburse condition = new Reimburse();
+        Page<Reimburse> page;
+        if (StringUtils.isNotBlank(requestForm.getId())) {
+            //审批编号
+            condition.setId(requestForm.getId());
+        }
+        if (StringUtils.isNotBlank(requestForm.getState())) {
+            //状态
+            condition.setBusinessState(requestForm.getState());
+        }
+        if (StringUtils.isNotBlank(requestForm.getUserid())) {
+            condition.setCreateUserid(requestForm.getUserid());
+        }
+
+        //TODO:
+        ExampleMatcher matcher = ExampleMatcher.matching();
+//                .withMatcher("createDate", ExampleMatcher.);
+
+        Example<Reimburse> example = Example.of(condition, matcher);
+
+        long t1 = System.currentTimeMillis();
+        reimburseRepository.findAll(example, pageable);
+        long end = System.currentTimeMillis();
+        System.out.println("查询时间: " + (end-t1) + "ms");
+        return list;
     }
 
 

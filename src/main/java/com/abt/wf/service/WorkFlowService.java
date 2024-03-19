@@ -1,9 +1,8 @@
 package com.abt.wf.service;
 
 
-import com.abt.wf.model.ValidationResult;
+import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.entity.FlowOperationLog;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -29,24 +28,11 @@ public interface WorkFlowService<T> {
 
     Map<String, Object> getVariableMap();
 
-//    /**
-//     * 获取流程图
-//     * @param form  业务数据表单/对象
-//     * @return List<ApprovalTask>
-//     */
-//    List<ApprovalTask> getPreview(T form);
-
     /**
      * 获取已进行操作记录
      * @param entityId 业务Id
      */
     List<FlowOperationLog> getCompletedOperationLogByEntityId(String entityId);
-    //根据流程id获取Log
-//    List<FlowOperationLog> getOperationLogByProcessId(String processId);
-
-    //应该和getPreview(), getLog()保持一样的返回
-    //如果不一样可以参考飞书作法，审批中的只显示已完成的记录
-//    List<ApprovalTask> getFullProcessPath(T form);
 
     /**
      * 当前task完成后处理，比如抄送，保存log
@@ -82,6 +68,12 @@ public interface WorkFlowService<T> {
     /**
      * 预览流程
      */
-    void preview(T form);
+    List<UserTaskDTO> preview(T form);
+
+    /**
+     * 流程记录，包含已完成的和预览的
+     */
+    List<UserTaskDTO> processRecord(T form);
+
 
 }

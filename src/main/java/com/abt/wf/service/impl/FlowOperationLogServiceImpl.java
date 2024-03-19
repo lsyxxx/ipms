@@ -1,10 +1,11 @@
 package com.abt.wf.service.impl;
 
 import com.abt.wf.entity.FlowOperationLog;
-import com.abt.wf.entity.WorkFlowBase;
 import com.abt.wf.repository.FlowOperationLogRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class FlowOperationLogServiceImpl implements FlowOperationLogService {
@@ -19,4 +20,8 @@ public class FlowOperationLogServiceImpl implements FlowOperationLogService {
         return flowOperationLogRepository.save(log);
     }
 
+    @Override
+    public List<FlowOperationLog> findLogsByEntityId(String entityId) {
+        return flowOperationLogRepository.findByEntityIdOrderByTaskStartTimeAsc(entityId);
+    }
 }

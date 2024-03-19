@@ -1,6 +1,6 @@
 package com.abt.wf.entity;
 
-import com.abt.common.entity.NotifyMessage;
+import com.abt.sys.model.entity.NotifyMessage;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;

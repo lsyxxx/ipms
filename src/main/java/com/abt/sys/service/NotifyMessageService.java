@@ -1,6 +1,6 @@
-package com.abt.common.service;
+package com.abt.sys.service;
 
-import com.abt.common.entity.NotifyMessage;
+import com.abt.sys.model.entity.NotifyMessage;
 
 public interface NotifyMessageService {
 

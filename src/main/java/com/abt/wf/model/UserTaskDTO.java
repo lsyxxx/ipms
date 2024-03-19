@@ -8,6 +8,8 @@ import lombok.ToString;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 
 /**
@@ -26,8 +28,9 @@ public class UserTaskDTO extends FlowOperationLog {
 
     /**
      * 自定义的task(node)类型
-     * apply: 申请节点
-     * approval: 审批节点
+     * apply: 申请节点,Contants.TASK_TYPE_APPLY
+     * approval: 审批节点,Contants.TASK_TYPE_APPROVAL
+     *
      */
     private String taskType;
     /**
@@ -36,6 +39,11 @@ public class UserTaskDTO extends FlowOperationLog {
      * 1: 指定用户
      */
     private int selectUserType = Constants.SELECT_USER_TYPE_MANUAL;
+    /**
+     * 当前task是否正在运行
+     * 是否存在taskResult
+     */
+    private boolean isActive = false;
 
     /**
      * 如果是多实例节点，那么有子节点
@@ -64,4 +72,16 @@ public class UserTaskDTO extends FlowOperationLog {
         taskList.add(dto);
     }
 
+    public boolean isApplyNode() {
+        return Constants.TASK_TYPE_APPLY.equals(this.taskType);
+    }
+
+    public boolean isSpecific() {
+        return Constants.SELECT_USER_TYPE_SPECIFIC == this.selectUserType;
+    }
+
+    public boolean isActive() {
+        this.isActive = !StringUtils.isBlank(this.getTaskResult());
+        return isActive;
+    }
 }

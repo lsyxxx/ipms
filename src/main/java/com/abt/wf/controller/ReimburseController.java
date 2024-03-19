@@ -1,7 +1,10 @@
 package com.abt.wf.controller;
 
+import com.abt.common.model.RequestForm;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
+import com.abt.wf.model.ReimburseRequestForm;
+import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.service.impl.ReimburseServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.common.model.R;
+
+import java.util.List;
 
 /**
  *
@@ -69,8 +74,49 @@ public class ReimburseController {
         return R.success("删除成功");
     }
 
-    public void preview(ReimburseForm form) {
+    @PostMapping("/record")
+    public R<List<UserTaskDTO>> processRecord(ReimburseForm form) {
+        getUserFromToken(form);
+        final List<UserTaskDTO> processRecord = reimburseService.processRecord(form);
+        return R.success(processRecord, processRecord.size());
+    }
 
+    /**
+     * 所有报销记录
+     */
+    @GetMapping("/all")
+    public void allList(@ModelAttribute ReimburseRequestForm queryForm) {
+        //query: 分页, 审批编号, 审批结果，审批状态，创建人，创建时间
+    }
+
+    /**
+     * 我已处理的
+     */
+    @GetMapping("/done")
+    public void doneList() {
+
+    }
+
+    /**
+     * 待我处理
+     */
+    @GetMapping("/todo")
+    public void todoList() {
+
+    }
+
+    /**
+     * 我申请的
+     */
+    public void myApply() {
+
+    }
+
+    @PostMapping("/preview")
+    public R<List<UserTaskDTO>> preview(ReimburseForm form) {
+        getUserFromToken(form);
+        final List<UserTaskDTO> preview = reimburseService.preview(form);
+        return R.success(preview, preview.size());
     }
 
     public void getUserFromToken(ReimburseForm form) {

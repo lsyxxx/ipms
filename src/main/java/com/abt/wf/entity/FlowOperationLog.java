@@ -61,7 +61,7 @@ public class FlowOperationLog {
     /**
      * 描述
      */
-    @Column(name="desc", columnDefinition="VARCHAR(1000)")
+    @Column(name="desc_", columnDefinition="VARCHAR(1000)")
     private String description;
 
     //-- process
@@ -73,10 +73,12 @@ public class FlowOperationLog {
     private String processDefinitionKey;
 
     //-- task
-    @Column(columnDefinition="VARCHAR(128)")
-    private String taskId;
+    @Column(name = "task_inst_id", columnDefinition="VARCHAR(128)")
+    private String taskInstanceId;
     @Column(columnDefinition="VARCHAR(128)")
     private String taskName;
+    @Column(name="task_def_key", columnDefinition="VARCHAR(128)")
+    private String taskDefinitionKey;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -125,7 +127,7 @@ public class FlowOperationLog {
      */
     public static FlowOperationLog applyLog(String operatorId, String operatorName, WorkFlowBase form, Task task) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
-        optLog.setTaskId(task.getId());
+        optLog. setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         optLog.setTaskEndTime(LocalDateTime.now());
@@ -138,7 +140,7 @@ public class FlowOperationLog {
      */
     public static FlowOperationLog passLog(String operatorId, String operatorName, WorkFlowBase form, Task task) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
-        optLog.setTaskId(task.getId());
+        optLog. setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         optLog.setTaskEndTime(LocalDateTime.now());
@@ -150,7 +152,7 @@ public class FlowOperationLog {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName,
                 form.getProcessInstanceId(), form.getProcessDefinitionId(), form.getProcessDefinitionKey(),
                 form.getServiceName());
-        optLog.setTaskId(task.getId());
+        optLog. setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         optLog.setTaskEndTime(LocalDateTime.now());
@@ -166,7 +168,7 @@ public class FlowOperationLog {
     public static FlowOperationLog carbonCopyLog(String processInstanceId, String processDefinitionId, String processDefinitionKey,
                                                  @Nullable String taskId, String serviceName) {
         FlowOperationLog log = FlowOperationLog.create(OPERATOR_SYS, OPERATOR_SYS, processInstanceId, processDefinitionId, processDefinitionKey, serviceName);
-        log.setTaskId(taskId);
+        log. setTaskInstanceId(taskId);
         log.setAction(ActionEnum.COPY.name());
         return log;
     }
