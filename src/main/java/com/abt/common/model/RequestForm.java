@@ -41,6 +41,11 @@ public class RequestForm {
     private String query;
 
     /**
+     * 状态
+     */
+    private String state;
+
+    /**
      * 列表数据count
      */
     private int count;
@@ -111,6 +116,21 @@ public class RequestForm {
             return "";
         }
         return this.user.getCode();
+    }
+
+    public void setUserid(String userid) {
+        if (this.user == null) {
+            this.user = new User(userid);
+        } else {
+            this.user.setId(userid);
+        }
+    }
+
+    public void setUsername(String username) {
+        if (this.user == null) {
+            this.user = new User();
+        }
+        this.user.setUsername(username);
     }
 
     public static RequestForm createNoPaging() {

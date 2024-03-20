@@ -13,18 +13,4 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class ReimburseRequestForm extends RequestForm {
 
-    //id: 审批编号
-    //创建时间-开始: startDate; 创建时间-结束: endDate
-    //user: 创建人id/name/工号
-
-    /**
-     * 状态
-     */
-    private String state;
-
-    private String createDateStart;
-    private String createDateEnd;
-
-
-
 }

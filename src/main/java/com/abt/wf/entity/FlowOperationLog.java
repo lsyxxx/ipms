@@ -109,7 +109,7 @@ public class FlowOperationLog {
     }
 
     public static FlowOperationLog create(String operatorId, String operatorName,
-                                          WorkFlowBase form) {
+                                          WorkflowBase form) {
         FlowOperationLog optLog = new FlowOperationLog();
         optLog.setOperatorId(operatorId);
         optLog.setOperatorName(operatorName);
@@ -125,7 +125,7 @@ public class FlowOperationLog {
     /**
      * 用户申请log
      */
-    public static FlowOperationLog applyLog(String operatorId, String operatorName, WorkFlowBase form, Task task) {
+    public static FlowOperationLog applyLog(String operatorId, String operatorName, WorkflowBase form, Task task) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
         optLog. setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
@@ -138,7 +138,7 @@ public class FlowOperationLog {
     /**
      * 用户审批通过
      */
-    public static FlowOperationLog passLog(String operatorId, String operatorName, WorkFlowBase form, Task task) {
+    public static FlowOperationLog passLog(String operatorId, String operatorName, WorkflowBase form, Task task) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
         optLog. setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
@@ -148,7 +148,7 @@ public class FlowOperationLog {
         return optLog;
     }
 
-    public static FlowOperationLog rejectLog(String operatorId, String operatorName, WorkFlowBase form, Task task) {
+    public static FlowOperationLog rejectLog(String operatorId, String operatorName, WorkflowBase form, Task task) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName,
                 form.getProcessInstanceId(), form.getProcessDefinitionId(), form.getProcessDefinitionKey(),
                 form.getServiceName());

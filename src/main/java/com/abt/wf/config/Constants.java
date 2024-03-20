@@ -70,5 +70,8 @@ public class Constants {
      */
     public static final int SELECT_USER_TYPE_SPECIFIC = 1;
 
+    public static final String SERVICE_RBS = "日常报销";
+    public static final String SERVICE_INV = "开票申请";
+
 
 }

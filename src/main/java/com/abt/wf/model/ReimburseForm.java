@@ -23,14 +23,17 @@ public class ReimburseForm extends Reimburse {
 
     //-- 当前正在进行的task
     private String currentTaskId;
+    private String currentTaskDefId;
     private String currentTaskName;
     private String currentTaskAssigneeId;
     private String currentTaskAssigneeName;
-    /**
-     *  详细状态
-     * @see com.abt.wf.config.Constants STATE_DETAIL_
-     */
-    private String detailState;
+
+    //-- 参与的task
+    private String invokedTaskId;
+    private String invokedTaskDefId;
+    private String invokedTaskName;
+    private String invokedTaskAssigneeId;
+    private String invokedTaskAssigneeName;
 
     //-- 提交人
     private String submitUserid;

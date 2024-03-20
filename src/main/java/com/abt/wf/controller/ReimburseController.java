@@ -74,6 +74,10 @@ public class ReimburseController {
         return R.success("删除成功");
     }
 
+
+    /**
+     * 流程记录
+     */
     @PostMapping("/record")
     public R<List<UserTaskDTO>> processRecord(ReimburseForm form) {
         getUserFromToken(form);
@@ -85,31 +89,40 @@ public class ReimburseController {
      * 所有报销记录
      */
     @GetMapping("/all")
-    public void allList(@ModelAttribute ReimburseRequestForm queryForm) {
+    public R<List<ReimburseForm>> allList(@ModelAttribute ReimburseRequestForm queryForm) {
         //query: 分页, 审批编号, 审批结果，审批状态，创建人，创建时间
+        final List<ReimburseForm> all = reimburseService.findAllByCriteria(queryForm);
+        return R.success(all, all.size());
     }
 
     /**
      * 我已处理的
      */
     @GetMapping("/done")
-    public void doneList() {
-
+    public R<List<ReimburseForm>> myDone(@ModelAttribute ReimburseRequestForm queryForm) {
+        // criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
+        getUserFromToken(queryForm);
+        final List<ReimburseForm> done = reimburseService.findMyDoneByCriteria(queryForm);
+        return R.success(done, done.size());
     }
 
     /**
      * 待我处理
      */
     @GetMapping("/todo")
-    public void todoList() {
-
+    public R<List<ReimburseForm>> todoList(@ModelAttribute ReimburseRequestForm queryForm) {
+        // criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
+        final List<ReimburseForm> todo = reimburseService.findMyTodoByCriteria(queryForm);
+        return R.success(todo, todo.size());
     }
 
     /**
      * 我申请的
      */
-    public void myApply() {
-
+    public R<List<ReimburseForm>> myApply(@ModelAttribute ReimburseRequestForm queryForm) {
+        getUserFromToken(queryForm);
+        final List<ReimburseForm> myApply = reimburseService.findMyApplyByCriteria(queryForm);
+        return R.success(myApply, myApply.size());
     }
 
     @PostMapping("/preview")
@@ -123,6 +136,12 @@ public class ReimburseController {
         UserView userView = TokenUtil.getUserFromAuthToken();
         form.setSubmitUserid(userView.getId());
         form.setSubmitUsername(userView.getUsername());
+    }
+
+    public void getUserFromToken(ReimburseRequestForm form) {
+        UserView userView = TokenUtil.getUserFromAuthToken();
+        form.setUserid(userView.getId());
+        form.setUsername(userView.getName());
     }
 
     public void setServiceName(ReimburseForm form) {

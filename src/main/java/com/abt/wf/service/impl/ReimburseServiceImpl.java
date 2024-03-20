@@ -1,9 +1,7 @@
 package com.abt.wf.service.impl;
 
-import com.abt.chemicals.entity.Company;
 import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.model.User;
-import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
@@ -14,11 +12,11 @@ import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.*;
 import com.abt.wf.repository.ReimburseRepository;
+import com.abt.wf.repository.ReimburseTaskRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
@@ -32,7 +30,6 @@ import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 
@@ -59,7 +56,8 @@ public class ReimburseServiceImpl implements ReimburseService {
     private final Map<String, BpmnModelInstance> bpmnModelInstanceMap;
 
     private final UserService<User, User> userService;
-    private final EmployeeRepository employeeRepository;
+
+    private final ReimburseTaskRepository reimburseTaskRepository;
 
     public static final String SERVICE_NAME = "费用报销";
 
@@ -67,7 +65,7 @@ public class ReimburseServiceImpl implements ReimburseService {
                                 RepositoryService repositoryService, ReimburseRepository reimburseRepository,
                                 HistoryService historyService, FlowOperationLogService flowOperationLogService,
                                 @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap,
-                                @Qualifier("sqlServerUserService") UserService userService, EmployeeRepository employeeRepository) {
+                                @Qualifier("sqlServerUserService") UserService userService, EmployeeRepository employeeRepository, ReimburseTaskRepository reimburseTaskRepository) {
         this.identityService = identityService;
         this.taskService = taskService;
         this.runtimeService = runtimeService;
@@ -77,7 +75,7 @@ public class ReimburseServiceImpl implements ReimburseService {
         this.flowOperationLogService = flowOperationLogService;
         this.bpmnModelInstanceMap = bpmnModelInstanceMap;
         this.userService = userService;
-        this.employeeRepository = employeeRepository;
+        this.reimburseTaskRepository = reimburseTaskRepository;
     }
 
     @Override
@@ -88,12 +86,12 @@ public class ReimburseServiceImpl implements ReimburseService {
 
 
     /**
-     * starter id/name
+     * 流程名称，比如报销，开票等
      * @param form 业务数据
      */
     @Override
     public String businessKey(ReimburseForm form) {
-        return "APPLY_USER_" + form.getSubmitUserid() + "_" + form.getSubmitUsername();
+        return Constants.SERVICE_RBS;
     }
 
     @Override
@@ -386,38 +384,39 @@ public class ReimburseServiceImpl implements ReimburseService {
         return ValidationResult.pass();
     }
 
-    //query: 分页, 审批编号, 状态，创建人，创建时间
-    public List<ReimburseForm> allList(ReimburseRequestForm requestForm) {
-        //先用单独查询
-        //单页最多40条(参考钉钉)
-        Pageable pageable = PageRequest.of(0, 40, Sort.by("createDate").descending());
-        List<ReimburseForm> list = new ArrayList<>();
-        Reimburse condition = new Reimburse();
-        Page<Reimburse> page;
-        if (StringUtils.isNotBlank(requestForm.getId())) {
-            //审批编号
-            condition.setId(requestForm.getId());
-        }
-        if (StringUtils.isNotBlank(requestForm.getState())) {
-            //状态
-            condition.setBusinessState(requestForm.getState());
-        }
-        if (StringUtils.isNotBlank(requestForm.getUserid())) {
-            condition.setCreateUserid(requestForm.getUserid());
-        }
 
-        //TODO:
-        ExampleMatcher matcher = ExampleMatcher.matching();
-//                .withMatcher("createDate", ExampleMatcher.);
-
-        Example<Reimburse> example = Example.of(condition, matcher);
-
-        long t1 = System.currentTimeMillis();
-        reimburseRepository.findAll(example, pageable);
-        long end = System.currentTimeMillis();
-        System.out.println("查询时间: " + (end-t1) + "ms");
-        return list;
+    @Override
+    public List<ReimburseForm> findAllByCriteria(ReimburseRequestForm requestForm) {
+        //query: 分页, 审批编号, 状态，创建人，创建时间
+        return reimburseTaskRepository.findReimburseWithCurrenTaskPageable(requestForm.getPage(), requestForm.getLimit(),
+                requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
+                requestForm.getStartDate(), requestForm.getEndDate());
     }
+
+    @Override
+    public List<ReimburseForm> findMyApplyByCriteria(ReimburseRequestForm requestForm) {
+        return reimburseTaskRepository.findReimburseWithCurrenTaskPageable(requestForm.getPage(), requestForm.getLimit(),
+                requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
+                requestForm.getStartDate(), requestForm.getEndDate());
+
+    }
+    @Override
+    public List<ReimburseForm> findMyDoneByCriteria(ReimburseRequestForm requestForm) {
+//        criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
+        return reimburseTaskRepository.findTaskPageable(requestForm.getPage(), requestForm.getLimit(),
+                requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
+                requestForm.getStartDate(), requestForm.getEndDate(), ReimburseTaskRepository.DONE);
+    }
+
+    @Override
+    public List<ReimburseForm> findMyTodoByCriteria(ReimburseRequestForm requestForm) {
+        return reimburseTaskRepository.findTaskPageable(requestForm.getPage(), requestForm.getLimit(),
+                requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
+                requestForm.getStartDate(), requestForm.getEndDate(), ReimburseTaskRepository.TODO);
+    }
+
+
+
 
 
 }

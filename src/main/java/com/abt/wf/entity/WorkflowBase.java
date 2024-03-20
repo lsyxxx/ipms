@@ -1,16 +1,18 @@
 package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
-import com.abt.wf.config.Constants;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
 
 /**
  * 流程基础数据
@@ -21,7 +23,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class WorkFlowBase extends AuditInfo {
+public class WorkflowBase extends AuditInfo {
 
     //-- process
     @Column(name="proc_def_key", columnDefinition="VARCHAR(128)")
@@ -59,6 +61,16 @@ public class WorkFlowBase extends AuditInfo {
      */
     @Column(name="srv_name", columnDefinition="VARCHAR(64)")
     private String serviceName;
+
+    /**
+     * 流程结束时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDateTime endTime;
+
+    @Column(name="del_reason", columnDefinition="VARCHAR(500)")
+    private String deleteReason;
 
 
 }

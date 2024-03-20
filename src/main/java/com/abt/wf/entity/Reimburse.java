@@ -29,7 +29,7 @@ import java.time.LocalDate;
 @DynamicUpdate
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class Reimburse extends WorkFlowBase {
+public class Reimburse extends WorkflowBase {
 
     @Id
     @GeneratedValue(generator  = "timestampIdGenerator")

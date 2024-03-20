@@ -1,7 +1,7 @@
 package com.abt.wf.util;
 
 import com.abt.sys.exception.BusinessException;
-import com.abt.wf.entity.WorkFlowBase;
+import com.abt.wf.entity.WorkflowBase;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.*;
 import org.camunda.bpm.impl.juel.ExpressionFactoryImpl;
@@ -107,21 +107,21 @@ public class WorkFlowUtil {
         return previewList.stream().filter(i -> !(i instanceof StartEvent || i instanceof EndEvent)).collect(Collectors.toList());
     }
 
-    public static void ensureProcessDefinitionKey(WorkFlowBase form) {
+    public static void ensureProcessDefinitionKey(WorkflowBase form) {
         if (StringUtils.isNotBlank(form.getProcessDefinitionKey())) {
             return;
         }
         throw new MissingRequiredParameterException("ProcessDefinitionKey(流程定义key)");
     }
 
-    public static void ensureProcessDefinitionId(WorkFlowBase form) {
+    public static void ensureProcessDefinitionId(WorkflowBase form) {
         if (StringUtils.isNotBlank(form.getProcessDefinitionId())) {
             return;
         }
         throw new MissingRequiredParameterException("ProcessDefinitionId(流程定义id)");
     }
 
-    public static void ensureProcessId(WorkFlowBase form) {
+    public static void ensureProcessId(WorkflowBase form) {
         if (StringUtils.isNotBlank(form.getProcessInstanceId())) {
             return;
         }
