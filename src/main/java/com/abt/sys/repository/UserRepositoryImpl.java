@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,19 +31,44 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public User getSimpleUserInfo(String userId) {
-        List<User> list = jdbcTemplate.query("select [Id], [Account], [Name] from [dbo].[User] where Id = ?", (rs, rowNum) -> {
-            User user = new User();
-            user.setCode(rs.getString("Account"));
-            user.setId(rs.getString("Id"));
-            user.setUsername(rs.getString("Name"));
-            return user;
-        }, userId);
+        List<User> list = jdbcTemplate.query("select [Id], empnum, [Name] from [dbo].[User] where Id = ?", new SimpleUserRowMapper(), userId);
         if (list.isEmpty()) {
             return null;
         } else {
             return list.get(0);
         }
     }
+
+    public static final int USER_ENABLED = 0;
+    public static final int USER_DISABLED = 1;
+
+    public List<User> getAllSimpleUser(Integer status) {
+        List<Object> params = new ArrayList<>();
+        String sql = "select [Id], empnum, [Name] from [dbo].[User] from [dbo].[User] u" +
+                "where 1=1 ";
+        if (status == USER_ENABLED) {
+            //用户启用
+            sql += "and u.Status = 0  ";
+        } else if (status == USER_DISABLED) {
+            sql += "and u.Status = 1 ";
+        }
+
+        return jdbcTemplate.query(sql, new SimpleUserRowMapper(), params);
+    }
+
+    class SimpleUserRowMapper implements RowMapper<User> {
+        @Nullable
+        @Override
+        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+            User user = new User();
+            user.setCode(rs.getString("empnum"));
+            user.setId(rs.getString("Id"));
+            user.setUsername(rs.getString("Name"));
+            return user;
+        }
+
+    }
+
 
     class UserViewRowMapper implements RowMapper<UserView> {
 

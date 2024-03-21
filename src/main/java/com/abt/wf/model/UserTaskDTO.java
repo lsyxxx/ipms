@@ -44,6 +44,10 @@ public class UserTaskDTO extends FlowOperationLog {
      * 是否存在taskResult
      */
     private boolean isActive = false;
+    /**
+     * 是否是预览节点
+     */
+    private boolean isPreview = true;
 
     /**
      * 如果是多实例节点，那么有子节点

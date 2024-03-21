@@ -4,6 +4,7 @@ import com.abt.common.model.User;
 import com.abt.http.dto.WebApiToken;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -26,4 +27,6 @@ public interface UserService<T, E> {
      WebApiToken getToken(HttpServletRequest request);
 
      User getSimpleUserInfo(E e);
+
+     List<User> getAllSimpleUser(Integer status);
 }

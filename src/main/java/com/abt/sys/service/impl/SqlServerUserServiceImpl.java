@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -47,6 +48,12 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
     @Override
     public User getSimpleUserInfo(User user) {
         return userRepository.getSimpleUserInfo(user.getId());
+    }
+
+
+    @Override
+    public List<User> getAllSimpleUser(Integer status) {
+        return userRepository.getAllSimpleUser(status);
     }
 
 }

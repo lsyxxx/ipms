@@ -116,18 +116,12 @@ public class ReimburseServiceImpl implements ReimburseService {
             UserTaskDTO dto = (UserTaskDTO) opt;
             final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, opt.getTaskDefinitionKey());
             dto.setProperties(extensionProperties);
+            dto.setPreview(false);
             list.add(dto);
         }
         return list;
     }
 
-    public UserTaskDTO createUserTaskWrapper(String procDefKey, String taskDefKey) {
-        BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(procDefKey);
-        final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, taskDefKey);
-        UserTaskDTO wrapper = new UserTaskDTO();
-        wrapper.setProperties(extensionProperties);
-        return wrapper;
-    }
 
     @Override
     public List<UserTaskDTO> processRecord(ReimburseForm form) {
@@ -139,7 +133,6 @@ public class ReimburseServiceImpl implements ReimburseService {
         //最后一个
         UserTaskDTO lastRecord = record.get(record.size() - 1);
         BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
-        //TODO: id = taskKey?
         FlowNode startNode = bpmnModelInstance.getModelElementById(lastRecord.getTaskDefinitionKey());
         List<FlowNode> list = new ArrayList<>();
         WorkFlowUtil.findActivityNodes(startNode, list, form.variableMap());
@@ -299,6 +292,7 @@ public class ReimburseServiceImpl implements ReimburseService {
         if (node instanceof UserTask u) {
             final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, node.getId());
             parent.setProperties(extensionProperties);
+            parent.setPreview(true);
             if (parent.isApplyNode()) {
                 child.setOperatorId(form.getSubmitUserid());
                 child.setOperatorName(form.getSubmitUsername());
@@ -332,7 +326,6 @@ public class ReimburseServiceImpl implements ReimburseService {
         Map<String, Object> vars = form.variableMap();
         BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
         final Collection<StartEvent> startEvents = bpmnModelInstance.getModelElementsByType(StartEvent.class);
-        List<FlowNode> list = WorkFlowUtil.getPreviewFlowNode(bpmnModelInstance, vars);
         StartEventImpl startEvent = (StartEventImpl) startEvents.iterator().next();
         List<FlowNode> previewList = new ArrayList<>();
         WorkFlowUtil.findActivityNodes(startEvent, previewList, vars);

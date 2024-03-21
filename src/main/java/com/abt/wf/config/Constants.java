@@ -29,6 +29,7 @@ public class Constants {
      * 审批详情中的状态。参考钉钉
      * ----------------------
      */
+    public static final String STATE_DETAIL_ALL = "全部";
     public static final String STATE_DETAIL_REJECT = "已拒绝";
     public static final String STATE_DETAIL_PASS = "已通过";
     public static final String STATE_DETAIL_REVOKE = "已撤销";

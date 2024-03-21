@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -47,6 +48,10 @@ public class UserServiceImpl implements UserService<UserView, WebApiToken> {
         return new User(optional.get());
     }
 
+    @Override
+    public List<User> getAllSimpleUser(Integer status) {
+        return null;
+    }
 
 
     /**

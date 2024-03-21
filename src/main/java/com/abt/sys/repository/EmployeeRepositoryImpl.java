@@ -21,14 +21,13 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
     public Employee findByJobNumber(String jobNumber) {
-        jdbcTemplate.queryForObject("select e.Id, e.JobNumber, e.Name, e.Sex, e.Dept, o.Name as deptName, e.banzhudept, so.Name as banzhudeptName " +
+        return jdbcTemplate.queryForObject("select e.Id, e.JobNumber, e.Name, e.Sex, e.Dept, o.Name as deptName, e.banzhudept, so.Name as banzhudeptName " +
                         "from T_employee e " +
                         "left join Org o on e.Dept = o.Id " +
                         "left join Org so on e.banzhudept = so.Id " +
                         "where e.JobNumber = ?",
                 new EmployeeRepositoryImpl.EmployeeMapper(), jobNumber);
 
-        return null;
     }
 
 

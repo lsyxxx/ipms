@@ -119,6 +119,7 @@ public class ReimburseController {
     /**
      * 我申请的
      */
+    @GetMapping("/myapply")
     public R<List<ReimburseForm>> myApply(@ModelAttribute ReimburseRequestForm queryForm) {
         getUserFromToken(queryForm);
         final List<ReimburseForm> myApply = reimburseService.findMyApplyByCriteria(queryForm);
