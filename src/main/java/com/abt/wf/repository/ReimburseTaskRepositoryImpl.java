@@ -88,7 +88,7 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
         if (TODO == todo) {
             sql += "and t.END_TIME_ is not NULL ";
         } else if (DONE == todo) {
-            sql += "and t.END_TIME_ is NULL";
+            sql += "and t.END_TIME_ is NULL ";
         }
 
         sql += between(startDate, endDate, params);

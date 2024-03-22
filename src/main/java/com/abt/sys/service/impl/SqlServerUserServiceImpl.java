@@ -8,7 +8,6 @@ import com.abt.sys.repository.UserRepository;
 import com.abt.sys.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +21,6 @@ import java.util.Optional;
 @Slf4j
 public class SqlServerUserServiceImpl implements UserService<UserView, User> {
 
-    @Value("${webapi.http.api.userinfo}")
-    private String userinfoApi;
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
     private final UserRepository userRepository;
 
@@ -54,6 +51,11 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
     @Override
     public List<User> getAllSimpleUser(Integer status) {
         return userRepository.getAllSimpleUser(status);
+    }
+
+    @Override
+    public User getUserDept(String jobNumber) {
+        return userRepository.getEmployeeDeptByJobNumber(jobNumber);
     }
 
 }

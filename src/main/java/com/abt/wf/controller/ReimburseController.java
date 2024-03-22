@@ -122,6 +122,7 @@ public class ReimburseController {
     @GetMapping("/myapply")
     public R<List<ReimburseForm>> myApply(@ModelAttribute ReimburseRequestForm queryForm) {
         getUserFromToken(queryForm);
+        setUser(queryForm);
         final List<ReimburseForm> myApply = reimburseService.findMyApplyByCriteria(queryForm);
         return R.success(myApply, myApply.size());
     }
@@ -143,6 +144,11 @@ public class ReimburseController {
         UserView userView = TokenUtil.getUserFromAuthToken();
         form.setUserid(userView.getId());
         form.setUsername(userView.getName());
+    }
+
+    public void setUser(ReimburseRequestForm form) {
+        form.setUserid(form.getCreateUserid());
+        form.setUsername(form.getCreateUsername());
     }
 
     public void setServiceName(ReimburseForm form) {

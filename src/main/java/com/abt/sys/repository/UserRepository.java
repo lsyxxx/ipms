@@ -25,4 +25,10 @@ public interface UserRepository {
      * @param userStatus 用户是否启用
      */
     List<User> getAllSimpleUser(Integer userStatus);
+
+    /**
+     * 根据工号获取用户基本信息，包含部门及科室
+     * @param jobNumber 工号
+     */
+    User getEmployeeDeptByJobNumber(String jobNumber);
 }

@@ -29,4 +29,6 @@ public interface UserService<T, E> {
      User getSimpleUserInfo(E e);
 
      List<User> getAllSimpleUser(Integer status);
+
+    User getUserDept(String jobNumber);
 }

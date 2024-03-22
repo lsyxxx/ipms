@@ -13,4 +13,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class ReimburseRequestForm extends RequestForm {
 
+    private String createUserid;
+    private String createUsername;
+
 }

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,18 +42,49 @@ public class UserRepositoryImpl implements UserRepository{
     public static final int USER_DISABLED = 1;
 
     public List<User> getAllSimpleUser(Integer status) {
-        List<Object> params = new ArrayList<>();
-        String sql = "select [Id], empnum, [Name] from [dbo].[User] from [dbo].[User] u" +
+//        List<Object> params = new ArrayList<>();
+        String sql = "select u.Id, u.empnum, u.Name from [dbo].[User] u " +
                 "where 1=1 ";
-        if (status == USER_ENABLED) {
+        if (status != null && status == USER_ENABLED) {
             //用户启用
             sql += "and u.Status = 0  ";
-        } else if (status == USER_DISABLED) {
+        } else if (status != null && status == USER_DISABLED) {
             sql += "and u.Status = 1 ";
         }
 
-        return jdbcTemplate.query(sql, new SimpleUserRowMapper(), params);
+        return jdbcTemplate.query(sql, new SimpleUserRowMapper());
     }
+
+
+    @Override
+    public User getEmployeeDeptByJobNumber(String jobNumber) {
+        String sql = "select e.JobNumber as code, e.Name, e.Id, o.Id as deptId, o.Name as deptName, e.banzhudept as teamId, so.Name as teamName " +
+                "from T_EmployeeInfo e " +
+                "left join Org o on e.Dept = o.Id " +
+                "left join Org so on e.banzhudept = so.Id " +
+                "where e.JobNumber = ?";
+
+        return jdbcTemplate.queryForObject(sql, new UserDeptRowMapper(), jobNumber);
+
+    }
+
+    class UserDeptRowMapper implements RowMapper<User> {
+
+        @Nullable
+        @Override
+        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+            User user = new User();
+            user.setCode(rs.getString("empnum"));
+            user.setId(rs.getString("Id"));
+            user.setUsername(rs.getString("Name"));
+            user.setDeptId(rs.getString("deptId"));
+            user.setDeptName(rs.getString("deptName"));
+            user.setTeamId(rs.getString("teamId"));
+            user.setTeamName(rs.getString("teamName"));
+            return null;
+        }
+    }
+
 
     class SimpleUserRowMapper implements RowMapper<User> {
         @Nullable
@@ -66,7 +96,6 @@ public class UserRepositoryImpl implements UserRepository{
             user.setUsername(rs.getString("Name"));
             return user;
         }
-
     }
 
 

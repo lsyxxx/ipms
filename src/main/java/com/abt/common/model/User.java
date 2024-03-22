@@ -36,6 +36,13 @@ public class User implements Serializable {
      */
     private boolean isManager = false;
 
+    //-- 部门
+    private String deptId;
+    private String deptName;
+    //-- 班组/科室
+    private String teamId;
+    private String teamName;
+
     public User() {
         super();
     }
