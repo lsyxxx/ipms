@@ -62,7 +62,7 @@ public class Reimburse extends WorkflowBase {
     /**
      * 公司, abt/grd
      */
-    @Column( columnDefinition="VARCHAR(256)")
+    @Column(name="company", columnDefinition="VARCHAR(256)")
     private String company;
     /**
      * 关联项目
@@ -107,8 +107,6 @@ public class Reimburse extends WorkflowBase {
      * 选择的审批人 json
      */
     @Column(columnDefinition="VARCHAR(1000)")
-    private String managerList;
-
-
+    private String managers;
 
 }

@@ -58,7 +58,7 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public User getEmployeeDeptByJobNumber(String jobNumber) {
-        String sql = "select e.JobNumber as code, e.Name, e.Id, o.Id as deptId, o.Name as deptName, e.banzhudept as teamId, so.Name as teamName " +
+        String sql = "select e.JobNumber as jobNumber, e.Name, e.Id, o.Id as deptId, o.Name as deptName, e.banzhudept as teamId, so.Name as teamName " +
                 "from T_EmployeeInfo e " +
                 "left join Org o on e.Dept = o.Id " +
                 "left join Org so on e.banzhudept = so.Id " +
@@ -74,14 +74,14 @@ public class UserRepositoryImpl implements UserRepository{
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
             User user = new User();
-            user.setCode(rs.getString("empnum"));
+            user.setCode(rs.getString("jobNumber"));
             user.setId(rs.getString("Id"));
             user.setUsername(rs.getString("Name"));
             user.setDeptId(rs.getString("deptId"));
             user.setDeptName(rs.getString("deptName"));
             user.setTeamId(rs.getString("teamId"));
             user.setTeamName(rs.getString("teamName"));
-            return null;
+            return user;
         }
     }
 

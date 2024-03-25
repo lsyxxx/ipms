@@ -13,7 +13,7 @@ import org.hibernate.annotations.Comment;
  * 比如设置默认的财务总监, key=fiManager, value=userid
  */
 
-@Table(name = "t_wf_setting")
+@Table(name = "wf_setting")
 @Comment("流程设置参数")
 @Entity
 @Getter

@@ -28,13 +28,14 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
     //query: 分页, 审批编号, 状态，创建人，创建时间
     @Override
     public List<ReimburseForm> findReimburseWithCurrenTaskPageable(int page, int size, String entityId, String state, String createUserid, String startDate, String endDate) {
-        String sql = "select r.*, " +
+        String sql = "select r.*, su.Name as create_username1, " +
                 "t.ID_ as cur_task_id, t.TASK_DEF_KEY_ as cur_task_def_id, t.NAME_ as cur_task_name, " +
                 "t.ASSIGNEE_ as cur_task_assignee_id, u.Name as cur_task_assignee_name, " +
                 "null as inv_task_id, null as inv_task_name, null as inv_task_assignee_id, null as inv_task_assignee_name, null as inv_task_def_id " +
                 "from wf_rbs r " +
                 "left join ACT_RU_TASK t on r.proc_inst_id = t.PROC_INST_ID_ " +
                 "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
+                "left join [dbo].[User] su on r.create_userid = su.Id " +
                 "where 1=1 ";
 
         List<Object> params = new ArrayList<>();
@@ -166,7 +167,7 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
             form.setUpdateDate(TimeUtil.from(rs.getTimestamp("update_date")));
             form.setCreateDate(TimeUtil.from(rs.getTimestamp("create_date")));
             form.setCreateUserid(rs.getString("create_userid"));
-            form.setCreateUsername(rs.getString("create_username"));
+            form.setCreateUsername(rs.getString("create_username1"));
 
             //-- form
             form.setCurrentTaskId(rs.getString("cur_task_id"));

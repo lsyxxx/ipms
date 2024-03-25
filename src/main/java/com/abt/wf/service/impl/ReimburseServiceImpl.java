@@ -5,6 +5,7 @@ import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
@@ -17,6 +18,7 @@ import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
@@ -59,13 +61,17 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     private final ReimburseTaskRepository reimburseTaskRepository;
 
+    private final List<FlowSetting> leaderList;
+
     public static final String SERVICE_NAME = "费用报销";
 
     public ReimburseServiceImpl(IdentityService identityService, TaskService taskService, RuntimeService runtimeService,
                                 RepositoryService repositoryService, ReimburseRepository reimburseRepository,
                                 HistoryService historyService, FlowOperationLogService flowOperationLogService,
                                 @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap,
-                                @Qualifier("sqlServerUserService") UserService userService, EmployeeRepository employeeRepository, ReimburseTaskRepository reimburseTaskRepository) {
+                                @Qualifier("sqlServerUserService") UserService userService, EmployeeRepository employeeRepository,
+                                ReimburseTaskRepository reimburseTaskRepository,
+                                @Qualifier("queryFlowManagerList") List<FlowSetting> leaderList) {
         this.identityService = identityService;
         this.taskService = taskService;
         this.runtimeService = runtimeService;
@@ -76,6 +82,7 @@ public class ReimburseServiceImpl implements ReimburseService {
         this.bpmnModelInstanceMap = bpmnModelInstanceMap;
         this.userService = userService;
         this.reimburseTaskRepository = reimburseTaskRepository;
+        this.leaderList = leaderList;
     }
 
     @Override
@@ -149,26 +156,35 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     }
 
+    public boolean isLeader(String userid) {
+        return this.leaderList.stream().anyMatch(i -> userid.equals(i.getValue()));
+    }
+
     @Override
     public void apply(ReimburseForm form) {
+        //-- prepare
         WorkFlowUtil.ensureProcessDefinitionKey(form);
         form.setCreateUserid(form.getSubmitUserid());
         form.setCreateUsername(form.getSubmitUsername());
+        form.setLeader(this.isLeader(form.getSubmitUserid()));
+        form.prepareEntity();
         Map<String, Object> variableMap = this.createVariableMap(form);
+        //-- start instance
         final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().active().singleResult();
         final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(form.getProcessDefinitionKey(), businessKey(form), variableMap);
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
         task.setAssignee(form.getSubmitUserid());
-        taskService.saveTask(task);
-
+        taskService.setAssignee(task.getId(), form.getSubmitUserid());
+        taskService.complete(task.getId());
+        //-- save entity
         form.setProcessDefinitionId(processDefinition.getId());
         form.setProcessInstanceId(processInstance.getId());
         form.setProcessState(HistoricProcessInstance.STATE_ACTIVE);
         form.setBusinessState(Constants.STATE_DETAIL_ACTIVE);
-        Reimburse rbs = reimburseRepository.save(form);
+        Reimburse rbs = reimburseRepository.save(form.newEntityInstance());
         runtimeService.setVariable(processInstance.getId(), Constants.VAR_KEY_ENTITY, rbs.getId());
         clearAuthUser();
-
+        //-- record
         FlowOperationLog optLog = FlowOperationLog.applyLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);
         flowOperationLogService.saveLog(optLog);
     }
@@ -188,17 +204,16 @@ public class ReimburseServiceImpl implements ReimburseService {
         setAuthUser(form.getSubmitUserid());
         String procId = form.getProcessInstanceId();
         Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
-        task.setAssignee(form.getSubmitUserid());
+        taskService.setAssignee(task.getId(), form.getSubmitUserid());
         FlowOperationLog optLog;
         Reimburse reimburse = findById(form.getId());
         if (form.isPass()) {
-            taskService.saveTask(task);
+            taskService.complete(task.getId());
             reimburse.setBusinessState(Constants.STATE_DETAIL_ACTIVE);
             optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);
             optLog.setComment(form.getComment());
             optLog.setTaskResult(form.getDecision());
         } else if (form.isReject()) {
-            taskService.saveTask(task);
             runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
             reimburse.setBusinessState(Constants.STATE_DETAIL_REJECT);
             optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);

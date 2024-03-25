@@ -16,6 +16,7 @@ public class Company extends AuditInfo {
 
     private String id;
     private String name;
+    private String code;
     /**
      * 上级公司id
      */
@@ -35,5 +36,12 @@ public class Company extends AuditInfo {
      * 如果自身是二级公司则没有
      */
     private String secondTier;
+
+    public static Company of(String code, String name) {
+        Company company = new Company();
+        company.setCode(code);
+        company.setName(name);
+        return company;
+    }
 
 }

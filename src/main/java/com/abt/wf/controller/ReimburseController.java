@@ -46,7 +46,6 @@ public class ReimburseController {
     public R<Object> apply(@Validated @RequestBody ReimburseForm form) {
         getUserFromToken(form);
         setServiceName(form);
-        form.setServiceName(ReimburseServiceImpl.SERVICE_NAME);
         reimburseService.apply(form);
         return R.success("流程申请成功");
     }
@@ -79,7 +78,7 @@ public class ReimburseController {
      * 流程记录
      */
     @PostMapping("/record")
-    public R<List<UserTaskDTO>> processRecord(ReimburseForm form) {
+    public R<List<UserTaskDTO>> processRecord(@RequestBody ReimburseForm form) {
         getUserFromToken(form);
         final List<UserTaskDTO> processRecord = reimburseService.processRecord(form);
         return R.success(processRecord, processRecord.size());
@@ -122,13 +121,13 @@ public class ReimburseController {
     @GetMapping("/myapply")
     public R<List<ReimburseForm>> myApply(@ModelAttribute ReimburseRequestForm queryForm) {
         getUserFromToken(queryForm);
-        setUser(queryForm);
+//        setUser(queryForm);
         final List<ReimburseForm> myApply = reimburseService.findMyApplyByCriteria(queryForm);
         return R.success(myApply, myApply.size());
     }
 
     @PostMapping("/preview")
-    public R<List<UserTaskDTO>> preview(ReimburseForm form) {
+    public R<List<UserTaskDTO>> preview(@RequestBody ReimburseForm form) {
         getUserFromToken(form);
         final List<UserTaskDTO> preview = reimburseService.preview(form);
         return R.success(preview, preview.size());
@@ -147,8 +146,8 @@ public class ReimburseController {
     }
 
     public void setUser(ReimburseRequestForm form) {
-        form.setUserid(form.getCreateUserid());
-        form.setUsername(form.getCreateUsername());
+        form.setUserid(form.getQueryUserid());
+        form.setUsername(form.getQueryUsername());
     }
 
     public void setServiceName(ReimburseForm form) {

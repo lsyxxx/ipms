@@ -10,7 +10,7 @@ public enum FileType {
      */
     Invoice,
     /**
-     * 普通附件（未分裂）
+     * 普通附件（未分类）
      */
     Attachment,
 
