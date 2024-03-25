@@ -150,7 +150,7 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
             form.setProject(rs.getString("project"));
             form.setFileList(rs.getString("file_list"));
             form.setLeader(rs.getBoolean("is_leader"));
-            form.setManagerList(rs.getString("manager_list"));
+            form.setManagers(rs.getString("managers"));
 
             //-- workflow
             form.setBusinessState(rs.getString("biz_state"));
