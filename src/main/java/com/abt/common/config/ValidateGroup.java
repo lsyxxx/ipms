@@ -10,7 +10,9 @@ public class ValidateGroup {
     public interface Update{};
     public interface Delete{};
 
-    @GroupSequence({Insert.class, Update.class, Delete.class})
+    public interface Preview{};
+
+    @GroupSequence({Insert.class, Update.class, Delete.class, Preview.class})
     public interface All{};
     @GroupSequence({Insert.class, Update.class})
     public interface Save{};

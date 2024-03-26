@@ -4,6 +4,7 @@ import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
@@ -83,7 +84,7 @@ public class GlobalExceptionHandler {
         return R.fileNotFound();
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R<Exception> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error("参数校验失败 ", e);

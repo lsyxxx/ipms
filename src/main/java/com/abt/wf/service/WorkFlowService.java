@@ -1,6 +1,7 @@
 package com.abt.wf.service;
 
 
+import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.entity.FlowOperationLog;
 
@@ -74,6 +75,18 @@ public interface WorkFlowService<T> {
      * 流程记录，包含已完成的和预览的
      */
     List<UserTaskDTO> processRecord(T form);
+
+    /**
+     * 验证form中实体id
+     * @param form 表单
+     */
+    void ensureEntityId(T form);
+
+    /**
+     * 登录用户是否是当前task的审批用户
+     * @param form 表单，包含必须数据
+     */
+    boolean isApproveUser(ReimburseForm form);
 
 
 }

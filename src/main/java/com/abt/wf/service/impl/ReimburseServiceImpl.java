@@ -185,7 +185,8 @@ public class ReimburseServiceImpl implements ReimburseService {
         runtimeService.setVariable(processInstance.getId(), Constants.VAR_KEY_ENTITY, rbs.getId());
         clearAuthUser();
         //-- record
-        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);
+        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
+        optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
         flowOperationLogService.saveLog(optLog);
     }
 
@@ -199,24 +200,40 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
     @Override
+    public void ensureEntityId(ReimburseForm form) {
+        if (StringUtils.isBlank(form.getId())) {
+            return;
+        }
+        throw new MissingRequiredParameterException("entityId(业务实体id)");
+    }
+
+    @Override
     public void approve(ReimburseForm form) {
         WorkFlowUtil.ensureProcessId(form);
+        ensureEntityId(form);
         setAuthUser(form.getSubmitUserid());
         String procId = form.getProcessInstanceId();
         Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
-        taskService.setAssignee(task.getId(), form.getSubmitUserid());
+        //验证用户是否是审批用户
+        form.setCurrentTaskAssigneeId(task.getAssignee());
+        final boolean isApproveUser = isApproveUser(form);
+        if (!isApproveUser) {
+            throw new BusinessException("登录用户(" + form.getSubmitUsername() + ")不是当前审批用户!不能审批");
+        }
         FlowOperationLog optLog;
         Reimburse reimburse = findById(form.getId());
         if (form.isPass()) {
             taskService.complete(task.getId());
             reimburse.setBusinessState(Constants.STATE_DETAIL_ACTIVE);
-            optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);
+            optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
+            optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
             optLog.setTaskResult(form.getDecision());
         } else if (form.isReject()) {
             runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
             reimburse.setBusinessState(Constants.STATE_DETAIL_REJECT);
-            optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task);
+            optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
+            optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
             optLog.setTaskResult(form.getDecision());
         } else {
@@ -280,13 +297,14 @@ public class ReimburseServiceImpl implements ReimburseService {
             Reimburse rbs = load(entityId);
             runtimeService.deleteProcessInstance(rbs.getProcessInstanceId(), Constants.DELETE_REASON_DELETE + "_" + user.getId() + "_" + user.getName());
             rbs.setBusinessState(Constants.STATE_DETAIL_DELETE);
+            rbs.setFinished(true);
             reimburseRepository.save(rbs);
 
             FlowOperationLog optLog = FlowOperationLog.create(user.getId(), user.getName(), rbs.getProcessInstanceId(), rbs.getProcessDefinitionId(), rbs.getProcessDefinitionKey(),
                     SERVICE_NAME);
             optLog.setAction(ActionEnum.DELETE.name());
+            optLog.setEntityId(rbs.getId());
             flowOperationLogService.saveLog(optLog);
-
         } else {
             throw new BusinessException(validationResult.getDescription());
         }
@@ -363,6 +381,13 @@ public class ReimburseServiceImpl implements ReimburseService {
      * @param entityId 业务实体id
      */
     public ValidationResult deleteValidate(String entityId) {
+        //删除权限
+        //1. 获取当前用户
+        //2. 查询当前用户是否有删除权限
+        //角色包含《流程管理》权限，查询Relevance表:SELECT * FROM [dbo].[Relevance] where  1=1 and SecondId = 'JS002' and [Key] = 'UserRole'
+        //key是角色模块，SecondId是角色id, FirstId是对应用户
+
+
         return ValidationResult.pass();
     }
 
@@ -376,6 +401,30 @@ public class ReimburseServiceImpl implements ReimburseService {
         }
 
         return optionalReimburse.get();
+    }
+
+    @Override
+    public ReimburseForm loadReimburseForm(String entityId) {
+        final Reimburse entity = load(entityId);
+        ReimburseForm form = ReimburseForm.of(entity);
+        final Task task = taskService.createTaskQuery().processInstanceId(entity.getProcessInstanceId()).active().singleResult();
+        if (task != null) {
+            form.setCurrentTaskId(task.getId());
+            form.setCurrentTaskAssigneeId(task.getAssignee());
+            form.setCurrentTaskDefId(task.getTaskDefinitionKey());
+            form.setCurrentTaskName(task.getName());
+            UserView user = TokenUtil.getUserFromAuthToken();
+            form.setSubmitUserid(user.getId());
+            form.setSubmitUsername(user.getUsername());
+            form.setApproveUser(isApproveUser(form));
+        }
+        return form;
+    }
+
+    @Override
+    public boolean isApproveUser(ReimburseForm form) {
+        UserView userView = TokenUtil.getUserFromAuthToken();
+        return userView.getId().equals(form.getCurrentTaskAssigneeId());
     }
 
     /**

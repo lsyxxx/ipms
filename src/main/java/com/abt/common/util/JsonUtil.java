@@ -22,6 +22,9 @@ public class JsonUtil {
     }
 
     public static String convertJson(Object object) {
+        if (object == null) {
+            return "";
+        }
         try {
             return toJson(object);
         } catch (Exception e) {

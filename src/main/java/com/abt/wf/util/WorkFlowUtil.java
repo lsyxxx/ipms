@@ -68,8 +68,7 @@ public class WorkFlowUtil {
                 if (!"bpmn:tFormalExpression".equals(type)) {
                     throw new BusinessException("条件不是juel表达式，无法解析 - " + conditionExpression.getTextContent());
                 }
-                //--- 暂时仅解析el表达式
-                //其他类型可能需要用到elResolver
+                //--- 暂时仅解析el表达式, 其他类型可能需要用到elResolver
                 final String text = conditionExpression.getTextContent();
                 for(Map.Entry<String, Object> entry : vars.entrySet()) {
                     String k = entry.getKey();
@@ -88,7 +87,6 @@ public class WorkFlowUtil {
                 }
             }
         }
-
         return null;
     }
 
@@ -127,7 +125,6 @@ public class WorkFlowUtil {
         }
         throw new MissingRequiredParameterException("ProcessInstanceId(流程实例id)");
     }
-
 
     public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
         UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);

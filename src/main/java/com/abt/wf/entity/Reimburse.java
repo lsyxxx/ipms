@@ -1,10 +1,9 @@
 package com.abt.wf.entity;
 
+import com.abt.common.config.ValidateGroup;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -36,9 +35,23 @@ public class Reimburse extends WorkflowBase {
     @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
 
-    @DecimalMin(value = "0.00", message = "报销金额不能小于0.00")
+    @NotNull(groups = {ValidateGroup.Preview.class, ValidateGroup.Save.class})
+    @Positive(message = "报销金额不能小于0.00")
     private Double cost;
 
+    /**
+     * 原借款，借了准备金需要填写，没有则不填
+     */
+    @Positive(message = "原借款金额不能小于0.00")
+    private Double reserveLoan;
+
+    /**
+     * 应退余额，借了准备金有退款余额，没有则不填
+     */
+    @Positive(message = "应退金额不能小于0.00")
+    private Double reserveRefund;
+
+    @NotBlank
     @Column(name="reason_", columnDefinition="VARCHAR(500)")
     private String reason;
 
@@ -47,6 +60,7 @@ public class Reimburse extends WorkflowBase {
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @NotNull
     private LocalDate rbsDate;
 
     @Max(value = 99, message = "票据数量不能超过99")
@@ -56,12 +70,15 @@ public class Reimburse extends WorkflowBase {
     /**
      * 报销类型
      */
+    @NotNull
     @Column(name="rbs_type", columnDefinition="VARCHAR(256)")
     private String rbsType;
 
     /**
      * 公司, abt/grd
      */
+    @NotNull
+
     @Column(name="company", columnDefinition="VARCHAR(256)")
     private String company;
     /**
@@ -100,8 +117,11 @@ public class Reimburse extends WorkflowBase {
     /**
      * 附件信息，json格式保存
      */
-    @Column(columnDefinition="VARCHAR(1000)")
-    private String fileList;
+    @Column(name = "pdf_file", columnDefinition = "VARCHAR(1000)")
+    private String pdfFileList;
+
+    @Column(name = "other_file", columnDefinition = "VARCHAR(1000)")
+    private String otherFileList;
 
     /**
      * 选择的审批人 json

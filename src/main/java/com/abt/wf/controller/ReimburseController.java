@@ -1,5 +1,6 @@
 package com.abt.wf.controller;
 
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.RequestForm;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
@@ -15,6 +16,8 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.common.model.R;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -37,8 +40,8 @@ public class ReimburseController {
      * @param entityId 业务实体id
      */
     @GetMapping("/load/{entityId}")
-    public R<Reimburse> load(@PathVariable String entityId) {
-        final Reimburse rbs = reimburseService.load(entityId);
+    public R<ReimburseForm> load(@PathVariable String entityId) {
+        final ReimburseForm rbs = reimburseService.loadReimburseForm(entityId);
         return R.success(rbs);
     }
 
@@ -46,6 +49,7 @@ public class ReimburseController {
     public R<Object> apply(@Validated @RequestBody ReimburseForm form) {
         getUserFromToken(form);
         setServiceName(form);
+        form.setRbsDate(LocalDate.now());
         reimburseService.apply(form);
         return R.success("流程申请成功");
     }
@@ -76,6 +80,7 @@ public class ReimburseController {
 
     /**
      * 流程记录
+     * @param form 必须: id/definitionKey
      */
     @PostMapping("/record")
     public R<List<UserTaskDTO>> processRecord(@RequestBody ReimburseForm form) {
@@ -127,7 +132,7 @@ public class ReimburseController {
     }
 
     @PostMapping("/preview")
-    public R<List<UserTaskDTO>> preview(@RequestBody ReimburseForm form) {
+    public R<List<UserTaskDTO>> preview(@Validated(ValidateGroup.Preview.class) @RequestBody ReimburseForm form) {
         getUserFromToken(form);
         final List<UserTaskDTO> preview = reimburseService.preview(form);
         return R.success(preview, preview.size());

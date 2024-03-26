@@ -97,7 +97,9 @@ public class FlowOperationLog {
     private String comment;
 
 
-    public static FlowOperationLog create(String operatorId, String operatorName, String processInstanceId, String processDefinitionId, String processDefinitionKey, String serviceName) {
+    public static FlowOperationLog create(String operatorId, String operatorName, String processInstanceId,
+                                          String processDefinitionId, String processDefinitionKey,
+                                          String serviceName) {
         FlowOperationLog optLog = new FlowOperationLog();
         optLog.setOperatorId(operatorId);
         optLog.setOperatorName(operatorName);
@@ -125,8 +127,9 @@ public class FlowOperationLog {
     /**
      * 用户申请log
      */
-    public static FlowOperationLog applyLog(String operatorId, String operatorName, WorkflowBase form, Task task) {
+    public static FlowOperationLog applyLog(String operatorId, String operatorName, WorkflowBase form, Task task, String entityId) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
+        optLog.setEntityId(entityId);
         optLog. setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
@@ -138,8 +141,9 @@ public class FlowOperationLog {
     /**
      * 用户审批通过
      */
-    public static FlowOperationLog passLog(String operatorId, String operatorName, WorkflowBase form, Task task) {
+    public static FlowOperationLog passLog(String operatorId, String operatorName, WorkflowBase form, Task task, String entityId) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
+        optLog.setEntityId(entityId);
         optLog. setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
@@ -148,10 +152,11 @@ public class FlowOperationLog {
         return optLog;
     }
 
-    public static FlowOperationLog rejectLog(String operatorId, String operatorName, WorkflowBase form, Task task) {
+    public static FlowOperationLog rejectLog(String operatorId, String operatorName, WorkflowBase form, Task task, String entityId) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName,
                 form.getProcessInstanceId(), form.getProcessDefinitionId(), form.getProcessDefinitionKey(),
                 form.getServiceName());
+        optLog.setEntityId(entityId);
         optLog. setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));

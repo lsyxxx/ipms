@@ -24,7 +24,8 @@ import java.util.HashMap;
 public class ReimburseForm extends Reimburse {
 
     private List<String> managerList;
-    private List<SystemFile> attachments;
+    private List<SystemFile> pdfAttachments;
+    private List<SystemFile> otherAttachments;
 
     //-- 当前正在进行的task
     private String currentTaskId;
@@ -47,6 +48,7 @@ public class ReimburseForm extends Reimburse {
     //-- 审批
     private String decision;
     private String comment;
+    private boolean isApproveUser;
 
     //业务所属公司
     private Company bizCompany;
@@ -79,10 +81,53 @@ public class ReimburseForm extends Reimburse {
 
 
     public void prepareEntity() {
-        this.setFileList(JsonUtil.convertJson(this.getAttachments()));
+        this.setPdfFileList(JsonUtil.convertJson(this.getPdfAttachments()));
+        this.setOtherFileList(JsonUtil.convertJson(this.getOtherAttachments()));
         if (!CollectionUtils.isEmpty(this.getManagerList())) {
             this.setManagers(String.join(",", this.getManagerList()));
         }
+    }
+
+    public static ReimburseForm of(Reimburse rbs) {
+        ReimburseForm form = new ReimburseForm();
+        if (rbs == null) {
+            return form;
+        }
+        form.setId(rbs.getId());
+        form.setCost(rbs.getCost());
+        form.setReserveLoan(rbs.getReserveLoan());
+        form.setReserveRefund(rbs.getReserveRefund());
+        form.setVoucherNum(rbs.getVoucherNum());
+        form.setRbsDate(rbs.getRbsDate());
+        form.setRbsType(rbs.getRbsType());
+        form.setReason(rbs.getReason());
+        form.setCompany(rbs.getCompany());
+        form.setDepartmentId(rbs.getDepartmentId());
+        form.setDepartmentName(rbs.getDepartmentName());
+        form.setTeamId(rbs.getTeamId());
+        form.setTeamName(rbs.getTeamName());
+        form.setProject(rbs.getProject());
+        form.setServiceName(rbs.getServiceName());
+        form.setPdfFileList(rbs.getPdfFileList());
+        form.setOtherFileList(rbs.getOtherFileList());
+        form.setBusinessState(rbs.getBusinessState());
+        form.setProcessState(rbs.getProcessState());
+        form.setFinished(rbs.isFinished());
+        form.setLeader(rbs.isLeader());
+        form.setManagers(rbs.getManagers());
+        form.setDeleteReason(rbs.getDeleteReason());
+        form.setServiceName(rbs.getServiceName());
+        form.setEndTime(rbs.getEndTime());
+        form.setProcessInstanceId(rbs.getProcessInstanceId());
+        form.setProcessDefinitionKey(rbs.getProcessDefinitionKey());
+        form.setProcessDefinitionId(rbs.getProcessDefinitionId());
+        form.setUpdateUserid(rbs.getUpdateUserid());
+        form.setUpdateUsername(rbs.getUpdateUsername());
+        form.setUpdateDate(rbs.getUpdateDate());
+        form.setCreateDate(rbs.getCreateDate());
+        form.setCreateUserid(rbs.getCreateUserid());
+        form.setCreateUsername(rbs.getCreateUsername());
+        return form;
     }
 
 
@@ -104,7 +149,8 @@ public class ReimburseForm extends Reimburse {
         rbs.setBusinessState(this.getBusinessState());
         rbs.setProcessState(this.getProcessState());
         rbs.setFinished(this.isFinished());
-        rbs.setFileList(this.getFileList());
+        rbs.setPdfFileList(this.getPdfFileList());
+        rbs.setOtherFileList(this.getOtherFileList());
         rbs.setLeader(this.isLeader());
         rbs.setManagers(this.getManagers());
         rbs.setDeleteReason(this.getDeleteReason());
@@ -115,5 +161,7 @@ public class ReimburseForm extends Reimburse {
         rbs.setProcessDefinitionId(this.getProcessDefinitionId());
         return rbs;
     }
+
+
 
 }
