@@ -2,12 +2,16 @@ package com.abt.wf.model;
 
 import com.abt.common.entity.Company;
 import com.abt.common.util.JsonUtil;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.Reimburse;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
@@ -15,12 +19,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import static com.abt.wf.config.Constants.*;
+
 /**
  *
  */
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
+@Slf4j
 public class ReimburseForm extends Reimburse {
 
     private List<String> managerList;
@@ -56,6 +63,19 @@ public class ReimburseForm extends Reimburse {
 
     private HashMap<String, Object> variableMap = new HashMap<>();
 
+    public String decisionTranslate() {
+        switch (this.decision) {
+            case DECISION_REJECT -> {
+                return DECISION_REJECT_DESC;
+            }
+            case DECISION_PASS -> {
+                return DECISION_PASS_DESC;
+            }
+            default -> throw new BusinessException("审批决策只能为pass/reject, 实际参数: " + this.decision);
+        }
+
+    }
+
     //-- 流程参数key
     public static final String KEY_COST = "cost";
     public static final String KEY_IS_LEADER = "isLeader";
@@ -76,7 +96,7 @@ public class ReimburseForm extends Reimburse {
     }
 
     public boolean isReject() {
-        return Constants.DECISION_REJECT.equals(decision);
+        return DECISION_REJECT.equals(decision);
     }
 
 
@@ -87,6 +107,7 @@ public class ReimburseForm extends Reimburse {
             this.setManagers(String.join(",", this.getManagerList()));
         }
     }
+
 
     public static ReimburseForm of(Reimburse rbs) {
         ReimburseForm form = new ReimburseForm();
@@ -127,6 +148,25 @@ public class ReimburseForm extends Reimburse {
         form.setCreateDate(rbs.getCreateDate());
         form.setCreateUserid(rbs.getCreateUserid());
         form.setCreateUsername(rbs.getCreateUsername());
+
+        if (StringUtils.isNotBlank(rbs.getManagers())) {
+            form.setManagerList(List.of(rbs.getManagers().split(",")));
+        }
+        try {
+            if (StringUtils.isNotBlank(rbs.getPdfFileList())) {
+                final List<SystemFile> pdf = JsonUtil.toObject(rbs.getPdfFileList(), new TypeReference<List<SystemFile>>() {});
+                form.setPdfAttachments(pdf);
+            }
+            if (StringUtils.isNotBlank(rbs.getOtherFileList())) {
+                final List<SystemFile> others = JsonUtil.toObject(rbs.getOtherFileList(), new TypeReference<List<SystemFile>>() {});
+                form.setOtherAttachments(others);
+            }
+        } catch (Exception e) {
+            log.error("Json转换失败");
+            throw new BusinessException("Json转换失败! 错误：" +  e.getMessage());
+        }
+
+
         return form;
     }
 

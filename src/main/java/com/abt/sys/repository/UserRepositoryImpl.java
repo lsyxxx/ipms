@@ -38,6 +38,7 @@ public class UserRepositoryImpl implements UserRepository{
         }
     }
 
+
     public static final int USER_ENABLED = 0;
     public static final int USER_DISABLED = 1;
 
@@ -65,7 +66,18 @@ public class UserRepositoryImpl implements UserRepository{
                 "where e.JobNumber = ?";
 
         return jdbcTemplate.queryForObject(sql, new UserDeptRowMapper(), jobNumber);
+    }
 
+
+    @Override
+    public User getEmployeeDeptByUserid(String userid) {
+        String sql = "select e.JobNumber as jobNumber, e.Name, e.Id, o.Id as deptId, o.Name as deptName, e.banzhudept as teamId, so.Name as teamName " +
+                "from T_EmployeeInfo e " +
+                "left join Org o on e.Dept = o.Id " +
+                "left join Org so on e.banzhudept = so.Id " +
+                "left join [dbo].[User] u on u.empnum = e.JobNumber " +
+                "where u.Id = ? ";
+        return jdbcTemplate.queryForObject(sql, new UserDeptRowMapper(), userid);
     }
 
     class UserDeptRowMapper implements RowMapper<User> {

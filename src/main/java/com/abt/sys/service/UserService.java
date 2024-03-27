@@ -28,7 +28,15 @@ public interface UserService<T, E> {
 
      User getSimpleUserInfo(E e);
 
-     List<User> getAllSimpleUser(Integer status);
+    User getSimpleUserInfo(String userid);
+
+    List<User> getAllSimpleUser(Integer status);
 
     User getUserDept(String jobNumber);
+
+     /**
+      * 根据userid获取用户信息
+      * @param userid User表id
+      */
+    User getUserDeptByUserid(String userid);
 }

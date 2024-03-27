@@ -68,12 +68,15 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
         List<Object> params = new ArrayList<>();
         String sql = "select t.ID_ as inv_task_id, t.TASK_DEF_KEY_ as inv_task_def_id, t.NAME_ as inv_task_name, " +
                 "t.ASSIGNEE_ as inv_task_assignee_id, u.Name as inv_task_assignee_name, " +
-                "null as cur_task_id, null as cur_task_def_id, null as cur_task_name, null as cur_task_assignee, null as cur_task_assignee_name, " +
-                "r.* " +
+                "null as cur_task_id, null as cur_task_def_id, null as cur_task_name, null as cur_task_assignee_id, null as cur_task_assignee_name, " +
+                "r.*,  su.Name as create_username1 " +
                 "from ACT_HI_TASKINST t " +
                 "left join wf_rbs r on t.ROOT_PROC_INST_ID_ = r.proc_inst_id " +
                 "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
-                "where 1=1";
+                "left join [dbo].[User] su on r.create_userid = su.Id " +
+                "where 1=1 " +
+                //不包含申请节点, 需要申请节点defId包含apply
+                "and t.TASK_DEF_KEY_ not like '%apply%'";
         if (StringUtils.isNotBlank(state)) {
             sql += "and r.biz_state = ? ";
             params.add(state);

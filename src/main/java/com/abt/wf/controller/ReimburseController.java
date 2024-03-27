@@ -2,6 +2,7 @@ package com.abt.wf.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.RequestForm;
+import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.ReimburseRequestForm;
@@ -80,12 +81,10 @@ public class ReimburseController {
 
     /**
      * 流程记录
-     * @param form 必须: id/definitionKey
      */
-    @PostMapping("/record")
-    public R<List<UserTaskDTO>> processRecord(@RequestBody ReimburseForm form) {
-        getUserFromToken(form);
-        final List<UserTaskDTO> processRecord = reimburseService.processRecord(form);
+    @GetMapping("/record/{entityId}")
+    public R<List<FlowOperationLog>> processRecord(@PathVariable String entityId) {
+        final List<FlowOperationLog> processRecord = reimburseService.processRecord(entityId);
         return R.success(processRecord, processRecord.size());
     }
 

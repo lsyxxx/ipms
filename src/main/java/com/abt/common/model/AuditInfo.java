@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -27,7 +28,7 @@ public class AuditInfo {
     @LastModifiedDate
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDateTime updateDate;
+    private LocalDate updateDate;
 
     @LastModifiedBy
     private String updateUserid;
@@ -40,7 +41,7 @@ public class AuditInfo {
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @CreatedDate
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDateTime createDate;
+    private LocalDate createDate;
 
 
     /**
@@ -51,7 +52,7 @@ public class AuditInfo {
     public void create(String userid, String createUsername) {
         this.createUserid = userid;
         this.createUsername = createUsername;
-        this.createDate = LocalDateTime.now();
+        this.createDate = LocalDate.now();
         this.updateDate = this.createDate;
         this.updateUserid = userid;
         this.updateUsername = createUsername;
@@ -60,6 +61,6 @@ public class AuditInfo {
     public void update(String userid, String username) {
         this.updateUsername = username;
         this.updateUserid = userid;
-        this.updateDate = LocalDateTime.now();
+        this.updateDate = LocalDate.now();
     }
 }

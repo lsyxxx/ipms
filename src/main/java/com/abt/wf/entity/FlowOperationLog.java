@@ -38,6 +38,7 @@ public class FlowOperationLog {
     /**
      * 业务名称
      */
+    @Column(name="srv_name", columnDefinition="VARCHAR(128)")
     private String serviceName;
 
     @Column(name="action_", columnDefinition="VARCHAR(64)")
@@ -177,7 +178,6 @@ public class FlowOperationLog {
         log.setAction(ActionEnum.COPY.name());
         return log;
     }
-
 
 
 }

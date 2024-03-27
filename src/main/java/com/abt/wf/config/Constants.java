@@ -22,7 +22,9 @@ public class Constants {
     public static final String TERMINATE_SYS = "system";
 
     public static final String DECISION_REJECT = "reject";
+    public static final String DECISION_REJECT_DESC = "已拒绝";
     public static final String DECISION_PASS = "pass";
+    public static final String DECISION_PASS_DESC = "已通过";
 
 
     /*-----------------------
@@ -36,6 +38,7 @@ public class Constants {
     public static final String STATE_DETAIL_DELETE = "已删除";
 
     public static final String STATE_DETAIL_ACTIVE = "审批中";
+    public static final String STATE_DETAIL_APPLY = "申请";
 
     public static final String OPERATOR_SYS = "system";
     public static final String OPERATE_TYPE_SYS = "system";

@@ -31,4 +31,10 @@ public interface UserRepository {
      * @param jobNumber 工号
      */
     User getEmployeeDeptByJobNumber(String jobNumber);
+
+    /**
+     * 根据用户id(User表)获取
+     * @param userid User表id
+     */
+    User getEmployeeDeptByUserid(String userid);
 }

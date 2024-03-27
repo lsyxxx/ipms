@@ -37,18 +37,21 @@ public class Reimburse extends WorkflowBase {
 
     @NotNull(groups = {ValidateGroup.Preview.class, ValidateGroup.Save.class})
     @Positive(message = "报销金额不能小于0.00")
+    @Column(name="cost", columnDefinition="DECIMAL(10, 2)")
     private Double cost;
 
     /**
      * 原借款，借了准备金需要填写，没有则不填
      */
     @Positive(message = "原借款金额不能小于0.00")
+    @Column(name="reserve_loan", columnDefinition="DECIMAL(10, 2)")
     private Double reserveLoan;
 
     /**
      * 应退余额，借了准备金有退款余额，没有则不填
      */
     @Positive(message = "应退金额不能小于0.00")
+    @Column(name="reserve_refund", columnDefinition="DECIMAL(10, 2)")
     private Double reserveRefund;
 
     @NotBlank
@@ -60,7 +63,6 @@ public class Reimburse extends WorkflowBase {
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @NotNull
     private LocalDate rbsDate;
 
     @Max(value = 99, message = "票据数量不能超过99")

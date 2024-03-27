@@ -38,4 +38,8 @@ public class QueryUtil {
         return "%" + param + "%";
     }
 
+    public static String sql(String sql) {
+        return " " + sql + " ";
+    }
+
 }

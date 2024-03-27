@@ -49,12 +49,22 @@ public class UserServiceImpl implements UserService<UserView, WebApiToken> {
     }
 
     @Override
+    public User getSimpleUserInfo(String userid) {
+        return null;
+    }
+
+    @Override
     public List<User> getAllSimpleUser(Integer status) {
         return null;
     }
 
     @Override
     public User getUserDept(String jobNumber) {
+        return null;
+    }
+
+    @Override
+    public User getUserDeptByUserid(String userid) {
         return null;
     }
 
@@ -78,7 +88,7 @@ public class UserServiceImpl implements UserService<UserView, WebApiToken> {
             throw new BusinessException(dto.getMessage(), dto.getCode());
         }
         UserView user = JsonUtil.ObjectMapper().convertValue(dto.getResult(), UserView.class);
-        log.trace("Get user info from api. code={}, message={}, user={}:{}", dto.getCode(), dto.getMessage(), user.getId(), user.getName());
+        log.trace("Get user info from api. code={}, message={}, user={}:{}:{}", dto.getCode(), dto.getMessage(), user.getId(), user.getName(), user.getEmpnum());
         return Optional.of(user);
     }
 

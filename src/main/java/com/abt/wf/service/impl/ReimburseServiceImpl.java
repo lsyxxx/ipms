@@ -2,6 +2,7 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.model.User;
+import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
@@ -37,6 +38,9 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.abt.wf.config.Constants.STATE_DETAIL_ACTIVE;
+import static com.abt.wf.config.Constants.STATE_DETAIL_APPLY;
 
 /**
  *
@@ -120,7 +124,7 @@ public class ReimburseServiceImpl implements ReimburseService {
         }
         BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(procDefKey);
         for (FlowOperationLog opt : operationLogs) {
-            UserTaskDTO dto = (UserTaskDTO) opt;
+            UserTaskDTO dto = UserTaskDTO.of(opt);
             final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, opt.getTaskDefinitionKey());
             dto.setProperties(extensionProperties);
             dto.setPreview(false);
@@ -129,27 +133,52 @@ public class ReimburseServiceImpl implements ReimburseService {
         return list;
     }
 
-
     @Override
-    public List<UserTaskDTO> processRecord(ReimburseForm form) {
-        List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(form.getId());
-        List<UserTaskDTO> record = wrapper(completed);
-        if (record.isEmpty()) {
-            return record;
+    public List<FlowOperationLog> processRecord(String entityId) {
+        List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(entityId);
+        if (completed.isEmpty()) {
+            return completed;
         }
-        //最后一个
-        UserTaskDTO lastRecord = record.get(record.size() - 1);
-        BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
-        FlowNode startNode = bpmnModelInstance.getModelElementById(lastRecord.getTaskDefinitionKey());
-        List<FlowNode> list = new ArrayList<>();
-        WorkFlowUtil.findActivityNodes(startNode, list, form.variableMap());
-        for (FlowNode node: list) {
-            UserTaskDTO parent = flowNodeWrapper(node, form, bpmnModelInstance);
-            record.add(parent);
-        }
+        String procId = completed.get(0).getProcessInstanceId();
+        final Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
+        FlowOperationLog active = new FlowOperationLog();
+        active.setEntityId(entityId);
+        active.setServiceName(SERVICE_NAME);
+        active.setTaskDefinitionKey(task.getTaskDefinitionKey());
+        active.setTaskName(task.getName());
+        active.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
+        active.setOperatorId(task.getAssignee());
+        User operator = userService.getSimpleUserInfo(task.getAssignee());
+        active.setOperatorName(operator.getUsername());
+        active.setTaskResult(STATE_DETAIL_ACTIVE);
+        completed.add(active);
 
-        return record;
+        return completed;
     }
+
+
+//    @Override
+//    public List<UserTaskDTO> processRecord(ReimburseForm form) {
+//        List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(form.getId());
+//        final Reimburse rbs = load(form.getId());
+//        form = ReimburseForm.of(rbs);
+//        List<UserTaskDTO> record = wrapper(completed);
+//        if (record.isEmpty()) {
+//            return record;
+//        }
+//        //最后一个
+//        UserTaskDTO lastRecord = record.get(record.size() - 1);
+//        BpmnModelInstance bpmnModelInstance = bpmnModelInstanceMap.get(form.getProcessDefinitionKey());
+//        FlowNode startNode = bpmnModelInstance.getModelElementById(lastRecord.getTaskDefinitionKey());
+//        List<FlowNode> list = new ArrayList<>();
+//        WorkFlowUtil.findActivityNodes(startNode, list, form.variableMap());
+//        for (FlowNode node: list) {
+//            UserTaskDTO parent = flowNodeWrapper(node, form, bpmnModelInstance);
+//            record.add(parent);
+//        }
+//
+//        return record;
+//    }
 
     @Override
     public void afterTask(ReimburseForm form) {
@@ -180,13 +209,14 @@ public class ReimburseServiceImpl implements ReimburseService {
         form.setProcessDefinitionId(processDefinition.getId());
         form.setProcessInstanceId(processInstance.getId());
         form.setProcessState(HistoricProcessInstance.STATE_ACTIVE);
-        form.setBusinessState(Constants.STATE_DETAIL_ACTIVE);
+        form.setBusinessState(STATE_DETAIL_ACTIVE);
         Reimburse rbs = reimburseRepository.save(form.newEntityInstance());
         runtimeService.setVariable(processInstance.getId(), Constants.VAR_KEY_ENTITY, rbs.getId());
         clearAuthUser();
         //-- record
-        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
+        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, rbs.getId());
         optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
+        optLog.setTaskResult(STATE_DETAIL_APPLY);
         flowOperationLogService.saveLog(optLog);
     }
 
@@ -224,7 +254,7 @@ public class ReimburseServiceImpl implements ReimburseService {
         Reimburse reimburse = findById(form.getId());
         if (form.isPass()) {
             taskService.complete(task.getId());
-            reimburse.setBusinessState(Constants.STATE_DETAIL_ACTIVE);
+            reimburse.setBusinessState(STATE_DETAIL_ACTIVE);
             optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
@@ -413,10 +443,13 @@ public class ReimburseServiceImpl implements ReimburseService {
             form.setCurrentTaskAssigneeId(task.getAssignee());
             form.setCurrentTaskDefId(task.getTaskDefinitionKey());
             form.setCurrentTaskName(task.getName());
-            UserView user = TokenUtil.getUserFromAuthToken();
-            form.setSubmitUserid(user.getId());
-            form.setSubmitUsername(user.getUsername());
-            form.setApproveUser(isApproveUser(form));
+            final User createUser = userService.getUserDeptByUserid(form.getCreateUserid());
+            form.setCreateUsername(createUser.getUsername());
+            form.setDepartmentId(createUser.getDeptId());
+            form.setDepartmentName(createUser.getDeptName());
+            form.setTeamId(createUser.getTeamId());
+            form.setTeamName(createUser.getTeamName());
+
         }
         return form;
     }

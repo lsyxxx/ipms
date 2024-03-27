@@ -72,9 +72,10 @@ public interface WorkFlowService<T> {
     List<UserTaskDTO> preview(T form);
 
     /**
-     * 流程记录，包含已完成的和预览的
+     * 流程记录，包含已完成的和正在进行的
      */
-    List<UserTaskDTO> processRecord(T form);
+//    List<UserTaskDTO> processRecord(T form);
+    List<FlowOperationLog> processRecord(String entityId);
 
     /**
      * 验证form中实体id

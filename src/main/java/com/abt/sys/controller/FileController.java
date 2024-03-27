@@ -7,10 +7,12 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -112,19 +114,28 @@ public class FileController {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<InputStreamResource> download(@RequestParam String url, @RequestParam String name) throws UnsupportedEncodingException, FileNotFoundException {
+    public ResponseEntity<byte[]> download(@RequestParam String url, @RequestParam String name) throws UnsupportedEncodingException {
 
-        FileInputStream fis = new FileInputStream(url);
-        InputStreamResource iss = new InputStreamResource(fis);
+//        FileInputStream fis = new FileInputStream(url);
+//        InputStreamResource iss = new InputStreamResource(fis);
+        File file = new File(url);
 
         // 设置HTTP响应头
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=" + URLEncoder.encode(name, "UTF-8"));
+        headers.setContentDispositionFormData("attachment", URLEncoder.encode(name, "UTF-8"));
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+//        headers.add("Content-Disposition", "attachment; filename=" + URLEncoder.encode(name, "UTF-8"));
 
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(iss);
+//        return ResponseEntity.ok()
+//                .headers(headers)
+//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                .body(iss);
+        try {
+            return new ResponseEntity<>(FileUtils.readFileToByteArray(file), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("文件下载失败: ", e);
+            return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.EXPECTATION_FAILED);
+        }
     }
 
 

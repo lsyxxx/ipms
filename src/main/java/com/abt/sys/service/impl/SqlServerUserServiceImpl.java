@@ -47,6 +47,11 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
         return userRepository.getSimpleUserInfo(user.getId());
     }
 
+    @Override
+    public User getSimpleUserInfo(String userid) {
+        return userRepository.getSimpleUserInfo(userid);
+    }
+
 
     @Override
     public List<User> getAllSimpleUser(Integer status) {
@@ -56,6 +61,11 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
     @Override
     public User getUserDept(String jobNumber) {
         return userRepository.getEmployeeDeptByJobNumber(jobNumber);
+    }
+
+    @Override
+    public User getUserDeptByUserid(String userid) {
+        return userRepository.getEmployeeDeptByUserid(userid);
     }
 
 }

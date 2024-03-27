@@ -88,4 +88,29 @@ public class UserTaskDTO extends FlowOperationLog {
         this.isActive = !StringUtils.isBlank(this.getTaskResult());
         return isActive;
     }
+
+    public static UserTaskDTO of(FlowOperationLog log) {
+        UserTaskDTO dto = new UserTaskDTO();
+        if (log == null) {
+            return dto;
+        }
+        dto.setId(log.getId());
+        dto.setAction(log.getAction());
+        dto.setComment(log.getComment());
+        dto.setEntityId(log.getEntityId());
+        dto.setOperatorId(log.getOperatorId());
+        dto.setOperatorName(log.getOperatorName());
+        dto.setProcessDefinitionId(log.getProcessDefinitionId());
+        dto.setProcessDefinitionKey(log.getProcessDefinitionKey());
+        dto.setProcessInstanceId(log.getProcessInstanceId());
+        dto.setServiceName(log.getServiceName());
+        dto.setSort(log.getSort());
+        dto.setTaskDefinitionKey(log.getTaskDefinitionKey());
+        dto.setTaskEndTime(log.getTaskEndTime());
+        dto.setTaskInstanceId(log.getTaskInstanceId());
+        dto.setTaskName(log.getTaskName());
+        dto.setTaskResult(log.getTaskResult());
+        dto.setTaskStartTime(log.getTaskStartTime());
+        return dto;
+    }
 }
