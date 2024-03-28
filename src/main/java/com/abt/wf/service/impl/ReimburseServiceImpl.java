@@ -67,6 +67,8 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     private final List<FlowSetting> leaderList;
 
+    private final List<FlowSetting> defaultCC;
+
     public static final String SERVICE_NAME = "费用报销";
 
     public ReimburseServiceImpl(IdentityService identityService, TaskService taskService, RuntimeService runtimeService,
@@ -75,7 +77,7 @@ public class ReimburseServiceImpl implements ReimburseService {
                                 @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap,
                                 @Qualifier("sqlServerUserService") UserService userService, EmployeeRepository employeeRepository,
                                 ReimburseTaskRepository reimburseTaskRepository,
-                                @Qualifier("queryFlowManagerList") List<FlowSetting> leaderList) {
+                                @Qualifier("queryFlowManagerList") List<FlowSetting> leaderList, @Qualifier("queryDefaultCC") List<FlowSetting> defaultCC) {
         this.identityService = identityService;
         this.taskService = taskService;
         this.runtimeService = runtimeService;
@@ -87,6 +89,7 @@ public class ReimburseServiceImpl implements ReimburseService {
         this.userService = userService;
         this.reimburseTaskRepository = reimburseTaskRepository;
         this.leaderList = leaderList;
+        this.defaultCC = defaultCC;
     }
 
     @Override
@@ -141,6 +144,9 @@ public class ReimburseServiceImpl implements ReimburseService {
         }
         String procId = completed.get(0).getProcessInstanceId();
         final Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
+        if (task == null) {
+            return completed;
+        }
         FlowOperationLog active = new FlowOperationLog();
         active.setEntityId(entityId);
         active.setServiceName(SERVICE_NAME);
@@ -231,7 +237,7 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     @Override
     public void ensureEntityId(ReimburseForm form) {
-        if (StringUtils.isBlank(form.getId())) {
+        if (StringUtils.isNotBlank(form.getId())) {
             return;
         }
         throw new MissingRequiredParameterException("entityId(业务实体id)");
@@ -258,14 +264,14 @@ public class ReimburseServiceImpl implements ReimburseService {
             optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
-            optLog.setTaskResult(form.getDecision());
+            optLog.setTaskResult(form.decisionTranslate());
         } else if (form.isReject()) {
             runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
             reimburse.setBusinessState(Constants.STATE_DETAIL_REJECT);
             optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
-            optLog.setTaskResult(form.getDecision());
+            optLog.setTaskResult(form.decisionTranslate());
         } else {
             log.error("审批结果只能是pass/reject, 实际审批结果: {}", form.getDecision());
             throw new BusinessException("审批结果只能是pass/reject, 实际审批参数:" + form.getDecision());
@@ -328,6 +334,7 @@ public class ReimburseServiceImpl implements ReimburseService {
             runtimeService.deleteProcessInstance(rbs.getProcessInstanceId(), Constants.DELETE_REASON_DELETE + "_" + user.getId() + "_" + user.getName());
             rbs.setBusinessState(Constants.STATE_DETAIL_DELETE);
             rbs.setFinished(true);
+            rbs.setDelete(true);
             reimburseRepository.save(rbs);
 
             FlowOperationLog optLog = FlowOperationLog.create(user.getId(), user.getName(), rbs.getProcessInstanceId(), rbs.getProcessDefinitionId(), rbs.getProcessDefinitionKey(),
@@ -401,6 +408,19 @@ public class ReimburseServiceImpl implements ReimburseService {
             UserTaskDTO parent = flowNodeWrapper(node, form, bpmnModelInstance);
             returnList.add(parent);
         }
+        //抄送节点
+        UserTaskDTO wrapper = new UserTaskDTO();
+        wrapper.setTaskType(Constants.TASK_TYPE_COPY);
+        wrapper.setTaskName(Constants.TASK_NAME_COPY);
+        wrapper.setSelectUserType(Constants.SELECT_USER_TYPE_MANUAL);
+        for (String s : form.getCopyList()) {
+            UserTaskDTO dto = new UserTaskDTO();
+            dto.setOperatorId(s);
+            final User user = userService.getSimpleUserInfo(s);
+            dto.setOperatorName(user.getUsername());
+        }
+
+
         return returnList;
     }
 

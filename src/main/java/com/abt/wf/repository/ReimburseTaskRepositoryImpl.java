@@ -36,7 +36,9 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
                 "left join ACT_RU_TASK t on r.proc_inst_id = t.PROC_INST_ID_ " +
                 "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
                 "left join [dbo].[User] su on r.create_userid = su.Id " +
-                "where 1=1 ";
+                "where 1=1 " +
+                //仅查询未删除的
+                "and r.is_del = 0";
 
         List<Object> params = new ArrayList<>();
         if (StringUtils.isNotBlank(entityId)) {
@@ -68,15 +70,21 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
         List<Object> params = new ArrayList<>();
         String sql = "select t.ID_ as inv_task_id, t.TASK_DEF_KEY_ as inv_task_def_id, t.NAME_ as inv_task_name, " +
                 "t.ASSIGNEE_ as inv_task_assignee_id, u.Name as inv_task_assignee_name, " +
-                "null as cur_task_id, null as cur_task_def_id, null as cur_task_name, null as cur_task_assignee_id, null as cur_task_assignee_name, " +
+                "rt.ID_ as cur_task_id, rt.TASK_DEF_KEY_ as cur_task_def_id, rt.NAME_ as cur_task_name, rt.ASSIGNEE_ as cur_task_assignee_id, " +
+                "tu.Name as cur_task_assignee_name, " +
                 "r.*,  su.Name as create_username1 " +
                 "from ACT_HI_TASKINST t " +
-                "left join wf_rbs r on t.ROOT_PROC_INST_ID_ = r.proc_inst_id " +
+                "inner join wf_rbs r on t.ROOT_PROC_INST_ID_ = r.proc_inst_id " +
+                //当前审批人
+                "left join ACT_RU_TASK rt on rt.PROC_INST_ID_ = t.PROC_INST_ID_ " +
                 "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
                 "left join [dbo].[User] su on r.create_userid = su.Id " +
+                "left join [dbo].[User] tu on rt.ASSIGNEE_ = tu.Id " +
                 "where 1=1 " +
                 //不包含申请节点, 需要申请节点defId包含apply
-                "and t.TASK_DEF_KEY_ not like '%apply%'";
+                "and t.TASK_DEF_KEY_ not like '%apply%' " +
+                //没有删除的
+                "and r.is_del = 0 ";
         if (StringUtils.isNotBlank(state)) {
             sql += "and r.biz_state = ? ";
             params.add(state);
@@ -90,9 +98,11 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
             params.add(invokedUserid);
         }
         if (TODO == todo) {
-            sql += "and t.END_TIME_ is not NULL ";
-        } else if (DONE == todo) {
+            //待办
             sql += "and t.END_TIME_ is NULL ";
+        } else if (DONE == todo) {
+            //已办
+            sql += "and t.END_TIME_ is not NULL ";
         }
 
         sql += between(startDate, endDate, params);
@@ -118,7 +128,7 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
             params.add(startDate);
         }
         if (StringUtils.isNotBlank(endDate)) {
-            sql += "and r.create_date <= ?";
+            sql += "and r.create_date <= ? ";
             params.add(endDate);
         }
         return sql;

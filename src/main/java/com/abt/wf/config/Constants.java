@@ -63,6 +63,11 @@ public class Constants {
      * 审批节点
      */
     public static final String TASK_TYPE_APPROVAL = "approval";
+    /**
+     * 抄送节点
+     */
+    public static final String TASK_TYPE_COPY = "copy";
+    public static final String TASK_NAME_COPY = "抄送";
 
     //--- selectUserType
     /**

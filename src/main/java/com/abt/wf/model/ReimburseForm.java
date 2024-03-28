@@ -14,10 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import static com.abt.wf.config.Constants.*;
 
@@ -33,6 +30,7 @@ public class ReimburseForm extends Reimburse {
     private List<String> managerList;
     private List<SystemFile> pdfAttachments;
     private List<SystemFile> otherAttachments;
+    private List<String> copyList;
 
     //-- 当前正在进行的task
     private String currentTaskId;
@@ -106,6 +104,9 @@ public class ReimburseForm extends Reimburse {
         if (!CollectionUtils.isEmpty(this.getManagerList())) {
             this.setManagers(String.join(",", this.getManagerList()));
         }
+        if (!CollectionUtils.isEmpty(this.getCopyList())) {
+            this.setCopy(String.join(",", this.getCopyList()));
+        }
     }
 
 
@@ -148,9 +149,13 @@ public class ReimburseForm extends Reimburse {
         form.setCreateDate(rbs.getCreateDate());
         form.setCreateUserid(rbs.getCreateUserid());
         form.setCreateUsername(rbs.getCreateUsername());
+        form.setCopy(rbs.getCopy());
 
         if (StringUtils.isNotBlank(rbs.getManagers())) {
-            form.setManagerList(List.of(rbs.getManagers().split(",")));
+            form.setManagerList(Arrays.asList(rbs.getManagers().split(",")));
+        }
+        if (StringUtils.isNotBlank(rbs.getCopy())) {
+            form.setCopyList(Arrays.asList(rbs.getCopy().split(",")));
         }
         try {
             if (StringUtils.isNotBlank(rbs.getPdfFileList())) {
@@ -165,8 +170,6 @@ public class ReimburseForm extends Reimburse {
             log.error("Json转换失败");
             throw new BusinessException("Json转换失败! 错误：" +  e.getMessage());
         }
-
-
         return form;
     }
 
@@ -179,6 +182,8 @@ public class ReimburseForm extends Reimburse {
         rbs.setRbsDate(this.getRbsDate());
         rbs.setRbsType(this.getRbsType());
         rbs.setReason(this.getReason());
+        rbs.setReserveLoan(this.getReserveLoan());
+        rbs.setReserveRefund(this.getReserveRefund());
         rbs.setCompany(this.getCompany());
         rbs.setDepartmentId(this.getDepartmentId());
         rbs.setDepartmentName(this.getDepartmentName());
@@ -199,6 +204,7 @@ public class ReimburseForm extends Reimburse {
         rbs.setProcessInstanceId(this.getProcessInstanceId());
         rbs.setProcessDefinitionKey(this.getProcessDefinitionKey());
         rbs.setProcessDefinitionId(this.getProcessDefinitionId());
+        rbs.setCopy(this.getCopy());
         return rbs;
     }
 

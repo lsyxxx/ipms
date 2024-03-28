@@ -35,13 +35,11 @@ public class ReimburseProcessEndListener implements ExecutionListener {
         } else {
             entityId = obj.toString();
             Reimburse rbs = reimburseService.findById(entityId);
-            final HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(execution.getProcessInstanceId()).singleResult();
-            System.out.println("======== 流程状态：" + historicProcessInstance.getState());
-            rbs.setProcessState(historicProcessInstance.getState());
             //判断流程状态
             if (Constants.STATE_DETAIL_ACTIVE.equals(rbs.getBusinessState())) {
                 //表示之前一直正常通过，特殊状态在业务中已更改状态
                 rbs.setBusinessState(Constants.STATE_DETAIL_PASS);
+                rbs.setProcessState("COMPLETED");
             }
             rbs.setFinished(true);
             reimburseService.saveEntity(rbs);

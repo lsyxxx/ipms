@@ -26,9 +26,9 @@ import java.time.LocalDateTime;
 public class AuditInfo {
     @Schema(description = "最后更新时间")
     @LastModifiedDate
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate updateDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateDate;
 
     @LastModifiedBy
     private String updateUserid;
@@ -38,10 +38,10 @@ public class AuditInfo {
     private String createUserid;
     private String createUsername;
 
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @CreatedDate
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate createDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ssd")
+    private LocalDateTime createDate;
 
 
     /**
@@ -52,7 +52,7 @@ public class AuditInfo {
     public void create(String userid, String createUsername) {
         this.createUserid = userid;
         this.createUsername = createUsername;
-        this.createDate = LocalDate.now();
+        this.createDate = LocalDateTime.now();
         this.updateDate = this.createDate;
         this.updateUserid = userid;
         this.updateUsername = createUsername;
@@ -61,6 +61,6 @@ public class AuditInfo {
     public void update(String userid, String username) {
         this.updateUsername = username;
         this.updateUserid = userid;
-        this.updateDate = LocalDate.now();
+        this.updateDate = LocalDateTime.now();
     }
 }

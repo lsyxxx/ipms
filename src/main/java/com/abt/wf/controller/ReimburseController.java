@@ -114,6 +114,7 @@ public class ReimburseController {
      */
     @GetMapping("/todo")
     public R<List<ReimburseForm>> todoList(@ModelAttribute ReimburseRequestForm queryForm) {
+        getUserFromToken(queryForm);
         // criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
         final List<ReimburseForm> todo = reimburseService.findMyTodoByCriteria(queryForm);
         return R.success(todo, todo.size());
@@ -136,6 +137,7 @@ public class ReimburseController {
         final List<UserTaskDTO> preview = reimburseService.preview(form);
         return R.success(preview, preview.size());
     }
+
 
     public void getUserFromToken(ReimburseForm form) {
         UserView userView = TokenUtil.getUserFromAuthToken();

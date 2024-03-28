@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.wf.config.Constants;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
@@ -69,8 +70,24 @@ public class WorkflowBase extends AuditInfo {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime endTime;
 
+    /**
+     * 业务删除原因
+     */
     @Column(name="del_reason", columnDefinition="VARCHAR(500)")
     private String deleteReason;
+
+    /**
+     * 是否删除业务，只用于手动删除业务, softDelete
+     * 审批拒绝不删除业务,
+     */
+    @Column(name = "is_del", columnDefinition = "BIT")
+    private boolean isDelete = false;
+
+    /**
+     * 抄送人
+     */
+    @Column(columnDefinition="VARCHAR(1000)")
+    private String copy;
 
 
 }

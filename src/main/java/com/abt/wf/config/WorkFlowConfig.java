@@ -26,8 +26,13 @@ public class WorkFlowConfig {
 
     public static final String RBS_TYPE = "rbsType";
     public static final String DEF_KEY_RBS = "rbsMulti";
+    /**
+     * 特殊审批人的流程
+     */
+    public static final String DEF_KEY_RBS_SPC = "rbsMultiSpecial";
 
     public static final String SKIP_MANAGER = "rbsFlowSkipManager";
+    public static final String DEFAULT_CC = "rbsFlowDefaultCC";
 
     private Map<String, ProcessDefinition> processDefinitionMap = new HashMap<>();
 
@@ -50,6 +55,14 @@ public class WorkFlowConfig {
     @Bean
     public List<FlowSetting> queryFlowManagerList() {
         return flowSettingRepository.findByTypeOrderByCreateDate(SKIP_MANAGER);
+    }
+
+    /**
+     * 流程默认审批人
+     */
+    @Bean
+    public List<FlowSetting> queryDefaultCC() {
+        return flowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_CC);
     }
 
     @Bean("rbsMultiProcessDefinition")
@@ -87,8 +100,6 @@ public class WorkFlowConfig {
         log.info("getBpmnModelInstanceMap bean init...");
         return bpmnModelInstanceMap;
     }
-
-    
 
 
 }
