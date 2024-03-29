@@ -80,7 +80,6 @@ public class Reimburse extends WorkflowBase {
      * 公司, abt/grd
      */
     @NotNull
-
     @Column(name="company", columnDefinition="VARCHAR(256)")
     private String company;
     /**

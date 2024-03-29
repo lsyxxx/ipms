@@ -81,6 +81,14 @@ public class Constants {
 
     public static final String SERVICE_RBS = "日常报销";
     public static final String SERVICE_INV = "开票申请";
+    public static final String SERVICE_TRIP = "差旅报销";
+
+    public static final String TRANSPORTATION_AIRPLANE = "飞机";
+    public static final String TRANSPORTATION_CAR = "自驾";
+    public static final String TRANSPORTATION_TRAIN = "火车";
+    public static final String TRANSPORTATION_HIGHSPEED = "高铁";
+    public static final String TRANSPORTATION_OTHER = "其他";
+
 
 
 }

@@ -1,8 +1,10 @@
 package com.abt.wf.listener;
 
+import com.abt.sys.exception.BusinessException;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
+import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.ReimburseService;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.HistoryService;
@@ -18,12 +20,11 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ReimburseProcessEndListener implements ExecutionListener {
     private final ReimburseService reimburseService;
-    private final HistoryService historyService;
 
-    public ReimburseProcessEndListener(ReimburseService reimburseService, HistoryService historyService) {
+    public ReimburseProcessEndListener(ReimburseService reimburseService) {
         this.reimburseService = reimburseService;
-        this.historyService = historyService;
     }
+
 
     @Override
     public void notify(DelegateExecution execution) throws Exception {
@@ -44,6 +45,8 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             rbs.setFinished(true);
             reimburseService.saveEntity(rbs);
         }
+
+        log.info("报销业务流程监听器结束....");
 
     }
 }

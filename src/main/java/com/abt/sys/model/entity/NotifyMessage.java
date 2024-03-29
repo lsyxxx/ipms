@@ -1,18 +1,24 @@
 package com.abt.sys.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
 
 /**
  * 抄送/通知 对象
  */
 @Data
 @NoArgsConstructor
-@Table(name = "sys_msg")
+@Table(name = "sys_notify")
 @DynamicInsert
 @DynamicUpdate
 @Entity
@@ -25,11 +31,18 @@ public class NotifyMessage {
      */
     @Column(name="to_", columnDefinition="VARCHAR(128)")
     private String to;
+
+    /**
+     * 表示发送给所有人
+     */
+    public static final String TO_ALL = "TO_ALL";
+
     /**
      * 发送人
      */
     @Column(name="from_", columnDefinition="VARCHAR(128)")
     private String from = SYSTEM;
+
     @Column(name="message_", columnDefinition="VARCHAR(1000)")
     private String message;
     /**
@@ -39,11 +52,33 @@ public class NotifyMessage {
     private String url;
 
     /**
+     * 是否已读
+     * true: 已读
+     * false: 未读
+     */
+    @Column(name="is_read", columnDefinition="BIT")
+    private boolean isRead = false;
+
+    /**
+     * 是否删除消息,soft delete
+     */
+    @Column(name="is_del", columnDefinition="BIT")
+    private boolean isDelete = false;
+
+    /**
+     * 发送时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @CreatedDate
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ssd")
+    private LocalDateTime sendTime;
+
+    /**
      * 系统消息
      */
     public static final String SYSTEM = "System";
 
-    public static NotifyMessage systemMessage(String to) {
+    public static NotifyMessage systemMessage(String to, String link) {
         NotifyMessage msg = new NotifyMessage();
         msg.setTo(to);
         return msg;

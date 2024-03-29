@@ -258,17 +258,17 @@ public class ReimburseServiceImpl implements ReimburseService {
         }
         FlowOperationLog optLog;
         Reimburse reimburse = findById(form.getId());
-        if (form.isPass()) {
-            taskService.complete(task.getId());
-            reimburse.setBusinessState(STATE_DETAIL_ACTIVE);
-            optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
-            optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
-            optLog.setComment(form.getComment());
-            optLog.setTaskResult(form.decisionTranslate());
-        } else if (form.isReject()) {
+        if (form.isReject()) {
+//          delete后就会执行processEndListener
             runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
             reimburse.setBusinessState(Constants.STATE_DETAIL_REJECT);
             optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
+            optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
+            optLog.setComment(form.getComment());
+            optLog.setTaskResult(form.decisionTranslate());
+        } else if (form.isPass()) {
+            reimburse.setBusinessState(STATE_DETAIL_ACTIVE);
+            optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
             optLog.setTaskResult(form.decisionTranslate());
@@ -279,6 +279,8 @@ public class ReimburseServiceImpl implements ReimburseService {
 
         reimburseRepository.save(reimburse);
         flowOperationLogService.saveLog(optLog);
+        //如果是最后一个节点，complete后就会执行processEndListener，所以reimburseRepository.save(reimburse) 要在complete之前完成
+        taskService.complete(task.getId());
         clearAuthUser();
     }
 
@@ -409,17 +411,18 @@ public class ReimburseServiceImpl implements ReimburseService {
             returnList.add(parent);
         }
         //抄送节点
-        UserTaskDTO wrapper = new UserTaskDTO();
-        wrapper.setTaskType(Constants.TASK_TYPE_COPY);
-        wrapper.setTaskName(Constants.TASK_NAME_COPY);
-        wrapper.setSelectUserType(Constants.SELECT_USER_TYPE_MANUAL);
+        UserTaskDTO cc = new UserTaskDTO();
+        cc.setTaskType(Constants.TASK_TYPE_COPY);
+        cc.setTaskName(Constants.TASK_NAME_COPY);
+        cc.setSelectUserType(Constants.SELECT_USER_TYPE_MANUAL);
         for (String s : form.getCopyList()) {
             UserTaskDTO dto = new UserTaskDTO();
             dto.setOperatorId(s);
             final User user = userService.getSimpleUserInfo(s);
             dto.setOperatorName(user.getUsername());
+            cc.addUserTaskDTO(dto);
         }
-
+        returnList.add(cc);
 
         return returnList;
     }
@@ -478,6 +481,12 @@ public class ReimburseServiceImpl implements ReimburseService {
     public boolean isApproveUser(ReimburseForm form) {
         UserView userView = TokenUtil.getUserFromAuthToken();
         return userView.getId().equals(form.getCurrentTaskAssigneeId());
+    }
+
+    @Override
+    public String notifyLink(String id) {
+        //前端跳转url:/workflow/add/detail/
+        return "/workflow/add/detail/" + id;
     }
 
     /**

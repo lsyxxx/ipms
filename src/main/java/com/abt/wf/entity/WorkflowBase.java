@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -88,6 +89,29 @@ public class WorkflowBase extends AuditInfo {
      */
     @Column(columnDefinition="VARCHAR(1000)")
     private String copy;
+
+    @Transient
+    private String currentTaskId;
+    @Transient
+    private String currentTaskDefId;
+    @Transient
+    private String currentTaskName;
+    @Transient
+    private String currentTaskAssigneeId;
+    @Transient
+    private String currentTaskAssigneeName;
+    @Transient
+    private String invokedTaskId;
+    @Transient
+    private String invokedTaskName;
+    @Transient
+    private String invokedTaskAssigneeId;
+    @Transient
+    private String invokedTaskAssigneeName;
+    @Transient
+    private String invokedTaskDefId;
+    @Transient
+    private boolean isApproveUser;
 
 
 }

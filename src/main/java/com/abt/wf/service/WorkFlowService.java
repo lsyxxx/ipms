@@ -89,5 +89,10 @@ public interface WorkFlowService<T> {
      */
     boolean isApproveUser(ReimburseForm form);
 
+    /**
+     * 通知消息url
+     * @param id
+     */
+    String notifyLink(String id);
 
 }
