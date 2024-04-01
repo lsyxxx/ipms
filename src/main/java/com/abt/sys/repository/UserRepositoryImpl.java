@@ -2,6 +2,7 @@ package com.abt.sys.repository;
 
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
+import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -78,6 +79,35 @@ public class UserRepositoryImpl implements UserRepository{
                 "left join [dbo].[User] u on u.empnum = e.JobNumber " +
                 "where u.Id = ? ";
         return jdbcTemplate.queryForObject(sql, new UserDeptRowMapper(), userid);
+    }
+
+
+    @Override
+    public List<UserRole> getUserRoleByUserid(String userid) {
+        String sql = "select u.Id as userid, u.Name as username, u.empnum as jobNumber, ro.Id as roleId, ro.Name as roleName" +
+                "from [dbo].[User] u " +
+                "left join Relevance rl on u.Id = rl.FirstId " +
+                "left join [dbo].[Role] ro on rl.SecondId = ro.Id " +
+                "where 1=1 " +
+                "and u.Id = ? " +
+                "and rl.[Key] = 'UserRole'";
+        return jdbcTemplate.query(sql, new UserRoleRowMapper(), userid);
+    }
+
+    class UserRoleRowMapper implements RowMapper<UserRole> {
+
+        @Nullable
+        @Override
+        public UserRole mapRow(ResultSet rs, int rowNum) throws SQLException {
+            UserRole userRole = new UserRole();
+            //userid, username, roleId, roleName, jobNumber
+            userRole.setId(rs.getString("userid"));
+            userRole.setUsername(rs.getString("username"));
+            userRole.setCode(rs.getString("jobNumber"));
+            userRole.setRoleId(rs.getString("roleId"));
+            userRole.setRoleName(rs.getString("roleName"));
+            return userRole;
+        }
     }
 
     class UserDeptRowMapper implements RowMapper<User> {

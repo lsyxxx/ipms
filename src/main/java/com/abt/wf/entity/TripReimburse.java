@@ -89,7 +89,7 @@ public class TripReimburse extends WorkflowBase {
     /**
      * 其他费用
      */
-    @Column(name = "allowance_dur", columnDefinition = "DECIMAL(10, 2)")
+    @Column(name = "oth_exp", columnDefinition = "DECIMAL(10, 2)")
     private String otherExpense;
 
     @Column(name = "sum_", columnDefinition = "DECIMAL(10, 2)")

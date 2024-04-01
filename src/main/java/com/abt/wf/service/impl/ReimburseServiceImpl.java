@@ -4,7 +4,11 @@ import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
+import com.abt.finance.entity.CreditBook;
+import com.abt.finance.entity.DebitBook;
+import com.abt.finance.service.FinanceBookKeepingService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.repository.EmployeeRepository;
@@ -15,6 +19,7 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.*;
 import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.repository.ReimburseTaskRepository;
+import com.abt.wf.service.BookKeepingService;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.util.WorkFlowUtil;
@@ -39,8 +44,8 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.abt.wf.config.Constants.STATE_DETAIL_ACTIVE;
-import static com.abt.wf.config.Constants.STATE_DETAIL_APPLY;
+import static com.abt.finance.config.Constants.AUTH_BOOKKEEPING;
+import static com.abt.wf.config.Constants.*;
 
 /**
  *
@@ -59,6 +64,7 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     private final FlowOperationLogService flowOperationLogService;
 
+    private final FinanceBookKeepingService financeBookKeepingService;
     private final Map<String, BpmnModelInstance> bpmnModelInstanceMap;
 
     private final UserService<User, User> userService;
@@ -74,6 +80,7 @@ public class ReimburseServiceImpl implements ReimburseService {
     public ReimburseServiceImpl(IdentityService identityService, TaskService taskService, RuntimeService runtimeService,
                                 RepositoryService repositoryService, ReimburseRepository reimburseRepository,
                                 HistoryService historyService, FlowOperationLogService flowOperationLogService,
+                                FinanceBookKeepingService financeBookKeepingService,
                                 @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap,
                                 @Qualifier("sqlServerUserService") UserService userService, EmployeeRepository employeeRepository,
                                 ReimburseTaskRepository reimburseTaskRepository,
@@ -85,6 +92,7 @@ public class ReimburseServiceImpl implements ReimburseService {
         this.reimburseRepository = reimburseRepository;
         this.historyService = historyService;
         this.flowOperationLogService = flowOperationLogService;
+        this.financeBookKeepingService = financeBookKeepingService;
         this.bpmnModelInstanceMap = bpmnModelInstanceMap;
         this.userService = userService;
         this.reimburseTaskRepository = reimburseTaskRepository;
@@ -410,6 +418,9 @@ public class ReimburseServiceImpl implements ReimburseService {
             UserTaskDTO parent = flowNodeWrapper(node, form, bpmnModelInstance);
             returnList.add(parent);
         }
+        if (form.getCopyList().isEmpty()) {
+            return returnList;
+        }
         //抄送节点
         UserTaskDTO cc = new UserTaskDTO();
         cc.setTaskType(Constants.TASK_TYPE_COPY);
@@ -499,7 +510,6 @@ public class ReimburseServiceImpl implements ReimburseService {
 
         //2. 撤销条件：多少天内允许撤销
 
-
         return ValidationResult.pass();
     }
 
@@ -535,7 +545,16 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
 
-
-
-
+    @Override
+    public boolean bookKeepAccess(String userid) {
+        //拥有记账角色, Role表中记账角色，则允许记账
+        final List<UserRole> roleList = userService.getUserRoleByUserid(userid);
+        log.trace("======== user {}, rolelist: {}", userid, roleList);
+        return roleList.stream().anyMatch(i -> AUTH_BOOKKEEPING.equals(i.getRoleId()));
+    }
+//
+//    @Override
+//    public String businessUrl(ReimburseForm form) {
+//        return "/workflow/add/detail/" + form.getId();
+//    }
 }

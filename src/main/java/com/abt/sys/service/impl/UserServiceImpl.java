@@ -7,6 +7,7 @@ import com.abt.http.dto.WebApiDto;
 import com.abt.http.dto.WebApiToken;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.exception.InvalidTokenException;
+import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.http.service.HttpConnectService;
 import com.abt.sys.service.UserService;
@@ -65,6 +66,12 @@ public class UserServiceImpl implements UserService<UserView, WebApiToken> {
 
     @Override
     public User getUserDeptByUserid(String userid) {
+        return null;
+    }
+
+    @Override
+    public List<UserRole> getUserRoleByUserid(String userid) {
+        //api: LoadForUser
         return null;
     }
 

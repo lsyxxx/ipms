@@ -12,7 +12,7 @@ import java.util.List;
 /**
  *
  */
-public interface ReimburseService extends WorkFlowService<ReimburseForm>{
+public interface ReimburseService extends WorkFlowService<ReimburseForm>, BookKeepingService<ReimburseForm>{
 
 
     Reimburse findById(String entityId);

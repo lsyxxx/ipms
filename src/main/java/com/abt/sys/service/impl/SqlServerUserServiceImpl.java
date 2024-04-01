@@ -3,6 +3,7 @@ package com.abt.sys.service.impl;
 import com.abt.common.model.User;
 import com.abt.common.util.MessageUtil;
 import com.abt.http.dto.WebApiToken;
+import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.repository.UserRepository;
 import com.abt.sys.service.UserService;
@@ -66,6 +67,11 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
     @Override
     public User getUserDeptByUserid(String userid) {
         return userRepository.getEmployeeDeptByUserid(userid);
+    }
+
+    @Override
+    public List<UserRole> getUserRoleByUserid(String userid) {
+        return userRepository.getUserRoleByUserid(userid);
     }
 
 }

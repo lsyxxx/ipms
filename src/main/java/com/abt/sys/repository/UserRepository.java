@@ -2,6 +2,7 @@ package com.abt.sys.repository;
 
 
 import com.abt.common.model.User;
+import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import java.util.List;
 
@@ -37,4 +38,6 @@ public interface UserRepository {
      * @param userid User表id
      */
     User getEmployeeDeptByUserid(String userid);
+
+    List<UserRole> getUserRoleByUserid(String userid);
 }

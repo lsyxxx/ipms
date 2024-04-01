@@ -2,6 +2,7 @@ package com.abt.wf.model;
 
 import com.abt.common.entity.Company;
 import com.abt.common.util.JsonUtil;
+import com.abt.finance.entity.DebitBook;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.wf.config.Constants;
@@ -27,10 +28,10 @@ import static com.abt.wf.config.Constants.*;
 @Slf4j
 public class ReimburseForm extends Reimburse {
 
-    private List<String> managerList;
-    private List<SystemFile> pdfAttachments;
-    private List<SystemFile> otherAttachments;
-    private List<String> copyList;
+    private List<String> managerList = new ArrayList<>();
+    private List<SystemFile> pdfAttachments = new ArrayList<>();
+    private List<SystemFile> otherAttachments = new ArrayList<>();
+    private List<String> copyList = new ArrayList<>();
 
     //-- 移动到workflowBase中
     //-- 当前正在进行的task

@@ -2,6 +2,7 @@ package com.abt.sys.service;
 
 import com.abt.common.model.User;
 import com.abt.http.dto.WebApiToken;
+import com.abt.sys.model.dto.UserRole;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -39,4 +40,5 @@ public interface UserService<T, E> {
       * @param userid User表id
       */
     User getUserDeptByUserid(String userid);
+    List<UserRole> getUserRoleByUserid(String userid);
 }

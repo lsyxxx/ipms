@@ -7,6 +7,7 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
+import com.abt.wf.service.BookKeepingService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.service.impl.ReimburseServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -136,6 +137,15 @@ public class ReimburseController {
         getUserFromToken(form);
         final List<UserTaskDTO> preview = reimburseService.preview(form);
         return R.success(preview, preview.size());
+    }
+
+    /**
+     * 当前登录用户是否拥有记账权限
+     */
+    @GetMapping("/checkbk")
+    public R<Boolean> isReimburseBookKeepingUser() {
+        final boolean access = reimburseService.bookKeepAccess(TokenUtil.getUserFromAuthToken().getId());
+        return R.success(access);
     }
 
 
