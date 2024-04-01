@@ -33,6 +33,7 @@ public class DebitBook extends AuditInfo {
      * 关联业务id
      */
     @Column(name="biz_id", columnDefinition="VARCHAR(128)")
+    @NotNull
     private String businessId;
 
     /**
@@ -65,9 +66,6 @@ public class DebitBook extends AuditInfo {
     @Column(name="inv_url", columnDefinition="VARCHAR(128)")
     private String invoiceUrl;
     
-    @Column(columnDefinition="VARCHAR(128)")
-    private String payBankId;
-
     @Column(columnDefinition="VARCHAR(128)")
     private String payCompany;
 

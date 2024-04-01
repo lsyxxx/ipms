@@ -130,10 +130,4 @@ public class Reimburse extends WorkflowBase {
     @Column(columnDefinition="VARCHAR(1000)")
     private String managers;
 
-    /**
-     * 资金流出记账IDs，可能有多个，用逗号分隔
-     */
-    @Column(name="debit_book_ids", columnDefinition="VARCHAR(128)")
-    private String debitBookIds;
-
 }

@@ -58,7 +58,7 @@ public class CreditBook extends AuditInfo {
      * 付款账号银行
      */
     @Column(name="pay_acc_bank", columnDefinition="VARCHAR(128)")
-    private String payAccountBank;
+    private String payBank;
 
     /**
      * 收款账号
@@ -69,7 +69,7 @@ public class CreditBook extends AuditInfo {
      * 收款账号银行
      */
     @Column(name="rec_acc_bank", columnDefinition="VARCHAR(128)")
-    private String receiveAccountBank;
+    private String receiveBank;
     /**
      * 收款人
      */
