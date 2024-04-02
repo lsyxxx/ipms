@@ -21,6 +21,9 @@ import com.abt.common.exception.MissingRequiredParameterException;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 
+import static com.abt.wf.config.Constants.*;
+import static com.abt.wf.config.Constants.DECISION_PASS_DESC;
+
 /**
  *
  */
@@ -133,6 +136,18 @@ public class WorkFlowUtil {
                 .filterByType(CamundaProperties.class)
                 .singleResult()
                 .getCamundaProperties();
+    }
+
+    public static String decisionTranslate(String decision) {
+        switch (decision) {
+            case DECISION_REJECT -> {
+                return DECISION_REJECT_DESC;
+            }
+            case DECISION_PASS -> {
+                return DECISION_PASS_DESC;
+            }
+            default -> throw new BusinessException("审批决策只能为pass/reject, 实际参数: " + decision);
+        }
     }
 
 }

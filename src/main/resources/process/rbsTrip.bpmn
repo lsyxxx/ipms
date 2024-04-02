@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0swibd0" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+  <bpmn:process id="rbsTrip" name="rbsTrip" isExecutable="true" camunda:versionTag="差旅报销" camunda:historyTimeToLive="999">
+    <bpmn:documentation>差旅报销</bpmn:documentation>
+    <bpmn:extensionElements>
+      <camunda:executionListener delegateExpression="${tripProcessEndListener}" event="end" />
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartEvent_1" name="差旅报销申请" camunda:initiator="starter">
+      <bpmn:documentation>差旅报销申请</bpmn:documentation>
+      <bpmn:outgoing>Flow_0ww0a4j</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="rbsTrip_apply" name="申请">
+      <bpmn:documentation>申请</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="taskType" value="apply" />
+          <camunda:property name="selectUserType" value="2" />
+          <camunda:property name="carbonCopy" value="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ww0a4j</bpmn:incoming>
+      <bpmn:outgoing>Flow_1eiayxz</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0ww0a4j" sourceRef="StartEvent_1" targetRef="rbsTrip_apply" />
+    <bpmn:userTask id="rbsTrip_managers" name="主管及技术负责人" camunda:assignee="${manager}">
+      <bpmn:documentation>主管及技术负责人</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="0" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1eiayxz</bpmn:incoming>
+      <bpmn:outgoing>Flow_0n80xhq</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="managerList" camunda:elementVariable="manager">
+        <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">${nrOfInstances == nrOfCompletedInstances}</bpmn:completionCondition>
+      </bpmn:multiInstanceLoopCharacteristics>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1eiayxz" sourceRef="rbsTrip_apply" targetRef="rbsTrip_managers" />
+    <bpmn:userTask id="rbsTrip_finMgr" name="财务主管" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+      <bpmn:documentation>财务主管审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0n80xhq</bpmn:incoming>
+      <bpmn:outgoing>Flow_1006uz8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0n80xhq" sourceRef="rbsTrip_managers" targetRef="rbsTrip_finMgr" />
+    <bpmn:userTask id="rbsTrip_ceo" name="总经理" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+      <bpmn:documentation>总经理审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1006uz8</bpmn:incoming>
+      <bpmn:outgoing>Flow_1bnmbhu</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1006uz8" sourceRef="rbsTrip_finMgr" targetRef="rbsTrip_ceo" />
+    <bpmn:userTask id="rbsTrip_cashier" name="出纳" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+      <bpmn:documentation>出纳审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1bnmbhu</bpmn:incoming>
+      <bpmn:outgoing>Flow_0dmj6b7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1bnmbhu" sourceRef="rbsTrip_ceo" targetRef="rbsTrip_cashier" />
+    <bpmn:endEvent id="Event_06433k8" name="结束">
+      <bpmn:incoming>Flow_0dmj6b7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0dmj6b7" sourceRef="rbsTrip_cashier" targetRef="Event_06433k8" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsTrip">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="166" y="142" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0gut3lz_di" bpmnElement="rbsTrip_apply">
+        <dc:Bounds x="270" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0aojzed_di" bpmnElement="rbsTrip_managers">
+        <dc:Bounds x="430" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_173rw23_di" bpmnElement="rbsTrip_finMgr">
+        <dc:Bounds x="590" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0fb9r5q_di" bpmnElement="rbsTrip_ceo">
+        <dc:Bounds x="750" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_013fkd9_di" bpmnElement="rbsTrip_cashier">
+        <dc:Bounds x="910" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_06433k8_di" bpmnElement="Event_06433k8">
+        <dc:Bounds x="1072" y="99" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1079" y="142" width="22" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ww0a4j_di" bpmnElement="Flow_0ww0a4j">
+        <di:waypoint x="215" y="117" />
+        <di:waypoint x="270" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1eiayxz_di" bpmnElement="Flow_1eiayxz">
+        <di:waypoint x="370" y="117" />
+        <di:waypoint x="430" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n80xhq_di" bpmnElement="Flow_0n80xhq">
+        <di:waypoint x="530" y="117" />
+        <di:waypoint x="590" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1006uz8_di" bpmnElement="Flow_1006uz8">
+        <di:waypoint x="690" y="117" />
+        <di:waypoint x="750" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bnmbhu_di" bpmnElement="Flow_1bnmbhu">
+        <di:waypoint x="850" y="117" />
+        <di:waypoint x="910" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dmj6b7_di" bpmnElement="Flow_0dmj6b7">
+        <di:waypoint x="1010" y="117" />
+        <di:waypoint x="1072" y="117" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

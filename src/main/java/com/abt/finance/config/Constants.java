@@ -13,6 +13,6 @@ public class Constants {
 
     public static final String AUTH_BOOKKEEPING = "ca168896-d113-42ca-a58e-c1c5b9e92c96";
 
-    public static final String BIZ_DESC_RBS = "费用报销";
-    public static final String BIZ_DESC_TRIP = "差旅报销";
+    public static final String SERVICE_NAME_RBS = "费用报销";
+    public static final String SERVICE_NAME_TRIP = "差旅报销";
 }

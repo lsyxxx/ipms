@@ -73,7 +73,6 @@ public class ReimburseForm extends Reimburse {
             }
             default -> throw new BusinessException("审批决策只能为pass/reject, 实际参数: " + this.decision);
         }
-
     }
 
     //-- 流程参数key

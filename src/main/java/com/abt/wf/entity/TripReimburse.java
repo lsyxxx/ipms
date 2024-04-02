@@ -2,7 +2,6 @@ package com.abt.wf.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,6 +15,8 @@ import java.time.LocalDate;
 
 /**
  * 差旅报销
+ * 多个明细组成一个报销单。
+ * 主数据(保存公共数据)+明细数据(明细数据，不包含公共)
  */
 
 @Data
@@ -32,38 +33,40 @@ public class TripReimburse extends WorkflowBase {
     private String id;
 
     /**
-     * 多个报销明细组成一个报销单
+     * 多个报销明细组成一个报销单，同一个单据中root_id相同
+     * 通用数据没有root_id
      */
     @Column(name = "root_id", columnDefinition = "VARCHAR(128)")
     private String rootId;
 
+    //-- common
     @Column(name = "dept_id", columnDefinition = "VARCHAR(128)")
     private String deptId;
     @Column(name = "dept_name", columnDefinition = "VARCHAR(128)")
     private String deptName;
 
+    /**
+     * 出差人员
+     * common
+     */
     @Column(name = "staff_", columnDefinition = "VARCHAR(512)")
     private String staff;
 
-    @NotNull
+    //common
     @Column(columnDefinition = "VARCHAR(1000)")
     private String reason;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @NotNull
     private LocalDate tripStartDate;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @NotNull
     private LocalDate tripEndDate;
 
-    @NotNull
     @Column(name = "origin_", columnDefinition = "VARCHAR(128)")
     private String tripOrigin;
 
-    @NotNull
     @Column(name = "arrival_", columnDefinition = "VARCHAR(128)")
     private String tripArrival;
 
@@ -92,11 +95,13 @@ public class TripReimburse extends WorkflowBase {
     @Column(name = "oth_exp", columnDefinition = "DECIMAL(10, 2)")
     private String otherExpense;
 
+    //common
     @Column(name = "sum_", columnDefinition = "DECIMAL(10, 2)")
     private BigDecimal sum;
 
     /**
      * 领款人id
+     * common
      */
     @Column(name = "payee_id", columnDefinition = "VARCHAR(128)")
     private String payeeId;
@@ -105,25 +110,22 @@ public class TripReimburse extends WorkflowBase {
     /**
      * 明细排序
      */
-    @Column(name="sort_", columnDefinition="TINYINT")
+    @Column(name = "sort_", columnDefinition = "TINYINT")
     private int sort = 0;
 
     /**
      * 交通工具, Constants.TRANSPORTATION_*
      */
-    @NotNull
-    @Column(columnDefinition="VARCHAR(64)")
-    private String  transportation;
+    @Column(columnDefinition = "VARCHAR(64)")
+    private String transportation;
 
     /**
      * 交通费
      */
-    @Column(name="trans_exp", columnDefinition="DECIMAL(10, 2)")
+    @Column(name = "trans_exp", columnDefinition = "DECIMAL(10, 2)")
     private BigDecimal transExpense;
 
-    @NotNull(message = "请输入业务所属公司")
-    @Column(name="company", columnDefinition="VARCHAR(256)")
-    private String  company;
-
-
+    //common
+    @Column(name = "company", columnDefinition = "VARCHAR(256)")
+    private String company;
 }

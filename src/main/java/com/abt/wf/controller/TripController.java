@@ -1,9 +1,13 @@
 package com.abt.wf.controller;
 
 import com.abt.common.model.R;
+import com.abt.common.util.TokenUtil;
+import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
 import com.abt.wf.model.TripReimburseForm;
 import com.abt.wf.model.TripRequestForm;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +19,19 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/wf/trip")
 public class TripController {
 
+    /**
+     * 申请
+     * @param form 申请表单
+     */
     @PostMapping("/apply")
-    public void apply(@Validated @RequestBody TripReimburseForm form) {
+    public void apply(@RequestBody TripReimburseForm form) {
+        if (CollectionUtils.isEmpty(form.getItems())) {
+            throw new BusinessException("请输入差旅报销明细信息!");
+        }
+
+        UserView user = TokenUtil.getUserFromAuthToken();
+        form.getCommon().setCreateUserid(user.getId());
+        form.getCommon().setCreateUsername(user.getUsername());
 
     }
 
@@ -39,6 +54,7 @@ public class TripController {
 
         return null;
     }
+
 
 
 

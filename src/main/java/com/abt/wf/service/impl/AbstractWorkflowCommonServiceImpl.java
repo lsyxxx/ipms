@@ -1,6 +1,7 @@
 package com.abt.wf.service.impl;
 
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.WorkFlowService;
 import lombok.AllArgsConstructor;
@@ -26,4 +27,11 @@ public abstract class AbstractWorkflowCommonServiceImpl<T> implements WorkFlowSe
     public List<FlowOperationLog> getCompletedOperationLogByEntityId(String entityId) {
         return flowOperationLogService.findLogsByEntityId(entityId);
     }
+
+    @Override
+    public void clearAuthUser() {
+        identityService.clearAuthentication();
+    }
+
+
 }

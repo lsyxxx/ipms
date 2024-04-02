@@ -4,11 +4,6 @@
     <bpmn:documentation>综合日常报销审批流程</bpmn:documentation>
     <bpmn:extensionElements>
       <camunda:executionListener delegateExpression="${reimburseProcessEndListener}" event="end" />
-      <camunda:executionListener delegateExpression="${processEndListener}" event="end">
-        <camunda:field name="defaultCarbonCopy">
-          <camunda:string>621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002,621faa40-f45c-4da8-9a8f-65b0c5353f40</camunda:string>
-        </camunda:field>
-      </camunda:executionListener>
     </bpmn:extensionElements>
     <bpmn:startEvent id="StartEvent_1" name="报销申请" camunda:initiator="starter">
       <bpmn:outgoing>Flow_1qcaapv</bpmn:outgoing>
@@ -105,9 +100,7 @@
       <bpmn:incoming>Flow_1qcaapv</bpmn:incoming>
       <bpmn:outgoing>Flow_employee</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_employee" name="员工" sourceRef="rbsMulti_apply" targetRef="rbsMulti_managers">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isLeader == false}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_employee" sourceRef="rbsMulti_apply" targetRef="rbsMulti_managers" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsMulti">

@@ -4,6 +4,7 @@ package com.abt.finance.service;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.entity.DebitBook;
+import com.abt.finance.model.CashRequestForm;
 
 import java.util.List;
 
@@ -28,4 +29,10 @@ public interface FinanceBookKeepingService {
     void deleteDebitById(String id);
 
     List<BankAccount> loadAllBankAccounts();
+
+    List<CreditBook> loadCreditBookByBusinessId(String businessId);
+
+    void deleteCreditById(String id);
+
+    List<CreditBook> loadCreditByCriteria(CashRequestForm criteria);
 }

@@ -84,7 +84,7 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public List<UserRole> getUserRoleByUserid(String userid) {
-        String sql = "select u.Id as userid, u.Name as username, u.empnum as jobNumber, ro.Id as roleId, ro.Name as roleName" +
+        String sql = "select u.Id as userid, u.Name as username, u.empnum as jobNumber, ro.Id as roleId, ro.Name as roleName " +
                 "from [dbo].[User] u " +
                 "left join Relevance rl on u.Id = rl.FirstId " +
                 "left join [dbo].[Role] ro on rl.SecondId = ro.Id " +

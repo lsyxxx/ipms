@@ -27,6 +27,12 @@ public class CreditBook extends AuditInfo {
     private String id;
 
     /**
+     * 记账对应服务名称，如费用报销
+     */
+    @Column(name="srv_name", columnDefinition="VARCHAR(128)")
+    private String serviceName;
+
+    /**
      * 费用类型
      */
     @Column(name="exp_type", columnDefinition="VARCHAR(128)")
@@ -75,11 +81,7 @@ public class CreditBook extends AuditInfo {
      */
     @Column(name="rec_userid", columnDefinition="VARCHAR(128)")
     private String receiveUserid;
-    /**
-     * 是否记账
-     */
-    @Column(name="is_keep", columnDefinition="BIT")
-    private boolean isKeep;
+
     /**
      * 业务详情url
      */
@@ -105,6 +107,18 @@ public class CreditBook extends AuditInfo {
      */
     @Column(name="fi_manager_name", columnDefinition="VARCHAR(32)")
     private String financeManagerName;
+
+    /**
+     * 业务实体id
+     */
+    @Column(name="biz_id", columnDefinition="VARCHAR(128)")
+    private String businessId;
+
+    /**
+     * 记账备注
+     */
+    @Column(name="remark_", columnDefinition="VARCAHR(1000)")
+    private String remark;
 
 
 }

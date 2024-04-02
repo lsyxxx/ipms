@@ -45,8 +45,9 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             rbs.setFinished(true);
             reimburseService.saveEntity(rbs);
         }
+        //抄送:
+//        notifyMessageService.sendMessage(NotifyMessage.systemMessage(set.getValue(), reimburseService.notifyLink(entityId)));
 
         log.info("报销业务流程监听器结束....");
-
     }
 }

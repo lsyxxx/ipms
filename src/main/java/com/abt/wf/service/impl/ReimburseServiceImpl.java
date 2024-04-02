@@ -471,19 +471,19 @@ public class ReimburseServiceImpl implements ReimburseService {
     public ReimburseForm loadReimburseForm(String entityId) {
         final Reimburse entity = load(entityId);
         ReimburseForm form = ReimburseForm.of(entity);
+        //申请人
+        final User createUser = userService.getUserDeptByUserid(form.getCreateUserid());
+        form.setCreateUsername(createUser.getUsername());
+        form.setDepartmentId(createUser.getDeptId());
+        form.setDepartmentName(createUser.getDeptName());
+        form.setTeamId(createUser.getTeamId());
+        form.setTeamName(createUser.getTeamName());
         final Task task = taskService.createTaskQuery().processInstanceId(entity.getProcessInstanceId()).active().singleResult();
         if (task != null) {
             form.setCurrentTaskId(task.getId());
             form.setCurrentTaskAssigneeId(task.getAssignee());
             form.setCurrentTaskDefId(task.getTaskDefinitionKey());
             form.setCurrentTaskName(task.getName());
-            final User createUser = userService.getUserDeptByUserid(form.getCreateUserid());
-            form.setCreateUsername(createUser.getUsername());
-            form.setDepartmentId(createUser.getDeptId());
-            form.setDepartmentName(createUser.getDeptName());
-            form.setTeamId(createUser.getTeamId());
-            form.setTeamName(createUser.getTeamName());
-
         }
         return form;
     }

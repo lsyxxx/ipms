@@ -22,6 +22,12 @@ public class BankAccount {
     private String id;
 
     /**
+     * 账户名称
+     */
+    @Column(columnDefinition="VARCHAR(512)")
+    private String name;
+
+    /**
      * 银行账号
      */
     @NotNull
