@@ -15,4 +15,9 @@ public class Constants {
 
     public static final String SERVICE_NAME_RBS = "费用报销";
     public static final String SERVICE_NAME_TRIP = "差旅报销";
+
+    /**
+     * 财务总监角色 -- 财务经营部-主管
+     */
+    public static final String ROLE_FI_MGR = "JS019";
 }

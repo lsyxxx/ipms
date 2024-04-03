@@ -1,5 +1,6 @@
 package com.abt.finance.service.impl;
 
+import com.abt.common.model.User;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.entity.DebitBook;
@@ -8,16 +9,22 @@ import com.abt.finance.repository.BankAccountRepository;
 import com.abt.finance.repository.CreditBookRepository;
 import com.abt.finance.repository.DebitBookRepository;
 import com.abt.finance.service.FinanceBookKeepingService;
+import com.abt.sys.model.dto.UserRole;
+import com.abt.sys.service.UserService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.abt.common.util.QueryUtil.like;
+import static com.abt.finance.config.Constants.ROLE_FI_MGR;
 
 /**
  * 资金流入流出
@@ -29,13 +36,17 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
     private final DebitBookRepository debitBookRepository;
 
     private final BankAccountRepository bankAccountRepository;
+    private final UserService<User, User> userService;
 
 
 
-    public FinanceBookKeepingServiceImpl(CreditBookRepository creditBookRepository, DebitBookRepository debitBookRepository, BankAccountRepository bankAccountRepository) {
+    public FinanceBookKeepingServiceImpl(CreditBookRepository creditBookRepository, DebitBookRepository debitBookRepository,
+                                         BankAccountRepository bankAccountRepository,
+                                         @Qualifier("sqlServerUserService") UserService userService) {
         this.creditBookRepository = creditBookRepository;
         this.debitBookRepository = debitBookRepository;
         this.bankAccountRepository = bankAccountRepository;
+        this.userService = userService;
     }
 
     @Override
@@ -80,12 +91,29 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
         //criteria: businessId 实体id, expenseType费用类型, invoiceType票据类型, payType付款方式, 付款时间range，付款开户行account, 收款人
         Specification<CreditBook> spec = Specification.where(CreditSpecifications.businessIdLike(criteria))
                 .and(CreditSpecifications.payDateBetween(criteria))
-                .and(CreditSpecifications.receiveUserEq(criteria))
-                .and(CreditSpecifications.payAccountLike(criteria));
+                .and(CreditSpecifications.receiveUserLike(criteria))
+                .and(CreditSpecifications.payAccountEq(criteria));
         Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getLimit(),
-                Sort.by(Sort.Direction.DESC, "businessId", "expenseType", "invoiceType", "payType", "payDate"));
+                Sort.by(Sort.Direction.DESC, "businessId", "payDate", "payAccount", "expenseType", "invoiceType", "payType"));
         final Page<CreditBook> all = creditBookRepository.findAll(spec, pageable);
         return all.getContent();
+    }
+
+    @Override
+    public CreditBook initCreditBookApplyForm(CreditBook form) {
+        form.setPayDate(LocalDateTime.now());
+        //finMgr
+        final List<UserRole> user = userService.getUserByRoleId(ROLE_FI_MGR);
+        if (CollectionUtils.isEmpty(user)) {
+            return form;
+        }
+        form.setFinanceManagerId(user.get(0).getId());
+        form.setFinanceManagerName(user.get(0).getUsername());
+        return form;
+    }
+
+    public void createCreditBookExcel() {
+
     }
 
     static class CreditSpecifications {
@@ -101,8 +129,12 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
             return (root, query, builder) -> builder.like(root.get("payAccount"), like(form.getPayAccount()));
         }
 
-        public static Specification<CreditBook> receiveUserEq(CashRequestForm form) {
-            return (root, query, builder) -> builder.equal(root.get("receiveUserid"), form.getUserid());
+        public static Specification<CreditBook> payAccountEq(CashRequestForm form) {
+            return (root, query, builder) -> builder.equal(root.get("payAccount"), form.getPayAccount());
+        }
+
+        public static Specification<CreditBook> receiveUserLike(CashRequestForm form) {
+            return (root, query, builder) -> builder.equal(root.get("receiveUserid"), like(form.getUserid()));
         }
 
     }

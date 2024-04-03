@@ -16,7 +16,9 @@ import java.util.Map;
  * 公共信息包含在item中
  */
 @Data
-public class TripReimburseForm {
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class TripReimburseForm extends WorkflowBase{
 
     private String comment;
     private String decision;

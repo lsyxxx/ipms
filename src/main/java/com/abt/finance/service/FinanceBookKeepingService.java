@@ -35,4 +35,7 @@ public interface FinanceBookKeepingService {
     void deleteCreditById(String id);
 
     List<CreditBook> loadCreditByCriteria(CashRequestForm criteria);
+
+    CreditBook initCreditBookApplyForm(CreditBook form);
+
 }

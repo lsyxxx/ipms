@@ -29,6 +29,10 @@ public class TokenUtil {
         return (UserView) token.getPrincipal();
     }
 
+    public static String getUseridFromAuthToken() {
+        return getUserFromAuthToken().getId();
+    }
+
 
     /**
      * 获取token value

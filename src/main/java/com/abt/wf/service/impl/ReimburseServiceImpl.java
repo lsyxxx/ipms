@@ -4,8 +4,6 @@ import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
-import com.abt.finance.entity.CreditBook;
-import com.abt.finance.entity.DebitBook;
 import com.abt.finance.service.FinanceBookKeepingService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserRole;
@@ -19,7 +17,6 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.*;
 import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.repository.ReimburseTaskRepository;
-import com.abt.wf.service.BookKeepingService;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.util.WorkFlowUtil;
@@ -64,7 +61,6 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     private final FlowOperationLogService flowOperationLogService;
 
-    private final FinanceBookKeepingService financeBookKeepingService;
     private final Map<String, BpmnModelInstance> bpmnModelInstanceMap;
 
     private final UserService<User, User> userService;
@@ -92,7 +88,6 @@ public class ReimburseServiceImpl implements ReimburseService {
         this.reimburseRepository = reimburseRepository;
         this.historyService = historyService;
         this.flowOperationLogService = flowOperationLogService;
-        this.financeBookKeepingService = financeBookKeepingService;
         this.bpmnModelInstanceMap = bpmnModelInstanceMap;
         this.userService = userService;
         this.reimburseTaskRepository = reimburseTaskRepository;
@@ -194,10 +189,6 @@ public class ReimburseServiceImpl implements ReimburseService {
 //        return record;
 //    }
 
-    @Override
-    public void afterTask(ReimburseForm form) {
-
-    }
 
     public boolean isLeader(String userid) {
         return this.leaderList.stream().anyMatch(i -> userid.equals(i.getValue()));
@@ -249,6 +240,11 @@ public class ReimburseServiceImpl implements ReimburseService {
             return;
         }
         throw new MissingRequiredParameterException("entityId(业务实体id)");
+    }
+
+    @Override
+    public void beforeApprove(ReimburseForm baseForm, String authUser, String decision) {
+
     }
 
     @Override

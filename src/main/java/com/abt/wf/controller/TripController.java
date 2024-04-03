@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/wf/trip")
 public class TripController {
 
+
+
     /**
      * 申请
      * @param form 申请表单

@@ -1,6 +1,7 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.exception.MissingRequiredParameterException;
+import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
@@ -22,11 +23,14 @@ import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.STATE_DETAIL_ACTIVE;
+import static com.abt.wf.config.Constants.STATE_DETAIL_APPLY;
 
 /**
  *
@@ -46,7 +50,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
 
     public TripReimburseServiceImpl(FlowOperationLogService flowOperationLogService, IdentityService identityService, RuntimeService runtimeService, RepositoryService repositoryService, TaskService taskService, TripRepository tripRepository) {
-        super(identityService, flowOperationLogService);
+        super(identityService, flowOperationLogService, taskService);
         this.flowOperationLogService = flowOperationLogService;
         this.runtimeService = runtimeService;
         this.repositoryService = repositoryService;
@@ -69,19 +73,15 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         return null;
     }
 
-    @Override
-    public void afterTask(TripReimburseForm form) {
-
-    }
 
     @Override
     public void apply(TripReimburseForm form) {
-        //prepare
+        //validate
+        validateApplyForm(form);
         TripReimburse common = form.getCommon();
-        if (common == null) {
-            throw new MissingRequiredParameterException("common data");
-        }
         WorkFlowUtil.ensureProcessDefinitionKey(common);
+        //prepare
+
         Map<String, Object> variableMap = this.createVariableMap(form);
 
         //start instance
@@ -98,12 +98,20 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         common.setProcessState(HistoricProcessInstance.STATE_ACTIVE);
         common.setBusinessState(STATE_DETAIL_ACTIVE);
 
+        beforePersist(form);
+        saveForm((form));
+        runtimeService.setVariable(processInstance.getId(), Constants.VAR_KEY_ENTITY, form.getCommon().getId());
+
         //record
+        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getCommon().getCreateUserid(), form.getCommon().getCreateUsername(), form.getCommon(), task, form.getCommon().getId());
+        optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
+        optLog.setTaskResult(STATE_DETAIL_APPLY);
+        flowOperationLogService.saveLog(optLog);
     }
 
     public void validateApplyForm(TripReimburseForm form) {
         validateApplyFormCommonData(form);
-        if (form.getItems() == null) {
+        if (CollectionUtils.isEmpty(form.getItems())) {
             throw new BusinessException("请填写出差报销明细");
         }
         form.getItems().forEach(this::validateApplyFormItem);
@@ -111,10 +119,14 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     public void validateApplyFormCommonData(TripReimburseForm form) {
         TripReimburse common = form.getCommon();
+        if (common == null) {
+            throw new BusinessException("请填写必要信息");
+        }
         ensureProperty(common.getDeptId(), "申请部门(deptId)");
         ensureProperty(common.getStaff(), "出差人员(staff)");
         ensureProperty(common.getReason(), "出差事由(reason)");
         ensureProperty(common.getCompany(), "所属公司(company)");
+        ensureProperty(common.getPayeeId(), "领款人(payeeId)");
     }
 
     public void validateApplyFormItem(TripReimburse item) {
@@ -139,19 +151,23 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         }
     }
 
-    public void saveForm(TripReimburseForm form) {
-        //common
+    public void beforePersist(TripReimburseForm form) {
+        //common: dept,staff,...
         TripReimburse common = form.getCommon();
-
         //items
         for (TripReimburse trip : form.getItems()) {
-            //set process info
+            trip.copyProcessData(common);
+            trip.sumItem();
         }
-
     }
 
-    @Override
-    public void approve(TripReimburseForm form) {
+    public void saveForm(TripReimburseForm form) {
+        form.setCommon(tripRepository.save(form.getCommon()));
+        final String rootId = form.getCommon().getId();
+        form.getItems().forEach(i -> {
+            i.setRootId(rootId);
+            tripRepository.save(i);
+        });
 
     }
 
@@ -181,12 +197,31 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
-    public boolean isApproveUser(ReimburseForm form) {
-        return false;
+    public String notifyLink(String id) {
+        return null;
     }
 
     @Override
-    public String notifyLink(String id) {
+    String getDecision(TripReimburseForm form) {
         return null;
+    }
+
+    @Override
+    public void passHandler(TripReimburseForm form) {
+        //completeTask
+        taskService.complete(form.getCurrentTaskId());
+        //log
+        final FlowOperationLog optLog = FlowOperationLog.create(form.getSubmitUserid(), form.getSubmitUsername(), form);
+
+    }
+
+    @Override
+    public void rejectHandler(TripReimburseForm form) {
+
+    }
+
+    @Override
+    void afterApprove(TripReimburseForm form) {
+
     }
 }

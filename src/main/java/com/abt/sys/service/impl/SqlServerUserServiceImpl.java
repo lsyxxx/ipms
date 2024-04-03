@@ -74,4 +74,11 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
         return userRepository.getUserRoleByUserid(userid);
     }
 
+    @Override
+    public List<UserRole> getUserByRoleId(String roleId) {
+        return userRepository.getUserByRole(roleId);
+    }
+
+
+
 }

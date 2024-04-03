@@ -41,4 +41,6 @@ public interface UserService<T, E> {
       */
     User getUserDeptByUserid(String userid);
     List<UserRole> getUserRoleByUserid(String userid);
+
+    List<UserRole> getUserByRoleId(String roleId);
 }

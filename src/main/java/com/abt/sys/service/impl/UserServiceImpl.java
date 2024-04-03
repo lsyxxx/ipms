@@ -75,6 +75,12 @@ public class UserServiceImpl implements UserService<UserView, WebApiToken> {
         return null;
     }
 
+    @Override
+    public List<UserRole> getUserByRoleId(String roleId) {
+        //api/users/loadByRole
+        return null;
+    }
+
 
     /**
      * 通过http 从webapi获取user info

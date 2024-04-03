@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -45,6 +46,7 @@ public class CashController {
      */
     @PostMapping("/credit/save")
     public R<CreditBook>  creditBookKeeping(@Validated @RequestBody CreditBook creditBookForm) {
+        financeBookKeepingService.initCreditBookApplyForm(creditBookForm);
         final CreditBook book = financeBookKeepingService.creditBookKeeping(creditBookForm);
         return R.success(book);
     }
@@ -98,4 +100,7 @@ public class CashController {
         final List<CreditBook> creditBooks = financeBookKeepingService.loadCreditByCriteria(cashRequestForm);
         return R.success(creditBooks);
     }
+
+
+
 }

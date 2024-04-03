@@ -36,11 +36,6 @@ public interface WorkFlowService<T> {
     List<FlowOperationLog> getCompletedOperationLogByEntityId(String entityId);
 
     /**
-     * 当前task完成后处理，比如抄送，保存log
-     */
-    void afterTask(T form);
-
-    /**
      * 申请流程
      */
     void apply(T form);
@@ -84,15 +79,19 @@ public interface WorkFlowService<T> {
     void ensureEntityId(T form);
 
     /**
+     * 审批前操作
+     */
+    void beforeApprove(T baseForm, String authUser, String decision);
+
+    /**
      * 登录用户是否是当前task的审批用户
      * @param form 表单，包含必须数据
      */
-    boolean isApproveUser(ReimburseForm form);
+    boolean isApproveUser(T form);
 
     /**
      * 通知消息url
      * @param id
      */
     String notifyLink(String id);
-
 }

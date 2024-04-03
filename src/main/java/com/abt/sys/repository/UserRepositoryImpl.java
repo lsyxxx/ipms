@@ -94,6 +94,19 @@ public class UserRepositoryImpl implements UserRepository{
         return jdbcTemplate.query(sql, new UserRoleRowMapper(), userid);
     }
 
+    @Override
+    public List<UserRole> getUserByRole(String roleId) {
+        String sql = "select u.Id as userid, u.Name as username, u.empnum as jobNumber, ro.Id as roleId, ro.Name as roleName " +
+                "from [dbo].[User] u " +
+                "left join Relevance rl on u.Id = rl.FirstId " +
+                "left join [dbo].[Role] ro on rl.SecondId = ro.Id " +
+                "where 1=1 " +
+                "and ro.Id = ? " +
+                "and rl.[Key] = 'UserRole'";
+
+        return jdbcTemplate.query(sql, new UserRoleRowMapper(), roleId);
+    }
+
     class UserRoleRowMapper implements RowMapper<UserRole> {
 
         @Nullable

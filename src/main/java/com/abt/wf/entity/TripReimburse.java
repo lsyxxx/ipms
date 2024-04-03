@@ -93,7 +93,7 @@ public class TripReimburse extends WorkflowBase {
      * 其他费用
      */
     @Column(name = "oth_exp", columnDefinition = "DECIMAL(10, 2)")
-    private String otherExpense;
+    private BigDecimal otherExpense;
 
     //common
     @Column(name = "sum_", columnDefinition = "DECIMAL(10, 2)")
@@ -128,4 +128,25 @@ public class TripReimburse extends WorkflowBase {
     //common
     @Column(name = "company", columnDefinition = "VARCHAR(256)")
     private String company;
+
+    public TripReimburse copyProcessData(TripReimburse trip) {
+        this.setProcessDefinitionKey(trip.getProcessDefinitionKey());
+        this.setProcessInstanceId(trip.getProcessInstanceId());
+        this.setProcessDefinitionId(trip.getProcessDefinitionId());
+        return this;
+    }
+
+    /**
+     * 计算当前明细的金额合计
+     */
+    public BigDecimal sumItem() {
+        this.sum = this.transExpense;
+        if (this.allowanceExpense != null) {
+            this.sum = this.sum.add(this.allowanceExpense);
+        }
+        if (this.otherExpense != null) {
+            this.sum = this.sum.add(this.otherExpense);
+        }
+        return this.sum;
+    }
 }

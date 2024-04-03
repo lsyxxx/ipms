@@ -101,6 +101,9 @@ public class WorkflowBase extends AuditInfo {
     @Transient
     private String currentTaskAssigneeName;
     @Transient
+    private LocalDateTime currentTaskStartTime;
+
+    @Transient
     private String invokedTaskId;
     @Transient
     private String invokedTaskName;
@@ -112,6 +115,10 @@ public class WorkflowBase extends AuditInfo {
     private String invokedTaskDefId;
     @Transient
     private boolean isApproveUser;
+    @Transient
+    private String submitUserid;
+    @Transient
+    private String submitUsername;
 
 
 }

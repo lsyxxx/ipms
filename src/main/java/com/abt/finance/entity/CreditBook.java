@@ -33,10 +33,21 @@ public class CreditBook extends AuditInfo {
     private String serviceName;
 
     /**
+     * 金额
+     */
+    @Column(name="expense", columnDefinition="DECIMAL(10,2)")
+    private double expense;
+
+    /**
      * 费用类型
      */
     @Column(name="exp_type", columnDefinition="VARCHAR(128)")
     private String expenseType;
+    /**
+     * 票据数量
+     */
+    @Column(name="inv_num", columnDefinition="TINYINT")
+    private int invoiceNum;
 
     /**
      * 票据类型
@@ -63,7 +74,7 @@ public class CreditBook extends AuditInfo {
     /**
      * 付款账号银行
      */
-    @Column(name="pay_acc_bank", columnDefinition="VARCHAR(128)")
+    @Column(name="pay_bank", columnDefinition="VARCHAR(128)")
     private String payBank;
 
     /**
@@ -74,10 +85,10 @@ public class CreditBook extends AuditInfo {
     /**
      * 收款账号银行
      */
-    @Column(name="rec_acc_bank", columnDefinition="VARCHAR(128)")
+    @Column(name="rec_bank", columnDefinition="VARCHAR(128)")
     private String receiveBank;
     /**
-     * 收款人
+     * 收款人(可能是对公账户）
      */
     @Column(name="rec_userid", columnDefinition="VARCHAR(128)")
     private String receiveUserid;
@@ -117,8 +128,30 @@ public class CreditBook extends AuditInfo {
     /**
      * 记账备注
      */
-    @Column(name="remark_", columnDefinition="VARCAHR(1000)")
+    @Column(name="remark_", columnDefinition="VARCHAR(1000)")
     private String remark;
+
+    @Column(columnDefinition="VARCHAR(128)")
+    private String project;
+
+
+    /**
+     * 业务简述
+     */
+    @Column(name="desc_", columnDefinition="VARCHAR(512)")
+    private String desc;
+
+    /**
+     * 上传附件json
+     */
+    @Column(name="attchment", columnDefinition="VARCHAR(1000)")
+    private String attachment;
+
+    /**
+     * 关联的附件
+     */
+    @Column(name="attachment_rel", columnDefinition="VARCHAR(1000)")
+    private String relatedAttachment;
 
 
 }

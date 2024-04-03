@@ -40,4 +40,10 @@ public interface UserRepository {
     User getEmployeeDeptByUserid(String userid);
 
     List<UserRole> getUserRoleByUserid(String userid);
+
+    /**
+     * 获取角色用户
+     * @param roleId 角色id
+     */
+    List<UserRole> getUserByRole(String roleId);
 }

@@ -150,4 +150,12 @@ public class WorkFlowUtil {
         }
     }
 
+    public static boolean isPass(String decision) {
+        return DECISION_PASS.equals(decision);
+    }
+
+    public static boolean isReject(String decision) {
+        return DECISION_REJECT.equals(decision);
+    }
+
 }
