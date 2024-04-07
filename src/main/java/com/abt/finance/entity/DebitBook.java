@@ -86,10 +86,6 @@ public class DebitBook extends AuditInfo {
     private String officerName;
     @Column(name="remark_", columnDefinition="VARCHAR(1000)")
     private String remark;
-
-    @Column(name="is_keep", columnDefinition="BIT")
-    private boolean isKeep = false;
-
     /**
      * 业务说明：Constants.BIZ_DESC_*
      */
