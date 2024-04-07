@@ -166,6 +166,15 @@ public class FlowOperationLog {
         return optLog;
     }
 
+    public static FlowOperationLog deleteLog(String operatorId, String operatorName, String processInstanceId,
+                                             String processDefinitionId, String processDefinitionKey,
+                                             String serviceName, String entityId) {
+        FlowOperationLog optLog = create(operatorId, operatorName, processInstanceId, processDefinitionId, processDefinitionKey, serviceName);
+        optLog.setEntityId(entityId);
+        optLog.setAction(ActionEnum.DELETE.name());
+        return optLog;
+    }
+
 
 
     /**

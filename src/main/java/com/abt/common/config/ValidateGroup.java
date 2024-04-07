@@ -11,6 +11,7 @@ public class ValidateGroup {
     public interface Delete{};
 
     public interface Preview{};
+    public interface Apply{};
 
     @GroupSequence({Insert.class, Update.class, Delete.class, Preview.class})
     public interface All{};

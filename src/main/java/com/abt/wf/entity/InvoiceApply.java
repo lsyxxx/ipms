@@ -9,7 +9,7 @@ import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
- * 开票确认业务
+ * 开票申请业务
  */
 @Data
 @ToString(callSuper = true)
@@ -18,7 +18,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Table(name = "wf_inv")
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class InvoiceConfirm extends AuditInfo {
+public class InvoiceApply extends AuditInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -11,6 +11,7 @@ import com.abt.finance.repository.DebitBookRepository;
 import com.abt.finance.service.FinanceBookKeepingService;
 import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,12 +25,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.abt.common.util.QueryUtil.like;
+import static com.abt.finance.config.Constants.AUTH_BOOKKEEPING;
 import static com.abt.finance.config.Constants.ROLE_FI_MGR;
 
 /**
  * 资金流入流出
  */
 @Service
+@Slf4j
 public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService {
 
     private final CreditBookRepository creditBookRepository;
@@ -110,6 +113,14 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
         form.setFinanceManagerId(user.get(0).getId());
         form.setFinanceManagerName(user.get(0).getUsername());
         return form;
+    }
+
+    @Override
+    public boolean hasCreditBookKeepingAccess(String userid) {
+        //拥有记账角色, Role表中记账角色，则允许记账
+        final List<UserRole> roleList = userService.getUserRoleByUserid(userid);
+        log.trace("======== user {}, rolelist: {}", userid, roleList);
+        return roleList.stream().anyMatch(i -> AUTH_BOOKKEEPING.equals(i.getRoleId()));
     }
 
     public void createCreditBookExcel() {

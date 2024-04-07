@@ -102,5 +102,15 @@ public class CashController {
     }
 
 
+    /**
+     * 当前登录用户是否拥有记账权限
+     */
+    @GetMapping("/checkbk")
+    public R<Boolean> isReimburseBookKeepingUser() {
+        final boolean access = financeBookKeepingService.hasCreditBookKeepingAccess(TokenUtil.getUserFromAuthToken().getId());
+        return R.success(access);
+    }
+
+
 
 }

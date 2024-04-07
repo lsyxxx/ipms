@@ -112,11 +112,6 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
     @Override
-    public Map<String, Object> getVariableMap() {
-        return null;
-    }
-
-    @Override
     public List<FlowOperationLog> getCompletedOperationLogByEntityId(String entityId) {
         //已完成的
         return flowOperationLogService.findLogsByEntityId(entityId);
@@ -140,7 +135,7 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
     @Override
-    public List<FlowOperationLog> processRecord(String entityId) {
+    public List<FlowOperationLog> processRecord(String entityId, String serviceName) {
         List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(entityId);
         if (completed.isEmpty()) {
             return completed;
@@ -381,7 +376,7 @@ public class ReimburseServiceImpl implements ReimburseService {
                         child.setOperatorId(assigneeId);
                         child.setOperatorName(simpleUserInfo.getUsername());
                     } else {
-                        log.warn("未查询到用户-" + assigneeId);
+                        log.warn("未查询到用户{}", assigneeId);
                     }
                 }
             }
@@ -541,16 +536,4 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
 
-    @Override
-    public boolean bookKeepAccess(String userid) {
-        //拥有记账角色, Role表中记账角色，则允许记账
-        final List<UserRole> roleList = userService.getUserRoleByUserid(userid);
-        log.trace("======== user {}, rolelist: {}", userid, roleList);
-        return roleList.stream().anyMatch(i -> AUTH_BOOKKEEPING.equals(i.getRoleId()));
-    }
-//
-//    @Override
-//    public String businessUrl(ReimburseForm form) {
-//        return "/workflow/add/detail/" + form.getId();
-//    }
 }

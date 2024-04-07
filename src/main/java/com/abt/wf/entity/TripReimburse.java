@@ -17,6 +17,8 @@ import java.time.LocalDate;
  * 差旅报销
  * 多个明细组成一个报销单。
  * 主数据(保存公共数据)+明细数据(明细数据，不包含公共)
+ * 主数据：流程各状态及公共数据的修改只在主数据中修改
+ * 明细数据：只保存rootId，以及差旅明细数据，以及processDefKey/instId/DefId这类不可修改的
  */
 
 @Data
@@ -52,7 +54,10 @@ public class TripReimburse extends WorkflowBase {
     @Column(name = "staff_", columnDefinition = "VARCHAR(512)")
     private String staff;
 
-    //common
+    /**
+     * 出差事由
+     * common
+     */
     @Column(columnDefinition = "VARCHAR(1000)")
     private String reason;
 
@@ -75,7 +80,7 @@ public class TripReimburse extends WorkflowBase {
      */
     @Positive(message = "出差补贴天数必须大于0")
     @Column(name = "allowance_dur")
-    private double allowanceDuration;
+    private Double allowanceDuration;
     /**
      * 补贴金额
      */
@@ -109,6 +114,7 @@ public class TripReimburse extends WorkflowBase {
 
     /**
      * 明细排序
+     * 根节点是0,其他明细从1开始
      */
     @Column(name = "sort_", columnDefinition = "TINYINT")
     private int sort = 0;
@@ -128,6 +134,19 @@ public class TripReimburse extends WorkflowBase {
     //common
     @Column(name = "company", columnDefinition = "VARCHAR(256)")
     private String company;
+
+    @Column(columnDefinition = "VARCHAR(512)")
+    private String managers;
+
+    /**
+     * 附件信息，json格式保存
+     */
+    @Column(name = "pdf_file", columnDefinition = "VARCHAR(1000)")
+    private String pdfFileList;
+
+    @Column(name = "other_file", columnDefinition = "VARCHAR(1000)")
+    private String otherFileList;
+
 
     public TripReimburse copyProcessData(TripReimburse trip) {
         this.setProcessDefinitionKey(trip.getProcessDefinitionKey());

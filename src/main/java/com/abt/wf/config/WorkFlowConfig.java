@@ -26,6 +26,8 @@ public class WorkFlowConfig {
 
     public static final String RBS_TYPE = "rbsType";
     public static final String DEF_KEY_RBS = "rbsMulti";
+    public static final String DEF_KEY_TRIP = "rbsTrip";
+    public static final String DEF_KEY_PAY_VOUCHER = "payVoucher";
     /**
      * 特殊审批人的流程
      */
@@ -94,8 +96,38 @@ public class WorkFlowConfig {
         return bpmnModelInstance;
     }
 
+    @Bean("rbsTripBpmnModelInstance")
+    @Order(101)
+    public BpmnModelInstance rbsTripModelInstance() {
+        log.info("rbsTripModelInstance bean init...");
+        ProcessDefinition rbsDef = this.processDefinitionMap.get(DEF_KEY_TRIP);
+
+        if (rbsDef == null) {
+            rbsDef = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_TRIP).latestVersion().singleResult();
+            processDefinitionMap.put(DEF_KEY_TRIP, rbsDef);
+        }
+        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(rbsDef.getId());
+        bpmnModelInstanceMap.put(DEF_KEY_TRIP, bpmnModelInstance);
+        return bpmnModelInstance;
+    }
+
+    @Bean("payVoucherBpmnModelInstance")
+    @Order(102)
+    public BpmnModelInstance payVoucherModelInstance() {
+        log.info("payVoucherModelInstance bean init...");
+        ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_PAY_VOUCHER);
+
+        if (definition == null) {
+            definition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_PAY_VOUCHER).latestVersion().singleResult();
+            processDefinitionMap.put(DEF_KEY_PAY_VOUCHER, definition);
+        }
+        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(definition.getId());
+        bpmnModelInstanceMap.put(DEF_KEY_PAY_VOUCHER, bpmnModelInstance);
+        return bpmnModelInstance;
+    }
+
     @Bean("bpmnModelInstanceMap")
-    @Order(150)
+    @Order(500)
     public Map<String, BpmnModelInstance> getBpmnModelInstanceMap() {
         log.info("getBpmnModelInstanceMap bean init...");
         return bpmnModelInstanceMap;

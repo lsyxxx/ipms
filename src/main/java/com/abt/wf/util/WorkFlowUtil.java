@@ -1,7 +1,12 @@
 package com.abt.wf.util;
 
+import com.abt.common.model.User;
 import com.abt.sys.exception.BusinessException;
+import com.abt.wf.config.Constants;
 import com.abt.wf.entity.WorkflowBase;
+import com.abt.wf.model.ReimburseForm;
+import com.abt.wf.model.UserTaskDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.*;
 import org.camunda.bpm.impl.juel.ExpressionFactoryImpl;
@@ -27,6 +32,7 @@ import static com.abt.wf.config.Constants.DECISION_PASS_DESC;
 /**
  *
  */
+@Slf4j
 public class WorkFlowUtil {
 
 
@@ -157,5 +163,6 @@ public class WorkFlowUtil {
     public static boolean isReject(String decision) {
         return DECISION_REJECT.equals(decision);
     }
+
 
 }

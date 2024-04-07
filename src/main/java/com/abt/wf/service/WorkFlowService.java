@@ -27,8 +27,6 @@ public interface WorkFlowService<T> {
      */
     String businessKey(T form);
 
-    Map<String, Object> getVariableMap();
-
     /**
      * 获取已进行操作记录
      * @param entityId 业务Id
@@ -67,12 +65,6 @@ public interface WorkFlowService<T> {
     List<UserTaskDTO> preview(T form);
 
     /**
-     * 流程记录，包含已完成的和正在进行的
-     */
-//    List<UserTaskDTO> processRecord(T form);
-    List<FlowOperationLog> processRecord(String entityId);
-
-    /**
      * 验证form中实体id
      * @param form 表单
      */
@@ -94,4 +86,9 @@ public interface WorkFlowService<T> {
      * @param id
      */
     String notifyLink(String id);
+
+    /**
+     * 流程记录，包含已完成的和正在进行的
+     */
+    List<FlowOperationLog> processRecord(String entityId, String serviceName);
 }

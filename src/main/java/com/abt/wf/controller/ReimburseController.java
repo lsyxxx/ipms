@@ -1,13 +1,12 @@
 package com.abt.wf.controller;
 
 import com.abt.common.config.ValidateGroup;
-import com.abt.common.model.RequestForm;
+import com.abt.finance.service.FinanceBookKeepingService;
+import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
-import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
-import com.abt.wf.service.BookKeepingService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.service.impl.ReimburseServiceImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +18,6 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.common.model.R;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -85,7 +83,7 @@ public class ReimburseController {
      */
     @GetMapping("/record/{entityId}")
     public R<List<FlowOperationLog>> processRecord(@PathVariable String entityId) {
-        final List<FlowOperationLog> processRecord = reimburseService.processRecord(entityId);
+        final List<FlowOperationLog> processRecord = reimburseService.processRecord(entityId, Constants.SERVICE_RBS);
         return R.success(processRecord, processRecord.size());
     }
 
@@ -138,16 +136,6 @@ public class ReimburseController {
         final List<UserTaskDTO> preview = reimburseService.preview(form);
         return R.success(preview, preview.size());
     }
-
-    /**
-     * 当前登录用户是否拥有记账权限
-     */
-    @GetMapping("/checkbk")
-    public R<Boolean> isReimburseBookKeepingUser() {
-        final boolean access = reimburseService.bookKeepAccess(TokenUtil.getUserFromAuthToken().getId());
-        return R.success(access);
-    }
-
 
     public void getUserFromToken(ReimburseForm form) {
         UserView userView = TokenUtil.getUserFromAuthToken();

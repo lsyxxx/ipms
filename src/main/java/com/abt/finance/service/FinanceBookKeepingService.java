@@ -38,4 +38,6 @@ public interface FinanceBookKeepingService {
 
     CreditBook initCreditBookApplyForm(CreditBook form);
 
+    boolean hasCreditBookKeepingAccess(String userid);
+
 }
