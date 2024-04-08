@@ -1,19 +1,22 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.exception.MissingRequiredParameterException;
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.Loan;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.WorkflowBase;
-import com.abt.wf.model.TripReimburseForm;
-import com.abt.wf.model.TripRequestForm;
+import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.model.ValidationResult;
-import com.abt.wf.service.BusinessQueryService;
+import com.abt.wf.service.BusinessService;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.WorkFlowService;
 import com.abt.wf.util.WorkFlowUtil;
@@ -42,14 +45,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.abt.wf.config.Constants.STATE_DETAIL_ACTIVE;
+import static com.abt.wf.config.Constants.*;
 
 /**
- *
+ * 通用
  */
 @AllArgsConstructor
 @Slf4j
-public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase> implements WorkFlowService<T> {
+public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, R extends RequestForm> implements WorkFlowService<T>, BusinessService<R, T> {
 
     private IdentityService identityService;
     private FlowOperationLogService flowOperationLogService;
@@ -76,11 +79,11 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase> 
     @Override
     public void approve(T form) {
         String decision = getDecision(form);
-        beforeApprove(form, form.getSubmitUserid(), decision);
+        Task task = beforeApprove(form, form.getSubmitUserid(), decision);
         if (WorkFlowUtil.isPass(decision)) {
-            passHandler(form);
+            passHandler(form, task);
         } else if (WorkFlowUtil.isReject(decision)) {
-            rejectHandler(form);
+            rejectHandler(form, task);
         } else {
             throw new BusinessException("审批结果只能是pass/reject，实际传入: " + decision);
         }
@@ -90,7 +93,30 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase> 
     }
 
     @Override
-    public void beforeApprove(T baseForm, String authUser, String decision) {
+    public void apply(T form) {
+        //-- validate
+        WorkFlowUtil.ensureProcessDefinitionKey(form);
+
+        //-- prepare
+        final Map<String, Object> variableMap =  this.createVariableMap(form);
+
+        //-- start instance
+        final Task applyTask = this.startProcessAndApply(form, variableMap, businessKey(form));
+
+        //-- save entity
+        final T entity = this.saveEntity(form);
+        final String id = this.getEntityId(entity);
+        runtimeService.setVariable(form.getProcessInstanceId(), Constants.VAR_KEY_ENTITY, id);
+
+        //-- record
+        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getCreateUserid(), form.getCreateUsername(), form, applyTask, id);
+        optLog.setTaskDefinitionKey(applyTask.getTaskDefinitionKey());
+        optLog.setTaskResult(STATE_DETAIL_APPLY);
+        flowOperationLogService.saveLog(optLog);
+    }
+
+    @Override
+    public Task beforeApprove(T baseForm, String authUser, String decision) {
         //validate
         WorkFlowUtil.ensureProcessId(baseForm);
         ensureEntityId(baseForm);
@@ -107,12 +133,12 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase> 
         baseForm.setCurrentTaskName(task.getName());
         baseForm.setCurrentTaskId(task.getId());
         baseForm.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
-
+        return task;
     }
 
     @Override
     public boolean isApproveUser(T form) {
-        if (!TokenUtil.getUseridFromAuthToken().equals(form.getCurrentTaskAssigneeId())) {
+        if (!form.getSubmitUserid().equals(form.getCurrentTaskAssigneeId())) {
             throw new BusinessException("登录用户(" + form.getSubmitUsername() + ")不是当前审批用户!不能审批");
         }
         return true;
@@ -199,7 +225,9 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase> 
         child.setProcessDefinitionId(form.getProcessDefinitionId());
         if (node instanceof UserTask u) {
             final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, node.getId());
-            parent.setProperties(extensionProperties);
+            if (extensionProperties != null) {
+                parent.setProperties(extensionProperties);
+            }
             parent.setPreview(true);
             if (parent.isApplyNode()) {
                 child.setOperatorId(form.getSubmitUserid());
@@ -267,9 +295,59 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase> 
 
         return ValidationResult.pass();
     }
+    public void commonRejectHandler(T form, Task task, String comment, String id) {
+        taskService.complete(task.getId());
+        //delete process
+        runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
+        //update status
+        form.setBusinessState(STATE_DETAIL_REJECT);
+        saveEntity(form);
 
+        FlowOperationLog optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, id);
+        optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
+        optLog.setComment(comment);
+        optLog.setTaskResult(this.getDecision(form));
+        flowOperationLogService.saveLog(optLog);
+    }
 
+    public void commonPassHandler(T form, Task task, String comment, String id) {
+        taskService.complete(task.getId());
+        //update status
+        form.setBusinessState(STATE_DETAIL_ACTIVE);
+        //pass log
+        FlowOperationLog optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, id);
+        optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
+        optLog.setComment(comment);
+        optLog.setTaskResult(WorkFlowUtil.decisionTranslate(getDecision(form)));
+        flowOperationLogService.saveLog(optLog);
+    }
 
+    @Override
+    public void delete(String entityId) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        ValidationResult validate = deleteValidate(entityId, user.getId());
+        if (validate.isPass()) {
+            T entity = load(entityId);
+            runtimeService.deleteProcessInstance(entity.getProcessInstanceId(), Constants.DELETE_REASON_DELETE + "_" + user.getId() + "_" + user.getName());
+            entity.setBusinessState(Constants.STATE_DETAIL_DELETE);
+            entity.setFinished(true);
+            entity.setDelete(true);
+            saveEntity(entity);
+
+            FlowOperationLog optLog = FlowOperationLog.create(user.getId(), user.getName(), entity.getProcessInstanceId(), entity.getProcessDefinitionId(),
+                    entity.getProcessDefinitionKey(), getServiceName());
+            optLog.setAction(ActionEnum.DELETE.name());
+            optLog.setEntityId(getEntityId(entity));
+            flowOperationLogService.saveLog(optLog);
+        } else {
+            throw new BusinessException(validate.getDescription());
+        }
+    }
+
+    @Override
+    public void revoke(String entityId) {
+
+    }
 
     /**
      * 预览前验证
@@ -283,10 +361,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase> 
     /**
      * 审批通过后操作
      */
-    abstract void passHandler(T form);
-    abstract void rejectHandler(T form);
+    abstract void passHandler(T form, Task task);
+    abstract void rejectHandler(T form, Task task);
     abstract void afterApprove(T form);
-
-
 
 }

@@ -127,7 +127,9 @@ public class ReimburseServiceImpl implements ReimburseService {
         for (FlowOperationLog opt : operationLogs) {
             UserTaskDTO dto = UserTaskDTO.of(opt);
             final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, opt.getTaskDefinitionKey());
-            dto.setProperties(extensionProperties);
+            if (extensionProperties != null) {
+                dto.setProperties(extensionProperties);
+            }
             dto.setPreview(false);
             list.add(dto);
         }
@@ -238,8 +240,8 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
     @Override
-    public void beforeApprove(ReimburseForm baseForm, String authUser, String decision) {
-
+    public Task beforeApprove(ReimburseForm baseForm, String authUser, String decision) {
+        return null;
     }
 
     @Override
@@ -362,7 +364,9 @@ public class ReimburseServiceImpl implements ReimburseService {
         child.setProcessDefinitionId(form.getProcessDefinitionId());
         if (node instanceof UserTask u) {
             final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, node.getId());
-            parent.setProperties(extensionProperties);
+            if (extensionProperties != null) {
+                parent.setProperties(extensionProperties);
+            }
             parent.setPreview(true);
             if (parent.isApplyNode()) {
                 child.setOperatorId(form.getSubmitUserid());

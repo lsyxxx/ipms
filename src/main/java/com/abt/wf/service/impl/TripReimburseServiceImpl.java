@@ -2,6 +2,7 @@ package com.abt.wf.service.impl;
 
 import camundajar.impl.scala.collection.immutable.Stream;
 import com.abt.common.exception.MissingRequiredParameterException;
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
@@ -49,7 +50,7 @@ import static com.abt.wf.config.Constants.*;
 
 @Service
 @Slf4j
-public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<TripReimburseForm> implements TripReimburseService {
+public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<TripReimburseForm, TripRequestForm> implements TripReimburseService {
     private final FlowOperationLogService flowOperationLogService;
 
     private final RuntimeService runtimeService;
@@ -149,6 +150,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
             taskService.complete(task.getId());
             //update status
             common.setBusinessState(STATE_DETAIL_ACTIVE);
+            saveEntity(common);
             //pass log
             FlowOperationLog optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getRootId());
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
@@ -161,6 +163,8 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
             runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
             //update status
             common.setBusinessState(STATE_DETAIL_REJECT);
+            saveEntity(common);
+
             FlowOperationLog optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getRootId());
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
@@ -234,7 +238,6 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         });
     }
 
-    @Override
     public void revoke(String entityId) {
 
     }
@@ -267,6 +270,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         }
     }
 
+
     @Override
     public List<UserTaskDTO> preview(TripReimburseForm form) {
         //-- 验证必要参数
@@ -296,7 +300,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public String notifyLink(String id) {
-        return null;
+        return "/wf/trip/detail/" + id;
     }
 
     @Override
@@ -305,7 +309,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
-    public void passHandler(TripReimburseForm form) {
+    public void passHandler(TripReimburseForm form, Task task) {
 //        taskService.complete(task.getId());
 //        //update status
 //        common.setBusinessState(STATE_DETAIL_ACTIVE);
@@ -318,7 +322,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
-    public void rejectHandler(TripReimburseForm form) {
+    public void rejectHandler(TripReimburseForm form, Task task) {
 
     }
 
@@ -339,6 +343,16 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
+    public String getEntityId(TripReimburseForm entity) {
+        return "";
+    }
+
+    @Override
+    public String getServiceName() {
+        return SERVICE_TRIP;
+    }
+
+    @Override
     public TripReimburse loadCommonData(String rootId) {
         return tripRepository.findById(rootId).orElseThrow(() -> new BusinessException("未查询到差旅报销业务数据(rootId=" + rootId + ")"));
     }
@@ -351,6 +365,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<TripReimburseForm> findAllByCriteriaPageable(TripRequestForm requestForm) {
+        requestForm.forcePaged();
         long t1 = System.currentTimeMillis();
         //criteria: 申请人(user),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
         //查询entity
@@ -393,6 +408,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<TripReimburseForm> findMyApplyByCriteriaPageable(TripRequestForm requestForm) {
+        requestForm.forcePaged();
         //criteria: 申请人(user=),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
         long t1 = System.currentTimeMillis();
         //查询entity
@@ -413,6 +429,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<TripReimburseForm> findMyDoneByCriteriaPageable(TripRequestForm requestForm) {
+        requestForm.forcePaged();
         //criteria: 申请人(),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
         long t1 = System.currentTimeMillis();
         //查询entity
@@ -453,6 +470,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<TripReimburseForm> findMyTodoByCriteria(TripRequestForm requestForm) {
+        requestForm.forcePaged();
         //criteria: 申请人(),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
         long t1 = System.currentTimeMillis();
         //查询entity
@@ -491,6 +509,12 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         log.debug("findMyTodoByCriteria查询消耗时间: {} ms", (t2-t1));
         return records;
     }
+
+    @Override
+    public TripReimburseForm saveEntity(TripReimburseForm entity) {
+        return null;
+    }
+
 
     public List<TripReimburseForm> build(List<TripReimburse> list) {
         List<TripReimburseForm> forms = new ArrayList<>();
@@ -569,7 +593,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
         public static Specification<TripReimburse> stateEqual(TripRequestForm form) {
             return (root, query, builder) -> {
-                if (StringUtils.isNotBlank(form.getStaff())) {
+                if (StringUtils.isNotBlank(form.getState())) {
                     return builder.equal(root.get("state"), form.getState());
                 }
                 return null;

@@ -14,7 +14,7 @@ import com.abt.common.util.TimeUtil;
 /**
  * 适用于RequestForm
  */
-public abstract class AbstractBaseQueryRepositoryImpl<T extends WorkflowBase> {
+public abstract class AbstractBaseQueryRepositoryImpl {
 
     abstract String between(String startDate, String endDate, List<Object> params);
 
@@ -31,7 +31,7 @@ public abstract class AbstractBaseQueryRepositoryImpl<T extends WorkflowBase> {
         return columnNames;
     }
 
-    public void workflowBaseAndTaskSetter(T form, ResultSet rs) throws SQLException {
+    public <T extends WorkflowBase> void workflowBaseAndTaskSetter(T form, ResultSet rs) throws SQLException {
         //-- workflow
         form.setBusinessState(rs.getString("biz_state"));
         form.setProcessState(rs.getString("proc_state"));
@@ -60,7 +60,6 @@ public abstract class AbstractBaseQueryRepositoryImpl<T extends WorkflowBase> {
         form.setInvokedTaskAssigneeId(rs.getString("inv_task_assignee_id"));
         form.setInvokedTaskAssigneeName(rs.getString("inv_task_assignee_name"));
         form.setInvokedTaskDefId(rs.getString("inv_task_def_id"));
-
     }
 
 }

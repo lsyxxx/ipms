@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 public class RequestForm {
 
     public static final int PAGE_LIMIT = 999;
+    public static final int DEFAULT_LIMIT = 20;
 
     /**
      * 分页页数
@@ -137,6 +138,19 @@ public class RequestForm {
         RequestForm form = new RequestForm();
         form.setLimit(PAGE_LIMIT);
         return form;
+    }
+
+    public RequestForm setDefaultLimit() {
+        this.limit = DEFAULT_LIMIT;
+        return this;
+    }
+
+    /**
+     * 强制分页，如果没有传入Limit则使用默认。防止有些循环查询数据太大，或者使用分页查询limit=0无法查询
+     */
+    public RequestForm forcePaged() {
+        this.setDefaultLimit();
+        return this;
     }
 
 }

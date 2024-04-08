@@ -56,7 +56,7 @@ public class TripController {
     }
 
     @GetMapping("/todo")
-    public R<List<TripReimburseForm>> todoList(TripRequestForm form) {
+    public R<List<TripReimburseForm>> todoList(@ModelAttribute TripRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
         form.setAssigneeId(user.getId());
         form.setAssigneeName(user.getUsername());
@@ -65,7 +65,7 @@ public class TripController {
     }
 
     @GetMapping("/done")
-    public R<List<TripReimburseForm>> doneList(TripRequestForm form) {
+    public R<List<TripReimburseForm>> doneList(@ModelAttribute TripRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
         form.setAssigneeId(user.getId());
         form.setAssigneeName(user.getUsername());
@@ -74,7 +74,7 @@ public class TripController {
     }
 
     @GetMapping("/myapply")
-    public R<List<TripReimburseForm>> myApplyList(TripRequestForm form) {
+    public R<List<TripReimburseForm>> myApplyList(@ModelAttribute TripRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
         form.setUserid(user.getId());
         form.setUsername(user.getUsername());
@@ -84,11 +84,12 @@ public class TripController {
 
     /**
      * 所有差旅报销记录
-     * @param criteria 搜索条件
+     * @param form 搜索条件
      */
     @PostMapping("/all")
-    public void getAll(@ModelAttribute TripRequestForm criteria) {
-
+    public R<List<TripReimburseForm>> getAll(@ModelAttribute TripRequestForm form) {
+        final List<TripReimburseForm> all = tripReimburseService.findAllByCriteriaPageable(form);
+        return R.success(all, all.size());
     }
 
     @GetMapping("/load/{rootId}")

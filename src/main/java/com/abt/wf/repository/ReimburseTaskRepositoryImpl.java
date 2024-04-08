@@ -21,7 +21,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl<ReimburseForm> implements ReimburseTaskRepository {
+public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl implements ReimburseTaskRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -167,7 +167,7 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
             form.setManagers(rs.getString("managers"));
 
             //workflow & task
-            ReimburseTaskRepositoryImpl.super.workflowBaseAndTaskSetter(form, rs);
+            workflowBaseAndTaskSetter(form, rs);
             return form;
         }
     }

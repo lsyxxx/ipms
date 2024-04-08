@@ -11,6 +11,7 @@ import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 描述流程节点

@@ -138,10 +138,13 @@ public class WorkFlowUtil {
     public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
         UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
         ExtensionElements extensionElements = userTaskModel.getExtensionElements();
-        return extensionElements.getElementsQuery()
-                .filterByType(CamundaProperties.class)
-                .singleResult()
-                .getCamundaProperties();
+        if (extensionElements != null) {
+            return extensionElements.getElementsQuery()
+                    .filterByType(CamundaProperties.class)
+                    .singleResult()
+                    .getCamundaProperties();
+        }
+        return null;
     }
 
     public static String decisionTranslate(String decision) {

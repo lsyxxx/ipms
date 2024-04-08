@@ -41,7 +41,7 @@ public class TripProcessEndListener implements ExecutionListener {
             common.setFinished(true);
             //仅修改common状态
             tripReimburseService.saveEntity(common);
-
+            //抄送
         }
     }
 }

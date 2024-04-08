@@ -4,10 +4,7 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.wf.config.Constants;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -18,6 +15,8 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.abt.wf.config.Constants.*;
 
 /**
  * 款项支付单
@@ -31,6 +30,7 @@ import java.util.Map;
 @DynamicInsert
 @DynamicUpdate
 @EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
 public class PayVoucher extends WorkflowBase{
     @Id
     @GeneratedValue(generator  = "timestampIdGenerator")
@@ -59,25 +59,25 @@ public class PayVoucher extends WorkflowBase{
      * 合同名称
      */
     @NotNull(message = "合同名称必填", groups = {ValidateGroup.Apply.class})
-    @Column(name="contact_name", columnDefinition="VARCHAR(128)")
-    private String contactName;
+    @Column(name="contract_name", columnDefinition="VARCHAR(128)")
+    private String contractName;
 
     /**
      * 合同内容
      */
     @NotNull(message = "合同内容必填", groups = {ValidateGroup.Apply.class})
-    @Column(name="contact_desc", columnDefinition="VARCHAR(1000)")
-    private String contactDesc;
+    @Column(name="contract_desc", columnDefinition="VARCHAR(1000)")
+    private String contractDesc;
     /**
      * 合同编号
      */
-    @Column(name="contact_no", columnDefinition="VARCHAR(128)")
-    private String contactNo;
+    @Column(name="contract_no", columnDefinition="VARCHAR(128)")
+    private String contractNo;
     /**
      * 合同金额
      */
-    @Column(name="contact_amt", columnDefinition="DECIMAL(10,2)")
-    private BigDecimal contactAmount;
+    @Column(name="contract_amt", columnDefinition="DECIMAL(10,2)")
+    private BigDecimal contractAmount;
 
     /**
      * 已付款金额
@@ -99,6 +99,7 @@ public class PayVoucher extends WorkflowBase{
     /**
      * 收款人
      */
+    @NotNull(groups = {ValidateGroup.Apply.class}, message = "收款人必填")
     @Column(name="rec_user", columnDefinition="VARCHAR(128)")
     private String receiveUser;
 
@@ -128,11 +129,6 @@ public class PayVoucher extends WorkflowBase{
     @Column(name="other_file", columnDefinition="VARCHAR(1000)")
     private String otherFileList;
 
-    /**
-     * 抄送人，用逗号分隔
-     */
-    @Column(name="copy_users", columnDefinition="VARCHAR(512)")
-    private String copyUsers;
     @Column(name="managers", columnDefinition="VARCHAR(512)")
     private String managers;
 
@@ -143,10 +139,6 @@ public class PayVoucher extends WorkflowBase{
     @Transient
     private Map<String, Object> variableMap = new HashMap<String, Object>();
 
-    public static final String KEY_STARTER = "starter";
-    public static final String KEY_MANAGER = "managerList";
-    public static final String KEY_COST = "cost";
-
     public Map<String, Object> createVarMap() {
         this.variableMap = new HashMap<>();
         variableMap.put(KEY_STARTER, this.getSubmitUserid());
@@ -156,7 +148,8 @@ public class PayVoucher extends WorkflowBase{
         } else {
             variableMap.put(KEY_MANAGER, List.of(this.getManagers().split(",")));
         }
-
         return this.variableMap;
     }
+
+
 }

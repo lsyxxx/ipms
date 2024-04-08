@@ -5,11 +5,11 @@ import com.abt.common.model.RequestForm;
 import java.util.List;
 
 /**
- * 业务查询
+ * 业务相关
  * T: 查询条件
- * R: 返回数据对象
+ * R: 返回数据对象实体
  */
-public interface BusinessQueryService<T extends RequestForm, R> {
+public interface BusinessService<T extends RequestForm, R> {
 
     /**
      * 查询所有业务记录
@@ -34,4 +34,9 @@ public interface BusinessQueryService<T extends RequestForm, R> {
      * criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
      */
     List<R> findMyTodoByCriteria(T requestForm);
+
+    R saveEntity(R entity);
+    R load(String entityId);
+    String getEntityId(R entity);
+    String getServiceName();
 }

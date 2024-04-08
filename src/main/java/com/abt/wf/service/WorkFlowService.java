@@ -4,6 +4,7 @@ package com.abt.wf.service;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.entity.FlowOperationLog;
+import org.camunda.bpm.engine.task.Task;
 
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,7 @@ public interface WorkFlowService<T> {
     /**
      * 审批前操作
      */
-    void beforeApprove(T baseForm, String authUser, String decision);
+    Task beforeApprove(T baseForm, String authUser, String decision);
 
     /**
      * 登录用户是否是当前task的审批用户

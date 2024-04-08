@@ -78,9 +78,12 @@ public class NotifyMessage {
      */
     public static final String SYSTEM = "System";
 
-    public static NotifyMessage systemMessage(String to, String link) {
+    public static NotifyMessage systemMessage(String to, String link, String message) {
         NotifyMessage msg = new NotifyMessage();
         msg.setTo(to);
+        msg.setUrl(link);
+        msg.setMessage(message);
+        msg.setSendTime(LocalDateTime.now());
         return msg;
     }
 

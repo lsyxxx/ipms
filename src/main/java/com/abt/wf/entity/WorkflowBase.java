@@ -8,13 +8,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Transient;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 流程基础数据
@@ -121,4 +120,10 @@ public class WorkflowBase extends AuditInfo {
     private String submitUsername;
 
 
+    public List<String> copyList() {
+        if (this.getCopy() == null) {
+            return List.of();
+        }
+        return List.of(this.getCopy().split(","));
+    }
 }

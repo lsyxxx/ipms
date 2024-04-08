@@ -21,7 +21,7 @@ import static com.abt.common.util.QueryUtil.*;
  */
 @Component
 @AllArgsConstructor
-public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl<TripReimburse> implements TripReimburseTaskRepository {
+public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl implements TripReimburseTaskRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -87,9 +87,6 @@ public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepository
             TripReimburse form = new TripReimburse();
             //业务
 
-
-
-            TripReimburseTaskRepositoryImpl.super.workflowBaseAndTaskSetter(form, rs);
             return form;
         }
     }

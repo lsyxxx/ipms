@@ -83,7 +83,7 @@ public class Constants {
     public static final String SERVICE_INV = "开票申请";
     public static final String SERVICE_TRIP = "差旅报销";
     public static final String SERVICE_PAY = "款项支付单";
-
+    public static final String SERVICE_LOAN = "借款单";
 
     public static final String TRANSPORTATION_AIRPLANE = "飞机";
     public static final String TRANSPORTATION_CAR = "自驾";
@@ -91,6 +91,12 @@ public class Constants {
     public static final String TRANSPORTATION_HIGHSPEED = "高铁";
     public static final String TRANSPORTATION_OTHER = "其他";
 
+    public static final String LOAN_PAY_TYPE_ONLINE = "转账";
+    public static final String LOAN_PAY_TYPE_CASH = "现金";
 
 
+    //--- var key
+    public static final String KEY_STARTER = "starter";
+    public static final String KEY_MANAGER = "managerList";
+    public static final String KEY_COST = "cost";
 }
