@@ -67,6 +67,11 @@ public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepository
     }
 
     @Override
+    String conditionSql(String sql, List<Object> array, String... params) {
+        return "";
+    }
+
+    @Override
     String between(String startDate, String endDate, List<Object> params) {
         String sql = "";
         if (StringUtils.isNotBlank(startDate)) {

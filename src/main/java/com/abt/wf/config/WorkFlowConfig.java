@@ -29,6 +29,7 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_TRIP = "rbsTrip";
     public static final String DEF_KEY_PAY_VOUCHER = "rbsPay";
     public static final String DEF_KEY_LOAN = "rbsLoan";
+    public static final String DEF_KEY_INV = "rbsInv";
     /**
      * 特殊审批人的流程
      */
@@ -137,6 +138,20 @@ public class WorkFlowConfig {
         }
         BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(definition.getId());
         bpmnModelInstanceMap.put(DEF_KEY_LOAN, bpmnModelInstance);
+        return bpmnModelInstance;
+    }
+
+    @Bean("invoiceApplyBpmnModelInstance")
+    @Order(104)
+    public BpmnModelInstance invoiceApplyBpmnModelInstance() {
+        log.info("invoiceApplyBpmnModelInstance bean init...");
+        ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_INV);
+        if (definition == null) {
+            definition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_INV).latestVersion().singleResult();
+            processDefinitionMap.put(DEF_KEY_INV, definition);
+        }
+        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(definition.getId());
+        bpmnModelInstanceMap.put(DEF_KEY_INV, bpmnModelInstance);
         return bpmnModelInstance;
     }
 

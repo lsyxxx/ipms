@@ -78,6 +78,11 @@ public class Constants {
      * 选择用户方式-指定用户
      */
     public static final int SELECT_USER_TYPE_SPECIFIC = 1;
+    /**
+     * 选择用户方式-所有人
+     * 一般用于申请节点
+     */
+    public static final int SELECT_USER_TYPE_ALL = 2;
 
     public static final String SERVICE_RBS = "日常报销";
     public static final String SERVICE_INV = "开票申请";

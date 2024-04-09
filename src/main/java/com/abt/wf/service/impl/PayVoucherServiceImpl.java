@@ -1,20 +1,17 @@
 package com.abt.wf.service.impl;
 
-import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
-import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PayVoucher;
 import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.model.ValidationResult;
 import com.abt.wf.repository.PayVoucherRepository;
-import com.abt.wf.repository.WorkflowTaskQueryRepository;
+import com.abt.wf.repository.PayVoucherTaskRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.PayVoucherService;
-import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -46,12 +43,12 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     private final RepositoryService repositoryService;
     private final RuntimeService runtimeService;
     private final PayVoucherRepository payVoucherRepository;
-    private final WorkflowTaskQueryRepository workflowTaskQueryRepository;
+    private final PayVoucherTaskRepository payVoucherTaskRepository;
 
     private final BpmnModelInstance payVoucherModelInstance;
 
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
-                                 @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository, WorkflowTaskQueryRepository workflowTaskQueryRepository,
+                                 @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository, PayVoucherTaskRepository payVoucherTaskRepository,
                                  @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
         this.identityService = identityService;
@@ -61,7 +58,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.payVoucherRepository = payVoucherRepository;
-        this.workflowTaskQueryRepository = workflowTaskQueryRepository;
+        this.payVoucherTaskRepository = payVoucherTaskRepository;
         this.payVoucherModelInstance = payVoucherModelInstance;
     }
 
@@ -87,7 +84,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     public List<PayVoucher> findMyApplyByCriteriaPageable(PayVoucherRequestForm requestForm) {
         requestForm.forcePaged();
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        return workflowTaskQueryRepository.findUserApplyList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+        return payVoucherTaskRepository.findPayVoucherUserApplyList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
                 requestForm.getContractNo(), requestForm.getContractName());
     }
@@ -96,7 +93,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     public List<PayVoucher> findMyDoneByCriteriaPageable(PayVoucherRequestForm requestForm) {
         requestForm.forcePaged();
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        return workflowTaskQueryRepository.findPayVoucherDoneList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+        return payVoucherTaskRepository.findPayVoucherDoneList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
                 requestForm.getContractNo(), requestForm.getContractName());
 
@@ -106,7 +103,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     public List<PayVoucher> findMyTodoByCriteria(PayVoucherRequestForm requestForm) {
         requestForm.forcePaged();
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        return workflowTaskQueryRepository.findPayVoucherTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+        return payVoucherTaskRepository.findPayVoucherTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
                 requestForm.getContractNo(), requestForm.getContractName());
     }
@@ -147,14 +144,6 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     public void revoke(String entityId) {
 
     }
-
-//    @Override
-//    public void delete(String entityId) {
-//        final ValidationResult validationResult = this.deleteValidate(entityId, TokenUtil.getUseridFromAuthToken());
-//        if (validationResult.isPass()) {
-//            runtimeService.deleteProcessInstance(entityId, STATE_DETAIL_APPLY);
-//        }
-//    }
 
     @Override
     public List<UserTaskDTO> preview(PayVoucher form) {

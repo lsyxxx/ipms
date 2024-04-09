@@ -2,30 +2,36 @@ package com.abt.wf.service.impl;
 
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
-import com.abt.wf.config.Constants;
-import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Loan;
+import com.abt.wf.entity.PayVoucher;
 import com.abt.wf.model.LoanRequestForm;
+import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.model.ValidationResult;
 import com.abt.wf.repository.LoanRepository;
-import com.abt.wf.repository.WorkflowTaskQueryRepository;
+import com.abt.wf.repository.LoanTaskRepository;
+import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.LoanService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.SERVICE_LOAN;
-import static com.abt.wf.config.Constants.STATE_DETAIL_REJECT;
 
 /**
  *
@@ -41,13 +47,12 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     private final FlowOperationLogService flowOperationLogService;
     private final RepositoryService repositoryService;
     private final RuntimeService runtimeService;
-    private final WorkflowTaskQueryRepository workflowTaskQueryRepository;
     private final BpmnModelInstance loanBpmnModelInstance;
+    private final LoanTaskRepository loanTaskRepository;
 
-    public LoanServiceImpl(LoanRepository loanRepository, IdentityService identityService, UserService userService, TaskService taskService,
+    public LoanServiceImpl(LoanRepository loanRepository, IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
-                           RuntimeService runtimeService, WorkflowTaskQueryRepository workflowTaskQueryRepository,
-                           BpmnModelInstance loanBpmnModelInstance) {
+                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, LoanTaskRepository loanTaskRepository) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
         this.loanRepository = loanRepository;
         this.identityService = identityService;
@@ -56,28 +61,76 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         this.flowOperationLogService = flowOperationLogService;
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
-        this.workflowTaskQueryRepository = workflowTaskQueryRepository;
         this.loanBpmnModelInstance = loanBpmnModelInstance;
+        this.loanTaskRepository = loanTaskRepository;
     }
 
     @Override
     public List<Loan> findAllByCriteriaPageable(LoanRequestForm requestForm) {
-        return List.of();
+        //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 支付方式,项目，借款部门
+        requestForm.forcePaged();
+        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+                Sort.by(Sort.Order.desc("createDate")));
+        LoanSpecifications spec = new LoanSpecifications();
+        Specification<Loan> criteria = Specification.where(spec.createDateBetween(requestForm))
+                .and(spec.createUsernameLike(requestForm))
+                .and(spec.stateEqual(requestForm))
+                .and(spec.entityIdLike(requestForm))
+                .and(spec.payTypeEqual(requestForm))
+                .and(spec.projectLike(requestForm))
+                .and(spec.deptIdEqual(requestForm))
+                .and(spec.createUseridEqual(requestForm));
+        return loanRepository.findAll(criteria, pageable).getContent();
+    }
+
+    static class LoanSpecifications extends CommonSpecifications<LoanRequestForm, Loan> {
+        //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 支付方式,项目，借款部门
+        public Specification<Loan> payTypeEqual(LoanRequestForm form) {
+            return (root, query, builder) -> {
+                if (StringUtils.isNotBlank(form.getPayType())) {
+                    return builder.equal(root.get("payType"), form.getPayType());
+                }
+                return null;
+            };
+        }
+
+        public Specification<Loan> projectLike(LoanRequestForm form) {
+            return (root, query, builder) -> {
+                if (StringUtils.isNotBlank(form.getProject())) {
+                    return builder.like(root.get("project"), form.getProject());
+                }
+                return null;
+            };
+        }
+        public Specification<Loan> deptIdEqual(LoanRequestForm form) {
+            return (root, query, builder) -> {
+                if (StringUtils.isNotBlank(form.getDeptId())) {
+                    return builder.like(root.get("deptId"), form.getDeptId());
+                }
+                return null;
+            };
+        }
     }
 
     @Override
     public List<Loan> findMyApplyByCriteriaPageable(LoanRequestForm requestForm) {
-        return List.of();
+        return loanTaskRepository.findUserApplyList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getPayType(),
+                requestForm.getProject(), requestForm.getDeptId());
     }
 
     @Override
     public List<Loan> findMyDoneByCriteriaPageable(LoanRequestForm requestForm) {
-        return List.of();
+        return loanTaskRepository.findDoneList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getPayType(),
+                requestForm.getProject(), requestForm.getDeptId());
     }
 
     @Override
     public List<Loan> findMyTodoByCriteria(LoanRequestForm requestForm) {
-        return List.of();
+        return loanTaskRepository.findTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getPayType(),
+                requestForm.getProject(), requestForm.getDeptId());
     }
 
     @Override

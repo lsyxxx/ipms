@@ -114,6 +114,11 @@ public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl
         return jdbcTemplate.query(sql, new ReimburseTaskMapper(), params.toArray());
     }
 
+    @Override
+    String conditionSql(String sql, List<Object> array, String... params) {
+        return "";
+    }
+
     /**
      * sql语句, 业务创建日期范围查询
      * @param startDate 开始日期

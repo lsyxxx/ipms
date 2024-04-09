@@ -20,11 +20,11 @@ import static org.mockito.Mockito.when;
 class PayVoucherRepositoryTest {
 
     @Autowired
-    private WorkflowTaskQueryRepository workflowTaskQueryRepository;;
+    private PayVoucherTaskRepository payVoucherTaskRepository;;
 
     @Test
     void findDoneList() {
-        final List<PayVoucher> list = workflowTaskQueryRepository.findPayVoucherDoneList(1, 20, "621faa40-f45c-4da8-9a8f-65b0c5353f40", "刘宋菀",
+        final List<PayVoucher> list = payVoucherTaskRepository.findPayVoucherDoneList(1, 20, "621faa40-f45c-4da8-9a8f-65b0c5353f40", "刘宋菀",
                 null, null, null, null, null, null, null);
         assertNotNull(list);
         System.out.println(list.size());
@@ -33,7 +33,7 @@ class PayVoucherRepositoryTest {
 
     @Test
     void findTodoList() {
-        final List<PayVoucher> list = workflowTaskQueryRepository.findPayVoucherTodoList(1, 20, "621faa40-f45c-4da8-9a8f-65b0c5353f40", "刘宋菀",
+        final List<PayVoucher> list = payVoucherTaskRepository.findPayVoucherTodoList(1, 20, "621faa40-f45c-4da8-9a8f-65b0c5353f40", "刘宋菀",
                 null, null, null, null, null, null, null);
         assertNotNull(list);
         System.out.println(list.size());

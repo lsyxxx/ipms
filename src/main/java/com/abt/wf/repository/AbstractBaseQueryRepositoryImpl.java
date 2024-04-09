@@ -10,13 +10,12 @@ import java.util.List;
 import java.util.Set;
 
 import com.abt.common.util.TimeUtil;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 适用于RequestForm
  */
 public abstract class AbstractBaseQueryRepositoryImpl {
-
-    abstract String between(String startDate, String endDate, List<Object> params);
 
     /**
      * 获取查询结果的列
@@ -29,6 +28,50 @@ public abstract class AbstractBaseQueryRepositoryImpl {
             columnNames.add(metaData.getColumnName(i).toLowerCase());
         }
         return columnNames;
+    }
+
+    public String todoSql(String entityTable) {
+        return "select null as inv_task_id, null as inv_task_def_id, null as inv_task_name, " +
+                "null as inv_task_assignee_id, null as inv_task_assignee_name, " +
+                "t.ID_ as cur_task_id, t.TASK_DEF_KEY_ as cur_task_def_id, t.NAME_ as cur_task_name, t.ASSIGNEE_ as cur_task_assignee_id, " +
+                "? as cur_task_assignee_name, " +
+                "e.*,  su.Name as create_username1 " +
+                "from ACT_RU_TASK t " +
+                "left join " + entityTable + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
+                "left join [dbo].[User] su on e.create_userid = su.Id " +
+                "where 1=1 " +
+                "and e.is_del = 0 " +
+                "and t.TASK_DEF_KEY_ not like '%apply%' ";
+    }
+
+    public String applySql(String entityTable) {
+        return "select null as inv_task_id, null as inv_task_def_id, null as inv_task_name, " +
+                "null as inv_task_assignee_id, null as inv_task_assignee_name, " +
+                "t.ID_ as cur_task_id, t.TASK_DEF_KEY_ as cur_task_def_id, t.NAME_ as cur_task_name, t.ASSIGNEE_ as cur_task_assignee_id, " +
+                "su.Name as cur_task_assignee_name, " +
+                "e.*, e.copy as copy_users,  ? as create_username1 " +
+                "from " + entityTable + " e " +
+                "left join ACT_RU_TASK t on e.proc_inst_id = t.PROC_INST_ID_" +
+                "left join [dbo].[User] su on t.ASSIGNEE_ = su.Id " +
+                "where 1=1 " +
+                "and e.is_del = 0 ";
+    }
+
+    public static String doneSql(String entityTable) {
+        return "select t.ID_ as inv_task_id, t.TASK_DEF_KEY_ as inv_task_def_id, t.NAME_ as inv_task_name, " +
+                "? as inv_task_assignee_id, ? as inv_task_assignee_name, " +
+                "rt.ID_ as cur_task_id, rt.TASK_DEF_KEY_ as cur_task_def_id, rt.NAME_ as cur_task_name, rt.ASSIGNEE_ as cur_task_assignee_id, " +
+                "tu.Name as cur_task_assignee_name, " +
+                "e.*,  su.Name as create_username1 " +
+                "from ACT_HI_TASKINST t " +
+                "left join " + entityTable  + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
+                "left join ACT_RU_TASK rt on rt.PROC_INST_ID_ = t.PROC_INST_ID_ " +
+                "left join [dbo].[User] su on e.create_userid = su.Id " +
+                "left join [dbo].[User] tu on rt.ASSIGNEE_ = tu.Id " +
+                "where 1=1 and e.is_del = 0  " +
+                "and t.END_TIME_ is not NULL " +
+                //仅查询未删除的，去掉apply节点
+                "and t.TASK_DEF_KEY_ not like '%apply%' ";
     }
 
     public <T extends WorkflowBase> void workflowBaseAndTaskSetter(T form, ResultSet rs) throws SQLException {
@@ -62,4 +105,19 @@ public abstract class AbstractBaseQueryRepositoryImpl {
         form.setInvokedTaskDefId(rs.getString("inv_task_def_id"));
     }
 
+    String commonBetween(String startDate, String endDate, List<Object> params) {
+        String sql = "";
+        if (StringUtils.isNotBlank(startDate)) {
+            sql += "and e.create_date >= ? ";
+            params.add(startDate);
+        }
+        if (StringUtils.isNotBlank(endDate)) {
+            sql += "and e.create_date <= ? ";
+            params.add(endDate);
+        }
+        return sql;
+    }
+
+    abstract String conditionSql(String sql, List<Object> array, String... params);
+    abstract String between(String startDate, String endDate, List<Object> params);
 }

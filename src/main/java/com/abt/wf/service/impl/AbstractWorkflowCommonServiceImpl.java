@@ -118,8 +118,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     @Override
     public Task beforeApprove(T baseForm, String authUser, String decision) {
         //validate
-        WorkFlowUtil.ensureProcessId(baseForm);
         ensureEntityId(baseForm);
+        WorkFlowUtil.ensureProcessId(baseForm);
         WorkFlowUtil.decisionTranslate(decision);
         setAuthUser(authUser);
         String procId = baseForm.getProcessInstanceId();

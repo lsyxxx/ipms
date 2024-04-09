@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1pgw9lk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+  <bpmn:process id="rbsLoan" name="rbsLoan" isExecutable="true" camunda:versionTag="借款申请流程" camunda:historyTimeToLive="180">
+    <bpmn:documentation>借款申请流程</bpmn:documentation>
+    <bpmn:extensionElements>
+      <camunda:executionListener delegateExpression="${loanProcessEndListener}" event="end" />
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartEvent_1" name="借款申请开始">
+      <bpmn:documentation>借款申请开始</bpmn:documentation>
+      <bpmn:outgoing>Flow_1erl8o0</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="rbsLoan_apply" name="申请">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="taskType" value="apply" />
+          <camunda:property name="selectUserType" value="2" />
+          <camunda:property name="carbonCopy" value="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1erl8o0</bpmn:incoming>
+      <bpmn:outgoing>Flow_02cbf5y</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1erl8o0" sourceRef="StartEvent_1" targetRef="rbsLoan_apply" />
+    <bpmn:userTask id="rbsLoan_managers" name="主管及技术负责人">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="0" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_02cbf5y</bpmn:incoming>
+      <bpmn:outgoing>Flow_0a6mk7z</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="managerList" camunda:elementVariable="manager">
+        <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">${nrOfInstances == nrOfCompletedInstances}</bpmn:completionCondition>
+      </bpmn:multiInstanceLoopCharacteristics>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_02cbf5y" sourceRef="rbsLoan_apply" targetRef="rbsLoan_managers" />
+    <bpmn:userTask id="rbsLoan_finMgr" name="财务主管" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+      <bpmn:documentation>财务主管审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0a6mk7z</bpmn:incoming>
+      <bpmn:outgoing>Flow_1tyqcd2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0a6mk7z" sourceRef="rbsLoan_managers" targetRef="rbsLoan_finMgr" />
+    <bpmn:userTask id="rbsLoan_ceo" name="总经理" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1tyqcd2</bpmn:incoming>
+      <bpmn:outgoing>Flow_13enk9n</bpmn:outgoing>
+      <bpmn:outgoing>Flow_136c7sg</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1tyqcd2" sourceRef="rbsLoan_finMgr" targetRef="rbsLoan_ceo" />
+    <bpmn:userTask id="rbsLoan_cashier" name="出纳" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_13enk9n</bpmn:incoming>
+      <bpmn:incoming>Flow_1ekjsfz</bpmn:incoming>
+      <bpmn:outgoing>Flow_18wy4p8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_13enk9n" name="金额小于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_cashier" />
+    <bpmn:userTask id="rbsLoan_chief" name="董事长">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_136c7sg</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ekjsfz</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_136c7sg" name="金额大于等于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_chief">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1ekjsfz" sourceRef="rbsLoan_chief" targetRef="rbsLoan_cashier" />
+    <bpmn:endEvent id="Event_1mt8dt2" name="借款审批结束">
+      <bpmn:incoming>Flow_18wy4p8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_18wy4p8" sourceRef="rbsLoan_cashier" targetRef="Event_1mt8dt2" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsLoan">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="164" y="122" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_11eydw5_di" bpmnElement="rbsLoan_apply">
+        <dc:Bounds x="270" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1xsduq1_di" bpmnElement="rbsLoan_managers">
+        <dc:Bounds x="430" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1j0ob8v_di" bpmnElement="rbsLoan_finMgr">
+        <dc:Bounds x="590" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0y0gtu5_di" bpmnElement="rbsLoan_ceo">
+        <dc:Bounds x="750" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_144yvgd_di" bpmnElement="rbsLoan_cashier">
+        <dc:Bounds x="910" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_126cqbt_di" bpmnElement="rbsLoan_chief">
+        <dc:Bounds x="750" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1mt8dt2_di" bpmnElement="Event_1mt8dt2">
+        <dc:Bounds x="1072" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1059" y="122" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1erl8o0_di" bpmnElement="Flow_1erl8o0">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="270" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02cbf5y_di" bpmnElement="Flow_02cbf5y">
+        <di:waypoint x="370" y="97" />
+        <di:waypoint x="430" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0a6mk7z_di" bpmnElement="Flow_0a6mk7z">
+        <di:waypoint x="530" y="97" />
+        <di:waypoint x="590" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tyqcd2_di" bpmnElement="Flow_1tyqcd2">
+        <di:waypoint x="690" y="97" />
+        <di:waypoint x="750" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13enk9n_di" bpmnElement="Flow_13enk9n">
+        <di:waypoint x="850" y="97" />
+        <di:waypoint x="910" y="97" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="846" y="79" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_136c7sg_di" bpmnElement="Flow_136c7sg">
+        <di:waypoint x="800" y="137" />
+        <di:waypoint x="800" y="290" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="770" y="211" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ekjsfz_di" bpmnElement="Flow_1ekjsfz">
+        <di:waypoint x="850" y="330" />
+        <di:waypoint x="960" y="330" />
+        <di:waypoint x="960" y="137" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18wy4p8_di" bpmnElement="Flow_18wy4p8">
+        <di:waypoint x="1010" y="97" />
+        <di:waypoint x="1072" y="97" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
