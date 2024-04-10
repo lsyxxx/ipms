@@ -1,5 +1,6 @@
 package com.abt.wf.listener;
 
+import com.abt.sys.service.NotifyMessageService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.service.TripReimburseService;
@@ -17,9 +18,11 @@ import org.springframework.stereotype.Component;
 public class TripProcessEndListener implements ExecutionListener {
 
     private final TripReimburseService tripReimburseService;
+    private final NotifyMessageService notifyMessageService;
 
-    public TripProcessEndListener(TripReimburseService tripReimburseService) {
+    public TripProcessEndListener(TripReimburseService tripReimburseService, NotifyMessageService notifyMessageService) {
         this.tripReimburseService = tripReimburseService;
+        this.notifyMessageService = notifyMessageService;
     }
 
     @Override
@@ -42,6 +45,7 @@ public class TripProcessEndListener implements ExecutionListener {
             //仅修改common状态
             tripReimburseService.saveEntity(common);
             //抄送
+
         }
     }
 }

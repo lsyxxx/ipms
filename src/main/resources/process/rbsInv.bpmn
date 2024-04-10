@@ -34,7 +34,7 @@
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_186fvry" sourceRef="rbsInv_apply" targetRef="rbsInv_managers" />
-    <bpmn:userTask id="rbsInv_finMgr" name="财务主管审批" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsInv_finMgr" name="财务" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
@@ -43,49 +43,13 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1008jx2</bpmn:incoming>
-      <bpmn:outgoing>Flow_0vwvv3s</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0s9w2z1</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1008jx2" sourceRef="rbsInv_managers" targetRef="rbsInv_finMgr" />
-    <bpmn:userTask id="rbsInv_ceo" name="总经理" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0vwvv3s</bpmn:incoming>
-      <bpmn:outgoing>Flow_0szrthr</bpmn:outgoing>
-      <bpmn:outgoing>Flow_1lk59w6</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_0vwvv3s" sourceRef="rbsInv_finMgr" targetRef="rbsInv_ceo" />
-    <bpmn:userTask id="rbsInv_finConfirm" name="财务开票确认" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0szrthr</bpmn:incoming>
-      <bpmn:incoming>Flow_14b0ust</bpmn:incoming>
-      <bpmn:outgoing>Flow_0km75q3</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_0szrthr" name="金额小于5000" sourceRef="rbsInv_ceo" targetRef="rbsInv_finConfirm">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:userTask id="rbsInv_chief" name="董事长">
-      <bpmn:incoming>Flow_1lk59w6</bpmn:incoming>
-      <bpmn:outgoing>Flow_14b0ust</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_1lk59w6" name="金额大于等于5000" sourceRef="rbsInv_ceo" targetRef="rbsInv_chief">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_14b0ust" sourceRef="rbsInv_chief" targetRef="rbsInv_finConfirm" />
     <bpmn:endEvent id="Event_0w791c4" name="开票审批结束">
-      <bpmn:incoming>Flow_0km75q3</bpmn:incoming>
+      <bpmn:incoming>Flow_0s9w2z1</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0km75q3" sourceRef="rbsInv_finConfirm" targetRef="Event_0w791c4" />
+    <bpmn:sequenceFlow id="Flow_0s9w2z1" sourceRef="rbsInv_finMgr" targetRef="Event_0w791c4" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsInv">
@@ -107,22 +71,10 @@
         <dc:Bounds x="680" y="57" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1qdp59o_di" bpmnElement="rbsInv_ceo">
-        <dc:Bounds x="870" y="57" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ikr6cw_di" bpmnElement="rbsInv_finConfirm">
-        <dc:Bounds x="1060" y="57" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_175qkq2_di" bpmnElement="rbsInv_chief">
-        <dc:Bounds x="870" y="210" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0w791c4_di" bpmnElement="Event_0w791c4">
-        <dc:Bounds x="1252" y="79" width="36" height="36" />
+        <dc:Bounds x="832" y="79" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1241" y="122" width="66" height="14" />
+          <dc:Bounds x="821" y="122" width="66" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_09ajh3e_di" bpmnElement="Flow_09ajh3e">
@@ -137,32 +89,9 @@
         <di:waypoint x="590" y="97" />
         <di:waypoint x="680" y="97" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0vwvv3s_di" bpmnElement="Flow_0vwvv3s">
+      <bpmndi:BPMNEdge id="Flow_0s9w2z1_di" bpmnElement="Flow_0s9w2z1">
         <di:waypoint x="780" y="97" />
-        <di:waypoint x="870" y="97" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0szrthr_di" bpmnElement="Flow_0szrthr">
-        <di:waypoint x="970" y="97" />
-        <di:waypoint x="1060" y="97" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="981" y="79" width="68" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1lk59w6_di" bpmnElement="Flow_1lk59w6">
-        <di:waypoint x="920" y="137" />
-        <di:waypoint x="920" y="210" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="890" y="171" width="90" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_14b0ust_di" bpmnElement="Flow_14b0ust">
-        <di:waypoint x="970" y="250" />
-        <di:waypoint x="1110" y="250" />
-        <di:waypoint x="1110" y="137" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0km75q3_di" bpmnElement="Flow_0km75q3">
-        <di:waypoint x="1160" y="97" />
-        <di:waypoint x="1252" y="97" />
+        <di:waypoint x="832" y="97" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

@@ -51,7 +51,7 @@ public abstract class AbstractBaseQueryRepositoryImpl {
                 "su.Name as cur_task_assignee_name, " +
                 "e.*, e.copy as copy_users,  ? as create_username1 " +
                 "from " + entityTable + " e " +
-                "left join ACT_RU_TASK t on e.proc_inst_id = t.PROC_INST_ID_" +
+                "left join ACT_RU_TASK t on e.proc_inst_id = t.PROC_INST_ID_ " +
                 "left join [dbo].[User] su on t.ASSIGNEE_ = su.Id " +
                 "where 1=1 " +
                 "and e.is_del = 0 ";
