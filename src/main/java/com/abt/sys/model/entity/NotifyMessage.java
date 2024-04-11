@@ -74,6 +74,21 @@ public class NotifyMessage {
     private LocalDateTime sendTime;
 
     /**
+     * 消息类型：抄送等
+     */
+    @Column(name="type_", columnDefinition="VARCHAR(16)")
+    private String type = NotifyMessageType.copy.name();
+    @Column(name="type_desc", columnDefinition="VARCHAR(16)")
+    private String typeDesc;
+    /**
+     * 服务类型
+     * Constats.SERVICE_*.
+     */
+    @Column(name="service_", columnDefinition="VARCHAR(16)")
+    private String service;
+
+
+    /**
      * 系统消息
      */
     public static final String SYSTEM = "System";
