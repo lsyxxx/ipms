@@ -154,8 +154,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().active().singleResult();
         final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(form.getProcessDefinitionKey(), businessKey(form), variableMap);
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
-        task.setAssignee(form.getCreateUserid());
-        taskService.setAssignee(task.getId(), form.getCreateUserid());
+        //使用starter
         taskService.complete(task.getId());
 
         form.setProcessDefinitionId(processDefinition.getId());
@@ -296,7 +295,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         return ValidationResult.pass();
     }
     public void commonRejectHandler(T form, Task task, String comment, String id) {
-        taskService.complete(task.getId());
+//        taskService.complete(task.getId());
         //delete process
         runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
         //update status
@@ -306,7 +305,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         FlowOperationLog optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, id);
         optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
         optLog.setComment(comment);
-        optLog.setTaskResult(this.getDecision(form));
+        optLog.setTaskResult(WorkFlowUtil.decisionTranslate(getDecision(form)));
         flowOperationLogService.saveLog(optLog);
     }
 

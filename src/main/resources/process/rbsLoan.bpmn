@@ -5,11 +5,11 @@
     <bpmn:extensionElements>
       <camunda:executionListener delegateExpression="${loanProcessEndListener}" event="end" />
     </bpmn:extensionElements>
-    <bpmn:startEvent id="StartEvent_1" name="借款申请开始">
+    <bpmn:startEvent id="StartEvent_1" name="借款申请开始" camunda:initiator="starter">
       <bpmn:documentation>借款申请开始</bpmn:documentation>
       <bpmn:outgoing>Flow_1erl8o0</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="rbsLoan_apply" name="申请">
+    <bpmn:userTask id="rbsLoan_apply" name="申请" camunda:assignee="${starter}">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="taskType" value="apply" />
@@ -36,7 +36,7 @@
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_02cbf5y" sourceRef="rbsLoan_apply" targetRef="rbsLoan_managers" />
-    <bpmn:userTask id="rbsLoan_finMgr" name="财务主管" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsLoan_finMgr" name="财务主管" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
       <bpmn:documentation>财务主管审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -49,7 +49,7 @@
       <bpmn:outgoing>Flow_1tyqcd2</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_0a6mk7z" sourceRef="rbsLoan_managers" targetRef="rbsLoan_finMgr" />
-    <bpmn:userTask id="rbsLoan_ceo" name="总经理" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsLoan_ceo" name="总经理" camunda:assignee="U20230406002">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
@@ -62,7 +62,7 @@
       <bpmn:outgoing>Flow_136c7sg</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1tyqcd2" sourceRef="rbsLoan_finMgr" targetRef="rbsLoan_ceo" />
-    <bpmn:userTask id="rbsLoan_cashier" name="出纳" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsLoan_cashier" name="出纳" camunda:assignee="U20230406007">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
@@ -75,7 +75,7 @@
       <bpmn:outgoing>Flow_18wy4p8</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_13enk9n" name="金额小于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_cashier" />
-    <bpmn:userTask id="rbsLoan_chief" name="董事长">
+    <bpmn:userTask id="rbsLoan_chief" name="董事长" camunda:assignee="U20230406001">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />

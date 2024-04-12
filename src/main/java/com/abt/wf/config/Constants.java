@@ -1,11 +1,17 @@
 package com.abt.wf.config;
 
+import java.util.List;
+
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_RBS;
+
 /**
  * chang
  */
 public class Constants {
 
     public static final String VAR_KEY_ENTITY = "entityId";
+    public static final String VAR_KEY_STARTER= "starter";
+    public static final String VAR_KEY_DESC = "desc";
 
     /*-----------------------
      * 流程删除原因
@@ -104,4 +110,5 @@ public class Constants {
     public static final String KEY_STARTER = "starter";
     public static final String KEY_MANAGER = "managerList";
     public static final String KEY_COST = "cost";
+
 }

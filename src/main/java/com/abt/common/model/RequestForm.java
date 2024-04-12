@@ -1,8 +1,13 @@
 package com.abt.common.model;
 
 import com.abt.sys.model.dto.UserView;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * client请求参数
@@ -52,8 +57,9 @@ public class RequestForm {
     private int count;
 
     private int firstResult;
+    private String userid;
+    private String username;
 
-    private User user;
 
     /**
      * 开始日期
@@ -93,47 +99,6 @@ public class RequestForm {
         return this.firstResult;
     }
 
-    public void setUser(UserView userView) {
-        this.user = new User(userView);
-    }
-
-
-    public String getUserid() {
-        if (this.user == null) {
-            return "";
-        }
-        return this.user.getId();
-    }
-
-    public String getUsername() {
-        if (this.user == null) {
-            return "";
-        }
-        return this.user.getUsername();
-    }
-
-    public String getUserCode() {
-        if (this.user == null) {
-            return "";
-        }
-        return this.user.getCode();
-    }
-
-    public void setUserid(String userid) {
-        if (this.user == null) {
-            this.user = new User(userid);
-        } else {
-            this.user.setId(userid);
-        }
-    }
-
-    public void setUsername(String username) {
-        if (this.user == null) {
-            this.user = new User();
-        }
-        this.user.setUsername(username);
-    }
-
     public static RequestForm createNoPaging() {
         RequestForm form = new RequestForm();
         form.setLimit(PAGE_LIMIT);
@@ -149,7 +114,9 @@ public class RequestForm {
      * 强制分页，如果没有传入Limit则使用默认。防止有些循环查询数据太大，或者使用分页查询limit=0无法查询
      */
     public RequestForm forcePaged() {
-        this.setDefaultLimit();
+        if (this.noPaging()) {
+            this.setDefaultLimit();
+        }
         return this;
     }
 

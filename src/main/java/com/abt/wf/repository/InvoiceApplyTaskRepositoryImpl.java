@@ -69,9 +69,9 @@ public class InvoiceApplyTaskRepositoryImpl extends AbstractBaseQueryRepositoryI
                                                     String project, String deptId, String deptName) {
         List<Object> params = new ArrayList<>();
         String sql = applySql(TABLE_INV);
-        sql = sql + "and t.PROC_DEF_ID_ like '%rbsInv%' and e.create_userid = ? ";
-        params.add(userid);
+        sql = sql + "and e.create_userid = ? ";
         params.add(username);
+        params.add(userid);     //e.create_userid = ?
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, project, contractNo, contractName, clientId, clientName, deptId, deptName);
         sql += "order by e.create_date desc ";
         if (!isPaging(limit)) {
@@ -115,7 +115,7 @@ public class InvoiceApplyTaskRepositoryImpl extends AbstractBaseQueryRepositoryI
         sql += between(params[0], params[1], array);
 
         if (StringUtils.isNotBlank(params[2])) {
-            sql += "and e.state = ? ";
+            sql += "and e.biz_state = ? ";
             array.add(params[2]);
         }
         if (StringUtils.isNotBlank(params[3])) {

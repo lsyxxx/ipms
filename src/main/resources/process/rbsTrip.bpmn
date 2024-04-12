@@ -9,7 +9,7 @@
       <bpmn:documentation>差旅报销申请</bpmn:documentation>
       <bpmn:outgoing>Flow_0ww0a4j</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="rbsTrip_apply" name="申请">
+    <bpmn:userTask id="rbsTrip_apply" name="申请" camunda:assignee="${starter}">
       <bpmn:documentation>申请</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -38,7 +38,7 @@
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1eiayxz" sourceRef="rbsTrip_apply" targetRef="rbsTrip_managers" />
-    <bpmn:userTask id="rbsTrip_ceo" name="总经理" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsTrip_ceo" name="总经理" camunda:assignee="U20230406002">
       <bpmn:documentation>总经理审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -51,7 +51,7 @@
       <bpmn:outgoing>Flow_1bnmbhu</bpmn:outgoing>
       <bpmn:outgoing>Flow_0h3kdl4</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="rbsTrip_cashier" name="出纳" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsTrip_cashier" name="出纳" camunda:assignee="U20230406007">
       <bpmn:documentation>出纳审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -71,7 +71,7 @@
       <bpmn:incoming>Flow_0dmj6b7</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0dmj6b7" sourceRef="rbsTrip_cashier" targetRef="Event_06433k8" />
-    <bpmn:userTask id="rbsTrip_finMgr" name="财务主管" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsTrip_finMgr" name="财务主管" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
       <bpmn:documentation>财务主管审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -85,7 +85,7 @@
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1006uz8" sourceRef="rbsTrip_finMgr" targetRef="rbsTrip_ceo" />
     <bpmn:sequenceFlow id="Flow_0n80xhq" sourceRef="rbsTrip_managers" targetRef="rbsTrip_finMgr" />
-    <bpmn:userTask id="rbsTrip_chief" name="董事长" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsTrip_chief" name="董事长" camunda:assignee="U20230406001">
       <bpmn:documentation>董事长审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>

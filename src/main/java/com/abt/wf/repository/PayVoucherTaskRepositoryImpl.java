@@ -73,7 +73,7 @@ public class PayVoucherTaskRepositoryImpl extends AbstractBaseQueryRepositoryImp
                                                         String entityIdLike, String state, String project, String contractNo, String contractName){
         List<Object> params = new ArrayList<>();
         String sql = applySql(TABLE_ENTITY);
-        sql = sql + "and t.PROC_DEF_ID_ like '%rbsPay%' and e.create_userid = ? ";
+        sql = sql + " and e.create_userid = ? ";
         params.add(applyUsername);
         params.add(applyUserid);
         sql = conditionSql(sql, params, startDate, endDate, entityIdLike, state, project, contractNo, contractName);

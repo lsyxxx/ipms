@@ -30,9 +30,13 @@ import java.time.LocalDate;
 public class TripReimburse extends WorkflowBase {
 
     @Id
-    @GeneratedValue(generator = "timestampIdGenerator")
-    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
+//    @GeneratedValue(generator = "timestampIdGenerator")
+//    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @Column(name="code_", columnDefinition="VARCHAR(128)")
+    private String code;
 
     /**
      * 多个报销明细组成一个报销单，同一个单据中root_id相同
@@ -78,13 +82,11 @@ public class TripReimburse extends WorkflowBase {
     /**
      * 补贴天数
      */
-    @Positive(message = "出差补贴天数必须大于0")
     @Column(name = "allowance_dur")
     private Double allowanceDuration;
     /**
      * 补贴金额
      */
-    @Positive(message = "出差补贴金额必须大于0")
     @Column(name = "allowance_exp", columnDefinition = "DECIMAL(10, 2)")
     private BigDecimal allowanceExpense;
 

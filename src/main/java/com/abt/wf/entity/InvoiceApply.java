@@ -1,14 +1,16 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
-import com.abt.common.model.AuditInfo;
+import com.abt.common.util.TimeUtil;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
+import org.camunda.bpm.engine.task.Task;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.HashMap;
@@ -34,7 +36,8 @@ import static com.abt.wf.config.Constants.KEY_MANAGER;
 public class InvoiceApply extends WorkflowBase {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator  = "timestampIdGenerator")
+    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
 
     /**
@@ -95,6 +98,8 @@ public class InvoiceApply extends WorkflowBase {
     /**
      * 合同金额
      */
+    @Positive(message = "合同金额必须大于0", groups = {ValidateGroup.Apply.class})
+    @NotNull(message = "合同金额必填", groups = {ValidateGroup.Apply.class})
     @Column(name="contract_amt", columnDefinition="DECIMAL(10,2)")
     private Double contractAmount;
 
@@ -113,15 +118,37 @@ public class InvoiceApply extends WorkflowBase {
     /**
      * 备注
      */
+    @NotNull(message = "备注必填", groups = {ValidateGroup.Apply.class})
     @Column(name="remark", columnDefinition="VARCHAR(1000)")
     private String remark;
-
 
     /**
      * 选择审批人
      */
     @Column(columnDefinition="VARCHAR(128)")
     private String managers;
+
+    /**
+     * 申请部门
+     */
+    @Column(name="dept_id", columnDefinition="VARCHAR(128)")
+    private String deptId;
+    @Column(name="dept_name", columnDefinition="VARCHAR(32)")
+    private String deptName;
+    /**
+     * 班组
+     */
+    @Column(columnDefinition="VARCHAR(128)")
+    private String teamId;
+    @Column(columnDefinition="VARCHAR(32)")
+    private String teamName;
+
+    /**
+     * 业务所属公司
+     */
+    @NotNull(message = "业务所属公司", groups = {ValidateGroup.Apply.class})
+    @Column(name="company_", columnDefinition="VARCHAR(32)")
+    private String company;
 
 
     @Transient

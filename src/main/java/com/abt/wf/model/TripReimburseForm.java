@@ -50,7 +50,7 @@ public class TripReimburseForm extends WorkflowBase{
 
     public Map<String, Object> variableMap() {
         variableMap.put(KEY_STARTER, this.common.getCreateUserid());
-        variableMap.put(KEY_COST, this.common.getSum());
+        variableMap.put(KEY_COST, this.calcSum());
         if (StringUtils.isBlank(this.common.getManagers())) {
             variableMap.put(KEY_MANAGER, List.of());
         } else {

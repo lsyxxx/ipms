@@ -79,7 +79,7 @@ public class LoanController {
         return R.success("删除成功");
     }
 
-    @GetMapping("/preview")
+    @PostMapping("/preview")
     public R<List<UserTaskDTO>> preview(@Validated(ValidateGroup.Preview.class) @RequestBody Loan Loan) {
         final List<UserTaskDTO> preview = loanService.preview(Loan);
         return R.success(preview, preview.size());

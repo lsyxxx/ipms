@@ -155,7 +155,9 @@ public class ReimburseServiceImpl implements ReimburseService {
         active.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         active.setOperatorId(task.getAssignee());
         User operator = userService.getSimpleUserInfo(task.getAssignee());
-        active.setOperatorName(operator.getUsername());
+        if (operator != null) {
+            active.setOperatorName(operator.getUsername());
+        }
         active.setTaskResult(STATE_DETAIL_ACTIVE);
         completed.add(active);
 
@@ -267,21 +269,26 @@ public class ReimburseServiceImpl implements ReimburseService {
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
             optLog.setTaskResult(form.decisionTranslate());
+            reimburseRepository.save(reimburse);
+            flowOperationLogService.saveLog(optLog);
+            //如果是最后一个节点，complete后就会执行processEndListener，所以reimburseRepository.save(reimburse) 要在complete之前完成
+//            taskService.complete(task.getId());
         } else if (form.isPass()) {
             reimburse.setBusinessState(STATE_DETAIL_ACTIVE);
             optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getId());
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
             optLog.setTaskResult(form.decisionTranslate());
+            reimburseRepository.save(reimburse);
+            flowOperationLogService.saveLog(optLog);
+            //如果是最后一个节点，complete后就会执行processEndListener，所以reimburseRepository.save(reimburse) 要在complete之前完成
+            taskService.complete(task.getId());
         } else {
             log.error("审批结果只能是pass/reject, 实际审批结果: {}", form.getDecision());
             throw new BusinessException("审批结果只能是pass/reject, 实际审批参数:" + form.getDecision());
         }
 
-        reimburseRepository.save(reimburse);
-        flowOperationLogService.saveLog(optLog);
-        //如果是最后一个节点，complete后就会执行processEndListener，所以reimburseRepository.save(reimburse) 要在complete之前完成
-        taskService.complete(task.getId());
+
         clearAuthUser();
     }
 

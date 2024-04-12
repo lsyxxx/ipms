@@ -37,12 +37,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.abt.common.util.QueryUtil.like;
 import static com.abt.wf.config.Constants.*;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_TRIP;
 
 /**
  *
@@ -134,11 +136,11 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     public void approve(TripReimburseForm form) {
         log.info("--------- TripReimburse approve... ");
         //--validate
-        WorkFlowUtil.ensureProcessId(form);
+        WorkFlowUtil.ensureProcessId(form.getCommon());
         ensureProperty(form.getRootId(), "审批编号(rootId)");
         setAuthUser(form.getSubmitUserid());
-        String procId = form.getProcessInstanceId();
-        Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
+        String procId = form.getCommon().getProcessInstanceId();
+        Task task = taskService.createTaskQuery().processInstanceId(procId).active().processDefinitionKey(DEF_KEY_TRIP).singleResult();
         //验证用户是否是审批用户
         form.setCurrentTaskAssigneeId(task.getAssignee());
         isApproveUser(form);
@@ -147,7 +149,6 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         TripReimburse common = loadCommonData(form.getRootId());
         //-- approve
         if (WorkFlowUtil.isPass(form.getDecision())) {
-            taskService.complete(task.getId());
             //update status
             common.setBusinessState(STATE_DETAIL_ACTIVE);
             saveEntity(common);
@@ -157,8 +158,9 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
             optLog.setComment(form.getComment());
             optLog.setTaskResult(WorkFlowUtil.decisionTranslate(form.getDecision()));
             flowOperationLogService.saveLog(optLog);
-        } else if (WorkFlowUtil.isReject(form.getDecision())) {
             taskService.complete(task.getId());
+        } else if (WorkFlowUtil.isReject(form.getDecision())) {
+//            taskService.complete(task.getId());
             //delete process
             runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
             //update status
@@ -168,7 +170,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
             FlowOperationLog optLog = FlowOperationLog.rejectLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, form.getRootId());
             optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
             optLog.setComment(form.getComment());
-            optLog.setTaskResult(this.getDecision(form));
+            optLog.setTaskResult(WorkFlowUtil.decisionTranslate(this.getDecision(form)));
             flowOperationLogService.saveLog(optLog);
         } else {
             log.error("审批结果只能是pass/reject, 实际审批结果: {}", form.getDecision());
@@ -230,12 +232,15 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     public void saveForm(TripReimburseForm form) {
         form.getCommon().setSort(0);
+        final String code = TimeUtil.idGenerator();
+        form.getCommon().setCode(code);
         form.setCommon(tripRepository.save(form.getCommon()));
         final String rootId = form.getCommon().getId();
         form.getItems().forEach(i -> {
             i.setRootId(rootId);
-            tripRepository.save(i);
+            i.setCode(code);
         });
+        tripRepository.saveAllAndFlush(form.getItems());
     }
 
     public void revoke(String entityId) {
@@ -336,6 +341,10 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         final TripReimburse common = tripRepository.findById(rootId).orElseThrow(() -> new BusinessException("未查询到差旅报销业务(rootId=" + rootId + ")"));
         final List<TripReimburse> trips = tripRepository.findByRootIdOrderBySortAsc(rootId);
         TripReimburseForm form = new TripReimburseForm();
+        final Task task = taskService.createTaskQuery().processInstanceId(common.getProcessInstanceId()).active().singleResult();
+        if (task != null) {
+            form.setCurrentTaskAssigneeId(task.getAssignee());
+        }
         common.setRootId(common.getId());
         form.setCommon(common);
         form.setItems(trips);
@@ -370,7 +379,8 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         //criteria: 申请人(user),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
         //查询entity
         Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.idOrRootIdLike(requestForm))
-                .and(TripRbsSpecifications.createDateBetween(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
                 .and(TripRbsSpecifications.createUsernameLike(requestForm))
                 .and(TripRbsSpecifications.staffLike(requestForm))
                 .and(TripRbsSpecifications.stateEqual(requestForm))
@@ -389,7 +399,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         final List<TripReimburseForm> records = build(all);
         records.forEach(i -> {
             final TaskQuery taskQuery = taskService.createTaskQuery().active().processInstanceId(i.getProcessInstanceId());
-            if (taskQuery.taskAssignee(assignee) != null) {
+            if (assignee != null) {
                 taskQuery.taskAssignee(assignee);
             }
             final Task activeTask = taskQuery.singleResult();
@@ -414,7 +424,8 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         //查询entity
         Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.createUseridEqual(requestForm))
                 .and(TripRbsSpecifications.idOrRootIdLike(requestForm))
-                .and(TripRbsSpecifications.createDateBetween(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
                 .and(TripRbsSpecifications.staffLike(requestForm))
                 .and(TripRbsSpecifications.stateEqual(requestForm))
                 .and(TripRbsSpecifications.isNotDelete(requestForm))
@@ -435,7 +446,8 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         //查询entity
         Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.createUseridEqual(requestForm))
                 .and(TripRbsSpecifications.idOrRootIdLike(requestForm))
-                .and(TripRbsSpecifications.createDateBetween(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
                 .and(TripRbsSpecifications.staffLike(requestForm))
                 .and(TripRbsSpecifications.stateEqual(requestForm))
                 .and(TripRbsSpecifications.isNotDelete(requestForm))
@@ -446,13 +458,13 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         final List<TripReimburse> trips = tripRepository.findAll(spec, pageable).getContent();
         List<TripReimburseForm> records = build(trips);
         List<TripReimburseForm> done = new ArrayList<>();
-        final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery()
+        final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processDefinitionKey(DEF_KEY_TRIP)
                 .taskAssignee(requestForm.getAssigneeId()).finished()
                 .orderByHistoricTaskInstanceEndTime().desc().list();
         list.forEach(h -> {
             if (!h.getTaskDefinitionKey().contains("apply"))  {
                 String processInstanceId = h.getProcessInstanceId();
-                records.stream().filter(i -> processInstanceId.equals(i.getProcessInstanceId())).findFirst().ifPresent(i -> {
+                records.stream().filter(i -> processInstanceId.equals(i.getCommon().getProcessInstanceId())).findFirst().ifPresent(i -> {
                     i.setInvokedTaskAssigneeId(requestForm.getAssigneeId());
                     i.setInvokedTaskAssigneeName(requestForm.getAssigneeName());
                     i.setInvokedTaskDefId(h.getTaskDefinitionKey());
@@ -476,7 +488,8 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         //查询entity
         Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.createUseridEqual(requestForm))
                 .and(TripRbsSpecifications.idOrRootIdLike(requestForm))
-                .and(TripRbsSpecifications.createDateBetween(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
                 .and(TripRbsSpecifications.staffLike(requestForm))
                 .and(TripRbsSpecifications.stateEqual(requestForm))
                 .and(TripRbsSpecifications.isNotDelete(requestForm))
@@ -486,7 +499,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         final List<TripReimburseForm> trips = build(tripRepository.findAll(spec, pageable).getContent());
 
         List<TripReimburseForm> records = new ArrayList<>();
-        final List<Task> todoTasks = taskService.createTaskQuery().taskAssignee(requestForm.getUserid()).active().list();
+        final List<Task> todoTasks = taskService.createTaskQuery().taskAssignee(requestForm.getAssigneeId()).processDefinitionKey(DEF_KEY_TRIP).active().list();
         if (CollectionUtils.isEmpty(todoTasks)) {
             return records;
         }
@@ -546,10 +559,19 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
         }
 
-        public static Specification<TripReimburse> createDateBetween(TripRequestForm form) {
+        public static Specification<TripReimburse> afterStartDate(TripRequestForm form) {
             return (root, query, builder) -> {
-                if (form.getStartDate() != null || form.getEndDate() != null) {
-                   return builder.between(root.get("createDate"), form.getStartDate(), form.getEndDate());
+                if (form.getStartDate() != null) {
+                    return builder.greaterThanOrEqualTo(root.get("createDate"), LocalDate.parse(form.getStartDate()));
+                }
+                return null;
+            };
+        }
+
+        public static Specification<TripReimburse> beforeEndDate(TripRequestForm form) {
+            return (root, query, builder) -> {
+                if (form.getEndDate() != null) {
+                    return builder.lessThanOrEqualTo(root.get("createDate"), LocalDate.parse(form.getEndDate()));
                 }
                 return null;
             };
@@ -566,7 +588,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         public static Specification<TripReimburse> createUseridEqual(TripRequestForm form) {
             return (root, query, builder) -> {
                 if (StringUtils.isNotBlank(form.getUsername())) {
-                    return builder.like(root.get("createUserid"), form.getUserid());
+                    return builder.equal(root.get("createUserid"), form.getUserid());
                 }
                 return null;
             };
@@ -594,7 +616,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         public static Specification<TripReimburse> stateEqual(TripRequestForm form) {
             return (root, query, builder) -> {
                 if (StringUtils.isNotBlank(form.getState())) {
-                    return builder.equal(root.get("state"), form.getState());
+                    return builder.equal(root.get("businessState"), form.getState());
                 }
                 return null;
             };

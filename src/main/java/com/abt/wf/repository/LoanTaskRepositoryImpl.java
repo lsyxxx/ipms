@@ -31,7 +31,7 @@ public class LoanTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl impl
         sql += between(params[0], params[1], array);
 
         if (StringUtils.isNotBlank(params[2])) {
-            sql += "and e.state = ? ";
+            sql += "and e.biz_state = ? ";
             array.add(params[2]);
         }
         if (StringUtils.isNotBlank(params[3])) {
@@ -99,7 +99,7 @@ public class LoanTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl impl
 
         List<Object> params = new ArrayList<>();
         String sql = applySql(TABLE_LOAN);
-        sql = sql + "and t.PROC_DEF_ID_ like '%rbsLoan%' and e.create_userid = ? ";
+        sql = sql + " and e.create_userid = ? ";
         params.add(applyUsername);
         params.add(applyUserid);
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, payType, project, deptId);

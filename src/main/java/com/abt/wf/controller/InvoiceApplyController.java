@@ -12,6 +12,7 @@ import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceApplyService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.engine.task.Task;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +30,7 @@ public class InvoiceApplyController {
     private final InvoiceApplyService invoiceApplyService;;
 
     @PostMapping("/apply")
-    public R<Object> apply(@Validated(ValidateGroup.Apply.class) @RequestBody InvoiceApply form) {
+    public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody InvoiceApply form) {
         invoiceApplyService.apply(form);
         return R.success();
     }
@@ -62,15 +63,15 @@ public class InvoiceApplyController {
     }
 
     @GetMapping("/all")
-    public R<List<InvoiceApply>> all(InvoiceApplyRequestForm requestForm) {
+    public R<List<InvoiceApply>> all(@ModelAttribute InvoiceApplyRequestForm requestForm) {
         final List<InvoiceApply> all = invoiceApplyService.findAllByCriteriaPageable(requestForm);
         return R.success(all, all.size());
     }
 
     @GetMapping("/load/{id}")
     public R<InvoiceApply> load(@PathVariable String id) {
-        final InvoiceApply InvoiceApply = invoiceApplyService.load(id);
-        return R.success(InvoiceApply);
+        InvoiceApply invoiceApply = invoiceApplyService.getEntityWithCurrentTask(id);
+        return R.success(invoiceApply);
     }
 
     @GetMapping("/del/{id}")
@@ -79,9 +80,10 @@ public class InvoiceApplyController {
         return R.success("删除成功");
     }
 
-    @GetMapping("/preview")
-    public R<List<UserTaskDTO>> preview(@Validated(ValidateGroup.Preview.class) @RequestBody InvoiceApply InvoiceApply) {
-        final List<UserTaskDTO> preview = invoiceApplyService.preview(InvoiceApply);
+
+    @PostMapping("/preview")
+    public R<List<UserTaskDTO>> preview(@RequestBody InvoiceApply form) {
+        final List<UserTaskDTO> preview = invoiceApplyService.preview(form);
         return R.success(preview, preview.size());
     }
 

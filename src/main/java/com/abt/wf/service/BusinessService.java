@@ -1,6 +1,7 @@
 package com.abt.wf.service;
 
 import com.abt.common.model.RequestForm;
+import com.abt.wf.entity.TripReimburse;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ public interface BusinessService<T extends RequestForm, R> {
 
     /**
      * 查询所有业务记录
+     *
      * @param requestForm 查询条件
      */
     List<R> findAllByCriteriaPageable(T requestForm);

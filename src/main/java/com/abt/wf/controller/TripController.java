@@ -5,6 +5,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.TripReimburseForm;
 import com.abt.wf.model.TripRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -35,13 +36,13 @@ public class TripController {
      */
     @PostMapping("/apply")
     public R<Object> apply(@RequestBody TripReimburseForm form) {
+        tripReimburseService.validateApplyForm(form);
         UserView user = TokenUtil.getUserFromAuthToken();
         form.getCommon().setCreateUserid(user.getId());
         form.getCommon().setCreateUsername(user.getUsername());
         form.setSubmitUserid(user.getId());
         form.setSubmitUsername(user.getUsername());
 
-        tripReimburseService.validateApplyForm(form);
         tripReimburseService.apply(form);
         return R.success("申请成功");
     }
@@ -86,7 +87,7 @@ public class TripController {
      * 所有差旅报销记录
      * @param form 搜索条件
      */
-    @PostMapping("/all")
+    @GetMapping("/all")
     public R<List<TripReimburseForm>> getAll(@ModelAttribute TripRequestForm form) {
         final List<TripReimburseForm> all = tripReimburseService.findAllByCriteriaPageable(form);
         return R.success(all, all.size());

@@ -1,8 +1,12 @@
 package com.abt.wf.service;
 
 import com.abt.common.model.RequestForm;
+import com.abt.common.util.TimeUtil;
+import jakarta.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
+
+import java.time.LocalDate;
 
 import static com.abt.common.util.QueryUtil.like;
 
@@ -15,17 +19,26 @@ public class CommonSpecifications<T extends RequestForm, R> {
 
     public Specification<R> entityIdLike(T form) {
         return (root, query, builder) -> {
-            if (form.getStartDate() != null || form.getEndDate() != null) {
-                return builder.between(root.get("id"), form.getStartDate(), form.getId());
+            if (form.getId() != null) {
+                return builder.like(root.get("id"), like(form.getId()));
             }
             return null;
         };
     }
 
-    public Specification<R> createDateBetween(T form) {
+    public Specification<R> afterStartDate(T form) {
         return (root, query, builder) -> {
-            if (form.getStartDate() != null || form.getEndDate() != null) {
-                return builder.between(root.get("createDate"), form.getStartDate(), form.getEndDate());
+            if (form.getStartDate() != null) {
+                return builder.greaterThanOrEqualTo(root.get("createDate"), LocalDate.parse(form.getStartDate()));
+            }
+            return null;
+        };
+    }
+
+    public Specification<R> beforeEndDate(T form) {
+        return (root, query, builder) -> {
+            if (form.getEndDate() != null) {
+                return builder.lessThanOrEqualTo(root.get("createDate"), LocalDate.parse(form.getEndDate()));
             }
             return null;
         };
@@ -42,8 +55,8 @@ public class CommonSpecifications<T extends RequestForm, R> {
 
     public Specification<R> createUseridEqual(T form) {
         return (root, query, builder) -> {
-            if (StringUtils.isNotBlank(form.getUsername())) {
-                return builder.like(root.get("createUserid"), form.getUserid());
+            if (StringUtils.isNotBlank(form.getUserid())) {
+                return builder.equal(root.get("createUserid"), form.getUserid());
             }
             return null;
         };
@@ -52,7 +65,7 @@ public class CommonSpecifications<T extends RequestForm, R> {
     public Specification<R> stateEqual(T form) {
         return (root, query, builder) -> {
             if (StringUtils.isNotBlank(form.getState())) {
-                return builder.equal(root.get("state"), form.getState());
+                return builder.equal(root.get("businessState"), form.getState());
             }
             return null;
         };

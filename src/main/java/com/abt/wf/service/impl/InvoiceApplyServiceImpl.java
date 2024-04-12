@@ -1,9 +1,12 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.User;
+import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.InvoiceApply;
+import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.*;
 import com.abt.wf.repository.InvoiceApplyRepository;
 import com.abt.wf.repository.InvoiceApplyTaskRepository;
@@ -74,12 +77,12 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
 
     @Override
     void passHandler(InvoiceApply form, Task task) {
-        this.commonPassHandler(form, task, form.getComment(), form.getDecision());
+        this.commonPassHandler(form, task, form.getComment(), form.getId());
     }
 
     @Override
     void rejectHandler(InvoiceApply form, Task task) {
-        this.commonRejectHandler(form, task, form.getComment(), form.getDecision());
+        this.commonRejectHandler(form, task, form.getComment(), form.getId());
     }
 
     @Override
@@ -94,7 +97,8 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
                 Sort.by(Sort.Order.desc("createDate")));
         InvoiceApplySpecifications specifications = new InvoiceApplySpecifications();
         Specification<InvoiceApply> criteria = Specification.where(specifications.createUseridEqual(requestForm))
-                .and(specifications.createDateBetween(requestForm))
+                .and(specifications.beforeEndDate(requestForm))
+                .and(specifications.afterStartDate(requestForm))
                 .and(specifications.stateEqual(requestForm))
                 .and(specifications.entityIdLike(requestForm))
                 .and(specifications.contractNoLike(requestForm))
@@ -205,6 +209,24 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     @Override
     public InvoiceApply load(String entityId) {
         return invoiceApplyRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到开票申请流程(id=" + entityId + ")"));
+    }
+
+    @Override
+    public InvoiceApply getEntityWithCurrentTask(String entityId) {
+        InvoiceApply entity = this.load(entityId);
+        Task task = taskService.createTaskQuery().active().processInstanceId(entity.getProcessInstanceId()).singleResult();
+        if (task != null) {
+            entity.setCurrentTaskAssigneeId(task.getAssignee());
+            entity.setCurrentTaskId(task.getId());
+            entity.setCurrentTaskName(task.getName());
+            entity.setCurrentTaskDefId(task.getTaskDefinitionKey());
+            entity.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
+            final User user = userService.getSimpleUserInfo(task.getAssignee());
+            if (user != null) {
+                entity.setCurrentTaskAssigneeName(user.getUsername());
+            }
+        }
+        return entity;
     }
 
     @Override

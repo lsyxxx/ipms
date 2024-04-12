@@ -3,9 +3,8 @@ package com.abt.wf.service.impl;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Loan;
-import com.abt.wf.entity.PayVoucher;
+import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.LoanRequestForm;
-import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.model.ValidationResult;
 import com.abt.wf.repository.LoanRepository;
@@ -72,7 +71,8 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         LoanSpecifications spec = new LoanSpecifications();
-        Specification<Loan> criteria = Specification.where(spec.createDateBetween(requestForm))
+        Specification<Loan> criteria = Specification.where(spec.beforeEndDate(requestForm))
+                .and(spec.afterStartDate(requestForm))
                 .and(spec.createUsernameLike(requestForm))
                 .and(spec.stateEqual(requestForm))
                 .and(spec.entityIdLike(requestForm))

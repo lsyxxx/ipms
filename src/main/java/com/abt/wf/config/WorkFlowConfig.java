@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.abt.wf.config.Constants.*;
+
 /**
  *
  */
@@ -48,6 +50,8 @@ public class WorkFlowConfig {
         this.repositoryService = repositoryService;
     }
 
+    public static final List<String> financeWorkflowDef = List.of(DEF_KEY_TRIP, DEF_KEY_RBS, DEF_KEY_INV);
+    public static final List<String> financeWorkflowBusinessKey = List.of(SERVICE_RBS, SERVICE_INV, SERVICE_TRIP);
     /**
      * 查询报销类型
      */

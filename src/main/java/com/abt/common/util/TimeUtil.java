@@ -57,8 +57,11 @@ public class TimeUtil {
     }
 
     public static void main(String[] args) {
-        LocalDate date = LocalDate.now();
-        System.out.println(date.toString());
+        String dateString = "2024-04-11 12:30:45";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(dateString, formatter);
+
+        System.out.println();
     }
 
 }

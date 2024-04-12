@@ -87,8 +87,12 @@ public class ReimburseForm extends Reimburse {
         this.variableMap.put(KEY_IS_LEADER, this.isLeader());
         this.variableMap.put(KEY_MANAGER_LIST, this.getManagerList());
         this.variableMap.put(KEY_STARTER, this.getCreateUserid());
+        this.variableMap.put(VAR_KEY_DESC, this.description());
         return this.variableMap;
     }
+    public String description() {
+        return this.getCreateUsername() + "提交的" + this.getServiceName();
+    };
 
     public boolean isPass() {
         return Constants.DECISION_PASS.equals(decision);

@@ -82,7 +82,7 @@ public class PayVoucherController {
         return R.success("删除成功");
     }
 
-    @GetMapping("/preview")
+    @PostMapping("/preview")
     public R<List<UserTaskDTO>> preview(@Validated(ValidateGroup.Preview.class) @RequestBody PayVoucher payVoucher) {
         final List<UserTaskDTO> preview = payVoucherService.preview(payVoucher);
         return R.success(preview, preview.size());

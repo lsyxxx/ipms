@@ -3,7 +3,9 @@ package com.abt.wf.service.impl;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
+import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.entity.PayVoucher;
+import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.model.ValidationResult;
@@ -69,7 +71,8 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         PayVoucherSpecifications specifications = new PayVoucherSpecifications();
-        Specification<PayVoucher> spec = Specification.where(specifications.createDateBetween(requestForm))
+        Specification<PayVoucher> spec = Specification.where(specifications.beforeEndDate(requestForm))
+                .and(specifications.afterStartDate(requestForm))
                 .and(specifications.createUsernameLike(requestForm))
                 .and(specifications.isNotDelete(requestForm))
                 .and(specifications.stateEqual(requestForm))
