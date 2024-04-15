@@ -30,7 +30,7 @@ public abstract class AbstractBaseQueryRepositoryImpl {
         return columnNames;
     }
 
-    public String todoSql(String entityTable) {
+    public static String todoSql(String entityTable) {
         return "select null as inv_task_id, null as inv_task_def_id, null as inv_task_name, " +
                 "null as inv_task_assignee_id, null as inv_task_assignee_name, " +
                 "t.ID_ as cur_task_id, t.TASK_DEF_KEY_ as cur_task_def_id, t.NAME_ as cur_task_name, t.ASSIGNEE_ as cur_task_assignee_id, " +
@@ -44,7 +44,17 @@ public abstract class AbstractBaseQueryRepositoryImpl {
                 "and t.TASK_DEF_KEY_ not like '%apply%' ";
     }
 
-    public String applySql(String entityTable) {
+    public static String countTodoSql(String entityTable) {
+        return "select count(1) " +
+                "from ACT_RU_TASK t " +
+                "left join " + entityTable + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
+                "left join [dbo].[User] su on e.create_userid = su.Id " +
+                "where 1=1 " +
+                "and e.is_del = 0 " +
+                "and t.TASK_DEF_KEY_ not like '%apply%' ";
+    }
+
+    public static String applySql(String entityTable) {
         return "select null as inv_task_id, null as inv_task_def_id, null as inv_task_name, " +
                 "null as inv_task_assignee_id, null as inv_task_assignee_name, " +
                 "t.ID_ as cur_task_id, t.TASK_DEF_KEY_ as cur_task_def_id, t.NAME_ as cur_task_name, t.ASSIGNEE_ as cur_task_assignee_id, " +
@@ -57,12 +67,35 @@ public abstract class AbstractBaseQueryRepositoryImpl {
                 "and e.is_del = 0 ";
     }
 
+    public static String countApplySql(String entityTable) {
+        return "select count(1) " +
+                "from " + entityTable + " e " +
+                "left join ACT_RU_TASK t on e.proc_inst_id = t.PROC_INST_ID_ " +
+                "left join [dbo].[User] su on t.ASSIGNEE_ = su.Id " +
+                "where 1=1 " +
+                "and e.is_del = 0 ";
+    }
+
+
     public static String doneSql(String entityTable) {
         return "select t.ID_ as inv_task_id, t.TASK_DEF_KEY_ as inv_task_def_id, t.NAME_ as inv_task_name, " +
                 "? as inv_task_assignee_id, ? as inv_task_assignee_name, " +
                 "rt.ID_ as cur_task_id, rt.TASK_DEF_KEY_ as cur_task_def_id, rt.NAME_ as cur_task_name, rt.ASSIGNEE_ as cur_task_assignee_id, " +
                 "tu.Name as cur_task_assignee_name, " +
                 "e.*,  su.Name as create_username1 " +
+                "from ACT_HI_TASKINST t " +
+                "left join " + entityTable  + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
+                "left join ACT_RU_TASK rt on rt.PROC_INST_ID_ = t.PROC_INST_ID_ " +
+                "left join [dbo].[User] su on e.create_userid = su.Id " +
+                "left join [dbo].[User] tu on rt.ASSIGNEE_ = tu.Id " +
+                "where 1=1 and e.is_del = 0  " +
+                "and t.END_TIME_ is not NULL " +
+                //仅查询未删除的，去掉apply节点
+                "and t.TASK_DEF_KEY_ not like '%apply%' ";
+    }
+
+    public static String countDoneSql(String entityTable) {
+        return "select count(1)" +
                 "from ACT_HI_TASKINST t " +
                 "left join " + entityTable  + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
                 "left join ACT_RU_TASK rt on rt.PROC_INST_ID_ = t.PROC_INST_ID_ " +

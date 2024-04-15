@@ -14,11 +14,23 @@ public interface InvoiceApplyTaskRepository {
                                     String idLike, String clientId, String clientName, String contractNo, String contractName,
                                             String project, String deptId, String deptName);
 
+    int countDoneList(String userid, String username, String state, String startDate, String endDate,
+                      String idLike, String clientId, String clientName, String contractNo, String contractName,
+                      String project, String deptId, String deptName);
+
     List<InvoiceApply> findTodoListPageable(int page, int limit, String userid, String username, String state, String startDate, String endDate,
                                             String idLike, String clientId, String clientName, String contractNo, String contractName,
                                             String project, String deptId, String deptName);
 
+    int countTodoList(String userid, String username, String state, String startDate, String endDate,
+                      String idLike, String clientId, String clientName, String contractNo, String contractName,
+                      String project, String deptId, String deptName);
+
     List<InvoiceApply> findApplyListPageable(int page, int limit, String userid, String username, String state, String startDate, String endDate,
                                              String idLike, String clientId, String clientName, String contractNo, String contractName,
                                              String project, String deptId, String deptName);
+
+    int countApplyList(String userid, String username, String state, String startDate, String endDate,
+                       String idLike, String clientId, String clientName, String contractNo, String contractName,
+                       String project, String deptId, String deptName);
 }

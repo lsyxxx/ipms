@@ -9,7 +9,14 @@ import java.util.List;
  */
 public interface LoanTaskRepository {
     List<Loan> findDoneList(int page, int limit, String userid, String username, String startDate, String endDate, String state, String idLike, String payType, String deptId, String project);
+
+    int countDoneList(String userid, String username, String startDate, String endDate, String state, String idLike, String payType, String deptId, String project);
+
     List<Loan> findTodoList(int page, int limit, String userid, String username, String startDate, String endDate, String state, String idLike, String payType, String deptId, String project);
+
+    int countTodoList(String assigneeId, String assigneeName, String startDate, String endDate, String state,
+                      String idLike, String payType, String deptId, String project);
+
     List<Loan> findUserApplyList(int page, int limit, String userid, String username, String startDate, String endDate, String state, String idLike, String payType, String deptId, String project);
 
 }

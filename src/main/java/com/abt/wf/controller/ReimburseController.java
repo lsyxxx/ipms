@@ -94,7 +94,8 @@ public class ReimburseController {
     public R<List<ReimburseForm>> allList(@ModelAttribute ReimburseRequestForm queryForm) {
         //query: 分页, 审批编号, 审批结果，审批状态，创建人，创建时间
         final List<ReimburseForm> all = reimburseService.findAllByCriteria(queryForm);
-        return R.success(all, all.size());
+        final int total = reimburseService.countAllByCriteria(queryForm);
+        return R.success(all, total);
     }
 
     /**
@@ -105,7 +106,8 @@ public class ReimburseController {
         // criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
         getUserFromToken(queryForm);
         final List<ReimburseForm> done = reimburseService.findMyDoneByCriteria(queryForm);
-        return R.success(done, done.size());
+        final int total = reimburseService.countMyDoneCriteria(queryForm);
+        return R.success(done, total);
     }
 
     /**
@@ -116,7 +118,8 @@ public class ReimburseController {
         getUserFromToken(queryForm);
         // criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
         final List<ReimburseForm> todo = reimburseService.findMyTodoByCriteria(queryForm);
-        return R.success(todo, todo.size());
+        final int total = reimburseService.countMyTodoByCriteria(queryForm);
+        return R.success(todo, total);
     }
 
     /**
@@ -125,9 +128,9 @@ public class ReimburseController {
     @GetMapping("/myapply")
     public R<List<ReimburseForm>> myApply(@ModelAttribute ReimburseRequestForm queryForm) {
         getUserFromToken(queryForm);
-//        setUser(queryForm);
         final List<ReimburseForm> myApply = reimburseService.findMyApplyByCriteria(queryForm);
-        return R.success(myApply, myApply.size());
+        final int total = reimburseService.countMyApplyByCriteria(queryForm);
+        return R.success(myApply, total);
     }
 
     @PostMapping("/preview")

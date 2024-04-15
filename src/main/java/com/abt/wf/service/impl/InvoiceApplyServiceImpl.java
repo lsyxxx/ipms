@@ -6,7 +6,6 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.InvoiceApply;
-import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.*;
 import com.abt.wf.repository.InvoiceApplyRepository;
 import com.abt.wf.repository.InvoiceApplyTaskRepository;
@@ -91,7 +90,6 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
 
     @Override
     public List<InvoiceApply> findAllByCriteriaPageable(InvoiceApplyRequestForm requestForm) {
-        requestForm.forcePaged();
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称，合同编号, 客户id， 客户name, 项目名称，申请部门id, 申请部门name
         Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
@@ -109,6 +107,24 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
                 .and(specifications.deptIdEqual(requestForm))
                 .and(specifications.deptNameLike(requestForm));
         return invoiceApplyRepository.findAll(criteria, pageable).getContent();
+    }
+
+    @Override
+    public int countAllByCriteria(InvoiceApplyRequestForm requestForm) {
+        InvoiceApplySpecifications specifications = new InvoiceApplySpecifications();
+        Specification<InvoiceApply> criteria = Specification.where(specifications.createUseridEqual(requestForm))
+                .and(specifications.beforeEndDate(requestForm))
+                .and(specifications.afterStartDate(requestForm))
+                .and(specifications.stateEqual(requestForm))
+                .and(specifications.entityIdLike(requestForm))
+                .and(specifications.contractNoLike(requestForm))
+                .and(specifications.contractNameLike(requestForm))
+                .and(specifications.clientIdEqual(requestForm))
+                .and(specifications.clientNameLike(requestForm))
+                .and(specifications.projectLike(requestForm))
+                .and(specifications.deptIdEqual(requestForm))
+                .and(specifications.deptNameLike(requestForm));
+        return (int) invoiceApplyRepository.count(criteria);
     }
 
     static class InvoiceApplySpecifications extends CommonSpecifications<InvoiceApplyRequestForm, InvoiceApply> {
@@ -187,6 +203,13 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     }
 
     @Override
+    public int countMyApplyByCriteria(InvoiceApplyRequestForm requestForm) {
+        //requestForm传入创建人
+        return this.countAllByCriteria(requestForm);
+    }
+
+
+    @Override
     public List<InvoiceApply> findMyDoneByCriteriaPageable(InvoiceApplyRequestForm requestForm) {
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称，合同编号, 客户id， 客户name, 项目名称，申请部门id, 申请部门name
         return invoiceApplyTaskRepository.findDoneListPageable(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
@@ -195,8 +218,22 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     }
 
     @Override
+    public int countMyDoneByCriteria(InvoiceApplyRequestForm requestForm) {
+        return invoiceApplyTaskRepository.countDoneList(requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getState(), requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getContractNo(), requestForm.getContractName(),
+                requestForm.getClientId(), requestForm.getClientName(), requestForm.getProject(), requestForm.getDeptId(), requestForm.getDeptName());
+    }
+
+    @Override
     public List<InvoiceApply> findMyTodoByCriteria(InvoiceApplyRequestForm requestForm) {
         return invoiceApplyTaskRepository.findTodoListPageable(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getState(), requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getContractNo(), requestForm.getContractName(),
+                requestForm.getClientId(), requestForm.getClientName(), requestForm.getProject(), requestForm.getDeptId(), requestForm.getDeptName());
+    }
+
+    @Override
+    public int countMyTodoByCriteria(InvoiceApplyRequestForm requestForm) {
+        return invoiceApplyTaskRepository.countTodoList(requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getState(), requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getContractNo(), requestForm.getContractName(),
                 requestForm.getClientId(), requestForm.getClientName(), requestForm.getProject(), requestForm.getDeptId(), requestForm.getDeptName());
     }

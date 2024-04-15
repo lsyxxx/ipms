@@ -30,7 +30,11 @@ public interface ReimburseService extends WorkFlowService<ReimburseForm>{
 
     List<ReimburseForm> findAllByCriteria(ReimburseRequestForm requestForm);
 
+    int countAllByCriteria(ReimburseRequestForm requestForm);
+
     List<ReimburseForm> findMyApplyByCriteria(ReimburseRequestForm requestForm);
+
+    int countMyApplyByCriteria(ReimburseRequestForm requestForm);
 
     /**
      * 查询我的已办列表
@@ -38,10 +42,13 @@ public interface ReimburseService extends WorkFlowService<ReimburseForm>{
      */
     List<ReimburseForm> findMyDoneByCriteria(ReimburseRequestForm requestForm);
 
+    int countMyDoneCriteria(ReimburseRequestForm requestForm);
+
     /**
      * 查询我的待办列表
      * criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
      */
     List<ReimburseForm> findMyTodoByCriteria(ReimburseRequestForm requestForm);
 
+    int countMyTodoByCriteria(ReimburseRequestForm requestForm);
 }

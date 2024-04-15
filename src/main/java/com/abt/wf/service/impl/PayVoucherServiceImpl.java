@@ -84,12 +84,32 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     }
 
     @Override
+    public int countAllByCriteria(PayVoucherRequestForm requestForm) {
+        PayVoucherSpecifications specifications = new PayVoucherSpecifications();
+        Specification<PayVoucher> spec = Specification.where(specifications.beforeEndDate(requestForm))
+                .and(specifications.afterStartDate(requestForm))
+                .and(specifications.createUsernameLike(requestForm))
+                .and(specifications.isNotDelete(requestForm))
+                .and(specifications.stateEqual(requestForm))
+                .and(specifications.contractNoLike(requestForm))
+                .and(specifications.contractNameLike(requestForm))
+                .and(specifications.entityIdLike(requestForm))
+                ;
+        return (int) payVoucherRepository.count(spec);
+    }
+
+    @Override
     public List<PayVoucher> findMyApplyByCriteriaPageable(PayVoucherRequestForm requestForm) {
         requestForm.forcePaged();
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
         return payVoucherTaskRepository.findPayVoucherUserApplyList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
                 requestForm.getContractNo(), requestForm.getContractName());
+    }
+
+    @Override
+    public int countMyApplyByCriteria(PayVoucherRequestForm requestForm) {
+        return this.countAllByCriteria(requestForm);
     }
 
     @Override
@@ -103,10 +123,24 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     }
 
     @Override
+    public int countMyDoneByCriteria(PayVoucherRequestForm requestForm) {
+        return payVoucherTaskRepository.countPayVoucherDoneList(requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
+                requestForm.getContractNo(), requestForm.getContractName());
+    }
+
+    @Override
     public List<PayVoucher> findMyTodoByCriteria(PayVoucherRequestForm requestForm) {
         requestForm.forcePaged();
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
         return payVoucherTaskRepository.findPayVoucherTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
+                requestForm.getContractNo(), requestForm.getContractName());
+    }
+
+    @Override
+    public int countMyTodoByCriteria(PayVoucherRequestForm requestForm) {
+        return payVoucherTaskRepository.countPayVoucherTodoList(requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
                 requestForm.getContractNo(), requestForm.getContractName());
     }
@@ -121,27 +155,6 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         return Constants.SERVICE_PAY;
     }
 
-//    @Override
-//    public void apply(PayVoucher form) {
-//        //-- validate
-//        WorkFlowUtil.ensureProcessDefinitionKey(form);
-//
-//        //-- prepare
-//        final Map<String, Object> variableMap = form.createVarMap();
-//
-//        //-- start instance
-//        final Task applyTask = this.startProcessAndApply(form, variableMap, Constants.SERVICE_PAY);
-//
-//        //-- save entity
-//        final PayVoucher entity = payVoucherRepository.save(form);
-//        runtimeService.setVariable(form.getProcessInstanceId(), Constants.VAR_KEY_ENTITY, entity.getId());
-//
-//        //-- record
-//        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getCreateUserid(), form.getCreateUsername(), form, applyTask, entity.getId());
-//        optLog.setTaskDefinitionKey(applyTask.getTaskDefinitionKey());
-//        optLog.setTaskResult(STATE_DETAIL_APPLY);
-//        flowOperationLogService.saveLog(optLog);
-//    }
 
     @Override
     public void revoke(String entityId) {

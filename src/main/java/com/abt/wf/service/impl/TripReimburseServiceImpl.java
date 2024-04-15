@@ -1,13 +1,9 @@
 package com.abt.wf.service.impl;
 
-import camundajar.impl.scala.collection.immutable.Stream;
 import com.abt.common.exception.MissingRequiredParameterException;
-import com.abt.common.model.RequestForm;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
-import com.abt.finance.entity.CreditBook;
-import com.abt.finance.model.CashRequestForm;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.UserService;
@@ -387,16 +383,32 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 ;
         Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
                 Sort.by(Sort.Order.by("processInstanceId"), Sort.Order.desc("createDate"), Sort.Order.asc("sort")));
-        final List<TripReimburseForm> records = findActiveTaskBySpecificationPageable(spec, pageable, null);
+//        final List<TripReimburseForm> records = findActiveTaskBySpecificationPageable(spec, pageable, null);
+        final List<TripReimburse> all = tripRepository.findAll(spec, pageable).getContent();
+        List<TripReimburseForm> records = build(all);
+        records = findActiveTaskBySpecificationPageable(records, null);
         long t2 = System.currentTimeMillis();
         log.debug("findAllByCriteriaPageable查询所有记录花费时间: {} ms", (t2-t1));
         return records;
     }
 
-    public List<TripReimburseForm> findActiveTaskBySpecificationPageable(Specification<TripReimburse> spec, Pageable pageable, String assignee) {
-        final List<TripReimburse> all = tripRepository.findAll(spec, pageable).getContent();
+    @Override
+    public int countAllByCriteria(TripRequestForm requestForm) {
+        //criteria: 申请人(user),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
+        //查询entity
+        Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.idLike(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
+                .and(TripRbsSpecifications.createUsernameLike(requestForm))
+                .and(TripRbsSpecifications.staffLike(requestForm))
+                .and(TripRbsSpecifications.stateEqual(requestForm))
+                ;
+        final long count = tripRepository.count(spec);
+        return (int) count;
+    }
+
+    public List<TripReimburseForm> findActiveTaskBySpecificationPageable(List<TripReimburseForm> records, String assignee) {
         //process
-        final List<TripReimburseForm> records = build(all);
         records.forEach(i -> {
             final TaskQuery taskQuery = taskService.createTaskQuery().active().processInstanceId(i.getProcessInstanceId());
             if (assignee != null) {
@@ -432,10 +444,26 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 ;
         Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
                 Sort.by(Sort.Order.by("processInstanceId"), Sort.Order.desc("createDate"), Sort.Order.asc("sort")));
-        final List<TripReimburseForm> records = findActiveTaskBySpecificationPageable(spec, pageable, null);
+        final List<TripReimburse> all = tripRepository.findAll(spec, pageable).getContent();
+        List<TripReimburseForm> records = build(all);
+        records = findActiveTaskBySpecificationPageable(records, null);
         long t2 = System.currentTimeMillis();
         log.debug("findMyApplyByCriteriaPageable查询所有记录花费时间: {} ms", (t2-t1));
         return records;
+    }
+
+    @Override
+    public int countMyApplyByCriteria(TripRequestForm requestForm) {
+        Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.createUseridEqual(requestForm))
+                .and(TripRbsSpecifications.idLike(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
+                .and(TripRbsSpecifications.staffLike(requestForm))
+                .and(TripRbsSpecifications.stateEqual(requestForm))
+                .and(TripRbsSpecifications.isNotDelete(requestForm))
+                ;
+        final long count = tripRepository.count(spec);
+        return (int) count;
     }
 
     @Override
@@ -478,6 +506,20 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         long t2 = System.currentTimeMillis();
         log.debug("findMyDoneByCriteriaPageable查询消耗时间: {} ms", (t2-t1));
         return done;
+    }
+
+    @Override
+    public int countMyDoneByCriteria(TripRequestForm requestForm) {
+        Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.createUseridEqual(requestForm))
+                .and(TripRbsSpecifications.idLike(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
+                .and(TripRbsSpecifications.staffLike(requestForm))
+                .and(TripRbsSpecifications.stateEqual(requestForm))
+                .and(TripRbsSpecifications.isNotDelete(requestForm))
+                ;
+        final long count = tripRepository.count(spec);
+        return (int) count;
     }
 
     @Override
@@ -524,6 +566,11 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
+    public int countMyTodoByCriteria(TripRequestForm requestForm) {
+        return 0;
+    }
+
+    @Override
     public TripReimburseForm saveEntity(TripReimburseForm entity) {
         return null;
     }
@@ -556,7 +603,15 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 }
                 return null;
             };
+        }
 
+        public static Specification<TripReimburse> idLike(TripRequestForm form) {
+            return (root, query, builder) -> {
+                if (StringUtils.isNotBlank(form.getId())) {
+                    return builder.like(root.get("id"), like(form.getId()));
+                }
+                return null;
+            };
         }
 
         public static Specification<TripReimburse> afterStartDate(TripRequestForm form) {

@@ -45,26 +45,30 @@ public class LoanController {
         setTokenUser(requestForm);
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 支付方式,项目，借款部门
         final List<Loan> todo = loanService.findMyTodoByCriteria(requestForm);
-        return R.success(todo, todo.size());
+        final int total = loanService.countMyTodoByCriteria(requestForm);
+        return R.success(todo, total);
     }
 
     @GetMapping("/done")
     public R<List<Loan>> doneList(LoanRequestForm requestForm) {
         final List<Loan> done = loanService.findMyDoneByCriteriaPageable(requestForm);
-        return R.success(done, done.size());
+        final int total = loanService.countMyDoneByCriteria(requestForm);
+        return R.success(done, total);
     }
 
     @GetMapping("/myapply")
     public R<List<Loan>> myApplyList(LoanRequestForm requestForm) {
         setTokenUser(requestForm);
         final List<Loan> myApplyList = loanService.findMyApplyByCriteriaPageable(requestForm);
-        return R.success(myApplyList, myApplyList.size());
+        final int total = loanService.countMyApplyByCriteria(requestForm);
+        return R.success(myApplyList, total);
     }
 
     @GetMapping("/all")
     public R<List<Loan>> all(LoanRequestForm requestForm) {
         final List<Loan> all = loanService.findAllByCriteriaPageable(requestForm);
-        return R.success(all, all.size());
+        final int total = loanService.countAllByCriteria(requestForm);
+        return R.success(all, total);
     }
 
     @GetMapping("/load/{id}")

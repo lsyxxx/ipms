@@ -20,9 +20,11 @@ public interface TripReimburseService extends WorkFlowService<TripReimburseForm>
 
     TripReimburse loadCommonData(String rootId);
     void saveEntity(TripReimburse entity);
-//    List<TripReimburse> findTripsMyTodoByCriteria(TripRequestForm form);
-//    List<TripReimburse> findTripsMyApplyByCriteriaPageable(TripRequestForm form);
-//    List<TripReimburse> findTripsMyDoneByCriteriaPageable(TripRequestForm form);
-//    List<TripReimburse> findTripsAllByCriteriaPageable(TripRequestForm form);
+
+    int countAllByCriteria(TripRequestForm requestForm);
+
+    int countMyApplyByCriteria(TripRequestForm requestForm);
+
+    int countMyDoneByCriteria(TripRequestForm requestForm);
 }
 

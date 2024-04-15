@@ -54,7 +54,7 @@ public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepository
             params.add(createUserid);
         }
         sql += between(startDate, endDate, params);
-        if (!isPaging(size)) {
+        if (isPaging(size)) {
             sql += pageSqlBySqlserver(page, size);
         }
 

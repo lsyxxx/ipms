@@ -83,6 +83,21 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         return loanRepository.findAll(criteria, pageable).getContent();
     }
 
+    @Override
+    public int countAllByCriteria(LoanRequestForm requestForm) {
+        LoanSpecifications spec = new LoanSpecifications();
+        Specification<Loan> criteria = Specification.where(spec.beforeEndDate(requestForm))
+                .and(spec.afterStartDate(requestForm))
+                .and(spec.createUsernameLike(requestForm))
+                .and(spec.stateEqual(requestForm))
+                .and(spec.entityIdLike(requestForm))
+                .and(spec.payTypeEqual(requestForm))
+                .and(spec.projectLike(requestForm))
+                .and(spec.deptIdEqual(requestForm))
+                .and(spec.createUseridEqual(requestForm));
+        return (int) loanRepository.count(criteria);
+    }
+
     static class LoanSpecifications extends CommonSpecifications<LoanRequestForm, Loan> {
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 支付方式,项目，借款部门
         public Specification<Loan> payTypeEqual(LoanRequestForm form) {
@@ -120,6 +135,11 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     }
 
     @Override
+    public int countMyApplyByCriteria(LoanRequestForm requestForm) {
+        return this.countAllByCriteria(requestForm);
+    }
+
+    @Override
     public List<Loan> findMyDoneByCriteriaPageable(LoanRequestForm requestForm) {
         return loanTaskRepository.findDoneList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getPayType(),
@@ -127,8 +147,22 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     }
 
     @Override
+    public int countMyDoneByCriteria(LoanRequestForm requestForm) {
+        return loanTaskRepository.countDoneList(requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getPayType(),
+                requestForm.getProject(), requestForm.getDeptId());
+    }
+
+    @Override
     public List<Loan> findMyTodoByCriteria(LoanRequestForm requestForm) {
         return loanTaskRepository.findTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getPayType(),
+                requestForm.getProject(), requestForm.getDeptId());
+    }
+
+    @Override
+    public int countMyTodoByCriteria(LoanRequestForm requestForm) {
+        return loanTaskRepository.countTodoList(requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getPayType(),
                 requestForm.getProject(), requestForm.getDeptId());
     }

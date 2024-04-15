@@ -6,7 +6,6 @@ import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.finance.service.FinanceBookKeepingService;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.repository.EmployeeRepository;
@@ -41,7 +40,6 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.abt.finance.config.Constants.AUTH_BOOKKEEPING;
 import static com.abt.wf.config.Constants.*;
 
 /**
@@ -525,12 +523,25 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
     @Override
+    public int countAllByCriteria(ReimburseRequestForm requestForm) {
+        return reimburseTaskRepository.countReimburseWithCurrenTaskPageable(requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
+                requestForm.getStartDate(), requestForm.getEndDate());
+    }
+
+    @Override
     public List<ReimburseForm> findMyApplyByCriteria(ReimburseRequestForm requestForm) {
         return reimburseTaskRepository.findReimburseWithCurrenTaskPageable(requestForm.getPage(), requestForm.getLimit(),
                 requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
                 requestForm.getStartDate(), requestForm.getEndDate());
 
     }
+
+    @Override
+    public int countMyApplyByCriteria(ReimburseRequestForm requestForm) {
+        return reimburseTaskRepository.countReimburseWithCurrenTaskPageable( requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
+                requestForm.getStartDate(), requestForm.getEndDate());
+    }
+
     @Override
     public List<ReimburseForm> findMyDoneByCriteria(ReimburseRequestForm requestForm) {
 //        criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
@@ -540,9 +551,21 @@ public class ReimburseServiceImpl implements ReimburseService {
     }
 
     @Override
+    public int countMyDoneCriteria(ReimburseRequestForm requestForm) {
+        return reimburseTaskRepository.countTask(requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
+                requestForm.getStartDate(), requestForm.getEndDate(), ReimburseTaskRepository.DONE);
+    }
+
+    @Override
     public List<ReimburseForm> findMyTodoByCriteria(ReimburseRequestForm requestForm) {
         return reimburseTaskRepository.findTaskPageable(requestForm.getPage(), requestForm.getLimit(),
                 requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
+                requestForm.getStartDate(), requestForm.getEndDate(), ReimburseTaskRepository.TODO);
+    }
+
+    @Override
+    public int countMyTodoByCriteria(ReimburseRequestForm requestForm) {
+        return reimburseTaskRepository.countTask(requestForm.getId(), requestForm.getState(), requestForm.getUserid(),
                 requestForm.getStartDate(), requestForm.getEndDate(), ReimburseTaskRepository.TODO);
     }
 

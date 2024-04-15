@@ -47,27 +47,31 @@ public class PayVoucherController {
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
         setUser(requestForm);
         final List<PayVoucher> todo = payVoucherService.findMyTodoByCriteria(requestForm);
-        return R.success(todo, todo.size());
+        final int total = payVoucherService.countMyTodoByCriteria(requestForm);
+        return R.success(todo, total);
     }
 
     @GetMapping("/done")
     public R<List<PayVoucher>> doneList(@ModelAttribute PayVoucherRequestForm requestForm) {
         setUser(requestForm);
         final List<PayVoucher> done = payVoucherService.findMyDoneByCriteriaPageable(requestForm);
-        return R.success(done, done.size());
+        final int total = payVoucherService.countMyDoneByCriteria(requestForm);
+        return R.success(done, total);
     }
 
     @GetMapping("/myapply")
     public R<List<PayVoucher>> myApplyList(@ModelAttribute PayVoucherRequestForm requestForm) {
         setUser(requestForm);
         final List<PayVoucher> myApplyList = payVoucherService.findMyApplyByCriteriaPageable(requestForm);
-        return R.success(myApplyList, myApplyList.size());
+        final int total = payVoucherService.countMyApplyByCriteria(requestForm);
+        return R.success(myApplyList, total);
     }
 
     @GetMapping("/all")
     public R<List<PayVoucher>> all(@ModelAttribute PayVoucherRequestForm requestForm) {
         final List<PayVoucher> all = payVoucherService.findAllByCriteriaPageable(requestForm);
-        return R.success(all, all.size());
+        final int total = payVoucherService.countAllByCriteria(requestForm);
+        return R.success(all, total);
     }
 
     @GetMapping("/load/{id}")

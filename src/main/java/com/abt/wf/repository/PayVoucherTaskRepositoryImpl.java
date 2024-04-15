@@ -1,6 +1,5 @@
 package com.abt.wf.repository;
 
-import com.abt.wf.entity.Loan;
 import com.abt.wf.entity.PayVoucher;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,10 +43,22 @@ public class PayVoucherTaskRepositoryImpl extends AbstractBaseQueryRepositoryImp
         sql = conditionSql(sql, params, startDate, endDate, entityIdLike, state, project, contractNo, contractName);
 
         sql += "order by t.START_TIME_ desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new PayVoucherTaskQueryRowMapper(), params.toArray());
+    }
+
+    @Override
+    public int countPayVoucherDoneList(String assigneeId, String assigneeName, String startDate, String endDate,
+                                       String entityIdLike, String state, String project, String contractNo, String contractName) {
+        List<Object> params = new ArrayList<>();
+        String sql = countDoneSql(TABLE_ENTITY);
+        sql = sql + "and t.PROC_DEF_KEY_ = 'rbsPay' and t.assignee_ = ? ";
+        params.add(assigneeId);        //and t.assignee_ = ?
+
+        sql = conditionSql(sql, params, startDate, endDate, entityIdLike, state, project, contractNo, contractName);
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
     @Override
@@ -61,11 +72,22 @@ public class PayVoucherTaskRepositoryImpl extends AbstractBaseQueryRepositoryImp
         sql = conditionSql(sql, params, state, entityIdLike, project, contractNo, contractName, startDate, endDate);
 
         sql += "order by t.CREATE_TIME_ desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
 
         return jdbcTemplate.query(sql, new PayVoucherTaskQueryRowMapper(), params.toArray());
+    }
+
+    @Override
+    public int countPayVoucherTodoList(String assigneeId, String assigneeName, String startDate, String endDate,
+                                       String entityIdLike, String state, String project, String contractNo, String contractName) {
+        List<Object> params = new ArrayList<>();
+        String sql = countTodoSql(TABLE_ENTITY);
+        sql = sql + "and t.PROC_DEF_ID_ like '%rbsPay%' and t.assignee_ = ? ";
+        params.add(assigneeId); //rt.assignee_ = ?
+        sql = conditionSql(sql, params, state, entityIdLike, project, contractNo, contractName, startDate, endDate);
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
     @Override
@@ -78,7 +100,7 @@ public class PayVoucherTaskRepositoryImpl extends AbstractBaseQueryRepositoryImp
         params.add(applyUserid);
         sql = conditionSql(sql, params, startDate, endDate, entityIdLike, state, project, contractNo, contractName);
         sql += "order by e.create_date desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new PayVoucherTaskQueryRowMapper(), params.toArray());

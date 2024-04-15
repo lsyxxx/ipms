@@ -13,6 +13,8 @@ public interface ReimburseTaskRepository {
      */
     List<ReimburseForm> findReimburseWithCurrenTaskPageable(int page, int size, String entityId, String state, String createUserid, String startDate, String endDate);
 
+    int countReimburseWithCurrenTaskPageable(String entityId, String state, String createUserid, String startDate, String endDate);
+
     /**
      * 查询指定用户作为参与人的流程task
      * criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
@@ -23,4 +25,7 @@ public interface ReimburseTaskRepository {
 
     int TODO = 0;
     int DONE = 1;
+
+    int countTask(String entityId, String state, String invokedUserid,
+                  String startDate, String endDate, int todo);
 }

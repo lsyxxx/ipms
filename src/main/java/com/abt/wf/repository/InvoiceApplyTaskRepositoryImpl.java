@@ -38,11 +38,22 @@ public class InvoiceApplyTaskRepositoryImpl extends AbstractBaseQueryRepositoryI
         params.add(userid);        //and t.assignee_ = ?
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, project, contractNo, contractName, clientId, clientName, deptId, deptName);
         sql += "order by t.START_TIME_ desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new InvoiceApplyRowMapper() , params.toArray());
+    }
 
+    @Override
+    public int countDoneList(String userid, String username, String state, String startDate, String endDate,
+                             String idLike, String clientId, String clientName, String contractNo, String contractName,
+                             String project, String deptId, String deptName) {
+        String sql = countDoneSql(TABLE_INV);
+        List<Object> params = new ArrayList<>();
+        sql = sql + "and t.PROC_DEF_KEY_ = 'rbsInv' and t.assignee_ = ? ";
+        params.add(userid);
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, project, contractNo, contractName, clientId, clientName, deptId, deptName);
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
     @Override
@@ -57,10 +68,23 @@ public class InvoiceApplyTaskRepositoryImpl extends AbstractBaseQueryRepositoryI
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, project, contractNo, contractName, clientId, clientName, deptId, deptName);
 
         sql += "order by t.CREATE_TIME_ desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new InvoiceApplyRowMapper(), params.toArray());
+    }
+
+    @Override
+    public int countTodoList(String userid, String username, String state, String startDate, String endDate,
+                             String idLike, String clientId, String clientName, String contractNo, String contractName,
+                             String project, String deptId, String deptName) {
+        List<Object> params = new ArrayList<>();
+        String sql = countTodoSql(TABLE_INV);
+        sql = sql + "and t.PROC_DEF_ID_ like '%rbsInv%' and t.assignee_ = ? ";
+        params.add(userid);   //rt.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, project, contractNo, contractName, clientId, clientName, deptId, deptName);
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
     @Override
@@ -74,10 +98,22 @@ public class InvoiceApplyTaskRepositoryImpl extends AbstractBaseQueryRepositoryI
         params.add(userid);     //e.create_userid = ?
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, project, contractNo, contractName, clientId, clientName, deptId, deptName);
         sql += "order by e.create_date desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new InvoiceApplyRowMapper(), params.toArray());
+    }
+
+    @Override
+    public int countApplyList(String userid, String username, String state, String startDate, String endDate,
+                              String idLike, String clientId, String clientName, String contractNo, String contractName,
+                              String project, String deptId, String deptName) {
+        List<Object> params = new ArrayList<>();
+        String sql = countApplySql(TABLE_INV);
+        sql = sql + "and e.create_userid = ? ";
+        params.add(userid);     //e.create_userid = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, project, contractNo, contractName, clientId, clientName, deptId, deptName);
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
     class InvoiceApplyRowMapper implements RowMapper<InvoiceApply> {

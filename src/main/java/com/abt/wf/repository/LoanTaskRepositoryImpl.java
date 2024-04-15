@@ -69,11 +69,20 @@ public class LoanTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl impl
         params.add(userid);        //and t.assignee_ = ?
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, payType, project, deptId);
         sql += "order by t.START_TIME_ desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new LoanRowMapper(), params.toArray());
+    }
 
+    @Override
+    public int countDoneList(String userid, String username, String startDate, String endDate, String state, String idLike, String payType, String deptId, String project) {
+        List<Object> params = new ArrayList<Object>();
+        String sql = countDoneSql(TABLE_LOAN);
+        params.add(userid);        //and t.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, payType, project, deptId);
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
     @Override
@@ -87,10 +96,21 @@ public class LoanTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl impl
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, payType, project, deptId);
 
         sql += "order by t.CREATE_TIME_ desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new LoanRowMapper(), params.toArray());
+    }
+
+    @Override
+    public int countTodoList(String assigneeId, String assigneeName, String startDate, String endDate, String state,
+                             String idLike, String payType, String deptId, String project) {
+        List<Object> params = new ArrayList<>();
+        String sql = countTodoSql(TABLE_LOAN);
+        sql = sql + "and t.PROC_DEF_ID_ like '%rbsLoan%' and t.assignee_ = ? ";
+        params.add(assigneeId);   //rt.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, payType, project, deptId);
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
     @Override
@@ -104,7 +124,7 @@ public class LoanTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl impl
         params.add(applyUserid);
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, payType, project, deptId);
         sql += "order by e.create_date desc ";
-        if (!isPaging(limit)) {
+        if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new LoanRowMapper(), params.toArray());

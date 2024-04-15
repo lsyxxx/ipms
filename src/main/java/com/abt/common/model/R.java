@@ -43,7 +43,7 @@ public class R<T> {
     private String token;
     private String httpCode;
     /**
-     * 当前页记录条数
+     * 总记录数量
      */
     private int count = 0;
     private int page = 1;
@@ -102,9 +102,15 @@ public class R<T> {
     }
 
     public static<T> R<T> successPage(T data, int count, int maxPage, long maxSize) {
-        final R<T> r = new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
+        R<T> r = new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
         r.setMaxPage(maxPage);
         r.setMaxSize(maxSize);
+        return r;
+    }
+
+    public static<T> R<T> successPage(T data, int maxPage) {
+        R<T> r = new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage());
+        r.setMaxPage(maxPage);
         return r;
     }
 

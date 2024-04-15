@@ -120,4 +120,8 @@ public class RequestForm {
         return this;
     }
 
+    public void setNoPaging() {
+        this.limit = 0;
+    }
+
 }
