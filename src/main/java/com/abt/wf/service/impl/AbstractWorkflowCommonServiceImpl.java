@@ -348,6 +348,22 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     }
 
+    public T setActiveTask(T entity) {
+        Task task = taskService.createTaskQuery().active().processInstanceId(entity.getProcessInstanceId()).singleResult();
+        if (task != null) {
+            entity.setCurrentTaskAssigneeId(task.getAssignee());
+            entity.setCurrentTaskId(task.getId());
+            entity.setCurrentTaskName(task.getName());
+            entity.setCurrentTaskDefId(task.getTaskDefinitionKey());
+            entity.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
+            final User user = userService.getSimpleUserInfo(task.getAssignee());
+            if (user != null) {
+                entity.setCurrentTaskAssigneeName(user.getUsername());
+            }
+        }
+        return entity;
+    }
+
     /**
      * 预览前验证
      * @param form 表单

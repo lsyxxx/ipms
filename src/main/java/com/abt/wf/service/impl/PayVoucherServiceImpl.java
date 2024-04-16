@@ -3,9 +3,7 @@ package com.abt.wf.service.impl;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
-import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.entity.PayVoucher;
-import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.model.ValidationResult;
@@ -109,7 +107,9 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
 
     @Override
     public int countMyApplyByCriteria(PayVoucherRequestForm requestForm) {
-        return this.countAllByCriteria(requestForm);
+        return payVoucherTaskRepository.countPayVoucherUserApplyList(requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
+                requestForm.getContractNo(), requestForm.getContractName());
     }
 
     @Override
@@ -147,7 +147,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
 
     @Override
     public Map<String, Object> createVariableMap(PayVoucher form) {
-        return Map.of();
+        return form.createVarMap();
     }
 
     @Override
@@ -209,6 +209,14 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     @Override
     public PayVoucher load(String id) {
         return payVoucherRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到款项支付单(id=" + id + ")"));
+    }
+
+
+    @Override
+    public PayVoucher loadEntityWithCurrentTask(String id) {
+        PayVoucher payVoucher = this.load(id);
+        setActiveTask(payVoucher);
+        return payVoucher;
     }
 
     @Override

@@ -40,7 +40,7 @@ public class PayVoucherTaskRepositoryImpl extends AbstractBaseQueryRepositoryImp
         params.add(assigneeName);   //? as inv_task_assignee_name
         params.add(assigneeId);        //and t.assignee_ = ?
 
-        sql = conditionSql(sql, params, startDate, endDate, entityIdLike, state, project, contractNo, contractName);
+        sql = conditionSql(sql, params, state, entityIdLike, project, contractNo, contractName, startDate, endDate);
 
         sql += "order by t.START_TIME_ desc ";
         if (isPaging(limit)) {
@@ -57,7 +57,7 @@ public class PayVoucherTaskRepositoryImpl extends AbstractBaseQueryRepositoryImp
         sql = sql + "and t.PROC_DEF_KEY_ = 'rbsPay' and t.assignee_ = ? ";
         params.add(assigneeId);        //and t.assignee_ = ?
 
-        sql = conditionSql(sql, params, startDate, endDate, entityIdLike, state, project, contractNo, contractName);
+        sql = conditionSql(sql, params, state, entityIdLike, project, contractNo, contractName, startDate, endDate);
         return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
@@ -98,12 +98,24 @@ public class PayVoucherTaskRepositoryImpl extends AbstractBaseQueryRepositoryImp
         sql = sql + " and e.create_userid = ? ";
         params.add(applyUsername);
         params.add(applyUserid);
-        sql = conditionSql(sql, params, startDate, endDate, entityIdLike, state, project, contractNo, contractName);
+        sql = conditionSql(sql, params, state, entityIdLike, project, contractNo, contractName, startDate, endDate);
         sql += "order by e.create_date desc ";
         if (isPaging(limit)) {
             sql += pageSqlBySqlserver(page, limit);
         }
         return jdbcTemplate.query(sql, new PayVoucherTaskQueryRowMapper(), params.toArray());
+    }
+
+    @Override
+    public int countPayVoucherUserApplyList(String applyUserid, String applyUsername, String startDate, String endDate,
+                                            String entityIdLike, String state, String project, String contractNo, String contractName) {
+
+        List<Object> params = new ArrayList<>();
+        String sql = countApplySql(TABLE_ENTITY);
+        sql = sql + " and e.create_userid = ? ";
+        params.add(applyUserid);
+        sql = conditionSql(sql, params, state, entityIdLike, project, contractNo, contractName, startDate, endDate);
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
 
     class PayVoucherTaskQueryRowMapper implements RowMapper<PayVoucher> {
@@ -128,6 +140,7 @@ public class PayVoucherTaskRepositoryImpl extends AbstractBaseQueryRepositoryImp
             form.setCopy(rs.getString("copy_users"));
             form.setManagers(rs.getString("managers"));
             form.setPayAmount(new BigDecimal(rs.getString("pay_amt")));
+            form.setCompany(rs.getString("company_"));
             if (rs.getString("contract_amt") == null) {
                 form.setContractAmount(null);
             }

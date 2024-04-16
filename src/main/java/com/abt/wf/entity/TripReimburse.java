@@ -143,10 +143,10 @@ public class TripReimburse extends WorkflowBase {
     /**
      * 附件信息，json格式保存
      */
-    @Column(name = "pdf_file", columnDefinition = "VARCHAR(1000)")
+    @Column(name = "pdf_file", columnDefinition = "VARCHAR(MAX)")
     private String pdfFileList;
 
-    @Column(name = "other_file", columnDefinition = "VARCHAR(1000)")
+    @Column(name = "other_file", columnDefinition = "VARCHAR(MAX)")
     private String otherFileList;
 
 

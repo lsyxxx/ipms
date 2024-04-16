@@ -20,6 +20,7 @@ public class CustomAuditorListener implements AuditorAware<String> {
     @NonNull
     @Override
     public Optional<String> getCurrentAuditor() {
+        log.info("CustomAuditorListener....");
         try {
             UserView user = TokenUtil.getUserFromAuthToken();
             if (user != null) {

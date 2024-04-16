@@ -22,7 +22,6 @@ import java.util.List;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkflowBase extends AuditInfo {
 
@@ -82,6 +81,18 @@ public class WorkflowBase extends AuditInfo {
      */
     @Column(name = "is_del", columnDefinition = "BIT")
     private boolean isDelete = false;
+
+    /**
+     * 申请人的部门，班组
+     */
+    @Column(length = 64)
+    private String createDeptId;
+    @Column(length = 64)
+    private String createDeptName;
+    @Column(length = 64)
+    private String createTeamId;
+    @Column(length = 64)
+    private String createTeamName;
 
     /**
      * 抄送人

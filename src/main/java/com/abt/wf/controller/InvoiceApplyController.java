@@ -61,7 +61,7 @@ public class InvoiceApplyController {
     @GetMapping("/myapply")
     public R<List<InvoiceApply>> myApplyList(InvoiceApplyRequestForm requestForm) {
         setTokenUser(requestForm);
-        final List<InvoiceApply> myApply = invoiceApplyService.findAllByCriteriaPageable(requestForm);
+        final List<InvoiceApply> myApply = invoiceApplyService.findMyApplyByCriteriaPageable(requestForm);
         final int total = invoiceApplyService.countMyApplyByCriteria(requestForm);
         return R.success(myApply, total);
     }

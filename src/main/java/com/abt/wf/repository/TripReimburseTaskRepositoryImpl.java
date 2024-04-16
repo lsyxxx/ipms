@@ -1,7 +1,6 @@
 package com.abt.wf.repository;
 
 import com.abt.wf.entity.TripReimburse;
-import com.abt.wf.model.TripReimburseForm;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,6 +23,26 @@ import static com.abt.common.util.QueryUtil.*;
 public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl implements TripReimburseTaskRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    public static final String TABLE_ENTITY = "wf_trip";
+
+
+    //已办
+    public List<TripReimburse> findDoneList(int page, int size, String entityId, String state, String invokedUserid, String invokedUsername,
+                                            String startDate, String endDate ) {
+        List<Object> params = new ArrayList<>();
+        String runNumSql = " (SELECT *, ROW_NUMBER() OVER (ORDER BY create_date DESC) AS rowNum FROM wf_trip WHERE root_id IS NULL ) as mainData ";
+        String sql = "select " +
+                "mainData.*, " +
+                "detailData.*, " +
+                "t.* " +
+                "from " + runNumSql +
+                "left join wf_trip AS detailData ON mainData.id = detailData.root_id " +
+                "left join ACT_HI_TASK t on mainData.proc_inst_id = t.PROC_INST_ID_ " +
+                "where mainData.rowNum between ? and ? " +
+                "order by mainData.rowNum";
+
+        return jdbcTemplate.query(sql, new TripReimburseRowMapper(), params.toArray());
+    }
 
     @Override
     public List<TripReimburse> findTaskWithCurrenTaskPageable(int page, int size, String entityId, String state, String createUserid, String startDate, String endDate, String staff) {
@@ -68,7 +87,18 @@ public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepository
 
     @Override
     String conditionSql(String sql, List<Object> array, String... params) {
-        return "";
+        if (StringUtils.isNotBlank(params[0])) {
+            sql += "and e.biz_state = ? ";
+            array.add(params[0]);
+        }
+        if (StringUtils.isNotBlank(params[1])) {
+            sql += "and e.id like ? ";
+            array.add(like(params[1]));
+        }
+        sql += between(params[2], params[3], array);
+//         String startDate, String endDate,
+//                String entityIdLike, String state
+        return sql;
     }
 
     @Override

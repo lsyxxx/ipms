@@ -2,8 +2,10 @@ package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.wf.config.Constants;
+import com.abt.wf.listener.JpaWorkflowListener;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
@@ -12,6 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +32,7 @@ import static com.abt.wf.config.Constants.*;
 @Table(name = "wf_pay_voucher")
 @DynamicInsert
 @DynamicUpdate
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({JpaWorkflowListener.class})
 @AllArgsConstructor
 public class PayVoucher extends WorkflowBase{
     @Id
@@ -126,11 +129,14 @@ public class PayVoucher extends WorkflowBase{
      * 其他附件
      * json
      */
-    @Column(name="other_file", columnDefinition="VARCHAR(1000)")
+    @Column(name="other_file", columnDefinition="VARCHAR(MAX)")
     private String otherFileList;
 
     @Column(name="managers", columnDefinition="VARCHAR(512)")
     private String managers;
+
+    @Column(name="company_", columnDefinition="VARCHAR(16)")
+    private String company;
 
     @Transient
     private String comment;

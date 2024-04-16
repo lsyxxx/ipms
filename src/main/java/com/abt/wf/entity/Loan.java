@@ -99,6 +99,9 @@ public class Loan extends WorkflowBase{
     @Column(columnDefinition="VARCHAR(128)")
     private String managers;
 
+    @Column(columnDefinition="VARCHAR(MAX)")
+    private String fileList;
+
     @Transient
     private String comment;
     @Transient

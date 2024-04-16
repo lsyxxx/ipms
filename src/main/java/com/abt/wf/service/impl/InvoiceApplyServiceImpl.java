@@ -205,7 +205,9 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     @Override
     public int countMyApplyByCriteria(InvoiceApplyRequestForm requestForm) {
         //requestForm传入创建人
-        return this.countAllByCriteria(requestForm);
+        return invoiceApplyTaskRepository.countApplyList( requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getState(), requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getContractNo(), requestForm.getContractName(),
+                requestForm.getClientId(), requestForm.getClientName(), requestForm.getProject(), requestForm.getDeptId(), requestForm.getDeptName());
     }
 
 
@@ -251,18 +253,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     @Override
     public InvoiceApply getEntityWithCurrentTask(String entityId) {
         InvoiceApply entity = this.load(entityId);
-        Task task = taskService.createTaskQuery().active().processInstanceId(entity.getProcessInstanceId()).singleResult();
-        if (task != null) {
-            entity.setCurrentTaskAssigneeId(task.getAssignee());
-            entity.setCurrentTaskId(task.getId());
-            entity.setCurrentTaskName(task.getName());
-            entity.setCurrentTaskDefId(task.getTaskDefinitionKey());
-            entity.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
-            final User user = userService.getSimpleUserInfo(task.getAssignee());
-            if (user != null) {
-                entity.setCurrentTaskAssigneeName(user.getUsername());
-            }
-        }
+        setActiveTask(entity);
         return entity;
     }
 

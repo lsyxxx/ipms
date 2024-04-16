@@ -138,6 +138,7 @@ public class InvoiceApplyTaskRepositoryImpl extends AbstractBaseQueryRepositoryI
             form.setAccount(rs.getString("account"));
             form.setManagers(rs.getString("managers"));
             form.setRemark(rs.getString("remark"));
+            form.setCompany(rs.getString("company_"));
 
 
             workflowBaseAndTaskSetter(form, rs);

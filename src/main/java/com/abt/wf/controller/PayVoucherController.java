@@ -76,7 +76,7 @@ public class PayVoucherController {
 
     @GetMapping("/load/{id}")
     public R<PayVoucher> load(@PathVariable String id) {
-        final PayVoucher payVoucher = payVoucherService.load(id);
+        final PayVoucher payVoucher = payVoucherService.loadEntityWithCurrentTask(id);
         return R.success(payVoucher);
     }
 

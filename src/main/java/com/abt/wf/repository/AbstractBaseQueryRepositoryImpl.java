@@ -35,7 +35,7 @@ public abstract class AbstractBaseQueryRepositoryImpl {
                 "null as inv_task_assignee_id, null as inv_task_assignee_name, " +
                 "t.ID_ as cur_task_id, t.TASK_DEF_KEY_ as cur_task_def_id, t.NAME_ as cur_task_name, t.ASSIGNEE_ as cur_task_assignee_id, " +
                 "? as cur_task_assignee_name, " +
-                "e.*,  su.Name as create_username1 " +
+                "e.*, e.copy as copy_users,  su.Name as create_username1 " +
                 "from ACT_RU_TASK t " +
                 "left join " + entityTable + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
                 "left join [dbo].[User] su on e.create_userid = su.Id " +
@@ -82,7 +82,7 @@ public abstract class AbstractBaseQueryRepositoryImpl {
                 "? as inv_task_assignee_id, ? as inv_task_assignee_name, " +
                 "rt.ID_ as cur_task_id, rt.TASK_DEF_KEY_ as cur_task_def_id, rt.NAME_ as cur_task_name, rt.ASSIGNEE_ as cur_task_assignee_id, " +
                 "tu.Name as cur_task_assignee_name, " +
-                "e.*,  su.Name as create_username1 " +
+                "e.*, e.copy as copy_users, su.Name as create_username1 " +
                 "from ACT_HI_TASKINST t " +
                 "left join " + entityTable  + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
                 "left join ACT_RU_TASK rt on rt.PROC_INST_ID_ = t.PROC_INST_ID_ " +
@@ -124,6 +124,11 @@ public abstract class AbstractBaseQueryRepositoryImpl {
         form.setCreateDate(TimeUtil.from(rs.getTimestamp("create_date")));
         form.setCreateUserid(rs.getString("create_userid"));
         form.setCreateUsername(rs.getString("create_username1"));
+        form.setCreateDeptId(rs.getString("create_dept_id"));
+        form.setCreateDeptName(rs.getString("create_dept_name"));
+        form.setCreateTeamId(rs.getString("create_team_id"));
+        form.setCreateTeamName(rs.getString("create_team_name"));
+        form.setCopy(rs.getString("copy_users"));
 
         //-- form
         form.setCurrentTaskId(rs.getString("cur_task_id"));

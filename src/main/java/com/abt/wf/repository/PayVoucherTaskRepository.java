@@ -19,4 +19,7 @@ public interface PayVoucherTaskRepository {
 
     List<PayVoucher> findPayVoucherUserApplyList(int page, int limit, String applyUserid, String applyUsername, String startDate, String endDate,
                                                  String entityIdLike, String state, String project, String contractNo, String contractName);
+
+    int countPayVoucherUserApplyList(String applyUserid, String applyUsername, String startDate, String endDate,
+                                     String entityIdLike, String state, String project, String contractNo, String contractName);
 }

@@ -19,7 +19,7 @@
       <bpmn:incoming>Flow_09ajh3e</bpmn:incoming>
       <bpmn:outgoing>Flow_186fvry</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="rbsInv_managers" name="主管及技术负责人" camunda:candidateUsers="managerList" camunda:candidateGroups="${nrOfInstances == nrOfCompletedInstances}" camunda:dueDate="manager">
+    <bpmn:userTask id="rbsInv_managers" name="主管及技术负责人" camunda:assignee="${manager}">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
