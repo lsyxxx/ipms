@@ -5,4 +5,5 @@ import com.abt.wf.model.LoanRequestForm;
 
 public interface LoanService extends WorkFlowService<Loan>, BusinessService<LoanRequestForm, Loan>{
 
+    Loan loadWithActiveTask(String entityId);
 }

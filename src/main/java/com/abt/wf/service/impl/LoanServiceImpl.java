@@ -3,7 +3,6 @@ package com.abt.wf.service.impl;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Loan;
-import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.LoanRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.model.ValidationResult;
@@ -219,6 +218,16 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     @Override
     public Loan load(String entityId) {
         return loanRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到业务实体(loan)"));
+    }
+
+    @Override
+    public Loan loadWithActiveTask(String entityId) {
+        final Loan entity = this.load(entityId);
+        final Task task = taskService.createTaskQuery().active().processInstanceId(entity.getProcessInstanceId()).singleResult();
+        if (task != null) {
+            setActiveTask(entity);
+        }
+        return entity;
     }
 
     @Override

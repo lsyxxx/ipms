@@ -2,6 +2,7 @@ package com.abt.sys.controller;
 
 import com.abt.common.model.User;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.Org;
 import com.abt.sys.service.CompanyService;
 import com.abt.sys.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,4 +46,9 @@ public class UserController{
         return R.success(allCompany, allCompany.size());
     }
 
+    @GetMapping("/dept1")
+    public R<List<Org>> findAllDept() {
+        final List<Org> allDept = sqlServerUserService.findAllDept();
+        return R.success(allDept, allDept.size());
+    }
 }

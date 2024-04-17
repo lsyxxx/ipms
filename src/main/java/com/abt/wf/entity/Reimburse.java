@@ -127,7 +127,7 @@ public class Reimburse extends WorkflowBase {
     /**
      * 选择的审批人 json
      */
-    @Column(columnDefinition="VARCHAR(1000)")
+    @Column(columnDefinition="VARCHAR(1600)")
     private String managers;
 
 }

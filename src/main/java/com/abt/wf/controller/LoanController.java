@@ -51,6 +51,7 @@ public class LoanController {
 
     @GetMapping("/done")
     public R<List<Loan>> doneList(LoanRequestForm requestForm) {
+        setTokenUser(requestForm);
         final List<Loan> done = loanService.findMyDoneByCriteriaPageable(requestForm);
         final int total = loanService.countMyDoneByCriteria(requestForm);
         return R.success(done, total);
@@ -73,7 +74,7 @@ public class LoanController {
 
     @GetMapping("/load/{id}")
     public R<Loan> load(@PathVariable String id) {
-        final Loan Loan = loanService.load(id);
+        final Loan Loan = loanService.loadWithActiveTask(id);
         return R.success(Loan);
     }
 

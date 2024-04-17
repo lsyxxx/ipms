@@ -107,6 +107,7 @@ public class UserRepositoryImpl implements UserRepository{
         return jdbcTemplate.query(sql, new UserRoleRowMapper(), roleId);
     }
 
+
     class UserRoleRowMapper implements RowMapper<UserRole> {
 
         @Nullable

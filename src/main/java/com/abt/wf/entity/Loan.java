@@ -96,11 +96,14 @@ public class Loan extends WorkflowBase{
     /**
      * 选择审批人
      */
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(columnDefinition="VARCHAR(1600)")
     private String managers;
 
     @Column(columnDefinition="VARCHAR(MAX)")
     private String fileList;
+
+    @Column(name = "company_", length = 32)
+    private String company;
 
     @Transient
     private String comment;

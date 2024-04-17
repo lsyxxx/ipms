@@ -10,6 +10,7 @@ import com.abt.sys.exception.InvalidTokenException;
 import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.http.service.HttpConnectService;
+import com.abt.sys.model.entity.Org;
 import com.abt.sys.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +80,11 @@ public class UserServiceImpl implements UserService<UserView, WebApiToken> {
     public List<UserRole> getUserByRoleId(String roleId) {
         //api/users/loadByRole
         return null;
+    }
+
+    @Override
+    public List<Org> findAllDept() {
+        return List.of();
     }
 
 

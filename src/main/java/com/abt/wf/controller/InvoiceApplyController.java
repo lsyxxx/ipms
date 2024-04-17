@@ -53,6 +53,7 @@ public class InvoiceApplyController {
 
     @GetMapping("/done")
     public R<List<InvoiceApply>> doneList(InvoiceApplyRequestForm requestForm) {
+        setTokenUser(requestForm);
         final List<InvoiceApply> done = invoiceApplyService.findMyDoneByCriteriaPageable(requestForm);
         final int total = invoiceApplyService.countMyDoneByCriteria(requestForm);
         return R.success(done, total);

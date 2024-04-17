@@ -48,7 +48,7 @@ public abstract class AbstractBaseQueryRepositoryImpl {
         return "select count(1) " +
                 "from ACT_RU_TASK t " +
                 "left join " + entityTable + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
-                "left join [dbo].[User] su on e.create_userid = su.Id " +
+//                "left join [dbo].[User] su on e.create_userid = su.Id " +
                 "where 1=1 " +
                 "and e.is_del = 0 " +
                 "and t.TASK_DEF_KEY_ not like '%apply%' ";
@@ -71,7 +71,7 @@ public abstract class AbstractBaseQueryRepositoryImpl {
         return "select count(1) " +
                 "from " + entityTable + " e " +
                 "left join ACT_RU_TASK t on e.proc_inst_id = t.PROC_INST_ID_ " +
-                "left join [dbo].[User] su on t.ASSIGNEE_ = su.Id " +
+//                "left join [dbo].[User] su on t.ASSIGNEE_ = su.Id " +
                 "where 1=1 " +
                 "and e.is_del = 0 ";
     }
@@ -95,12 +95,12 @@ public abstract class AbstractBaseQueryRepositoryImpl {
     }
 
     public static String countDoneSql(String entityTable) {
-        return "select count(1)" +
+        return "select count(1) " +
                 "from ACT_HI_TASKINST t " +
                 "left join " + entityTable  + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
                 "left join ACT_RU_TASK rt on rt.PROC_INST_ID_ = t.PROC_INST_ID_ " +
-                "left join [dbo].[User] su on e.create_userid = su.Id " +
-                "left join [dbo].[User] tu on rt.ASSIGNEE_ = tu.Id " +
+//                "left join [dbo].[User] su on e.create_userid = su.Id " +
+//                "left join [dbo].[User] tu on rt.ASSIGNEE_ = tu.Id " +
                 "where 1=1 and e.is_del = 0  " +
                 "and t.END_TIME_ is not NULL " +
                 //仅查询未删除的，去掉apply节点

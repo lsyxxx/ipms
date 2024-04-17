@@ -137,7 +137,7 @@ public class TripReimburse extends WorkflowBase {
     @Column(name = "company", columnDefinition = "VARCHAR(256)")
     private String company;
 
-    @Column(columnDefinition = "VARCHAR(512)")
+    @Column(columnDefinition = "VARCHAR(1600)")
     private String managers;
 
     /**

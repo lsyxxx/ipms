@@ -1,6 +1,7 @@
 package com.abt.wf.listener;
 
 import com.abt.common.model.User;
+import com.abt.sys.repository.UserRepository;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.WorkflowBase;
 import jakarta.persistence.PrePersist;
@@ -15,10 +16,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 @Slf4j
 public class JpaWorkflowListener {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
 
-    public JpaWorkflowListener(@Qualifier("sqlServerUserService") UserService userService) {
-        this.userService = userService;
+    public JpaWorkflowListener(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     /**
@@ -30,7 +31,7 @@ public class JpaWorkflowListener {
     public <T extends WorkflowBase> void insertCreateDept(T entity) {
         String createUserid = entity.getCreateUserid();
         if (createUserid != null && !createUserid.isEmpty()) {
-            final User user = userService.getUserDeptByUserid(createUserid);
+            final User user = userRepository.getEmployeeDeptByUserid(createUserid);
             entity.setCreateDeptId(user.getDeptId());
             entity.setCreateDeptName(user.getDeptName());
             entity.setCreateTeamId(user.getTeamId());

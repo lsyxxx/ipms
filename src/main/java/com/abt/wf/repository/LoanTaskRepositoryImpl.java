@@ -79,6 +79,7 @@ public class LoanTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl impl
     public int countDoneList(String userid, String username, String startDate, String endDate, String state, String idLike, String payType, String deptId, String project) {
         List<Object> params = new ArrayList<Object>();
         String sql = countDoneSql(TABLE_LOAN);
+        sql = sql + " and t.PROC_DEF_KEY_ = 'rbsLoan' and t.assignee_ = ? ";
         params.add(userid);        //and t.assignee_ = ?
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, payType, project, deptId);
 

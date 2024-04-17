@@ -3,6 +3,7 @@ package com.abt.sys.service;
 import com.abt.common.model.User;
 import com.abt.http.dto.WebApiToken;
 import com.abt.sys.model.dto.UserRole;
+import com.abt.sys.model.entity.Org;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -43,4 +44,10 @@ public interface UserService<T, E> {
     List<UserRole> getUserRoleByUserid(String userid);
 
     List<UserRole> getUserByRoleId(String roleId);
+
+    /**
+     * 仅获取一级部门，不包含下级
+     * @return
+     */
+    List<Org> findAllDept();
 }

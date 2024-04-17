@@ -5,6 +5,8 @@ import com.abt.common.util.MessageUtil;
 import com.abt.http.dto.WebApiToken;
 import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.Org;
+import com.abt.sys.repository.OrgRepository;
 import com.abt.sys.repository.UserRepository;
 import com.abt.sys.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,9 +26,12 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
     private final UserRepository userRepository;
+    private final OrgRepository orgRepository;
+    public static final String ORG_ROOT = "651ad04a-fafc-4118-8972-7681ee294ded";
 
-    public SqlServerUserServiceImpl(UserRepository userRepository) {
+    public SqlServerUserServiceImpl(UserRepository userRepository, OrgRepository orgRepository) {
         this.userRepository = userRepository;
+        this.orgRepository = orgRepository;
     }
 
     @Override
@@ -77,6 +82,11 @@ public class SqlServerUserServiceImpl implements UserService<UserView, User> {
     @Override
     public List<UserRole> getUserByRoleId(String roleId) {
         return userRepository.getUserByRole(roleId);
+    }
+
+    @Override
+    public List<Org> findAllDept() {
+        return orgRepository.findAllByParentIdOrderByCascadeId(ORG_ROOT);
     }
 
 

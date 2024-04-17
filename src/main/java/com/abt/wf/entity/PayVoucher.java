@@ -132,7 +132,7 @@ public class PayVoucher extends WorkflowBase{
     @Column(name="other_file", columnDefinition="VARCHAR(MAX)")
     private String otherFileList;
 
-    @Column(name="managers", columnDefinition="VARCHAR(512)")
+    @Column(name="managers", columnDefinition="VARCHAR(1600)")
     private String managers;
 
     @Column(name="company_", columnDefinition="VARCHAR(16)")
