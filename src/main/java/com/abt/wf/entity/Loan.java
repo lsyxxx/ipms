@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.wf.listener.JpaWorkflowListener;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -29,7 +30,6 @@ import static com.abt.wf.config.Constants.KEY_MANAGER;
 @Table(name = "wf_loan")
 @DynamicInsert
 @DynamicUpdate
-@EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
 @NoArgsConstructor
 public class Loan extends WorkflowBase{

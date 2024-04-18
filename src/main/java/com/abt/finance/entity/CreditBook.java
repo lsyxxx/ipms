@@ -1,13 +1,16 @@
 package com.abt.finance.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -35,12 +38,14 @@ public class CreditBook extends AuditInfo {
     /**
      * 金额
      */
+    @Positive(message = "金额必须大于0")
     @Column(name="expense", columnDefinition="DECIMAL(10,2)")
     private double expense;
 
     /**
      * 费用类型
      */
+    @NotNull
     @Column(name="exp_type", columnDefinition="VARCHAR(128)")
     private String expenseType;
     /**
@@ -52,19 +57,27 @@ public class CreditBook extends AuditInfo {
     /**
      * 票据类型
      */
+    @NotNull
     @Column(name="inv_type", columnDefinition="VARCHAR(128)")
     private String invoiceType;
 
     /**
      * 付款方式
      */
+    @NotNull
     @Column(name="pay_type", columnDefinition="VARCHAR(128)")
     private String payType;
     /**
      * 付款时间
      */
     @Column(name="pay_date")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime payDate;
+
+    @Column(name = "pay_acc_id", length = 36)
+    private String payAccountId;
+
     /**
      * 付款账号
      */
@@ -140,18 +153,6 @@ public class CreditBook extends AuditInfo {
      */
     @Column(name="desc_", columnDefinition="VARCHAR(512)")
     private String desc;
-
-    /**
-     * 上传附件json
-     */
-    @Column(name="attchment", columnDefinition="VARCHAR(1000)")
-    private String attachment;
-
-    /**
-     * 关联的附件
-     */
-    @Column(name="attachment_rel", columnDefinition="VARCHAR(1000)")
-    private String relatedAttachment;
 
 
 }

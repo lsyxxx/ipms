@@ -27,7 +27,6 @@ import java.time.LocalDate;
 @DynamicInsert
 @DynamicUpdate
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 public class Reimburse extends WorkflowBase {
 
     @Id

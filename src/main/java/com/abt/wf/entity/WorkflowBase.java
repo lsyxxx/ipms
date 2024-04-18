@@ -2,6 +2,7 @@ package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.wf.config.Constants;
+import com.abt.wf.listener.JpaWorkflowListener;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
@@ -23,6 +24,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @MappedSuperclass
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@EntityListeners(JpaWorkflowListener.class)
 public class WorkflowBase extends AuditInfo {
 
     //-- process

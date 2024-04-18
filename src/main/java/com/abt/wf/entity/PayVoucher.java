@@ -32,7 +32,6 @@ import static com.abt.wf.config.Constants.*;
 @Table(name = "wf_pay_voucher")
 @DynamicInsert
 @DynamicUpdate
-@EntityListeners({JpaWorkflowListener.class})
 @AllArgsConstructor
 public class PayVoucher extends WorkflowBase{
     @Id

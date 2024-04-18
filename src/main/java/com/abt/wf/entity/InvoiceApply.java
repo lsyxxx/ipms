@@ -2,6 +2,7 @@ package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.util.TimeUtil;
+import com.abt.wf.listener.JpaWorkflowListener;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -32,7 +33,6 @@ import static com.abt.wf.config.Constants.KEY_MANAGER;
 @DynamicInsert
 @DynamicUpdate
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 public class InvoiceApply extends WorkflowBase {
 
     @Id

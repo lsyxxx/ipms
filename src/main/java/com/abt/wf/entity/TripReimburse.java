@@ -26,7 +26,6 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "wf_trip")
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 public class TripReimburse extends WorkflowBase {
 
     @Id

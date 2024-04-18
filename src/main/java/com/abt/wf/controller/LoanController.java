@@ -31,10 +31,10 @@ public class LoanController {
     @PostMapping("/apply")
     public R<Object> apply(@Validated(ValidateGroup.Apply.class) @RequestBody Loan loan) {
         loanService.apply(loan);
-        return R.success();
+        return R.success("申请成功");
     }
 
-    @PostMapping("/approve")
+    @GetMapping("/approve")
     public R<Object> approve(@RequestBody Loan loan) {
         loanService.approve(loan);
         return R.success("审批成功");
