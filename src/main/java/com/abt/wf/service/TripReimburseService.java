@@ -1,10 +1,9 @@
 package com.abt.wf.service;
 
+import com.abt.common.model.Page;
 import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.TripReimburseForm;
 import com.abt.wf.model.TripRequestForm;
-
-import java.util.List;
 
 /**
  * 差旅报销
@@ -23,8 +22,12 @@ public interface TripReimburseService extends WorkFlowService<TripReimburseForm>
 
     int countAllByCriteria(TripRequestForm requestForm);
 
+    Page<TripReimburseForm> findMyApplyByCriteriaPaged(TripRequestForm requestForm);
+
     int countMyApplyByCriteria(TripRequestForm requestForm);
 
     int countMyDoneByCriteria(TripRequestForm requestForm);
+
+    Page<TripReimburseForm> findMyTodoByCriteriaPaged(TripRequestForm requestForm);
 }
 

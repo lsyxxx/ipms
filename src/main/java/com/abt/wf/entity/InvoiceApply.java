@@ -150,6 +150,12 @@ public class InvoiceApply extends WorkflowBase {
     @Column(name="company_", columnDefinition="VARCHAR(32)")
     private String company;
 
+    /**
+     * 附件json
+     */
+    @Column(columnDefinition="VARCHAR(MAX)")
+    private String fileList;
+
 
     @Transient
     private String comment;

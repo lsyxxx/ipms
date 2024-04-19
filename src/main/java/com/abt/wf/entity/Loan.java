@@ -2,6 +2,7 @@ package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.wf.listener.JpaWorkflowListener;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -109,15 +110,10 @@ public class Loan extends WorkflowBase{
     private String comment;
     @Transient
     private String decision;
+
+    @JsonIgnore
     @Transient
     private Map<String, Object> variableMap = new HashMap<String, Object>();
-
-    public List<String> getManagerList() {
-        if (this.managers != null) {
-            return List.of(this.managers.split(","));
-        }
-        return List.of();
-    }
 
     public Map<String, Object> createVarMap() {
         this.variableMap = new HashMap<>();

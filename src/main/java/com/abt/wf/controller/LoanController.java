@@ -34,7 +34,7 @@ public class LoanController {
         return R.success("申请成功");
     }
 
-    @GetMapping("/approve")
+    @PostMapping("/approve")
     public R<Object> approve(@RequestBody Loan loan) {
         loanService.approve(loan);
         return R.success("审批成功");

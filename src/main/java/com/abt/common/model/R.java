@@ -101,13 +101,6 @@ public class R<T> {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
     }
 
-    public static<T> R<T> successPage(T data, int count, int maxPage, long maxSize) {
-        R<T> r = new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
-        r.setMaxPage(maxPage);
-        r.setMaxSize(maxSize);
-        return r;
-    }
-
     public static<T> R<T> successPage(T data, int maxPage) {
         R<T> r = new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage());
         r.setMaxPage(maxPage);

@@ -26,6 +26,7 @@ import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.engine.task.TaskQuery;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -429,6 +430,40 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
+    public com.abt.common.model.Page<TripReimburseForm> findMyApplyByCriteriaPaged(TripRequestForm requestForm) {
+        requestForm.forcePaged();
+        long t1 = System.currentTimeMillis();
+        //查询主数据
+        Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.createUseridEqual(requestForm))
+                .and(TripRbsSpecifications.idLike(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
+                .and(TripRbsSpecifications.staffLike(requestForm))
+                .and(TripRbsSpecifications.stateEqual(requestForm))
+                .and(TripRbsSpecifications.isNotDelete(requestForm))
+                .and(TripRbsSpecifications.isMainData())
+                ;
+        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+                Sort.by(Sort.Order.desc("createDate")));
+        final Page<TripReimburse> page = tripRepository.findAll(spec, pageable);
+        List<TripReimburse> main = page.getContent();
+        int total = (int) page.getTotalElements();
+        //查询相关子数据
+        List<String> rootIds = main.stream().map(TripReimburse::getId).toList();
+        final List<TripReimburse> details = tripRepository.findAll(Specification.where(TripRbsSpecifications.idIn(rootIds))
+                , Sort.by(Sort.Order.desc("createDate"), Sort.Order.asc("sort")));
+        //build
+        List<TripReimburseForm> records = build(main, details);
+        records = findActiveTaskBySpecificationPageable(records, null);
+        com.abt.common.model.Page<TripReimburseForm> returnPage = new com.abt.common.model.Page<>(records, total);
+        long t2 = System.currentTimeMillis();
+        log.debug("findMyApplyByCriteriaPageable2查询所有记录花费时间: {} ms", (t2-t1));
+        return returnPage;
+    }
+
+    //不能排序
+    @Deprecated
+    @Override
     public List<TripReimburseForm> findMyApplyByCriteriaPageable(TripRequestForm requestForm) {
         requestForm.forcePaged();
         //criteria: 申请人(user=),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
@@ -461,11 +496,69 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 .and(TripRbsSpecifications.staffLike(requestForm))
                 .and(TripRbsSpecifications.stateEqual(requestForm))
                 .and(TripRbsSpecifications.isNotDelete(requestForm))
+                .and(TripRbsSpecifications.isMainData())
                 ;
         final long count = tripRepository.count(spec);
         return (int) count;
     }
 
+
+    public com.abt.common.model.Page<TripReimburseForm> findMyDoneByCriteriaPaged(TripRequestForm requestForm) {
+        requestForm.forcePaged();
+        //criteria: 申请人(),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
+        long t1 = System.currentTimeMillis();
+
+        final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processDefinitionKey(DEF_KEY_TRIP)
+                .taskAssignee(requestForm.getAssigneeId()).finished()
+                .orderByHistoricTaskInstanceEndTime().desc().list();
+        if (CollectionUtils.isEmpty(list)) {
+            return new com.abt.common.model.Page<>();
+        }
+
+        //查询entity
+        Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.createUseridEqual(requestForm))
+                .and(TripRbsSpecifications.idLike(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
+                .and(TripRbsSpecifications.staffLike(requestForm))
+                .and(TripRbsSpecifications.stateEqual(requestForm))
+                .and(TripRbsSpecifications.isNotDelete(requestForm))
+                .and(TripRbsSpecifications.isMainData())
+                ;
+        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+                Sort.by(Sort.Order.desc("createDate")));
+        final Page<TripReimburse> page = tripRepository.findAll(spec, pageable);
+        List<TripReimburse> main = page.getContent();
+        int total = (int) page.getTotalElements();
+        //查询相关子数据
+        List<String> rootIds = main.stream().map(TripReimburse::getId).toList();
+        final List<TripReimburse> details = tripRepository.findAll(Specification.where(TripRbsSpecifications.idIn(rootIds))
+                , Sort.by(Sort.Order.desc("createDate"), Sort.Order.asc("sort")));
+        //build
+        //TODO: 分页不对，要考虑task和trip关联后的
+        List<TripReimburseForm> records = build(main, details);
+        List<TripReimburseForm> done = new ArrayList<>();
+        list.forEach(h -> {
+            if (!h.getTaskDefinitionKey().contains("apply"))  {
+                String processInstanceId = h.getProcessInstanceId();
+                records.stream().filter(i -> processInstanceId.equals(i.getCommon().getProcessInstanceId())).findFirst().ifPresent(i -> {
+                    i.setInvokedTaskAssigneeId(requestForm.getAssigneeId());
+                    i.setInvokedTaskAssigneeName(requestForm.getAssigneeName());
+                    i.setInvokedTaskDefId(h.getTaskDefinitionKey());
+                    i.setInvokedTaskId(h.getId());
+                    i.setInvokedTaskName(h.getName());
+                    done.add(i);
+                });
+            }
+
+        });
+        com.abt.common.model.Page<TripReimburseForm> returnPage = new com.abt.common.model.Page<>(done, total);
+        long t2 = System.currentTimeMillis();
+        log.debug("findMyTodoByCriteriaPaged查询所有记录花费时间: {} ms", (t2-t1));
+        return returnPage;
+    }
+
+    @Deprecated
     @Override
     public List<TripReimburseForm> findMyDoneByCriteriaPageable(TripRequestForm requestForm) {
         requestForm.forcePaged();
@@ -523,6 +616,61 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
+    public com.abt.common.model.Page<TripReimburseForm> findMyTodoByCriteriaPaged(TripRequestForm requestForm) {
+        requestForm.forcePaged();
+        //criteria: 申请人(),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
+        long t1 = System.currentTimeMillis();
+
+        final List<Task> todoTasks = taskService.createTaskQuery().taskAssignee(requestForm.getAssigneeId()).processDefinitionKey(DEF_KEY_TRIP).active().list();
+        if (CollectionUtils.isEmpty(todoTasks)) {
+            return new com.abt.common.model.Page<>();
+        }
+
+        //查询entity
+        Specification<TripReimburse> spec = Specification.where(TripRbsSpecifications.createUseridEqual(requestForm))
+                .and(TripRbsSpecifications.idOrRootIdLike(requestForm))
+                .and(TripRbsSpecifications.afterStartDate(requestForm))
+                .and(TripRbsSpecifications.beforeEndDate(requestForm))
+                .and(TripRbsSpecifications.staffLike(requestForm))
+                .and(TripRbsSpecifications.stateEqual(requestForm))
+                .and(TripRbsSpecifications.isNotDelete(requestForm))
+                .and(TripRbsSpecifications.isMainData())
+                ;
+        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+                Sort.by(Sort.Order.desc("createDate")));
+        final Page<TripReimburse> page = tripRepository.findAll(spec, pageable);
+        List<TripReimburse> main = page.getContent();
+        int total = (int) page.getTotalElements();
+        //查询相关子数据
+        List<String> rootIds = main.stream().map(TripReimburse::getId).toList();
+        final List<TripReimburse> details = tripRepository.findAll(Specification.where(TripRbsSpecifications.idIn(rootIds))
+                , Sort.by(Sort.Order.desc("createDate"), Sort.Order.asc("sort")));
+        //build
+        List<TripReimburseForm> records = build(main, details);
+        com.abt.common.model.Page<TripReimburseForm> returnPage = new com.abt.common.model.Page<>(records, total);
+        todoTasks.forEach(i -> {
+            if (!i.getTaskDefinitionKey().contains("apply"))  {
+                records.stream().filter(t -> i.getProcessInstanceId().equals(t.getProcessInstanceId()))
+                        .findAny().ifPresent(t -> {
+                            t.setCurrentTaskStartTime(TimeUtil.from(i.getCreateTime()));
+                            t.setCurrentTaskName(i.getName());
+                            t.setCurrentTaskDefId(i.getTaskDefinitionKey());
+                            t.setCurrentTaskId(i.getId());
+                            t.setCurrentTaskAssigneeId(requestForm.getAssigneeId());
+                            t.setCurrentTaskAssigneeName(requestForm.getAssigneeName());
+                            records.add(t);
+                        });
+            }
+        });
+
+        long t2 = System.currentTimeMillis();
+        log.debug("findMyTodoByCriteriaPaged查询所有记录花费时间: {} ms", (t2-t1));
+        return returnPage;
+    }
+
+
+    @Deprecated
+    @Override
     public List<TripReimburseForm> findMyTodoByCriteria(TripRequestForm requestForm) {
         requestForm.forcePaged();
         //criteria: 申请人(),申请日期(startDate-endDate),出差人包含(staff), 审批编号(id), 状态(state), 分页
@@ -575,6 +723,22 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
         return null;
     }
 
+    public List<TripReimburseForm> build(List<TripReimburse> common, List<TripReimburse> detail) {
+        List<TripReimburseForm> forms = new ArrayList<>();
+        common.forEach(v -> {
+            TripReimburseForm form = new TripReimburseForm();
+            String rootId = v.getId();
+            form.setCommon(v);
+            final List<TripReimburse> childList = detail.stream().filter(i -> rootId.equals(i.getRootId())).toList();
+            form.setItems(childList);
+            form.setProcessInstanceId(v.getProcessInstanceId());
+            form.setProcessDefinitionKey(v.getProcessDefinitionKey());
+            form.setProcessDefinitionId(v.getProcessDefinitionId());
+            forms.add(form);
+        });
+        return forms;
+    }
+
 
     public List<TripReimburseForm> build(List<TripReimburse> list) {
         List<TripReimburseForm> forms = new ArrayList<>();
@@ -603,6 +767,19 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 }
                 return null;
             };
+        }
+
+        public static Specification<TripReimburse> idIn(List<String> ids) {
+            return (root, query, builder) -> {
+                if (ids != null && !ids.isEmpty()) {
+                    return builder.in(root.get("rootId")).value(ids);
+                }
+                return null;
+            };
+        }
+
+        public static Specification<TripReimburse> isMainData() {
+            return (root, query, builder) -> builder.isNull(root.get("rootId"));
         }
 
         public static Specification<TripReimburse> idLike(TripRequestForm form) {

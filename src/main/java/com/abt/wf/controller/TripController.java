@@ -1,11 +1,11 @@
 package com.abt.wf.controller;
 
+import com.abt.common.model.Page;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
-import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.model.TripReimburseForm;
 import com.abt.wf.model.TripRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -79,8 +79,8 @@ public class TripController {
         UserView user = TokenUtil.getUserFromAuthToken();
         form.setUserid(user.getId());
         form.setUsername(user.getUsername());
-        final List<TripReimburseForm> myApply = tripReimburseService.findMyApplyByCriteriaPageable(form);
-        return R.success(myApply, myApply.size());
+        final Page<TripReimburseForm> page = tripReimburseService.findMyApplyByCriteriaPaged(form);
+        return R.success(page.getContent(), page.getTotal());
     }
 
     /**
