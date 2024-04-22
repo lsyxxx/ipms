@@ -21,7 +21,7 @@ public class NotifyMessageServiceImpl implements NotifyMessageService {
 
     @Override
     public void sendMessage(NotifyMessage message) {
-        log.info("--- 抄送: " + message.toString());
+        log.info("--- 抄送: {} ", message.toString());
         notifyMessageRepository.save(message);
     }
 }

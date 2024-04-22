@@ -59,19 +59,19 @@ public class TripController {
     @GetMapping("/todo")
     public R<List<TripReimburseForm>> todoList(@ModelAttribute TripRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
-        form.setAssigneeId(user.getId());
-        form.setAssigneeName(user.getUsername());
-        final List<TripReimburseForm> todos = tripReimburseService.findMyTodoByCriteria(form);
-        return R.success(todos, todos.size());
+        form.setUserid(user.getId());
+        form.setUsername(user.getUsername());
+        final Page<TripReimburseForm> todo = tripReimburseService.findMyTodoByCriteriaPaged(form);
+        return R.success(todo.getContent(), todo.getTotal());
     }
 
     @GetMapping("/done")
     public R<List<TripReimburseForm>> doneList(@ModelAttribute TripRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
-        form.setAssigneeId(user.getId());
-        form.setAssigneeName(user.getUsername());
-        final List<TripReimburseForm> done = tripReimburseService.findMyDoneByCriteriaPageable(form);
-        return R.success(done, done.size());
+        form.setUserid(user.getId());
+        form.setUsername(user.getUsername());
+        final Page<TripReimburseForm> done = tripReimburseService.findMyDoneByCriteriaPaged(form);
+        return R.success(done.getContent(), done.getTotal());
     }
 
     @GetMapping("/myapply")
@@ -89,8 +89,8 @@ public class TripController {
      */
     @GetMapping("/all")
     public R<List<TripReimburseForm>> getAll(@ModelAttribute TripRequestForm form) {
-        final List<TripReimburseForm> all = tripReimburseService.findAllByCriteriaPageable(form);
-        return R.success(all, all.size());
+        final Page<TripReimburseForm> all = tripReimburseService.findAllPaged(form);
+        return R.success(all.getContent(), all.getTotal());
     }
 
     @GetMapping("/load/{rootId}")
@@ -117,6 +117,7 @@ public class TripController {
         final List<FlowOperationLog> flowOperationLogs = tripReimburseService.processRecord(entityId, Constants.SERVICE_TRIP);
         return R.success(flowOperationLogs);
     }
+
 
 
 }

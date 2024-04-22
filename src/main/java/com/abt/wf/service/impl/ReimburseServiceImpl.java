@@ -67,7 +67,7 @@ public class ReimburseServiceImpl implements ReimburseService {
 
     private final List<FlowSetting> leaderList;
 
-    private final List<FlowSetting> defaultCC;
+    private final List<User> workflowDefaultCopy;
 
     public static final String SERVICE_NAME = "费用报销";
 
@@ -78,7 +78,7 @@ public class ReimburseServiceImpl implements ReimburseService {
                                 @Qualifier("bpmnModelInstanceMap") Map<String, BpmnModelInstance> bpmnModelInstanceMap,
                                 @Qualifier("sqlServerUserService") UserService userService, EmployeeRepository employeeRepository,
                                 ReimburseTaskRepository reimburseTaskRepository,
-                                @Qualifier("queryFlowManagerList") List<FlowSetting> leaderList, @Qualifier("queryDefaultCC") List<FlowSetting> defaultCC) {
+                                @Qualifier("queryFlowManagerList") List<FlowSetting> leaderList, List<User> workflowDefaultCopy) {
         this.identityService = identityService;
         this.taskService = taskService;
         this.runtimeService = runtimeService;
@@ -90,7 +90,7 @@ public class ReimburseServiceImpl implements ReimburseService {
         this.userService = userService;
         this.reimburseTaskRepository = reimburseTaskRepository;
         this.leaderList = leaderList;
-        this.defaultCC = defaultCC;
+        this.workflowDefaultCopy = workflowDefaultCopy;
     }
 
     @Override
@@ -418,22 +418,18 @@ public class ReimburseServiceImpl implements ReimburseService {
             UserTaskDTO parent = flowNodeWrapper(node, form, bpmnModelInstance);
             returnList.add(parent);
         }
-        if (form.getCopyList().isEmpty()) {
+        if (StringUtils.isBlank(form.getCopy())) {
             return returnList;
         }
+        //TODO: 由页面传入抄送人
         //抄送节点
-        UserTaskDTO cc = new UserTaskDTO();
-        cc.setTaskType(Constants.TASK_TYPE_COPY);
-        cc.setTaskName(Constants.TASK_NAME_COPY);
-        cc.setSelectUserType(Constants.SELECT_USER_TYPE_MANUAL);
-        for (String s : form.getCopyList()) {
-            UserTaskDTO dto = new UserTaskDTO();
-            dto.setOperatorId(s);
-            final User user = userService.getSimpleUserInfo(s);
-            dto.setOperatorName(user.getUsername());
-            cc.addUserTaskDTO(dto);
-        }
-        returnList.add(cc);
+        UserTaskDTO copyWrapper = UserTaskDTO.createCopyTask();
+
+
+        workflowDefaultCopy.forEach(i -> {
+            copyWrapper.addUserTaskDTO(UserTaskDTO.createCopyUserTask(i));
+        });
+        returnList.add(copyWrapper);
 
         return returnList;
     }
@@ -499,6 +495,8 @@ public class ReimburseServiceImpl implements ReimburseService {
         //前端跳转url:/workflow/add/detail/
         return "/workflow/add/detail/" + id;
     }
+
+
 
     /**
      * 校验撤销

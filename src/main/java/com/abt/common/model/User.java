@@ -2,12 +2,9 @@ package com.abt.common.model;
 
 import com.abt.sys.model.dto.UserView;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
 
 /**
  *

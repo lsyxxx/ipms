@@ -51,22 +51,15 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             }
             rbs.setFinished(true);
             reimburseService.saveEntity(rbs);
-
-//            final String copy = rbs.getCopy();
-//            if (copy != null) {
-//                List<String> copyList = List.of(copy.split(","));
-//                copyList.forEach(c -> {
-//                    String msg = "";
-//                    notifyMessageService.sendMessage(NotifyMessage.systemMessage(c, reimburseService.notifyLink(rbs.getId()), );
-//                });
-//            }
-
-
+            //抄送:
+            String copyStr = rbs.getCopy();
+            List<String> ids = Arrays.asList(copyStr.split(","));
+            for(String userid : ids) {
+                String msg = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
+                notifyMessageService.sendMessage(NotifyMessage.systemMessage(userid, reimburseService.notifyLink(entityId), msg ));
+            }
         }
-        //抄送:
 
-
-//        notifyMessageService.sendMessage(NotifyMessage.systemMessage(set.getValue(), reimburseService.notifyLink(entityId)));
 
         log.info("报销业务流程监听器结束....");
     }

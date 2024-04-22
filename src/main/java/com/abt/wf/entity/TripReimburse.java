@@ -2,12 +2,9 @@ package com.abt.wf.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
@@ -133,7 +130,7 @@ public class TripReimburse extends WorkflowBase {
     private BigDecimal transExpense;
 
     //common
-    @Column(name = "company", columnDefinition = "VARCHAR(256)")
+    @Column(name = "company_", columnDefinition = "VARCHAR(256)")
     private String company;
 
     @Column(columnDefinition = "VARCHAR(1600)")

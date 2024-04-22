@@ -36,7 +36,8 @@
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_07j4bdf" sourceRef="rbsPay_apply" targetRef="rbsPay_managers" />
-    <bpmn:userTask id="rbsPay_finMgr" name="财务主管" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+<!--     <bpmn:userTask id="rbsPay_finMgr" name="财务主管" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40"> -->
+    <bpmn:userTask id="rbsPay_finMgr" name="财务主管" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
       <bpmn:documentation>财务主管审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -49,7 +50,7 @@
       <bpmn:outgoing>Flow_1th0yv4</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_11sxwyj" sourceRef="rbsPay_managers" targetRef="rbsPay_finMgr" />
-    <bpmn:userTask id="rbsPay_ceo" name="总经理" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsPay_ceo" name="总经理" camunda:assignee="U20230406002">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
@@ -62,7 +63,7 @@
       <bpmn:outgoing>Flow_0lep7kr</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1th0yv4" sourceRef="rbsPay_finMgr" targetRef="rbsPay_ceo" />
-    <bpmn:userTask id="rbsPay_cashier" name="出纳" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsPay_cashier" name="出纳" camunda:assignee="U20230406007">
       <bpmn:documentation>出纳审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -78,7 +79,7 @@
     <bpmn:sequenceFlow id="Flow_0yjeqr0" name="金额小于5000" sourceRef="rbsPay_ceo" targetRef="rbsPay_cashier">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:userTask id="rbsPay_chief" name="董事长" camunda:assignee="621faa40-f45c-4da8-9a8f-65b0c5353f40">
+    <bpmn:userTask id="rbsPay_chief" name="董事长" camunda:assignee="U20230406001">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />

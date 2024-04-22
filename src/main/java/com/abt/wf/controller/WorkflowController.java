@@ -1,6 +1,7 @@
 package com.abt.wf.controller;
 
 import com.abt.common.model.R;
+import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.WorkFlowConfig;
@@ -22,6 +23,7 @@ import java.util.List;
 public class WorkflowController {
     private final ActivitiService activitiService;;
 
+
     public WorkflowController(ActivitiService activitiService) {
         this.activitiService = activitiService;
     }
@@ -35,5 +37,15 @@ public class WorkflowController {
         List<String> keys = WorkFlowConfig.financeWorkflowDef;
         final List<TaskWrapper> financeTask = activitiService.findFinanceTask(user.getId(), keys.toArray(new String[0]));
         return R.success(financeTask, financeTask.size());
+    }
+
+    /**
+     * 默认抄送人
+     * @return
+     */
+    @GetMapping("/defaultcc")
+    public R<List<User>> getDefaultCopyUser() {
+        final List<User> defaultCopyUsers = activitiService.findDefaultCopyUsers();
+        return R.success(defaultCopyUsers, defaultCopyUsers.size());
     }
 }

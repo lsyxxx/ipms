@@ -8,10 +8,13 @@ import lombok.ToString;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import com.abt.common.model.User;
 
 import org.apache.commons.lang3.StringUtils;
+import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
-import org.springframework.util.CollectionUtils;
+
+import static com.abt.wf.config.Constants.SELECT_USER_TYPE_MIX;
 
 /**
  * 描述流程节点
@@ -88,6 +91,29 @@ public class UserTaskDTO extends FlowOperationLog {
     public boolean isActive() {
         this.isActive = !StringUtils.isBlank(this.getTaskResult());
         return isActive;
+    }
+
+    public static UserTaskDTO createCopyTask() {
+        UserTaskDTO dto = new UserTaskDTO();
+        //properties
+        dto.setTaskType(Constants.TASK_TYPE_COPY);
+        dto.setTaskName(Constants.TASK_NAME_COPY);
+        dto.setApprovalType(Constants.APPROVAL_TYPE_SEQ);
+        dto.setSelectUserType(SELECT_USER_TYPE_MIX);
+
+
+        return dto;
+    }
+
+    /**
+     * 创建一个抄送节点的子节点
+     */
+    public static UserTaskDTO createCopyUserTask(User user) {
+        UserTaskDTO dto = new UserTaskDTO();
+        dto.setOperatorId(user.getId());
+        dto.setOperatorName(user.getUsername());
+
+        return dto;
     }
 
     public static UserTaskDTO of(FlowOperationLog log) {

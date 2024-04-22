@@ -1,5 +1,6 @@
 package com.abt.wf.repository;
 
+import com.abt.common.util.TimeUtil;
 import com.abt.wf.entity.TripReimburse;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -26,78 +27,79 @@ public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepository
     public static final String TABLE_ENTITY = "wf_trip";
 
 
-    //已办
-    public List<TripReimburse> findDoneList(int page, int size, String entityId, String state, String invokedUserid, String invokedUsername,
-                                            String startDate, String endDate ) {
-        List<Object> params = new ArrayList<>();
-        String runNumSql = " (SELECT *, ROW_NUMBER() OVER (ORDER BY create_date DESC) AS rowNum FROM wf_trip WHERE root_id IS NULL ) as mainData ";
-        String sql = "select " +
-                "mainData.*, " +
-                "detailData.*, " +
-                "t.* " +
-                "from " + runNumSql +
-                "left join wf_trip AS detailData ON mainData.id = detailData.root_id " +
-                "left join ACT_HI_TASK t on mainData.proc_inst_id = t.PROC_INST_ID_ " +
-                "where mainData.rowNum between ? and ? " +
-                "order by mainData.rowNum";
 
-        return jdbcTemplate.query(sql, new TripReimburseRowMapper(), params.toArray());
-    }
-
+    //已办主数据
     @Override
-    public List<TripReimburse> findTaskWithCurrenTaskPageable(int page, int size, String entityId, String state, String createUserid, String startDate, String endDate, String staff) {
-        String sql = "select t.*, su.Name as create_username1, " +
-                "t.ID_ as cur_task_id, t.TASK_DEF_KEY_ as cur_task_def_id, t.NAME_ as cur_task_name, " +
-                "t.ASSIGNEE_ as cur_task_assignee_id, u.Name as cur_task_assignee_name, " +
-                "null as inv_task_id, null as inv_task_name, null as inv_task_assignee_id, null as inv_task_assignee_name, null as inv_task_def_id " +
-                "from wf_trip t " +
-                "left join ACT_RU_TASK t on r.proc_inst_id = t.PROC_INST_ID_ " +
-                "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
-                "left join [dbo].[User] su on r.create_userid = su.Id " +
-                "where 1=1 " +
-                //仅查询未删除的
-                "and r.is_del = 0"
-                ;
-
+    public List<TripReimburse> findDoneMainList(int page, int limit, String entityId, String state, String userid, String username,
+                                                String startDate, String endDate) {
         List<Object> params = new ArrayList<>();
-        if (StringUtils.isNotBlank(entityId)) {
-            sql += "and t.id like ? ";
-            params.add(like(entityId));
-        }
-        if (StringUtils.isNotBlank(state)) {
-            sql += "and t.biz_state = ? ";
-            params.add(state);
-        }
-        if (StringUtils.isNotBlank(createUserid)) {
-            sql += "and t.create_userid = ? ";
-            params.add(createUserid);
-        }
-        sql += between(startDate, endDate, params);
-        if (isPaging(size)) {
-            sql += pageSqlBySqlserver(page, size);
+        String sql = doneSql(TABLE_ENTITY);
+        sql = sql + "and t.PROC_DEF_KEY_ = 'rbsTrip' and t.assignee_ = ? and e.root_id is null ";
+
+        params.add(userid);     //? as inv_task_assignee_id
+        params.add(username);   //? as inv_task_assignee_name
+        params.add(userid);        //and t.assignee_ = ?
+
+        sql = conditionSql(sql, params, startDate, endDate, state, entityId);
+        sql += "order by t.START_TIME_ desc ";
+        if (isPaging(limit)) {
+            sql += pageSqlBySqlserver(page, limit);
         }
 
         return jdbcTemplate.query(sql, new TripReimburseRowMapper(), params.toArray());
     }
 
     @Override
-    public List<TripReimburse> findTaskPageable(int page, int size, String entityId, String state, String invokedUserid, String startDate, String endDate, String staff, int todo) {
-        return List.of();
+    public int countDoneList(int page, int limit, String entityId, String state, String userid, String startDate, String endDate) {
+        List<Object> params = new ArrayList<Object>();
+        String sql = countDoneSql(TABLE_ENTITY);
+        sql = sql + " and t.PROC_DEF_KEY_ = 'rbsTrip' and t.assignee_ = ? and e.root_id is null ";
+        params.add(userid);        //and t.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, entityId);
+
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
     }
+
+    @Override
+    public List<TripReimburse> findTodoMainList(int page, int limit, String entityId, String state, String userid, String username,
+                                                String startDate, String endDate) {
+        List<Object> params = new ArrayList<>();
+        String sql = todoSql(TABLE_ENTITY);
+        sql = sql + "and t.PROC_DEF_ID_ like '%rbsTrip%' and t.assignee_ = ?  and e.root_id is null ";
+        params.add(username); //? as cur_task_assignee_name,
+        params.add(userid);   //rt.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, entityId);
+
+        sql += "order by t.CREATE_TIME_ desc ";
+        if (isPaging(limit)) {
+            sql += pageSqlBySqlserver(page, limit);
+        }
+        return jdbcTemplate.query(sql, new TripReimburseRowMapper(), params.toArray());
+    }
+
+    @Override
+    public int countTodoList(int page, int limit, String entityId, String state, String userid, String startDate, String endDate) {
+        List<Object> params = new ArrayList<>();
+        String sql = countTodoSql(TABLE_ENTITY);
+        sql = sql + "and t.PROC_DEF_ID_ like '%rbsTrip%' and t.assignee_ = ? and e.root_id is null  ";
+        params.add(userid);   //rt.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, entityId);
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+    }
+
 
     @Override
     String conditionSql(String sql, List<Object> array, String... params) {
-        if (StringUtils.isNotBlank(params[0])) {
+        sql += between(params[0], params[1], array);
+
+        if (StringUtils.isNotBlank(params[2])) {
             sql += "and e.biz_state = ? ";
-            array.add(params[0]);
+            array.add(params[2]);
         }
-        if (StringUtils.isNotBlank(params[1])) {
+        if (StringUtils.isNotBlank(params[3])) {
             sql += "and e.id like ? ";
-            array.add(like(params[1]));
+            array.add(like(params[3]));
         }
-        sql += between(params[2], params[3], array);
-//         String startDate, String endDate,
-//                String entityIdLike, String state
         return sql;
     }
 
@@ -121,7 +123,30 @@ public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepository
         public TripReimburse mapRow(ResultSet rs, int rowNum) throws SQLException {
             TripReimburse form = new TripReimburse();
             //业务
-
+            form.setId(rs.getString("id"));
+            form.setRootId(rs.getString("root_id"));
+            form.setDeptId(rs.getString("dept_id"));
+            form.setCode(rs.getString("code_"));
+            form.setDeptName(rs.getString("dept_name"));
+            form.setStaff(rs.getString("staff_"));
+            form.setReason(rs.getString("reason"));
+            form.setTripStartDate(TimeUtil.from(rs.getDate("trip_start_date")));
+            form.setTripEndDate(TimeUtil.from(rs.getDate("trip_end_date")));
+            form.setTripOrigin(rs.getString("origin_"));
+            form.setTripArrival(rs.getString("arrival_"));
+            form.setAllowanceDuration(rs.getDouble("allowance_dur"));
+            form.setAllowanceExpense(rs.getBigDecimal("allowance_exp"));
+            form.setOtherExpenseDesc(rs.getString("oth_exp_desc"));
+            form.setOtherExpense(rs.getBigDecimal("oth_exp"));
+            form.setSum(rs.getBigDecimal("sum_"));
+            form.setPayeeId(rs.getString("payee_id"));
+            form.setPayeeName(rs.getString("payee_name"));
+            form.setSort(rs.getInt("sort_"));
+            form.setTransportation(rs.getString("transportation"));
+            form.setTransExpense(rs.getBigDecimal("trans_exp"));
+            form.setCompany(rs.getString("company_"));
+            form.setManagers(rs.getString("managers"));
+            workflowBaseAndTaskSetter(form, rs);
             return form;
         }
     }

@@ -1,5 +1,6 @@
 package com.abt.wf.config;
 
+import com.abt.common.model.User;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.repository.FlowSettingRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,8 @@ import static com.abt.wf.config.Constants.*;
 @Component
 @Slf4j
 public class WorkFlowConfig {
+    public static final int IS_DEL = 1;
+    public static final int NOT_DEL = 0;
 
     private final FlowSettingRepository flowSettingRepository;
     private final RepositoryService repositoryService;
@@ -38,7 +42,7 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_RBS_SPC = "rbsMultiSpecial";
 
     public static final String SKIP_MANAGER = "rbsFlowSkipManager";
-    public static final String DEFAULT_CC = "rbsFlowDefaultCC";
+    public static final String DEFAULT_CC = "rbsDefaultCopy";
 
     private Map<String, ProcessDefinition> processDefinitionMap = new HashMap<>();
 
@@ -65,14 +69,6 @@ public class WorkFlowConfig {
         return flowSettingRepository.findByTypeOrderByCreateDate(SKIP_MANAGER);
     }
 
-    /**
-     * 流程默认审批人
-     */
-    @Bean
-    public List<FlowSetting> queryDefaultCC() {
-        return flowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_CC);
-    }
-
     @Bean("rbsMultiProcessDefinition")
     @Order(1)
     public ProcessDefinition getRbsMultiProcessDefinition() {
@@ -86,6 +82,24 @@ public class WorkFlowConfig {
     public Map<String, ProcessDefinition> processDefinitionMap() {
         log.info("processDefinitionMap bean init...");
         return this.processDefinitionMap;
+    }
+
+    /**
+     * 默认抄送人
+     */
+    @Bean
+    public List<User> workflowDefaultCopy() {
+        log.info("defaultCopy init...");
+        final List<FlowSetting> settings = flowSettingRepository.findByTypeOrderByCreateDate(DEFAULT_CC);
+        List<User> user = new ArrayList<>();
+        settings.forEach(i -> {
+            User u = new User();
+            u.setId(i.getValue());
+            u.setUsername(i.getRemark());
+            user.add(u);
+        });
+
+        return user;
     }
 
     @Bean("rbsBpmnModelInstance")
