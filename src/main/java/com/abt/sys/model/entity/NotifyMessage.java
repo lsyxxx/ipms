@@ -1,13 +1,12 @@
 package com.abt.sys.model.entity;
 
+import com.abt.sys.model.NotifyMessageType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -71,6 +70,7 @@ public class NotifyMessage {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @CreatedDate
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ssd")
+    @Column(name="send_time")
     private LocalDateTime sendTime;
 
     /**

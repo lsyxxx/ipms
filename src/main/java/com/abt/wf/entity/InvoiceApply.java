@@ -138,9 +138,9 @@ public class InvoiceApply extends WorkflowBase {
     /**
      * 班组
      */
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name="team_id", columnDefinition="VARCHAR(128)")
     private String teamId;
-    @Column(columnDefinition="VARCHAR(32)")
+    @Column(name="team_name", columnDefinition="VARCHAR(32)")
     private String teamName;
 
     /**
@@ -153,7 +153,7 @@ public class InvoiceApply extends WorkflowBase {
     /**
      * 附件json
      */
-    @Column(columnDefinition="VARCHAR(MAX)")
+    @Column(name="file_list", columnDefinition="VARCHAR(MAX)")
     private String fileList;
 
 

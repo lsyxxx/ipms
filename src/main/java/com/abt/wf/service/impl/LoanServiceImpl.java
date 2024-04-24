@@ -5,7 +5,7 @@ import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Loan;
 import com.abt.wf.model.LoanRequestForm;
 import com.abt.wf.model.UserTaskDTO;
-import com.abt.wf.model.ValidationResult;
+import com.abt.common.model.ValidationResult;
 import com.abt.wf.repository.LoanRepository;
 import com.abt.wf.repository.LoanTaskRepository;
 import com.abt.wf.service.CommonSpecifications;

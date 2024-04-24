@@ -2,12 +2,9 @@ package com.abt.wf.listener;
 
 import com.abt.common.model.User;
 import com.abt.sys.repository.UserRepository;
-import com.abt.sys.service.UserService;
 import com.abt.wf.entity.WorkflowBase;
 import jakarta.persistence.PrePersist;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -23,7 +20,7 @@ public class JpaWorkflowListener {
     }
 
     /**
-     * 根据用户id插入申请用户的部门信息
+     * 根据用户id插入用户名称及申请用户的部门信息
      * createDeptId/creatDeptName/createTeamId/createTeamName
      * @param entity 实体
      */
@@ -32,6 +29,7 @@ public class JpaWorkflowListener {
         String createUserid = entity.getCreateUserid();
         if (createUserid != null && !createUserid.isEmpty()) {
             final User user = userRepository.getEmployeeDeptByUserid(createUserid);
+            entity.setCreateUsername(user.getUsername());
             entity.setCreateDeptId(user.getDeptId());
             entity.setCreateDeptName(user.getDeptName());
             entity.setCreateTeamId(user.getTeamId());
@@ -39,7 +37,5 @@ public class JpaWorkflowListener {
         } else {
             log.warn("未获取创建用户id! - Service: {}, ProcInstId: {}", entity.getServiceName(), entity.getProcessInstanceId());
         }
-
-
-    }
+     }
 }

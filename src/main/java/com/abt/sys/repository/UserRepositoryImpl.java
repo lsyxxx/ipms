@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -64,9 +65,14 @@ public class UserRepositoryImpl implements UserRepository{
                 "from T_EmployeeInfo e " +
                 "left join Org o on e.Dept = o.Id " +
                 "left join Org so on e.banzhudept = so.Id " +
-                "where e.JobNumber = ?";
+                //启用的
+                "where e.JobNumber = ? ";
 
-        return jdbcTemplate.queryForObject(sql, new UserDeptRowMapper(), jobNumber);
+        final List<User> list = jdbcTemplate.query(sql, new UserDeptRowMapper(), jobNumber);
+        if (!CollectionUtils.isEmpty(list)) {
+            return list.get(0);
+        }
+        return new User();
     }
 
 
@@ -77,8 +83,12 @@ public class UserRepositoryImpl implements UserRepository{
                 "left join Org o on e.Dept = o.Id " +
                 "left join Org so on e.banzhudept = so.Id " +
                 "left join [dbo].[User] u on u.empnum = e.JobNumber " +
-                "where u.Id = ? ";
-        return jdbcTemplate.queryForObject(sql, new UserDeptRowMapper(), userid);
+                "where u.Id = ?";
+        final List<User> list = jdbcTemplate.query(sql, new UserDeptRowMapper(), userid);
+        if (!CollectionUtils.isEmpty(list)) {
+            return list.get(0);
+        }
+        return new User(userid);
     }
 
 

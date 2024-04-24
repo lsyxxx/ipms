@@ -1,4 +1,4 @@
-package com.abt.wf.model;
+package com.abt.common.model;
 
 import lombok.Data;
 

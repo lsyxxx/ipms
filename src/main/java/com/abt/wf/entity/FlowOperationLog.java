@@ -32,7 +32,7 @@ public class FlowOperationLog {
     /**
      * 业务id
      */
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name = "entity_id", columnDefinition="VARCHAR(128)")
     private String entityId;
 
     /**
@@ -76,22 +76,24 @@ public class FlowOperationLog {
     //-- task
     @Column(name = "task_inst_id", columnDefinition="VARCHAR(128)")
     private String taskInstanceId;
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name="task_name", columnDefinition="VARCHAR(128)")
     private String taskName;
     @Column(name="task_def_key", columnDefinition="VARCHAR(128)")
     private String taskDefinitionKey;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name="task_start_time")
     private LocalDateTime taskStartTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name="task_end_time")
     private LocalDateTime taskEndTime;
     /**
      * 节点审批结果
      */
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name="task_result", columnDefinition="VARCHAR(128)")
     private String taskResult;
 
     @Column(name="comment", columnDefinition="VARCHAR(1000)")

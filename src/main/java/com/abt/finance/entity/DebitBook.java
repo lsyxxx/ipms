@@ -2,6 +2,7 @@ package com.abt.finance.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.common.model.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -66,23 +68,29 @@ public class DebitBook extends AuditInfo {
     @Column(name="inv_url", columnDefinition="VARCHAR(128)")
     private String invoiceUrl;
     
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name="pay_company", columnDefinition="VARCHAR(128)")
     private String payCompany;
 
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name="pay_bank", columnDefinition="VARCHAR(128)")
     private String payBank;
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name="pay_acc", columnDefinition="VARCHAR(128)")
     private String payAccount;
 
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name="pay_date")
     private LocalDateTime payDate;
     
     @Column(name="rec_bank", columnDefinition="VARCHAR(128)")
     private String receiveBank;
+
     @Column(name="rec_acct", columnDefinition="VARCHAR(128)")
     private String receiveAccount;
-    @Column(columnDefinition="VARCHAR(128)")
+
+    @Column(name="officer_id", columnDefinition="VARCHAR(128)")
     private String officerId;
-    @Column(columnDefinition="VARCHAR(128)")
+
+    @Column(name="officer_name", columnDefinition="VARCHAR(128)")
     private String officerName;
     @Column(name="remark_", columnDefinition="VARCHAR(1000)")
     private String remark;

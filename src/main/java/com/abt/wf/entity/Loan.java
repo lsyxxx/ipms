@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.HashMap;
 import java.util.List;
@@ -100,7 +99,7 @@ public class Loan extends WorkflowBase{
     @Column(columnDefinition="VARCHAR(1600)")
     private String managers;
 
-    @Column(columnDefinition="VARCHAR(MAX)")
+    @Column(name="file_list", columnDefinition="VARCHAR(MAX)")
     private String fileList;
 
     @Column(name = "company_", length = 32)

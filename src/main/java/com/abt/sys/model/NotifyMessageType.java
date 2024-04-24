@@ -1,4 +1,4 @@
-package com.abt.sys.model.entity;
+package com.abt.sys.model;
 
 public enum NotifyMessageType {
     copy("抄送"),

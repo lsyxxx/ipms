@@ -55,7 +55,7 @@ public class WorkflowBase extends AuditInfo {
     /**
      * 业务是否结束，区别流程
      */
-    @Column(columnDefinition="BIT")
+    @Column(name = "is_finished", columnDefinition="BIT")
     private boolean isFinished;
 
     /**
@@ -69,6 +69,7 @@ public class WorkflowBase extends AuditInfo {
      */
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name="end_time")
     private LocalDateTime endTime;
 
     /**
@@ -87,13 +88,13 @@ public class WorkflowBase extends AuditInfo {
     /**
      * 申请人的部门，班组
      */
-    @Column(length = 64)
+    @Column(name="create_dept_id", length = 64)
     private String createDeptId;
-    @Column(length = 64)
+    @Column(name="create_dept_name", length = 64)
     private String createDeptName;
-    @Column(length = 64)
+    @Column(name="create_team_id", length = 64)
     private String createTeamId;
-    @Column(length = 64)
+    @Column(name="create_team_name", length = 64)
     private String createTeamName;
 
     /**

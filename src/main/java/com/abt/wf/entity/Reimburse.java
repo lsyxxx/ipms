@@ -61,6 +61,7 @@ public class Reimburse extends WorkflowBase {
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name="rbs_date")
     private LocalDate rbsDate;
 
     @Max(value = 99, message = "票据数量不能超过99")
@@ -97,12 +98,12 @@ public class Reimburse extends WorkflowBase {
     /**
      * 班组/科室Id
      */
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name="team_id", columnDefinition="VARCHAR(128)")
     private String teamId;
     /**
      * 班组/科室名称
      */
-    @Column(columnDefinition="VARCHAR(128)")
+    @Column(name = "team_name", columnDefinition="VARCHAR(128)")
     private String teamName;
 
 
@@ -110,7 +111,7 @@ public class Reimburse extends WorkflowBase {
     /**
      * starter is leader
      */
-    @Column(columnDefinition="BIT")
+    @Column(name="is_leader", columnDefinition="BIT")
     private boolean isLeader = false;
 
     /**
