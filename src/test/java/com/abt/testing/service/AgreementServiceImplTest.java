@@ -2,7 +2,7 @@ package com.abt.testing.service;
 
 import com.abt.testing.entity.Agreement;
 import com.abt.testing.model.AgreementRequestForm;
-import com.abt.testing.repository.AgreementRepository;
+import com.abt.testing.service.impl.AgreementServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

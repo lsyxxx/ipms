@@ -1,7 +1,6 @@
-package com.abt.testing.service;
+package com.abt.testing.service.impl;
 
 import com.abt.common.config.CommonSpecification;
-import com.abt.common.util.ValidateUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Agreement;
@@ -10,6 +9,7 @@ import com.abt.testing.entity.EnumLib;
 import com.abt.testing.model.AgreementRequestForm;
 import com.abt.testing.repository.AgreementRepository;
 import com.abt.testing.repository.EntrustRepository;
+import com.abt.testing.service.AgreementService;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.extern.slf4j.Slf4j;
@@ -43,25 +43,26 @@ public class AgreementServiceImpl implements AgreementService {
 
     private final Map<String, CustomerInfo> companyMap;
     private final Map<String, EnumLib> agreementTypeEnumMap;
+    private final List<EnumLib> agreementTypeEnumList;
 
     public AgreementServiceImpl(AgreementRepository agreementRepository, CustomerInfo abtCompany, CustomerInfo grdCompany, EntrustRepository entrustRepository,
-                                Map<String, CustomerInfo> companyMap, @Qualifier("agreementTypeEnumMap") Map<String, EnumLib> agreementTypeEnumMap) {
+                                Map<String, CustomerInfo> companyMap, @Qualifier("agreementTypeEnumMap") Map<String, EnumLib> agreementTypeEnumMap,
+                                @Qualifier("agreementTypeEnumList") List<EnumLib> agreementTypeEnumList) {
         this.agreementRepository = agreementRepository;
         this.abtCompany = abtCompany;
         this.grdCompany = grdCompany;
         this.entrustRepository = entrustRepository;
         this.companyMap = companyMap;
         this.agreementTypeEnumMap = agreementTypeEnumMap;
+        this.agreementTypeEnumList = agreementTypeEnumList;
     }
 
     public void validateAgreement(Agreement agreement) {
-        ValidateUtil.ensurePropertyNotnull(agreement.getAgreementCode(), "合同编号(agreementCode)");
-
         final boolean dup = doValidateDuplicateAgreementCode(agreement.getAgreementCode());
         if (dup) {
             throw new BusinessException("合同编号已存在(" + agreement.getAgreementCode() + ")!");
         }
-        String companyId = agreement.getJCompanyId();
+        String companyId = agreement.getYCompanyId();
         if (abtCompany.getId().equals(companyId)) {
             final boolean abtCode = doValidateABTAgreementCodeRule(agreement.getAgreementCode());
             if (!abtCode) {
@@ -104,9 +105,11 @@ public class AgreementServiceImpl implements AgreementService {
         return matcher.matches();
     }
 
+
     @Override
     public void savePreAgreement(Agreement agreement) {
         validateAgreement(agreement);
+        build(agreement);
         agreementRepository.save(agreement);
     }
 
@@ -171,7 +174,14 @@ public class AgreementServiceImpl implements AgreementService {
                 .and(specifications.typeEqual(requestForm, "agreementType"));
         Pageable paged = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
-        return agreementRepository.findAll(criteria, paged);
+        Page<Agreement> all = agreementRepository.findAll(criteria, paged);
+        all.getContent().forEach(this::build);
+        return all;
+    }
+
+    @Override
+    public List<EnumLib> findAgreementEnumTypes() {
+        return this.agreementTypeEnumList;
     }
 
     static class AgreementSpecifications extends CommonSpecification<AgreementRequestForm, Agreement> {
@@ -212,7 +222,6 @@ public class AgreementServiceImpl implements AgreementService {
                 return builder.equal(root.get("yCompanyId"), search);
             };
         }
-
     }
 
 

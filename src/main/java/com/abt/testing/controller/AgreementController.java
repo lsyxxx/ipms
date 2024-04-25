@@ -2,8 +2,11 @@ package com.abt.testing.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
+import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Agreement;
+import com.abt.testing.entity.EnumLib;
 import com.abt.testing.model.AgreementRequestForm;
+import com.abt.testing.model.CustomerRequestForm;
 import com.abt.testing.service.AgreementService;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +35,14 @@ public class AgreementController {
      * 创建/更新预登记合同
      * @param agreement 合同
      */
-    @PostMapping("/pre/create")
-    public R<Object> savePreAgreement(@Validated({ValidateGroup.Save.class}) @RequestBody Agreement agreement) {
+    @PostMapping("/pre/save")
+    public R<Object> savePreAgreement(@Validated({ValidateGroup.Insert.class}) @RequestBody Agreement agreement) {
+        agreementService.savePreAgreement(agreement);
+        return R.success("创建成功");
+    }
+
+    @PostMapping("/pre/update")
+    public R<Object> updatePreAgreement(@Validated({ValidateGroup.Update.class}) @RequestBody Agreement agreement) {
         agreementService.savePreAgreement(agreement);
         return R.success("创建成功");
     }
@@ -44,7 +53,7 @@ public class AgreementController {
      * 根据“合同分类”“乙方(ABT/GRD)”搜索合同
      */
     @GetMapping("/pre/find")
-    public R<List<Agreement>> findPreAgreementListBy(AgreementRequestForm form) {
+    public R<List<Agreement>> getPreAgreementListBy(AgreementRequestForm form) {
         final Page<Agreement> paged = agreementService.findAgreementsPagedBy(form);
         return R.success(paged.getContent(), (int)paged.getTotalElements());
     }
@@ -64,8 +73,14 @@ public class AgreementController {
         agreementService.deletePreAgreement(id);
         return R.success("删除成功");
     }
-
-
+    /**
+     * 查询合同分类
+     */
+    @GetMapping("/enum/types")
+    public R<List<EnumLib>> getContractType() {
+        final List<EnumLib> list = agreementService.findAgreementEnumTypes();
+        return R.success(list);
+    }
 
 
 

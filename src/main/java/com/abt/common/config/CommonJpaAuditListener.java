@@ -33,6 +33,13 @@ public class CommonJpaAuditListener {
                 entity.setCreateUsername(user.getUsername());
             }
         }
+        String updateUserid = entity.getUpdateUserid();
+        if (StringUtils.isNotBlank(updateUserid)) {
+            final User user = userRepository.getSimpleUserInfo(updateUserid);
+            if (user != null) {
+                entity.setUpdateUsername(user.getUsername());
+            }
+        }
     }
 
     /**

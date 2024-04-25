@@ -51,7 +51,7 @@ public class Agreement implements CommonJpaAudit {
     @Column(name = "Id", nullable = false, length = 50)
     private String id;
 
-    @NotNull(message = "合同编号不能为空", groups = {ValidateGroup.Save.class})
+    @NotNull(message = "合同编号不能为空", groups = {ValidateGroup.Insert.class})
     @Size(max = 20)
     @Column(name = "AgreementCode", length = 20)
     private String agreementCode;
@@ -74,6 +74,7 @@ public class Agreement implements CommonJpaAudit {
     @Size(max = 50)
     @Column(name = "JCompanyId", length = 50)
     private String jCompanyId;
+    @NotNull(message = "甲方不能为空", groups = {ValidateGroup.Save.class})
     @Transient
     private String jCompanyName;
 
@@ -94,6 +95,7 @@ public class Agreement implements CommonJpaAudit {
     @Size(max = 50)
     @Column(name = "YCompanyId", length = 50)
     private String yCompanyId;
+    @NotNull(message = "乙方不能为空", groups = {ValidateGroup.Save.class})
     @Transient
     private String yCompanyName;
 
@@ -346,12 +348,10 @@ public class Agreement implements CommonJpaAudit {
     private LocalDateTime operateDate;
 
     @Size(max = 50)
-    @NotNull
     @Column(name = "OperatorName", nullable = false, length = 50)
     private String operatorName;
 
     @Size(max = 50)
-    @NotNull
     @LastModifiedBy
     @Column(name = "Operator", nullable = false, length = 50)
     private String operator;

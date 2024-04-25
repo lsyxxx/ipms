@@ -4,6 +4,7 @@ import com.abt.testing.entity.EnumLib;
 import com.abt.testing.repository.EnumLibRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -34,5 +35,12 @@ public class EnumLibConfig {
         log.info("init agreementTypeEnum...");
        return enumLibRepository.findAllByFtypeidOrderByFid(ENUMLIB_AGREEMENT_TYPE).stream()
                 .collect(Collectors.toMap(EnumLib::getFid, item -> item));
+    }
+
+
+    @Bean("agreementTypeEnumList")
+    public List<EnumLib> getAgreementTypeEnumList() {
+        log.info("init agreementTypeEnumList...");
+        return enumLibRepository.findAllByFtypeidOrderByFid(ENUMLIB_AGREEMENT_TYPE);
     }
 }
