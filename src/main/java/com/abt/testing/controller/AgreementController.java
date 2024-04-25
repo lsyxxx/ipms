@@ -43,8 +43,7 @@ public class AgreementController {
 
     @PostMapping("/pre/update")
     public R<Object> updatePreAgreement(@Validated({ValidateGroup.Update.class}) @RequestBody Agreement agreement) {
-        agreementService.savePreAgreement(agreement);
-        return R.success("创建成功");
+        agreementService.savePreAgreement(agreement);        return R.success("创建成功");
     }
 
     /**
