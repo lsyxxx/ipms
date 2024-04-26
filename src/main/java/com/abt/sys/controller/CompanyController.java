@@ -40,7 +40,8 @@ public class CompanyController {
      */
     @GetMapping("/j/all")
     public R<List<CustomerInfo>> getAllJCompany(CustomerRequestForm form) {
-        final Page<CustomerInfo> all = companyService.findAllClientPaged(form);
-        return R.success(all.getContent(), (int)all.getTotalElements());
+//        final Page<CustomerInfo> all = companyService.findAllClientPaged(form);
+        final List<CustomerInfo> all = companyService.findAll();
+        return R.success(all);
     }
 }

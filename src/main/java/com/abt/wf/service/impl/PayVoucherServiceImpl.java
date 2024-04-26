@@ -66,7 +66,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     public List<PayVoucher> findAllByCriteriaPageable(PayVoucherRequestForm requestForm) {
         requestForm.forcePaged();
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         PayVoucherSpecifications specifications = new PayVoucherSpecifications();
         Specification<PayVoucher> spec = Specification.where(specifications.beforeEndDate(requestForm))

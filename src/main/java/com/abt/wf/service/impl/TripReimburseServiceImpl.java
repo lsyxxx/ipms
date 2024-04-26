@@ -386,7 +386,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 .and(TripRbsSpecifications.staffLike(requestForm))
                 .and(TripRbsSpecifications.stateEqual(requestForm))
                 .and(TripRbsSpecifications.isMainData());
-        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         final Page<TripReimburse> page = tripRepository.findAll(spec, pageable);
         List<TripReimburse> main = page.getContent();
@@ -452,7 +452,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 .and(TripRbsSpecifications.isNotDelete(requestForm))
                 .and(TripRbsSpecifications.isMainData())
                 ;
-        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         final Page<TripReimburse> page = tripRepository.findAll(spec, pageable);
         List<TripReimburse> main = page.getContent();
@@ -484,7 +484,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 .and(TripRbsSpecifications.isNotDelete(requestForm))
                 .and(TripRbsSpecifications.isMainData())
                 ;
-        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         final Page<TripReimburse> page = tripRepository.findAll(spec, pageable);
         List<TripReimburse> main = page.getContent();
@@ -518,7 +518,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 .and(TripRbsSpecifications.stateEqual(requestForm))
                 .and(TripRbsSpecifications.isNotDelete(requestForm))
                 ;
-        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.by("processInstanceId"), Sort.Order.desc("createDate"), Sort.Order.asc("sort")));
         final List<TripReimburse> all = tripRepository.findAll(spec, pageable).getContent();
         List<TripReimburseForm> records = build(all);
@@ -588,7 +588,7 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 .and(TripRbsSpecifications.stateEqual(requestForm))
                 .and(TripRbsSpecifications.isNotDelete(requestForm))
                 ;
-        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.by("processInstanceId"), Sort.Order.desc("createDate"), Sort.Order.asc("sort")));
 
         final List<TripReimburse> trips = tripRepository.findAll(spec, pageable).getContent();

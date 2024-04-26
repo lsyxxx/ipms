@@ -48,4 +48,14 @@ public class CommonSpecification<T extends RequestForm, E> {
             return null;
         };
     }
+
+    public Specification<E> nameLike(T form, String typeAttributeName) {
+        return (root, query, builder) -> {
+            if (StringUtils.isNotBlank(form.getName())) {
+                return builder.like(root.get(typeAttributeName), like(form.getName()));
+            }
+            return null;
+        };
+    }
+
 }

@@ -97,7 +97,7 @@ public class DebitBook extends AuditInfo {
     /**
      * 业务说明：Constants.BIZ_DESC_*
      */
-    @Column(name="desc", columnDefinition="VARCHAR(512)")
+    @Column(name="desc_", columnDefinition="VARCHAR(512)")
     private String description;
 
 }

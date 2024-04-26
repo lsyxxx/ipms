@@ -18,6 +18,8 @@ public interface CompanyService {
      */
     Page<CustomerInfo> findAllClientPaged(CustomerRequestForm form);
 
+    List<CustomerInfo> findAll();
+
     /**
      * 查询乙方公司
      */

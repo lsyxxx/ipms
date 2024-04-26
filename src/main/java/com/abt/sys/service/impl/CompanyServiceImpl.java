@@ -1,5 +1,6 @@
 package com.abt.sys.service.impl;
 
+import com.abt.common.config.CommonSpecification;
 import com.abt.common.entity.Company;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.sys.repository.CustomerInfoRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -58,12 +60,23 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public Page<CustomerInfo> findAllClientPaged(CustomerRequestForm form) {
-        Pageable page = PageRequest.of(form.getPage(), form.getLimit(), Sort.by(Sort.Order.desc("createDate")));
-        return customerInfoRepository.findAll(page);
+        Pageable page = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        CustomerInfoSpecification spec = new CustomerInfoSpecification();
+        Specification<CustomerInfo> criteria = Specification.where(spec.nameLike(form, "customerName"));
+        return customerInfoRepository.findAll(criteria, page);
+    }
+
+    @Override
+    public List<CustomerInfo> findAll() {
+        return customerInfoRepository.findAllByIsAvtiveIs(CustomerInfoRepository.isAtiveTrue);
     }
 
     @Override
     public List<CustomerInfo> findYCompanyList() {
         return List.of(abtCompany, grdCompany);
+    }
+
+    class CustomerInfoSpecification extends CommonSpecification<CustomerRequestForm, CustomerInfo> {
+
     }
 }

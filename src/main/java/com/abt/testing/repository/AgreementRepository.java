@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface AgreementRepository extends JpaRepository<Agreement, String>, JpaSpecificationExecutor<Agreement> {
     boolean existsByAgreementCode(String agreementCode);
+    Agreement findByAgreementCode(String agreementCode);
 
 }

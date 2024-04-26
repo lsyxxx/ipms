@@ -73,8 +73,9 @@ public class Agreement implements CommonJpaAudit {
      */
     @Size(max = 50)
     @Column(name = "JCompanyId", length = 50)
-    private String jCompanyId;
     @NotNull(message = "甲方不能为空", groups = {ValidateGroup.Save.class})
+    private String jCompanyId;
+
     @Transient
     private String jCompanyName;
 
@@ -94,8 +95,9 @@ public class Agreement implements CommonJpaAudit {
      */
     @Size(max = 50)
     @Column(name = "YCompanyId", length = 50)
-    private String yCompanyId;
     @NotNull(message = "乙方不能为空", groups = {ValidateGroup.Save.class})
+    private String yCompanyId;
+
     @Transient
     private String yCompanyName;
 
@@ -323,7 +325,7 @@ public class Agreement implements CommonJpaAudit {
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "CreateDate", nullable = false)
+    @Column(name = "CreateDate", nullable = false, columnDefinition = "DATETIME")
     @CreatedDate
     private LocalDateTime createDate;
 
@@ -343,7 +345,7 @@ public class Agreement implements CommonJpaAudit {
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "Operatedate", nullable = false)
+    @Column(name = "Operatedate", nullable = false, columnDefinition = "DATETIME")
     @LastModifiedDate
     private LocalDateTime operateDate;
 

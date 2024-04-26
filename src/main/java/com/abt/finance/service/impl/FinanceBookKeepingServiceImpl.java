@@ -96,7 +96,7 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
                 .and(CreditSpecifications.payDateBetween(criteria))
                 .and(CreditSpecifications.receiveUserLike(criteria))
                 .and(CreditSpecifications.payAccountEq(criteria));
-        Pageable pageable = PageRequest.of(criteria.getPage(), criteria.getLimit(),
+        Pageable pageable = PageRequest.of(criteria.jpaPage(), criteria.getLimit(),
                 Sort.by(Sort.Direction.DESC, "businessId", "payDate", "payAccount", "expenseType", "invoiceType", "payType"));
         final Page<CreditBook> all = creditBookRepository.findAll(spec, pageable);
         return all.getContent();

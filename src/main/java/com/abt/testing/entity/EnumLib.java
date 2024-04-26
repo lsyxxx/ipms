@@ -73,7 +73,7 @@ public class EnumLib {
     @Column(name = "OPERATOR", length = 18)
     private String operator;
 
-    @Column(name = "OPERATEDATE")
+    @Column(name = "OPERATEDATE", columnDefinition = "DATETIME")
     private LocalDateTime operateDate;
 
     @Size(max = 13)

@@ -54,7 +54,7 @@ public class Entrust {
     @Column(name = "SendReportType", length = 20)
     private String sendReportType;
 
-    @Column(name = "ReportDate")
+    @Column(name = "ReportDate", columnDefinition = "DATETIME")
     private Instant reportDate;
 
     @Size(max = 2)
@@ -91,7 +91,7 @@ public class Entrust {
     private String createUserName;
 
     @NotNull
-    @Column(name = "CreateDate", nullable = false)
+    @Column(name = "CreateDate", nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime createDate;
 
     @Size(max = 50)
@@ -100,7 +100,7 @@ public class Entrust {
     private String operator;
 
     @NotNull
-    @Column(name = "Operatedate", nullable = false)
+    @Column(name = "Operatedate", nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime operatedate;
 
     @Size(max = 50)

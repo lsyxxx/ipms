@@ -90,7 +90,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     @Override
     public List<InvoiceApply> findAllByCriteriaPageable(InvoiceApplyRequestForm requestForm) {
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称，合同编号, 客户id， 客户name, 项目名称，申请部门id, 申请部门name
-        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         InvoiceApplySpecifications specifications = new InvoiceApplySpecifications();
         Specification<InvoiceApply> criteria = Specification.where(specifications.createUseridEqual(requestForm))

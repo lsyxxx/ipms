@@ -63,10 +63,12 @@ public class TripReimburse extends WorkflowBase {
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name="trip_start_date")
     private LocalDate tripStartDate;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name="trip_end_date")
     private LocalDate tripEndDate;
 
     @Column(name = "origin_", columnDefinition = "VARCHAR(128)")
@@ -108,6 +110,7 @@ public class TripReimburse extends WorkflowBase {
      */
     @Column(name = "payee_id", columnDefinition = "VARCHAR(128)")
     private String payeeId;
+    @Column(name="payee_name", columnDefinition="")
     private String payeeName;
 
     /**
@@ -120,7 +123,7 @@ public class TripReimburse extends WorkflowBase {
     /**
      * 交通工具, Constants.TRANSPORTATION_*
      */
-    @Column(columnDefinition = "VARCHAR(64)")
+    @Column(name="transportation", columnDefinition = "VARCHAR(64)")
     private String transportation;
 
     /**

@@ -2,11 +2,9 @@ package com.abt.testing.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
-import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Agreement;
 import com.abt.testing.entity.EnumLib;
 import com.abt.testing.model.AgreementRequestForm;
-import com.abt.testing.model.CustomerRequestForm;
 import com.abt.testing.service.AgreementService;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +31,7 @@ public class AgreementController {
 
     /**
      * 创建/更新预登记合同
+     *
      * @param agreement 合同
      */
     @PostMapping("/pre/save")
@@ -43,7 +42,8 @@ public class AgreementController {
 
     @PostMapping("/pre/update")
     public R<Object> updatePreAgreement(@Validated({ValidateGroup.Update.class}) @RequestBody Agreement agreement) {
-        agreementService.savePreAgreement(agreement);        return R.success("创建成功");
+        agreementService.savePreAgreement(agreement);
+        return R.success("创建成功");
     }
 
     /**
@@ -54,8 +54,9 @@ public class AgreementController {
     @GetMapping("/pre/find")
     public R<List<Agreement>> getPreAgreementListBy(AgreementRequestForm form) {
         final Page<Agreement> paged = agreementService.findAgreementsPagedBy(form);
-        return R.success(paged.getContent(), (int)paged.getTotalElements());
+        return R.success(paged.getContent(), (int) paged.getTotalElements());
     }
+
 
     @GetMapping("/pre/load")
     public R<Agreement> loadEntity(@RequestParam @NotNull String id) {
@@ -72,6 +73,7 @@ public class AgreementController {
         agreementService.deletePreAgreement(id);
         return R.success("删除成功");
     }
+
     /**
      * 查询合同分类
      */
@@ -80,7 +82,6 @@ public class AgreementController {
         final List<EnumLib> list = agreementService.findAgreementEnumTypes();
         return R.success(list);
     }
-
 
 
 }

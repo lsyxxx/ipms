@@ -13,6 +13,7 @@ import com.abt.testing.service.AgreementService;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -58,10 +59,11 @@ public class AgreementServiceImpl implements AgreementService {
     }
 
     public void validateAgreement(Agreement agreement) {
-        final boolean dup = doValidateDuplicateAgreementCode(agreement.getAgreementCode());
+        final boolean dup = doValidateDuplicateAgreementCode(agreement);
         if (dup) {
             throw new BusinessException("合同编号已存在(" + agreement.getAgreementCode() + ")!");
         }
+
         String companyId = agreement.getYCompanyId();
         if (abtCompany.getId().equals(companyId)) {
             final boolean abtCode = doValidateABTAgreementCodeRule(agreement.getAgreementCode());
@@ -81,8 +83,13 @@ public class AgreementServiceImpl implements AgreementService {
     /**
      * 校验合同编号是否重复
      */
-    public boolean doValidateDuplicateAgreementCode(String agreementCode) {
-        return agreementRepository.existsByAgreementCode(agreementCode);
+    public boolean doValidateDuplicateAgreementCode(Agreement agreement) {
+        if (StringUtils.isBlank(agreement.getId())) {
+            return agreementRepository.existsByAgreementCode(agreement.getAgreementCode());
+        }
+        final Agreement found = agreementRepository.findByAgreementCode(agreement.getAgreementCode());
+        //id不同但code同
+        return found != null && !found.getId().equals(agreement.getId());
     }
 
     /**
@@ -112,6 +119,7 @@ public class AgreementServiceImpl implements AgreementService {
         build(agreement);
         agreementRepository.save(agreement);
     }
+
 
     @Override
     public void deletePreAgreement(String entityId) {
@@ -172,8 +180,8 @@ public class AgreementServiceImpl implements AgreementService {
                                 , specifications.hasJCustomerNameLike(requestForm.getQuery())))
                 .and(specifications.yCompanyIdEqual(requestForm.getYCompanyId()))
                 .and(specifications.typeEqual(requestForm, "agreementType"));
-        Pageable paged = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
-                Sort.by(Sort.Order.desc("createDate")));
+        Pageable paged = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
+                Sort.by(Sort.Order.desc("agreementCode")));
         Page<Agreement> all = agreementRepository.findAll(criteria, paged);
         all.getContent().forEach(this::build);
         return all;

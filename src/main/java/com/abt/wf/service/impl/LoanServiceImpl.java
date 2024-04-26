@@ -67,7 +67,7 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     public List<Loan> findAllByCriteriaPageable(LoanRequestForm requestForm) {
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 支付方式,项目，借款部门
         requestForm.forcePaged();
-        Pageable pageable = PageRequest.of(requestForm.getFirstResult(), requestForm.getLimit(),
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         LoanSpecifications spec = new LoanSpecifications();
         Specification<Loan> criteria = Specification.where(spec.beforeEndDate(requestForm))

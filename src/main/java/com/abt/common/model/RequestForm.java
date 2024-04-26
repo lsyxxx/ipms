@@ -124,4 +124,11 @@ public class RequestForm {
         this.limit = 0;
     }
 
+    /**
+     * jpa分页用的page, base 0
+     */
+    public int jpaPage() {
+        return this.page - 1;
+    }
+
 }
