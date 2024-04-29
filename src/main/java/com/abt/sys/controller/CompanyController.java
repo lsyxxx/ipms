@@ -2,6 +2,7 @@ package com.abt.sys.controller;
 
 import com.abt.common.model.R;
 import com.abt.sys.model.entity.CustomerInfo;
+import com.abt.sys.model.entity.SupplyInfo;
 import com.abt.sys.service.CompanyService;
 import com.abt.testing.model.CustomerRequestForm;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +41,16 @@ public class CompanyController {
      */
     @GetMapping("/j/all")
     public R<List<CustomerInfo>> getAllJCompany(CustomerRequestForm form) {
-//        final Page<CustomerInfo> all = companyService.findAllClientPaged(form);
         final List<CustomerInfo> all = companyService.findAll();
         return R.success(all);
+    }
+
+    /**
+     * 所有供应商
+     */
+    @GetMapping("/s/all")
+    public R<List<SupplyInfo>> getAllSupplier() {
+        final List<SupplyInfo> allSupplier = companyService.findAllSupplier();
+        return R.success(allSupplier);
     }
 }

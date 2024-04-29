@@ -2,7 +2,6 @@ package com.abt.testing.entity;
 
 import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
-import com.abt.common.entity.Company;
 import com.abt.common.service.impl.CommonJpaAudit;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

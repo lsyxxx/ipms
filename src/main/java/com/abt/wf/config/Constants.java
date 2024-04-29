@@ -99,6 +99,7 @@ public class Constants {
     public static final String SERVICE_TRIP = "差旅报销";
     public static final String SERVICE_PAY = "款项支付单";
     public static final String SERVICE_LOAN = "借款单";
+    public static final String SERVICE_INV_OFFSET = "发票冲账单";
 
     public static final String TRANSPORTATION_AIRPLANE = "飞机";
     public static final String TRANSPORTATION_CAR = "自驾";

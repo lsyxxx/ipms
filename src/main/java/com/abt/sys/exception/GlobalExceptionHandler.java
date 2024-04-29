@@ -3,6 +3,7 @@ package com.abt.sys.exception;
 import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.stream.Collectors;
 
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
     /**
      * 处理认证异常
      * !注解@ExceptionHandler({class1})和 handleAuthenticationException({class2}): class1和class2异常类型必须一致
@@ -96,6 +99,13 @@ public class GlobalExceptionHandler {
         return R.invalidParameters(messages);
     }
 
-
-
+    /**
+     * 文件上传大小异常
+     */
+    @ExceptionHandler({MaxUploadSizeExceededException.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public R<Exception> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.error("上传文件大小超出范围: ", e);
+        return R.fail("上传文件大小超出范围!(单个文件大小不能超过50MB,一次上传所有文件大小不能超过200MB");
+    }
 }

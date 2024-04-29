@@ -1,6 +1,8 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.wf.model.act.ActHiProcInstance;
+import com.abt.wf.model.act.ActRuTask;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -128,5 +130,19 @@ public class Reimburse extends WorkflowBase {
      */
     @Column(columnDefinition="VARCHAR(1600)")
     private String managers;
+
+
+
+    //-------------------------------------
+    //  Transient
+    //------------------------------------
+
+//    @OneToOne
+//    @JoinColumn(name = "proc_inst_id", referencedColumnName = "ID_", insertable = false, updatable = false)
+//    private ActHiProcInstance procInstance;
+//
+//    @OneToOne
+//    @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", insertable = false, updatable = false)
+//    private ActRuTask currentTask;
 
 }

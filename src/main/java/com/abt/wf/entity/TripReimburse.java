@@ -86,7 +86,7 @@ public class TripReimburse extends WorkflowBase {
      * 补贴金额
      */
     @Column(name = "allowance_exp", columnDefinition = "DECIMAL(10, 2)")
-    private BigDecimal allowanceExpense;
+    private BigDecimal allowanceExpense =  BigDecimal.ZERO;
 
     /**
      * 其他费用项目说明
@@ -98,11 +98,11 @@ public class TripReimburse extends WorkflowBase {
      * 其他费用
      */
     @Column(name = "oth_exp", columnDefinition = "DECIMAL(10, 2)")
-    private BigDecimal otherExpense;
+    private BigDecimal otherExpense =  BigDecimal.ZERO;
 
     //common
     @Column(name = "sum_", columnDefinition = "DECIMAL(10, 2)")
-    private BigDecimal sum;
+    private BigDecimal sum  =  BigDecimal.ZERO;
 
     /**
      * 领款人id
@@ -130,7 +130,7 @@ public class TripReimburse extends WorkflowBase {
      * 交通费
      */
     @Column(name = "trans_exp", columnDefinition = "DECIMAL(10, 2)")
-    private BigDecimal transExpense;
+    private BigDecimal transExpense =  BigDecimal.ZERO;
 
     //common
     @Column(name = "company_", columnDefinition = "VARCHAR(256)")
@@ -160,13 +160,18 @@ public class TripReimburse extends WorkflowBase {
      * 计算当前明细的金额合计
      */
     public BigDecimal sumItem() {
+        if (this.transExpense == null) {
+            this.transExpense = BigDecimal.ZERO;
+        }
+        if (this.allowanceExpense == null) {
+            this.allowanceExpense = BigDecimal.ZERO;
+        }
+        if (this.otherExpense == null) {
+            this.otherExpense = BigDecimal.ZERO;
+        }
         this.sum = this.transExpense;
-        if (this.allowanceExpense != null) {
-            this.sum = this.sum.add(this.allowanceExpense);
-        }
-        if (this.otherExpense != null) {
-            this.sum = this.sum.add(this.otherExpense);
-        }
+        this.sum = this.sum.add(this.allowanceExpense);
+        this.sum = this.sum.add(this.otherExpense);
         return this.sum;
     }
 }

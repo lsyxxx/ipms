@@ -36,6 +36,7 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_PAY_VOUCHER = "rbsPay";
     public static final String DEF_KEY_LOAN = "rbsLoan";
     public static final String DEF_KEY_INV = "rbsInv";
+    public static final String DEF_KEY_INVOFFSET = "rbsInvOffset";
     /**
      * 特殊审批人的流程
      */

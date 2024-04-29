@@ -3,6 +3,8 @@ package com.abt.wf.service.impl;
 import com.abt.common.model.User;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.model.TaskWrapper;
+import com.abt.wf.model.act.ActRuTask;
+import com.abt.wf.repository.act.ActRuTaskRepository;
 import com.abt.wf.service.ActivitiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,9 +19,11 @@ import java.util.List;
 public class ActivitiServiceImpl implements ActivitiService {
 
     private final WorkFlowConfig workFlowConfig;
+    private final ActRuTaskRepository actRuTaskRepository;
 
-    public ActivitiServiceImpl(WorkFlowConfig workFlowConfig) {
+    public ActivitiServiceImpl(WorkFlowConfig workFlowConfig, ActRuTaskRepository actRuTaskRepository) {
         this.workFlowConfig = workFlowConfig;
+        this.actRuTaskRepository = actRuTaskRepository;
     }
 
     @Override
@@ -31,4 +35,10 @@ public class ActivitiServiceImpl implements ActivitiService {
     public List<User> findDefaultCopyUsers() {
         return workFlowConfig.workflowDefaultCopy();
     }
+
+
+    public ActRuTask findActRuTaskByProcInstId(String id) {
+        return actRuTaskRepository.findByProcInstId(id);
+    }
+
 }

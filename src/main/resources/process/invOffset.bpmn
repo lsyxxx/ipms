@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0r7krt6" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+  <bpmn:process id="rbsInvOffset" name="rbsInvOffset" isExecutable="true" camunda:historyTimeToLive="180">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${invoiceOffsetProcessEndListener}" event="end" />
+      </bpmn:extensionElements>
+    <bpmn:startEvent id="StartEvent_1" name="发票冲账申请" camunda:initiator="starter">
+      <bpmn:documentation>发票冲账申请开始节点</bpmn:documentation>
+      <bpmn:outgoing>Flow_1d3a6tb</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="invOffset_fin" name="财务审批" camunda:candidateUsers="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406007,b6883628-ab11-4ad8-a533-11632fcdb4f3,U20230406013">
+      <bpmn:documentation>财务审批</bpmn:documentation>
+      <bpmn:incoming>Flow_1d3a6tb</bpmn:incoming>
+      <bpmn:outgoing>Flow_1fy5xxp</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1d3a6tb" sourceRef="StartEvent_1" targetRef="invOffset_fin" />
+    <bpmn:sequenceFlow id="Flow_1fy5xxp" sourceRef="invOffset_fin" targetRef="Event_0mo1il9" />
+    <bpmn:endEvent id="Event_0mo1il9" name="发票冲账审批结束">
+      <bpmn:incoming>Flow_1fy5xxp</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0umlopz">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="165" y="122" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0mo1il9_di" bpmnElement="Event_0mo1il9">
+        <dc:Bounds x="532" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="509" y="122" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ithbj8_di" bpmnElement="invOffset_fin">
+        <dc:Bounds x="350" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1d3a6tb_di" bpmnElement="Flow_1d3a6tb">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="350" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1fy5xxp_di" bpmnElement="Flow_1fy5xxp">
+        <di:waypoint x="450" y="97" />
+        <di:waypoint x="532" y="97" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

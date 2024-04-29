@@ -3,7 +3,9 @@ package com.abt.sys.service.impl;
 import com.abt.common.config.CommonSpecification;
 import com.abt.common.entity.Company;
 import com.abt.sys.model.entity.CustomerInfo;
+import com.abt.sys.model.entity.SupplyInfo;
 import com.abt.sys.repository.CustomerInfoRepository;
+import com.abt.sys.repository.SupplyInfoRepository;
 import com.abt.sys.service.CompanyService;
 import com.abt.testing.model.CustomerRequestForm;
 import org.springframework.data.domain.Page;
@@ -47,12 +49,14 @@ public class CompanyServiceImpl implements CompanyService {
 
 
     private final CustomerInfoRepository customerInfoRepository;
+    private final SupplyInfoRepository supplyInfoRepository;
 
     private final CustomerInfo abtCompany;
     private final CustomerInfo grdCompany;
 
-    public CompanyServiceImpl(CustomerInfoRepository customerInfoRepository, CustomerInfo abtCompany, CustomerInfo grdCompany) {
+    public CompanyServiceImpl(CustomerInfoRepository customerInfoRepository, SupplyInfoRepository supplyInfoRepository, CustomerInfo abtCompany, CustomerInfo grdCompany) {
         this.customerInfoRepository = customerInfoRepository;
+        this.supplyInfoRepository = supplyInfoRepository;
         this.abtCompany = abtCompany;
         this.grdCompany = grdCompany;
     }
@@ -74,6 +78,11 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public List<CustomerInfo> findYCompanyList() {
         return List.of(abtCompany, grdCompany);
+    }
+
+    @Override
+    public List<SupplyInfo> findAllSupplier() {
+        return supplyInfoRepository.findAll();
     }
 
     class CustomerInfoSpecification extends CommonSpecification<CustomerRequestForm, CustomerInfo> {
