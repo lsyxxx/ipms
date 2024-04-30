@@ -11,11 +11,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.GenericGenerator;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.abt.wf.config.Constants.*;
 
@@ -30,7 +28,8 @@ import static com.abt.wf.config.Constants.*;
 public class InvoiceOffset extends WorkflowBase {
     @Id
     @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator  = "timestampIdGenerator")
+    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
 
     @Column(name = "company_", nullable = false, columnDefinition = "VARCHAR(64)")
@@ -47,10 +46,10 @@ public class InvoiceOffset extends WorkflowBase {
     @Column(name = "project_type", columnDefinition = "VARCHAR(128)")
     private String projectType;
     /**
-     * 累计汇票
+     * 累计回票金额
      */
-    @Column(name = "acc_inv", columnDefinition = "VARCHAR(32)")
-    private String accumulatedInvoice;
+    @Column(name = "acc_inv", columnDefinition = "DECIMAL(10,2)")
+    private double accumulatedInvoice;
     /**
      * 供应商
      */
@@ -129,12 +128,8 @@ public class InvoiceOffset extends WorkflowBase {
     @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", insertable = false, updatable = false)
     private ActRuTask currentTask;
 
-    @OneToMany
-    @JoinColumn(name = "proc_inst_id", referencedColumnName = "ROOT_PROC_INST_ID_", insertable = false, updatable = false)
-    private List<ActHiTaskInstance> invokedTask;
-
-
-
+    @OneToMany(mappedBy = "", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ActHiTaskInstance> invokedTask = new ArrayList<>();
 
     @Transient
     private String decision;

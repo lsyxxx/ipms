@@ -109,4 +109,19 @@ public class ActHiProcInstance {
     @Column(name = "STATE_")
     private String state;
 
+    @Override
+    public String toString() {
+        return "ActHiProcInstance{" +
+                "id='" + id + '\'' +
+                ", procInstId='" + procInstId + '\'' +
+                ", businessKey='" + businessKey + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", procDefId='" + procDefId + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", rootProcInstId='" + rootProcInstId + '\'' +
+                ", state='" + state + '\'' +
+                ", deleteReason='" + deleteReason + '\'' +
+                '}';
+    }
 }

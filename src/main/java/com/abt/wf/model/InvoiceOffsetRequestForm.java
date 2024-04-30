@@ -17,4 +17,12 @@ public class InvoiceOffsetRequestForm extends RequestForm {
      * 合同名称
      */
     private String contractName;
+    private String taskDefKey;
+    private String procDefKey;
+    /**
+     * 0： ALL
+     * 1： TODO_
+     * 2. DONE
+     */
+    private int queryMode = 0;
 }

@@ -88,13 +88,13 @@ public class WorkflowBase extends AuditInfo {
     /**
      * 申请人的部门，班组
      */
-    @Column(name="create_dept_id", length = 64)
+    @Column(name="create_dept_id", length = 64, columnDefinition = "VARCHAR(64)")
     private String createDeptId;
-    @Column(name="create_dept_name", length = 64)
+    @Column(name="create_dept_name", length = 64, columnDefinition = "VARCHAR(64)")
     private String createDeptName;
-    @Column(name="create_team_id", length = 64)
+    @Column(name="create_team_id", length = 64, columnDefinition = "VARCHAR(64)")
     private String createTeamId;
-    @Column(name="create_team_name", length = 64)
+    @Column(name="create_team_name", length = 64, columnDefinition = "VARCHAR(64)")
     private String createTeamName;
 
     /**

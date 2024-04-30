@@ -18,7 +18,7 @@ class InvoiceOffsetRepositoryTest {
 
     @Test
     void find() {
-        invoiceOffsetRepository.findById("202404261714093947564").ifPresent(i -> {
+        invoiceOffsetRepository.findById("d38dd554-2a37-4354-b324-2d573bd379f0").ifPresent(i -> {
 //            assertNotNull(i.getInvokedTask());
 //            for (ActHiTaskInstance task : i.getInvokedTask()) {
 //                System.out.println(task.toString());
@@ -28,11 +28,19 @@ class InvoiceOffsetRepositoryTest {
             System.out.println("----currentTask----");
             System.out.println(i.getCurrentTask().toString());
 
-            assertNotNull(i.getInvokedTask());
-            System.out.println("----invokedTask----");
-            i.getInvokedTask().forEach(j -> {
-                System.out.println(j.toString());
-            });
+            assertNotNull(i.getProcInstance());
+
+            System.out.println("-------procInstance----");
+            System.out.println(i.getProcInstance().toString());
+
+//            System.out.println("-------hiTaskInstance----");
+//            System.out.println(i.getInvokedTask().toString());
+
+//            assertNotNull(i.getInvokedTask());
+//            System.out.println("----invokedTask----");
+//            i.getInvokedTask().forEach(j -> {
+//                System.out.println(j.toString());
+//            });
 
         });
     }

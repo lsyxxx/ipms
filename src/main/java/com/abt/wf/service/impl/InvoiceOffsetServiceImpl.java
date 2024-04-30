@@ -13,6 +13,9 @@ import com.abt.wf.repository.InvoiceOffsetTaskRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.InvoiceOffsetService;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.IdentityService;
@@ -28,6 +31,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -224,6 +228,22 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         return load;
     }
 
+    @Override
+    public List<InvoiceOffset> findDone(InvoiceOffsetRequestForm form) {
+        InvoiceOffsetSpecification spec = new InvoiceOffsetSpecification();
+        Specification<InvoiceOffset> cr = Specification.where(spec.contractNameLike(form))
+                        .and(spec.leftJoinHiTask(form));
+        return invoiceOffsetRepository.findAll(cr);
+    }
+
+    @Override
+    public List<InvoiceOffset> findTodo(InvoiceOffsetRequestForm form) {
+        InvoiceOffsetSpecification spec = new InvoiceOffsetSpecification();
+        Specification<InvoiceOffset> cr = Specification.where(spec.contractNameLike(form))
+                .and(spec.leftJoinRuTask(form));
+        return invoiceOffsetRepository.findAll(cr);
+    }
+
     static class InvoiceOffsetSpecification extends CommonSpecifications<InvoiceOffsetRequestForm, InvoiceOffset> {
 
         public Specification<InvoiceOffset> contractNameLike(InvoiceOffsetRequestForm form) {
@@ -233,6 +253,39 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 }
                 return null;
             };
+        }
+
+        public Specification<InvoiceOffset> leftJoinRuTask(InvoiceOffsetRequestForm form) {
+            return (root, query, builder) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                Join<InvoiceOffset, ActRuTask> taskJoin = root.join("currentTask", JoinType.LEFT);
+                if (StringUtils.isNotBlank(form.getUserid())) {
+                    predicates.add(builder.equal(taskJoin.get("assignee"), form.getUserid()));
+                }
+                return builder.and(predicates.toArray(new Predicate[0]));
+            };
+        }
+
+        public Specification<InvoiceOffset> leftJoinHiTask(InvoiceOffsetRequestForm form) {
+            return (root, query, builder) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                Join<InvoiceOffset, ActHiTaskInstance> taskJoin = root.join("invokedTask", JoinType.LEFT);
+                if (StringUtils.isNotBlank(form.getUserid())) {
+                    predicates.add(builder.equal(taskJoin.get("assignee"), form.getUserid()));
+                }
+                if (StringUtils.isNotBlank(form.getProcDefKey())) {
+                    predicates.add(builder.equal(taskJoin.get("procDefKey"), form.getTaskDefKey()));
+                }
+                predicates.add(builder.notLike(taskJoin.get("taskDefKey"), like("apply")));
+                if (form.getQueryMode() == 1) {
+                    //todo_
+                    predicates.add(builder.isNull(taskJoin.get("endTime")));
+                } else if (form.getQueryMode() == 2) {
+                    predicates.add(builder.isNotNull(taskJoin.get("endTime")));
+                }
+                return builder.and(predicates.toArray(new Predicate[0]));
+            };
+
         }
 
     }

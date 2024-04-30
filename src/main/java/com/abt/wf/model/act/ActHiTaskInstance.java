@@ -1,13 +1,13 @@
 package com.abt.wf.model.act;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.abt.wf.entity.InvoiceOffset;
+import com.abt.wf.entity.WorkflowBase;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.Nationalized;
 
 import java.math.BigDecimal;
@@ -136,4 +136,26 @@ public class ActHiTaskInstance {
     @Column(name = "REMOVAL_TIME_")
     private LocalDateTime removalTime;
 
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "proc_inst_id")
+//    private InvoiceOffset invoiceOffset;
+
+    @Override
+    public String toString() {
+        return "ActHiTaskInstance{" +
+                "id='" + id + '\'' +
+                ", taskDefKey='" + taskDefKey + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", procDefId='" + procDefId + '\'' +
+                ", rootProcInstId='" + rootProcInstId + '\'' +
+                ", procInstId='" + procInstId + '\'' +
+                ", name='" + name + '\'' +
+                ", parentTaskId='" + parentTaskId + '\'' +
+                ", assignee='" + assignee + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", deleteReason='" + deleteReason + '\'' +
+                '}';
+    }
 }
