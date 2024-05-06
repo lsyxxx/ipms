@@ -1,6 +1,7 @@
 package com.abt.wf.service;
 
 import com.abt.common.model.RequestForm;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -39,12 +40,6 @@ public interface BusinessService<T extends RequestForm, R> {
      */
     List<R> findMyTodoByCriteria(T requestForm);
     int countMyTodoByCriteria(T requestForm);
-
-
-
-
-
-
 
     R saveEntity(R entity);
     R load(String entityId);

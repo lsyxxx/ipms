@@ -1,9 +1,6 @@
 package com.abt.wf.model.act;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -12,6 +9,7 @@ import org.hibernate.annotations.Nationalized;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,29 +19,29 @@ public class ActHiProcInstance {
     @Id
     @Size(max = 64)
     @Nationalized
-    @Column(name = "ID_", nullable = false, length = 64)
+    @Column(name = "ID_", nullable = false, length = 64, columnDefinition = "NVARCHAR")
     private String id;
 
     @Size(max = 64)
     @NotNull
     @Nationalized
-    @Column(name = "PROC_INST_ID_", nullable = false, length = 64)
+    @Column(name = "PROC_INST_ID_", nullable = false, length = 64, columnDefinition = "NVARCHAR")
     private String procInstId;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "BUSINESS_KEY_")
+    @Column(name = "BUSINESS_KEY_", columnDefinition = "NVARCHAR")
     private String businessKey;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "PROC_DEF_KEY_")
+    @Column(name = "PROC_DEF_KEY_", columnDefinition = "NVARCHAR")
     private String procDefKey;
 
     @Size(max = 64)
     @NotNull
     @Nationalized
-    @Column(name = "PROC_DEF_ID_", nullable = false, length = 64)
+    @Column(name = "PROC_DEF_ID_", nullable = false, length = 64, columnDefinition = "NVARCHAR")
     private String procDefId;
 
     @NotNull
@@ -57,56 +55,56 @@ public class ActHiProcInstance {
     private LocalDateTime removalTime;
 
     @Column(name = "DURATION_", precision = 19)
-    private BigDecimal duration;
+    private Integer duration;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "START_USER_ID_")
+    @Column(name = "START_USER_ID_", columnDefinition = "NVARCHAR")
     private String startUserId;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "START_ACT_ID_")
+    @Column(name = "START_ACT_ID_", columnDefinition = "NVARCHAR")
     private String startActId;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "END_ACT_ID_")
+    @Column(name = "END_ACT_ID_", columnDefinition = "NVARCHAR")
     private String endActId;
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "SUPER_PROCESS_INSTANCE_ID_", length = 64)
+    @Column(name = "SUPER_PROCESS_INSTANCE_ID_", length = 64, columnDefinition = "NVARCHAR")
     private String superProcessInstanceId;
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "ROOT_PROC_INST_ID_", length = 64)
+    @Column(name = "ROOT_PROC_INST_ID_", length = 64, columnDefinition = "NVARCHAR")
     private String rootProcInstId;
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "SUPER_CASE_INSTANCE_ID_", length = 64)
+    @Column(name = "SUPER_CASE_INSTANCE_ID_", length = 64, columnDefinition = "NVARCHAR")
     private String superCaseInstanceId;
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "CASE_INST_ID_", length = 64)
+    @Column(name = "CASE_INST_ID_", length = 64, columnDefinition = "NVARCHAR")
     private String caseInstId;
 
     @Size(max = 4000)
     @Nationalized
-    @Column(name = "DELETE_REASON_", length = 4000)
+    @Column(name = "DELETE_REASON_", length = 4000, columnDefinition = "NVARCHAR")
     private String deleteReason;
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "TENANT_ID_", length = 64)
+    @Column(name = "TENANT_ID_", length = 64, columnDefinition = "NVARCHAR")
     private String tenantId;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "STATE_")
+    @Column(name = "STATE_", columnDefinition = "NVARCHAR")
     private String state;
 
     @Override

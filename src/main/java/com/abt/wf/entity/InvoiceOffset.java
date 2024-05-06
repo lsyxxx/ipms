@@ -49,7 +49,7 @@ public class InvoiceOffset extends WorkflowBase {
      * 累计回票金额
      */
     @Column(name = "acc_inv", columnDefinition = "DECIMAL(10,2)")
-    private double accumulatedInvoice;
+    private Double accumulatedInvoice;
     /**
      * 供应商
      */
@@ -120,17 +120,6 @@ public class InvoiceOffset extends WorkflowBase {
     //-------------------------------------
     //  Transient
     //------------------------------------
-    @OneToOne
-    @JoinColumn(name = "proc_inst_id", referencedColumnName = "ID_", insertable = false, updatable = false)
-    private ActHiProcInstance procInstance;
-
-    @OneToOne
-    @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", insertable = false, updatable = false)
-    private ActRuTask currentTask;
-
-    @OneToMany(mappedBy = "", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ActHiTaskInstance> invokedTask = new ArrayList<>();
-
     @Transient
     private String decision;
     @Transient

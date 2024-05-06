@@ -2,8 +2,6 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.model.User;
 import com.abt.wf.config.WorkFlowConfig;
-import com.abt.wf.entity.Loan;
-import com.abt.wf.model.LoanRequestForm;
 import com.abt.wf.model.TaskWrapper;
 import com.abt.wf.model.act.ActHiTaskInstance;
 import com.abt.wf.model.act.ActRuTask;

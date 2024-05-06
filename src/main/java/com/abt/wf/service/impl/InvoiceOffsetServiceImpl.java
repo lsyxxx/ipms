@@ -97,7 +97,24 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     @Override
     public List<InvoiceOffset> findAllByCriteriaPageable(InvoiceOffsetRequestForm requestForm) {
         return List.of();
+    }
 
+    @Override
+    public Page<InvoiceOffset> findAllByCriteriaPaged(InvoiceOffsetRequestForm requestForm) {
+        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
+                Sort.by(Sort.Order.desc("createDate")));
+        InvoiceOffsetSpecification spec = new InvoiceOffsetSpecification();
+        Specification<InvoiceOffset> cr = Specification.where(spec.beforeEndDate(requestForm))
+                .and(spec.afterStartDate(requestForm))
+                .and(spec.createUseridEqual(requestForm))
+                .and(spec.createUsernameLike(requestForm))
+                .and(spec.stateEqual(requestForm))
+                .and(spec.entityIdLike(requestForm))
+                .and(spec.contractNameLike(requestForm));
+
+        Page<InvoiceOffset> all = invoiceOffsetRepository.findAll(cr, page);
+        all.getContent().forEach(this::buildActiveTask);
+        return all;
     }
 
     @Override
@@ -118,20 +135,9 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         return invoiceOffsetRepository.findAll(cr);
     }
 
+    @Override
     public Page<InvoiceOffset> findMyApplyByCriteriaPaged(InvoiceOffsetRequestForm requestForm) {
-        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
-                Sort.by(Sort.Order.desc("createDate")));
-        InvoiceOffsetSpecification spec = new InvoiceOffsetSpecification();
-        Specification<InvoiceOffset> cr = Specification.where(spec.beforeEndDate(requestForm))
-                .and(spec.afterStartDate(requestForm))
-                .and(spec.createUsernameLike(requestForm))
-                .and(spec.stateEqual(requestForm))
-                .and(spec.entityIdLike(requestForm))
-                .and(spec.contractNameLike(requestForm));
-
-        Page<InvoiceOffset> all = invoiceOffsetRepository.findAll(cr, page);
-        all.getContent().forEach(this::buildActiveTask);
-        return all;
+        return this.findAllByCriteriaPaged(requestForm);
     }
 
     public void buildActiveTask(InvoiceOffset entity) {
@@ -144,7 +150,6 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         entity.setCurrentTaskName(task.getName());
         entity.setCurrentTaskDefId(task.getTaskDefKey());
         entity.setCurrentTaskStartTime(task.getCreateTime());
-        entity.setCurrentTaskAssigneeName(task.getAssigneeInfo().getName());
     }
 
 
@@ -158,22 +163,26 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<InvoiceOffset> findMyDoneByCriteriaPageable(InvoiceOffsetRequestForm requestForm) {
-        return List.of();
+        return invoiceOffsetTaskRepository.findDoneList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
     }
 
     @Override
     public int countMyDoneByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return 0;
+        return invoiceOffsetTaskRepository.countDoneList(requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
     }
 
     @Override
     public List<InvoiceOffset> findMyTodoByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return List.of();
+       return invoiceOffsetTaskRepository.findTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
     }
 
     @Override
     public int countMyTodoByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return 0;
+        return invoiceOffsetTaskRepository.countTodoList(requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
     }
 
     @Override
@@ -228,21 +237,6 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         return load;
     }
 
-    @Override
-    public List<InvoiceOffset> findDone(InvoiceOffsetRequestForm form) {
-        InvoiceOffsetSpecification spec = new InvoiceOffsetSpecification();
-        Specification<InvoiceOffset> cr = Specification.where(spec.contractNameLike(form))
-                        .and(spec.leftJoinHiTask(form));
-        return invoiceOffsetRepository.findAll(cr);
-    }
-
-    @Override
-    public List<InvoiceOffset> findTodo(InvoiceOffsetRequestForm form) {
-        InvoiceOffsetSpecification spec = new InvoiceOffsetSpecification();
-        Specification<InvoiceOffset> cr = Specification.where(spec.contractNameLike(form))
-                .and(spec.leftJoinRuTask(form));
-        return invoiceOffsetRepository.findAll(cr);
-    }
 
     static class InvoiceOffsetSpecification extends CommonSpecifications<InvoiceOffsetRequestForm, InvoiceOffset> {
 

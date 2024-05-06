@@ -131,18 +131,4 @@ public class Reimburse extends WorkflowBase {
     @Column(columnDefinition="VARCHAR(1600)")
     private String managers;
 
-
-
-    //-------------------------------------
-    //  Transient
-    //------------------------------------
-
-//    @OneToOne
-//    @JoinColumn(name = "proc_inst_id", referencedColumnName = "ID_", insertable = false, updatable = false)
-//    private ActHiProcInstance procInstance;
-//
-//    @OneToOne
-//    @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", insertable = false, updatable = false)
-//    private ActRuTask currentTask;
-
 }

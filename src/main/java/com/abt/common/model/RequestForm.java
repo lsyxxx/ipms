@@ -69,6 +69,7 @@ public class RequestForm {
      * 结束日期;
      */
     private String endDate;
+    private String createUserid;
 
     /**
      * 是否分页

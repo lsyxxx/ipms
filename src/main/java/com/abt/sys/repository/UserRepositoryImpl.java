@@ -78,17 +78,16 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public User getEmployeeDeptByUserid(String userid) {
-        String sql = "select e.JobNumber as jobNumber, e.Name, e.Id, o.Id as deptId, o.Name as deptName, e.banzhudept as teamId, so.Name as teamName " +
-                "from T_EmployeeInfo e " +
-                "left join Org o on e.Dept = o.Id " +
-                "left join Org so on e.banzhudept = so.Id " +
-                "left join [dbo].[User] u on u.empnum = e.JobNumber " +
-                "where u.Id = ?";
-        final List<User> list = jdbcTemplate.query(sql, new UserDeptRowMapper(), userid);
-        if (!CollectionUtils.isEmpty(list)) {
-            return list.get(0);
-        }
-        return new User(userid);
+        String sql = "select u.Id, u.empnum as jobNumber,  u.Name, d.Dept as deptId, d.deptName, d.banzhudept as teamId, d.banzuName as teamName " +
+                "from [dbo].[User] u " +
+                "left join ( " +
+                    "select e.Id, e.JobNumber, e.Dept, o.Name as deptName, e.banzhudept, f.Name as banzuName " +
+                    "from T_EmployeeInfo e " +
+                    "left join Org o on e.Dept = o.Id " +
+                    "left join Org f on e.banzhudept = f.Id " +
+                ") d on u.empnum = d.JobNumber " +
+                "where u.Id = ? ";
+        return jdbcTemplate.queryForObject(sql, new UserDeptRowMapper(), userid);
     }
 
 

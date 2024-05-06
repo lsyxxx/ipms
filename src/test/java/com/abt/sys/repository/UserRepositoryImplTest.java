@@ -23,4 +23,11 @@ class UserRepositoryImplTest {
         final User user = userRepository.getEmployeeDeptByJobNumber("112");
         System.out.println(user.toString());
     }
+
+    @Test
+    void getUser() {
+        final User user = userRepository.getEmployeeDeptByUserid("621faa40-f45c-4da8-9a8f-65b0c5353f40");
+        assertNotNull(user);
+        System.out.println(user.toString());
+    }
 }

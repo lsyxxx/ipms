@@ -21,6 +21,7 @@ class PayVoucherRepositoryTest {
 
     @Autowired
     private PayVoucherTaskRepository payVoucherTaskRepository;;
+    @Autowired PayVoucherRepository payVoucherRepository;
 
     @Test
     void findDoneList() {
@@ -39,4 +40,9 @@ class PayVoucherRepositoryTest {
         System.out.println(list.size());
         list.forEach(item -> System.out.println(item.toString()));
     }
+
+//    void findById() {
+//        payVoucherRepository.findById("");
+//    }
+
 }

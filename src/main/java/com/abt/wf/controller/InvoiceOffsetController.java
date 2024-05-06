@@ -3,6 +3,7 @@ package com.abt.wf.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
@@ -12,6 +13,8 @@ import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceOffsetService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +26,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @AllArgsConstructor
-@RequestMapping("/invoffset")
+@RequestMapping("/wf/invoffset")
 public class InvoiceOffsetController {
     private final InvoiceOffsetService invoiceOffsetService;
 
@@ -43,6 +46,7 @@ public class InvoiceOffsetController {
     public R<List<InvoiceOffset>> todoList(@ModelAttribute InvoiceOffsetRequestForm requestForm) {
         setTokenUser(requestForm);
         //criteria
+        //申请人，申请时间，审批编号
         final List<InvoiceOffset> todo = invoiceOffsetService.findMyTodoByCriteria(requestForm);
         final int total = invoiceOffsetService.countMyTodoByCriteria(requestForm);
         return R.success(todo, todo.size());
@@ -59,20 +63,21 @@ public class InvoiceOffsetController {
     @GetMapping("/myapply")
     public R<List<InvoiceOffset>> myApplyList(InvoiceOffsetRequestForm requestForm) {
         setTokenUser(requestForm);
-        final List<InvoiceOffset> myApply = invoiceOffsetService.findMyApplyByCriteriaPageable(requestForm);
-        final int total = invoiceOffsetService.countMyApplyByCriteria(requestForm);
-        return R.success(myApply, total);
+        final Page<InvoiceOffset> myApply = invoiceOffsetService.findMyApplyByCriteriaPaged(requestForm);
+        return R.success(myApply.getContent(), (int) myApply.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<InvoiceOffset>> all(@ModelAttribute InvoiceOffsetRequestForm requestForm) {
-        final List<InvoiceOffset> all = invoiceOffsetService.findAllByCriteriaPageable(requestForm);
-        final int total = invoiceOffsetService.countAllByCriteria(requestForm);
-        return R.success(all, total);
+        final Page<InvoiceOffset> all = invoiceOffsetService.findAllByCriteriaPaged(requestForm);
+        return R.success(all.getContent(), (int)all.getTotalElements());
     }
 
     @GetMapping("/load/{id}")
     public R<InvoiceOffset> load(@PathVariable String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("审批编号不能为空!");
+        }
         InvoiceOffset invoiceApply = invoiceOffsetService.getEntityWithCurrentTask(id);
         return R.success(invoiceApply);
     }

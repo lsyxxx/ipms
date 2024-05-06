@@ -131,7 +131,7 @@ public class InvoiceOffsetTaskRepositoryImpl extends AbstractBaseQueryRepository
             form.setProject(rs.getString("project_"));
             form.setProjectId(rs.getString("project_id"));
             form.setProjectType(rs.getString("project_type"));
-            form.setAccumulatedInvoice(rs.getString("acc_inv"));
+            form.setAccumulatedInvoice(rs.getDouble("acc_inv"));
             form.setSupplierId(rs.getString("supplier_id"));
             form.setSupplierName(rs.getString("supplier_name"));
             form.setContractName(rs.getString("contract_name"));
@@ -140,7 +140,7 @@ public class InvoiceOffsetTaskRepositoryImpl extends AbstractBaseQueryRepository
             form.setInvoiceAmount(rs.getDouble("inv_amt"));
             form.setInvoiceCode(rs.getString("inv_code"));
             form.setInvoiceType(rs.getString("inv_type"));
-            form.setRemark(rs.getString("remark"));
+            form.setRemark(rs.getString("remark_"));
             form.setFileList(rs.getString("file_list"));
             form.setManagers(rs.getString("managers"));
             return form;
