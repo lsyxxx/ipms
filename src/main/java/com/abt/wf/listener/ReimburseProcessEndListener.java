@@ -1,18 +1,13 @@
 package com.abt.wf.listener;
 
-import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.NotifyMessage;
 import com.abt.sys.service.NotifyMessageService;
 import com.abt.wf.config.Constants;
-import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
-import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.ReimburseService;
 import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
-import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -42,7 +37,7 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             log.error("流程参数中未保存业务实体id! 流程实例id: {}", execution.getProcessInstanceId());
         } else {
             entityId = obj.toString();
-            Reimburse rbs = reimburseService.findById(entityId);
+            Reimburse rbs = reimburseService.load(entityId);
             //判断流程状态
             if (Constants.STATE_DETAIL_ACTIVE.equals(rbs.getBusinessState())) {
                 //表示之前一直正常通过，特殊状态在业务中已更改状态

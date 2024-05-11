@@ -48,4 +48,13 @@ public class WorkflowController {
         final List<User> defaultCopyUsers = activitiService.findDefaultCopyUsers();
         return R.success(defaultCopyUsers, defaultCopyUsers.size());
     }
+
+    /**
+     * 获取用户最近的财务类待办事项
+     */
+    public void financeUserTodo() {
+        UserView user = TokenUtil.getUserFromAuthToken();
+
+    }
+
 }

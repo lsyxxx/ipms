@@ -16,4 +16,6 @@ public class ReimburseRequestForm extends RequestForm {
     private String queryUserid;
     private String queryUsername;
 
+    private String project;
+
 }

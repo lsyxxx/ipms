@@ -39,9 +39,13 @@ public abstract class AbstractBaseQueryRepositoryImpl {
                 "from ACT_RU_TASK t " +
                 "left join " + entityTable + " e on e.proc_inst_id = t.PROC_INST_ID_ " +
                 "left join [dbo].[User] su on e.create_userid = su.Id " +
+                "left join ACT_RU_IDENTITYLINK i on t.ID_ = i.TASK_ID_ " +
                 "where 1=1 " +
                 "and e.is_del = 0 " +
-                "and t.TASK_DEF_KEY_ not like '%apply%' ";
+                "and t.TASK_DEF_KEY_ not like '%apply%' "
+                //候选人
+//                "or (t.ASSIGNEE_ is null and i.USER_ID_ = ? and i.TYPE_ = 'candidate') ";
+                ;
     }
 
     public static String countTodoSql(String entityTable) {

@@ -81,9 +81,21 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public List<SupplyInfo> findAllSupplier() {
-        return supplyInfoRepository.findAll();
+    public List<String> findAllSupplier() {
+        return supplyInfoRepository.findDistinctActiveSupplierNames();
     }
+
+    @Override
+    public SupplyInfo addSupplier(SupplyInfo supplyInfo) {
+        return supplyInfoRepository.save(supplyInfo);
+    }
+
+
+    @Override
+    public CustomerInfo addCustomer(CustomerInfo customer) {
+        return customerInfoRepository.save(customer);
+    }
+
 
     class CustomerInfoSpecification extends CommonSpecification<CustomerRequestForm, CustomerInfo> {
 

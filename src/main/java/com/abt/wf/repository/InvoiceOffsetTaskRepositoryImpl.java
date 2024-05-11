@@ -58,8 +58,11 @@ public class InvoiceOffsetTaskRepositoryImpl extends AbstractBaseQueryRepository
     public List<InvoiceOffset> findTodoList(int page, int limit, String userid, String username, String startDate, String endDate, String state, String idLike,  String contractName) {
         List<Object> params = new ArrayList<>();
         String sql = todoSql(TABLE_INVOFFSET);
+        //候选人
+        sql += " or (t.ASSIGNEE_ is null and i.USER_ID_ = ? and i.TYPE_ = 'candidate') ";
         sql = sql + "and t.PROC_DEF_ID_ like '%" + DEF_KEY_INVOFFSET + "%' and t.assignee_ = ? ";
         params.add(username); //? as cur_task_assignee_name,
+        params.add(userid);     //i.USER_ID_ = ?
         params.add(userid);   //rt.assignee_ = ?
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, contractName);
 
@@ -74,7 +77,9 @@ public class InvoiceOffsetTaskRepositoryImpl extends AbstractBaseQueryRepository
     public int countTodoList(String userid, String username, String startDate, String endDate, String state, String idLike,  String contractName) {
         List<Object> params = new ArrayList<>();
         String sql = countTodoSql(TABLE_INVOFFSET);
+        sql += " or (t.ASSIGNEE_ is null and i.USER_ID_ = ? and i.TYPE_ = 'candidate') ";
         sql = sql + "and t.PROC_DEF_ID_ like '%" + DEF_KEY_INVOFFSET + "%' and t.assignee_ = ? ";
+        params.add(userid);     //i.USER_ID_ = ?
         params.add(userid);   //rt.assignee_ = ?
         sql = conditionSql(sql, params, startDate, endDate, state, idLike, contractName);
 
@@ -143,6 +148,8 @@ public class InvoiceOffsetTaskRepositoryImpl extends AbstractBaseQueryRepository
             form.setRemark(rs.getString("remark_"));
             form.setFileList(rs.getString("file_list"));
             form.setManagers(rs.getString("managers"));
+            form.setTitle(rs.getString("title_"));
+            workflowBaseAndTaskSetter(form, rs);
             return form;
         }
     }

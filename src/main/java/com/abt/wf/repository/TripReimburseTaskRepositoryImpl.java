@@ -105,16 +105,17 @@ public class TripReimburseTaskRepositoryImpl extends AbstractBaseQueryRepository
 
     @Override
     String between(String startDate, String endDate, List<Object> params) {
-        String sql = "";
-        if (StringUtils.isNotBlank(startDate)) {
-            sql += "and t.create_date >= ? ";
-            params.add(startDate);
-        }
-        if (StringUtils.isNotBlank(endDate)) {
-            sql += "and t.create_date <= ? ";
-            params.add(endDate);
-        }
-        return sql;
+//        String sql = "";
+//        if (StringUtils.isNotBlank(startDate)) {
+//            sql += "and t.create_date >= ? ";
+//            params.add(startDate);
+//        }
+//        if (StringUtils.isNotBlank(endDate)) {
+//            sql += "and t.create_date <= ? ";
+//            params.add(endDate);
+//        }
+//        return sql;
+        return this.commonBetween(startDate, endDate, params);
     }
 
     class TripReimburseRowMapper implements RowMapper<TripReimburse> {

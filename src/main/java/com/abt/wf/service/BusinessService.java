@@ -1,6 +1,7 @@
 package com.abt.wf.service;
 
 import com.abt.common.model.RequestForm;
+import org.camunda.bpm.engine.task.Task;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -45,4 +46,10 @@ public interface BusinessService<T extends RequestForm, R> {
     R load(String entityId);
     String getEntityId(R entity);
     String getServiceName();
+
+    /**
+     * task service是否支持
+     */
+//    boolean supports(Task task);
+
 }

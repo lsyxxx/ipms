@@ -11,7 +11,6 @@ import com.abt.wf.entity.InvoiceOffset;
 import com.abt.wf.model.InvoiceOffsetRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceOffsetService;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -25,10 +24,13 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@AllArgsConstructor
 @RequestMapping("/wf/invoffset")
 public class InvoiceOffsetController {
     private final InvoiceOffsetService invoiceOffsetService;
+
+    public InvoiceOffsetController(InvoiceOffsetService invoiceOffsetService) {
+        this.invoiceOffsetService = invoiceOffsetService;
+    }
 
     @PostMapping("/apply")
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody InvoiceOffset form) {
@@ -49,7 +51,7 @@ public class InvoiceOffsetController {
         //申请人，申请时间，审批编号
         final List<InvoiceOffset> todo = invoiceOffsetService.findMyTodoByCriteria(requestForm);
         final int total = invoiceOffsetService.countMyTodoByCriteria(requestForm);
-        return R.success(todo, todo.size());
+        return R.success(todo, total);
     }
 
     @GetMapping("/done")
@@ -63,13 +65,13 @@ public class InvoiceOffsetController {
     @GetMapping("/myapply")
     public R<List<InvoiceOffset>> myApplyList(InvoiceOffsetRequestForm requestForm) {
         setTokenUser(requestForm);
-        final Page<InvoiceOffset> myApply = invoiceOffsetService.findMyApplyByCriteriaPaged(requestForm);
+        final Page<InvoiceOffset> myApply = invoiceOffsetService.findAllByCriteria(requestForm);
         return R.success(myApply.getContent(), (int) myApply.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<InvoiceOffset>> all(@ModelAttribute InvoiceOffsetRequestForm requestForm) {
-        final Page<InvoiceOffset> all = invoiceOffsetService.findAllByCriteriaPaged(requestForm);
+        final Page<InvoiceOffset> all = invoiceOffsetService.findAllByCriteria(requestForm);
         return R.success(all.getContent(), (int)all.getTotalElements());
     }
 

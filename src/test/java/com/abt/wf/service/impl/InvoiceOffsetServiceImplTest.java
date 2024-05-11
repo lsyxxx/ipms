@@ -61,12 +61,11 @@ class InvoiceOffsetServiceImplTest {
 //        form.setQueryMode(1);
 //        form.setProcDefKey("rbsInvOffset");
         form.setLimit(20);
-        form.setUserid(USER_ID);
+        form.setUserid("USER_ID");
 //        form.setUsername(USER_NAME);
-        final Page<InvoiceOffset> all = invoiceOffsetService.findAllByCriteriaPaged(form);
-        assertNotNull(all);
-        System.out.println(all.getContent().size());
+        final Page<InvoiceOffset> all = invoiceOffsetService.findAllByCriteria(form);
         System.out.println(all.getTotalElements());
+        all.getContent().forEach(i -> System.out.println(i.toString()));
     }
 
 

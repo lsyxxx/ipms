@@ -43,6 +43,13 @@ public class CreditBook extends AuditInfo {
     private double expense;
 
     /**
+     * 关联会计科目id
+     */
+    @NotNull
+    @Column(name="exp_id", columnDefinition="VARCHAR(128)")
+    private String expenseId;
+
+    /**
      * 费用类型
      */
     @NotNull
@@ -147,13 +154,11 @@ public class CreditBook extends AuditInfo {
     @Column(columnDefinition="VARCHAR(128)")
     private String project;
 
-
     /**
      * 业务简述
      */
     @Column(name="desc_", columnDefinition="VARCHAR(512)")
     private String desc;
-
 
 }
 

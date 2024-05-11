@@ -1,14 +1,12 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
-import com.abt.sys.model.entity.EmployeeInfo;
-import com.abt.wf.model.act.ActHiProcInstance;
-import com.abt.wf.model.act.ActHiTaskInstance;
-import com.abt.wf.model.act.ActRuTask;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
@@ -25,6 +23,7 @@ import static com.abt.wf.config.Constants.*;
 @DynamicUpdate
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class InvoiceOffset extends WorkflowBase {
     @Id
     @Column(name = "id", nullable = false)
@@ -34,6 +33,10 @@ public class InvoiceOffset extends WorkflowBase {
 
     @Column(name = "company_", nullable = false, columnDefinition = "VARCHAR(64)")
     private String company;
+
+    @NotNull(message = "标题不能为空", groups = {ValidateGroup.Save.class})
+    @Column(name = "title_", columnDefinition = "VARCHAR(128)")
+    private String title;
 
     @Column(name = "project_", columnDefinition = "VARCHAR(128)")
     private String project;
@@ -120,6 +123,7 @@ public class InvoiceOffset extends WorkflowBase {
     //-------------------------------------
     //  Transient
     //------------------------------------
+
     @Transient
     private String decision;
     @Transient
@@ -131,7 +135,11 @@ public class InvoiceOffset extends WorkflowBase {
     public Map<String, Object> createVariableMap() {
         this.variableMap = new HashMap<>();
         variableMap.put(KEY_STARTER, this.getSubmitUserid());
-
+        if (StringUtils.isBlank(this.getManagers())) {
+            variableMap.put(KEY_MANAGER, List.of());
+        } else {
+            variableMap.put(KEY_MANAGER, List.of(this.getManagers().split(",")));
+        }
         return this.variableMap;
     }
 

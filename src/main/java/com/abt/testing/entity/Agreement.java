@@ -79,12 +79,12 @@ public class Agreement implements CommonJpaAudit {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "jCompanyId")
+    @JoinColumn(name = "jCompanyId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private CustomerInfo jCompany;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "yCompanyId")
+    @JoinColumn(name = "yCompanyId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private CustomerInfo yCompany;
 
 

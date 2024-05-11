@@ -58,7 +58,7 @@ public class InvoiceApply extends WorkflowBase {
     /**
      * 客户
      */
-    @Column(name="client_id", columnDefinition="VARCHAR(32)")
+    @Column(name="client_id", columnDefinition="VARCHAR(128)")
     private String clientId;
     @Column(name="client_name", columnDefinition="VARCHAR(128)")
     private String clientName;

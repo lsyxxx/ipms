@@ -1,10 +1,12 @@
 package com.abt.finance.service.impl;
 
 import com.abt.common.model.User;
+import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.entity.DebitBook;
 import com.abt.finance.model.CashRequestForm;
+import com.abt.finance.repository.AccountItemRepository;
 import com.abt.finance.repository.BankAccountRepository;
 import com.abt.finance.repository.CreditBookRepository;
 import com.abt.finance.repository.DebitBookRepository;
@@ -37,7 +39,6 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
 
     private final CreditBookRepository creditBookRepository;
     private final DebitBookRepository debitBookRepository;
-
     private final BankAccountRepository bankAccountRepository;
     private final UserService<User, User> userService;
 
@@ -126,10 +127,6 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
         final List<UserRole> roleList = userService.getUserRoleByUserid(userid);
         log.trace("======== user {}, rolelist: {}", userid, roleList);
         return roleList.stream().anyMatch(i -> AUTH_BOOKKEEPING.equals(i.getRoleId()));
-    }
-
-    public void createCreditBookExcel() {
-
     }
 
     static class CreditSpecifications {

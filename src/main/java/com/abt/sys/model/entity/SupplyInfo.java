@@ -1,6 +1,8 @@
 package com.abt.sys.model.entity;
 
+import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.service.impl.CommonJpaAudit;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,6 +12,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +20,8 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "T_Supply_Info")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@EntityListeners({AuditingEntityListener.class, CommonJpaAuditListener.class})
 public class SupplyInfo implements CommonJpaAudit {
     @Id
     @Size(max = 50)
@@ -27,7 +32,7 @@ public class SupplyInfo implements CommonJpaAudit {
     @Size(max = 50)
     @NotNull
     @Column(name = "Supplierid", nullable = false, length = 50)
-    private String supplierid;
+    private String supplierId = "";
 
     @Size(max = 200)
     @Column(name = "SupplierName", length = 200)
@@ -118,7 +123,14 @@ public class SupplyInfo implements CommonJpaAudit {
 
     @Size(max = 4)
     @Column(name = "IsAvtive", length = 4)
-    private String isAvtive;
+    private String isActive;
+
+    public static final String ACTIVE = "1";
+
+
+    public boolean isActive() {
+        return ACTIVE.equals(this.isActive);
+    }
 
     @Override
     public String getCreateUserid() {

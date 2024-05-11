@@ -4,7 +4,6 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.wf.entity.InvoiceOffset;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.InvoiceOffsetRequestForm;
-import com.abt.wf.model.act.ActHiTaskInstance;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,29 +25,9 @@ class InvoiceOffsetRepositoryTest {
 
     @Test
     void find() {
-        invoiceOffsetRepository.findById("d38dd554-2a37-4354-b324-2d573bd379f0").ifPresent(i -> {
-//            assertNotNull(i.getInvokedTask());
-//            for (ActHiTaskInstance task : i.getInvokedTask()) {
-//                System.out.println(task.toString());
-//            }
-
-//            assertNotNull(i.getCurrentTask());
-//            System.out.println("----currentTask----");
-//            System.out.println(i.getCurrentTask().toString());
-//
-//            assertNotNull(i.getProcInstance());
-//
-//            System.out.println("-------procInstance----");
-//            System.out.println(i.getProcInstance().toString());
-
-//            System.out.println("-------hiTaskInstance----");
-//            System.out.println(i.getInvokedTask().toString());
-
-//            assertNotNull(i.getInvokedTask());
-//            System.out.println("----invokedTask----");
-//            i.getInvokedTask().forEach(j -> {
-//                System.out.println(j.toString());
-//            });
+        invoiceOffsetRepository.findById("202405081715147042038").ifPresent(i -> {
+            assertNotNull(i.getCurrentTask());
+            System.out.println(i.getCurrentTask());
 
         });
     }
@@ -81,7 +60,6 @@ class InvoiceOffsetRepositoryTest {
     void queryWithCurrentTask() {
         final InvoiceOffset invoiceOffset = invoiceOffsetRepository.findById("202405061714967471225").orElseThrow(() -> new BusinessException("未查询到"));
         assertNotNull(invoiceOffset);
-        System.out.println(invoiceOffset.getProcInstance().toString());
 
     }
 

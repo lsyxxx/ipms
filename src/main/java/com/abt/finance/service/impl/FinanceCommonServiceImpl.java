@@ -1,6 +1,8 @@
 package com.abt.finance.service.impl;
 
+import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
+import com.abt.finance.repository.AccountItemRepository;
 import com.abt.finance.repository.BankAccountRepository;
 import com.abt.finance.service.FinanceCommonService;
 import org.springframework.data.domain.Sort;
@@ -15,9 +17,13 @@ import java.util.List;
 public class FinanceCommonServiceImpl implements FinanceCommonService {
 
     private final BankAccountRepository bankAccountRepository;
+    private final AccountItemRepository accountItemRepository;
 
-    public FinanceCommonServiceImpl(BankAccountRepository bankAccountRepository) {
+
+
+    public FinanceCommonServiceImpl(BankAccountRepository bankAccountRepository, AccountItemRepository accountItemRepository) {
         this.bankAccountRepository = bankAccountRepository;
+        this.accountItemRepository = accountItemRepository;
     }
 
     @Override
@@ -33,6 +39,11 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
     @Override
     public List<BankAccount> loadAllBankAccounts() {
         return bankAccountRepository.findAll(Sort.by(Sort.Direction.DESC, "account"));
+    }
+
+    @Override
+    public List<AccountItem> findAllAccountItemsEnabled() {
+        return accountItemRepository.findAllByIsActiveOrderByClassCodeAsc("1");
     }
 
 }

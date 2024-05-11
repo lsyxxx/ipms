@@ -3,19 +3,15 @@ package com.abt.wf.service.impl;
 import com.abt.common.model.ValidationResult;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
+import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.InvoiceOffset;
 import com.abt.wf.model.InvoiceOffsetRequestForm;
 import com.abt.wf.model.UserTaskDTO;
-import com.abt.wf.model.act.ActHiTaskInstance;
-import com.abt.wf.model.act.ActRuTask;
 import com.abt.wf.repository.InvoiceOffsetRepository;
 import com.abt.wf.repository.InvoiceOffsetTaskRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.InvoiceOffsetService;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.IdentityService;
@@ -23,6 +19,7 @@ import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
+import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,18 +28,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static com.abt.common.util.QueryUtil.like;
 import static com.abt.wf.config.Constants.SERVICE_INV_OFFSET;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_INVOFFSET;
 
 
 /**
  * 发票冲账流程
  */
-@Service
+@Service(DEF_KEY_INVOFFSET)
 @Slf4j
 public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<InvoiceOffset, InvoiceOffsetRequestForm> implements InvoiceOffsetService {
 
@@ -56,17 +53,22 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     private final InvoiceOffsetRepository invoiceOffsetRepository;
     private final InvoiceOffsetTaskRepository invoiceOffsetTaskRepository;
 
+    private final BpmnModelInstance invoiceOffsetBpmnModelInstance;
+
     public InvoiceOffsetServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
-                                    @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, IdentityService identityService1, RepositoryService repositoryService1, RuntimeService runtimeService1, TaskService taskService1, FlowOperationLogService flowOperationLogService1, UserService userService1, InvoiceOffsetRepository invoiceOffsetRepository, InvoiceOffsetTaskRepository invoiceOffsetTaskRepository) {
+                                    @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService,
+                                    InvoiceOffsetRepository invoiceOffsetRepository, InvoiceOffsetTaskRepository invoiceOffsetTaskRepository,
+                                    @Qualifier("invoiceOffsetBpmnModelInstance") BpmnModelInstance invoiceOffsetBpmnModelInstance) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
-        this.identityService = identityService1;
-        this.repositoryService = repositoryService1;
-        this.runtimeService = runtimeService1;
-        this.taskService = taskService1;
-        this.flowOperationLogService = flowOperationLogService1;
-        this.userService = userService1;
+        this.identityService = identityService;
+        this.repositoryService = repositoryService;
+        this.runtimeService = runtimeService;
+        this.taskService = taskService;
+        this.flowOperationLogService = flowOperationLogService;
+        this.userService = userService;
         this.invoiceOffsetRepository = invoiceOffsetRepository;
         this.invoiceOffsetTaskRepository = invoiceOffsetTaskRepository;
+        this.invoiceOffsetBpmnModelInstance = invoiceOffsetBpmnModelInstance;
     }
 
     @Override
@@ -100,22 +102,22 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
-    public Page<InvoiceOffset> findAllByCriteriaPaged(InvoiceOffsetRequestForm requestForm) {
-        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
+    public Page<InvoiceOffset> findAllByCriteria(InvoiceOffsetRequestForm requestForm) {
+        requestForm.forcePaged();
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("createDate")));
         InvoiceOffsetSpecification spec = new InvoiceOffsetSpecification();
-        Specification<InvoiceOffset> cr = Specification.where(spec.beforeEndDate(requestForm))
+        Specification<InvoiceOffset> criteria = Specification.where(spec.beforeEndDate(requestForm))
                 .and(spec.afterStartDate(requestForm))
-                .and(spec.createUseridEqual(requestForm))
                 .and(spec.createUsernameLike(requestForm))
                 .and(spec.stateEqual(requestForm))
                 .and(spec.entityIdLike(requestForm))
-                .and(spec.contractNameLike(requestForm));
-
-        Page<InvoiceOffset> all = invoiceOffsetRepository.findAll(cr, page);
+                .and(spec.createUseridEqual(requestForm));
+        final Page<InvoiceOffset> all = invoiceOffsetRepository.findAll(criteria, pageable);
         all.getContent().forEach(this::buildActiveTask);
         return all;
     }
+
 
     @Override
     public int countAllByCriteria(InvoiceOffsetRequestForm requestForm) {
@@ -124,41 +126,13 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<InvoiceOffset> findMyApplyByCriteriaPageable(InvoiceOffsetRequestForm requestForm) {
-        InvoiceOffsetSpecification spec = new InvoiceOffsetSpecification();
-        Specification<InvoiceOffset> cr = Specification.where(spec.beforeEndDate(requestForm))
-                .and(spec.afterStartDate(requestForm))
-                .and(spec.createUsernameLike(requestForm))
-                .and(spec.stateEqual(requestForm))
-                .and(spec.entityIdLike(requestForm))
-                .and(spec.contractNameLike(requestForm));
-
-        return invoiceOffsetRepository.findAll(cr);
-    }
-
-    @Override
-    public Page<InvoiceOffset> findMyApplyByCriteriaPaged(InvoiceOffsetRequestForm requestForm) {
-        return this.findAllByCriteriaPaged(requestForm);
-    }
-
-    public void buildActiveTask(InvoiceOffset entity) {
-        ActRuTask task = entity.getCurrentTask();
-        if (task == null) {
-            return;
-        }
-        entity.setCurrentTaskId(task.getId());
-        entity.setCurrentTaskAssigneeId(task.getAssignee());
-        entity.setCurrentTaskName(task.getName());
-        entity.setCurrentTaskDefId(task.getTaskDefKey());
-        entity.setCurrentTaskStartTime(task.getCreateTime());
-    }
-
-
-    public void buildInvokedTask(InvoiceOffset entity) {
+        return invoiceOffsetTaskRepository.findUserApplyList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
     }
 
     @Override
     public int countMyApplyByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return  0;
+        return 0;
     }
 
     @Override
@@ -175,7 +149,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<InvoiceOffset> findMyTodoByCriteria(InvoiceOffsetRequestForm requestForm) {
-       return invoiceOffsetTaskRepository.findTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
+        return invoiceOffsetTaskRepository.findTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
                 requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
     }
 
@@ -217,7 +191,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<UserTaskDTO> preview(InvoiceOffset form) {
-        return List.of();
+        return this.commonPreview(form, createVariableMap(form), invoiceOffsetBpmnModelInstance, form.copyList());
     }
 
     @Override
@@ -237,6 +211,16 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         return load;
     }
 
+//    @Override
+    public boolean supports(Task task) {
+        final String procDefId = task.getProcessDefinitionId();
+        if (StringUtils.isNotBlank(procDefId)) {
+            return procDefId.contains(WorkFlowConfig.DEF_KEY_INVOFFSET);
+        }
+        return false;
+    }
+
+
 
     static class InvoiceOffsetSpecification extends CommonSpecifications<InvoiceOffsetRequestForm, InvoiceOffset> {
 
@@ -249,38 +233,37 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
             };
         }
 
-        public Specification<InvoiceOffset> leftJoinRuTask(InvoiceOffsetRequestForm form) {
-            return (root, query, builder) -> {
-                List<Predicate> predicates = new ArrayList<>();
-                Join<InvoiceOffset, ActRuTask> taskJoin = root.join("currentTask", JoinType.LEFT);
-                if (StringUtils.isNotBlank(form.getUserid())) {
-                    predicates.add(builder.equal(taskJoin.get("assignee"), form.getUserid()));
-                }
-                return builder.and(predicates.toArray(new Predicate[0]));
-            };
-        }
+//        public Specification<InvoiceOffset> leftJoinRuTask(InvoiceOffsetRequestForm form) {
+//            return (root, query, builder) -> {
+//                List<Predicate> predicates = new ArrayList<>();
+//                Join<InvoiceOffset, ActRuTask> taskJoin = root.join("currentTask", JoinType.LEFT);
+//                if (StringUtils.isNotBlank(form.getUserid())) {
+//                    predicates.add(builder.equal(taskJoin.get("assignee"), form.getUserid()));
+//                }
+//                return builder.and(predicates.toArray(new Predicate[0]));
+//            };
+//        }
 
-        public Specification<InvoiceOffset> leftJoinHiTask(InvoiceOffsetRequestForm form) {
-            return (root, query, builder) -> {
-                List<Predicate> predicates = new ArrayList<>();
-                Join<InvoiceOffset, ActHiTaskInstance> taskJoin = root.join("invokedTask", JoinType.LEFT);
-                if (StringUtils.isNotBlank(form.getUserid())) {
-                    predicates.add(builder.equal(taskJoin.get("assignee"), form.getUserid()));
-                }
-                if (StringUtils.isNotBlank(form.getProcDefKey())) {
-                    predicates.add(builder.equal(taskJoin.get("procDefKey"), form.getTaskDefKey()));
-                }
-                predicates.add(builder.notLike(taskJoin.get("taskDefKey"), like("apply")));
-                if (form.getQueryMode() == 1) {
-                    //todo_
-                    predicates.add(builder.isNull(taskJoin.get("endTime")));
-                } else if (form.getQueryMode() == 2) {
-                    predicates.add(builder.isNotNull(taskJoin.get("endTime")));
-                }
-                return builder.and(predicates.toArray(new Predicate[0]));
-            };
-
-        }
+//        public Specification<InvoiceOffset> leftJoinHiTask(InvoiceOffsetRequestForm form) {
+//            return (root, query, builder) -> {
+//                List<Predicate> predicates = new ArrayList<>();
+//                Join<InvoiceOffset, ActHiTaskInstance> taskJoin = root.join("invokedTask", JoinType.LEFT);
+//                if (StringUtils.isNotBlank(form.getUserid())) {
+//                    predicates.add(builder.equal(taskJoin.get("assignee"), form.getUserid()));
+//                }
+//                if (StringUtils.isNotBlank(form.getProcDefKey())) {
+//                    predicates.add(builder.equal(taskJoin.get("procDefKey"), form.getTaskDefKey()));
+//                }
+//                predicates.add(builder.notLike(taskJoin.get("taskDefKey"), like("apply")));
+//                if (form.getQueryMode() == 1) {
+//                    //todo_
+//                    predicates.add(builder.isNull(taskJoin.get("endTime")));
+//                } else if (form.getQueryMode() == 2) {
+//                    predicates.add(builder.isNotNull(taskJoin.get("endTime")));
+//                }
+//                return builder.and(predicates.toArray(new Predicate[0]));
+//            };
+//        }
 
     }
 }

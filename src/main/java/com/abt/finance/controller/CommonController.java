@@ -1,6 +1,7 @@
 package com.abt.finance.controller;
 
 import com.abt.common.model.R;
+import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.service.FinanceCommonService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,5 +40,11 @@ public class CommonController {
     public R<List<BankAccount>> loadAllBankAccounts() {
         final List<BankAccount> bankAccounts = financeCommonService.loadAllBankAccounts();
         return R.success(bankAccounts, bankAccounts.size());
+    }
+
+    @GetMapping("/accItem/all")
+    public R<List<AccountItem>> findAllAccountItems() {
+        final List<AccountItem> allAccountItems = financeCommonService.findAllAccountItemsEnabled();
+        return R.success(allAccountItems, allAccountItems.size());
     }
 }

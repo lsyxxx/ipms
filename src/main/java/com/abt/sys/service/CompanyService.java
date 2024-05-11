@@ -29,5 +29,9 @@ public interface CompanyService {
     /**
      * 查询所有供应商
      */
-    List<SupplyInfo> findAllSupplier();
+    List<String> findAllSupplier();
+
+    SupplyInfo addSupplier(SupplyInfo supplyInfo);
+
+    CustomerInfo addCustomer(CustomerInfo customer);
 }

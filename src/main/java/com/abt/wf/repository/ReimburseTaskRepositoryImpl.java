@@ -1,219 +1,135 @@
 package com.abt.wf.repository;
 
-import static com.abt.common.util.QueryUtil.*;
 import com.abt.common.util.TimeUtil;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.abt.common.util.QueryUtil.*;
+import static com.abt.common.util.QueryUtil.like;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_RBS;
+
 /**
  *
  */
-
-@Component
-@RequiredArgsConstructor
+@Repository
+@AllArgsConstructor
 public class ReimburseTaskRepositoryImpl extends AbstractBaseQueryRepositoryImpl implements ReimburseTaskRepository {
-
     private final JdbcTemplate jdbcTemplate;
 
-    //query: 分页, 审批编号, 状态，创建人，创建时间
-    @Override
-    public List<ReimburseForm> findReimburseWithCurrenTaskPageable(int page, int size, String entityId, String state, String createUserid, String startDate, String endDate) {
-        String sql = "select r.*, r.copy as copy_users, su.Name as create_username1, " +
-                "t.ID_ as cur_task_id, t.TASK_DEF_KEY_ as cur_task_def_id, t.NAME_ as cur_task_name, " +
-                "t.ASSIGNEE_ as cur_task_assignee_id, u.Name as cur_task_assignee_name, " +
-                "null as inv_task_id, null as inv_task_name, null as inv_task_assignee_id, null as inv_task_assignee_name, null as inv_task_def_id " +
-                "from wf_rbs r " +
-                "left join ACT_RU_TASK t on r.proc_inst_id = t.PROC_INST_ID_ " +
-                "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
-                "left join [dbo].[User] su on r.create_userid = su.Id " +
-                "where 1=1 " +
-                //仅查询未删除的
-                "and r.is_del = 0 ";
-
-        List<Object> params = new ArrayList<>();
-        sql = conditionSql(sql, params, entityId, state, createUserid, startDate, endDate);
-
-        sql += "order by r.create_date desc ";
-        //分页
-        if (isPaging(size)) {
-            sql += pageSqlBySqlserver(page, size);
-        }
-        return jdbcTemplate.query(sql, new ReimburseTaskMapper(), params.toArray());
-    }
+    public static final String TABLE_RBS = "wf_rbs";
 
     @Override
-    public int countReimburseWithCurrenTaskPageable(String entityId, String state, String createUserid, String startDate, String endDate) {
-        String sql = "select count(1) " +
-                "from wf_rbs r " +
-                "left join ACT_RU_TASK t on r.proc_inst_id = t.PROC_INST_ID_ " +
-                "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
-                "left join [dbo].[User] su on r.create_userid = su.Id " +
-                "where 1=1 " +
-                //仅查询未删除的
-                "and r.is_del = 0 ";
-
+    public List<Reimburse> findDoneList(int page, int limit, String userid, String username, String startDate, String endDate, String state,
+                                        String idLike, String projectName) {
         List<Object> params = new ArrayList<>();
-        sql = conditionSql(sql, params, entityId, state, createUserid, startDate, endDate);
-
-        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
-    }
-
-    //query: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
-    @Override
-    public List<ReimburseForm> findTaskPageable(int page, int size, String entityId, String state, String invokedUserid,
-                                                String startDate, String endDate, int todo) {
-        List<Object> params = new ArrayList<>();
-        String sql = "select t.ID_ as inv_task_id, t.TASK_DEF_KEY_ as inv_task_def_id, t.NAME_ as inv_task_name, " +
-                "t.ASSIGNEE_ as inv_task_assignee_id, u.Name as inv_task_assignee_name, " +
-                "rt.ID_ as cur_task_id, rt.TASK_DEF_KEY_ as cur_task_def_id, rt.NAME_ as cur_task_name, rt.ASSIGNEE_ as cur_task_assignee_id, " +
-                "tu.Name as cur_task_assignee_name, " +
-                "r.*, r.copy as copy_users,  su.Name as create_username1 " +
-                "from ACT_HI_TASKINST t " +
-                "inner join wf_rbs r on t.ROOT_PROC_INST_ID_ = r.proc_inst_id " +
-                //当前审批人
-                "left join ACT_RU_TASK rt on rt.PROC_INST_ID_ = t.PROC_INST_ID_ " +
-                "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
-                "left join [dbo].[User] su on r.create_userid = su.Id " +
-                "left join [dbo].[User] tu on rt.ASSIGNEE_ = tu.Id " +
-                "where 1=1 " +
-                //不包含申请节点, 需要申请节点defId包含apply
-                "and t.TASK_DEF_KEY_ not like '%apply%' " +
-                //没有删除的
-                "and r.is_del = 0 ";
-        if (StringUtils.isNotBlank(state)) {
-            sql += "and r.biz_state = ? ";
-            params.add(state);
-        }
-        if (StringUtils.isNotBlank(entityId)) {
-            sql += "and r.id like ? ";
-            params.add(like(entityId));
-        }
-        if (StringUtils.isNotBlank(invokedUserid)) {
-            sql += "and t.ASSIGNEE_ = ? ";
-            params.add(invokedUserid);
-        }
-        if (TODO == todo) {
-            //待办
-            sql += "and t.END_TIME_ is NULL ";
-        } else if (DONE == todo) {
-            //已办
-            sql += "and t.END_TIME_ is not NULL ";
-        }
-
-        sql += between(startDate, endDate, params);
-
+        String sql = doneSql(TABLE_RBS);
+        sql = sql + "and t.PROC_DEF_KEY_ = '" + DEF_KEY_RBS + "' and t.assignee_ = ? ";
+        params.add(userid);     //? as inv_task_assignee_id
+        params.add(username);   //? as inv_task_assignee_name
+        params.add(userid);        //and t.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, projectName);
         sql += "order by t.START_TIME_ desc ";
-        if (isPaging(size)) {
-            sql += pageSqlBySqlserver(page, size);
+        if (isPaging(limit)) {
+            sql += pageSqlBySqlserver(page, limit);
         }
-        return jdbcTemplate.query(sql, new ReimburseTaskMapper(), params.toArray());
+        return jdbcTemplate.query(sql, new ReimburseTaskMapper() , params.toArray());
     }
 
     @Override
-    public int countTask(String entityId, String state, String invokedUserid,
-                         String startDate, String endDate, int todo) {
+    public int countDoneList(String userid, String username, String startDate, String endDate, String state, String idLike, String projectName) {
+        String sql = countDoneSql(TABLE_RBS);
         List<Object> params = new ArrayList<>();
-        String sql = "select count(1)" +
-                "from ACT_HI_TASKINST t " +
-                "inner join wf_rbs r on t.ROOT_PROC_INST_ID_ = r.proc_inst_id " +
-                //当前审批人
-                "left join ACT_RU_TASK rt on rt.PROC_INST_ID_ = t.PROC_INST_ID_ " +
-                "left join [dbo].[User] u on t.ASSIGNEE_ = u.Id " +
-                "left join [dbo].[User] su on r.create_userid = su.Id " +
-                "left join [dbo].[User] tu on rt.ASSIGNEE_ = tu.Id " +
-                "where 1=1 " +
-                //不包含申请节点, 需要申请节点defId包含apply
-                "and t.TASK_DEF_KEY_ not like '%apply%' " +
-                //没有删除的
-                "and r.is_del = 0 ";
+        sql = sql + "and t.PROC_DEF_KEY_ = '" + DEF_KEY_RBS + "' and t.assignee_ = ? ";
+        params.add(userid);
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, projectName);
+        return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+    }
 
+    @Override
+    public List<Reimburse> findTodoList(int page, int limit, String userid, String username, String startDate, String endDate, String state, String idLike, String projectName) {
+        List<Object> params = new ArrayList<>();
+        String sql = todoSql(TABLE_RBS);
+        sql = sql + "and t.PROC_DEF_ID_ like '%" + DEF_KEY_RBS + "%' and t.assignee_ = ? ";
+        params.add(username); //? as cur_task_assignee_name,
+        params.add(userid);   //rt.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, projectName);
 
-        if (StringUtils.isNotBlank(state)) {
-            sql += "and r.biz_state = ? ";
-            params.add(state);
+        sql += "order by t.CREATE_TIME_ desc ";
+        if (isPaging(limit)) {
+            sql += pageSqlBySqlserver(page, limit);
         }
-        if (StringUtils.isNotBlank(entityId)) {
-            sql += "and r.id like ? ";
-            params.add(like(entityId));
-        }
-        if (StringUtils.isNotBlank(invokedUserid)) {
-            sql += "and t.ASSIGNEE_ = ? ";
-            params.add(invokedUserid);
-        }
-        if (TODO == todo) {
-            //待办
-            sql += "and t.END_TIME_ is NULL ";
-        } else if (DONE == todo) {
-            //已办
-            sql += "and t.END_TIME_ is not NULL ";
-        }
+        return jdbcTemplate.query(sql, new ReimburseTaskMapper() , params.toArray());
+    }
 
-        sql += between(startDate, endDate, params);
+    @Override
+    public int countTodoList(String userid, String username, String startDate, String endDate, String state, String idLike, String projectName) {
+        List<Object> params = new ArrayList<>();
+        String sql = countTodoSql(TABLE_RBS);
+        sql = sql + "and t.PROC_DEF_ID_ like '%" + DEF_KEY_RBS + "%' and t.assignee_ = ? ";
+        params.add(userid);   //rt.assignee_ = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, projectName);
 
         return jdbcTemplate.queryForObject(sql, Integer.class, params.toArray());
+    }
+
+    @Override
+    public List<Reimburse> findUserApplyList(int page, int limit, String userid, String username, String startDate, String endDate, String state,
+                                             String idLike, String projectName) {
+        List<Object> params = new ArrayList<>();
+        String sql = applySql(TABLE_RBS);
+        sql = sql + "and e.create_userid = ? ";
+        params.add(username);
+        params.add(userid);     //e.create_userid = ?
+        sql = conditionSql(sql, params, startDate, endDate, state, idLike, projectName);
+        sql += "order by e.create_date desc ";
+        if (isPaging(limit)) {
+            sql += pageSqlBySqlserver(page, limit);
+        }
+        return jdbcTemplate.query(sql, new ReimburseTaskMapper() , params.toArray());
     }
 
     @Override
     String conditionSql(String sql, List<Object> array, String... params) {
-        if (StringUtils.isNotBlank(params[0])) {
-            sql += "and r.id like ? ";
-            array.add(like(params[0]));
-        }
-        if (StringUtils.isNotBlank(params[1])) {
-            sql += "and r.biz_state = ? ";
-            array.add(params[1]);
-        }
+        sql += between(params[0], params[1], array);
+
         if (StringUtils.isNotBlank(params[2])) {
-            sql += "and r.create_userid = ? ";
+            sql += "and e.biz_state = ? ";
             array.add(params[2]);
         }
+        if (StringUtils.isNotBlank(params[3])) {
+            sql += "and e.id like ? ";
+            array.add(like(params[3]));
+        }
+        if (StringUtils.isNotBlank(params[4])) {
+            sql += "and e.project like ? ";
+            array.add(like(params[4]));
+        }
         return sql;
     }
 
-    /**
-     * sql语句, 业务创建日期范围查询
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return sql 语句
-     */
+
     @Override
     String between(String startDate, String endDate, List<Object> params) {
-        String sql = "";
-        if (StringUtils.isNotBlank(startDate)) {
-            sql += "and r.create_date >= ? ";
-            params.add(startDate);
-        }
-        if (StringUtils.isNotBlank(endDate)) {
-            sql += "and r.create_date <= ? ";
-            params.add(endDate);
-        }
-        return sql;
+        return commonBetween(startDate, endDate, params);
     }
 
-    //query: 分页, 审批编号, 状态，创建时间
-//    public List<ReimburseForm> findTodoListPageable(int page, int size) {
-//
-//    }
-
-
-
-    class ReimburseTaskMapper implements RowMapper<ReimburseForm> {
+    class ReimburseTaskMapper implements RowMapper<Reimburse> {
 
         @Nullable
         @Override
-        public ReimburseForm mapRow(ResultSet rs, int rowNum) throws SQLException {
+        public Reimburse mapRow(ResultSet rs, int rowNum) throws SQLException {
             ReimburseForm form = new ReimburseForm();
-
             //-- 业务
             form.setId(rs.getString("id"));
             form.setCost(rs.getDouble("cost"));

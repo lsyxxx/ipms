@@ -1,21 +1,22 @@
-package com.abt.wf.model.act;
+package com.abt.wf.entity.act;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Nationalized;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "ACT_HI_PROCINST")
-public class ActHiProcInstance {
+public class ActHiProcInst {
     @Id
     @Size(max = 64)
     @Nationalized
@@ -107,19 +108,4 @@ public class ActHiProcInstance {
     @Column(name = "STATE_", columnDefinition = "NVARCHAR")
     private String state;
 
-    @Override
-    public String toString() {
-        return "ActHiProcInstance{" +
-                "id='" + id + '\'' +
-                ", procInstId='" + procInstId + '\'' +
-                ", businessKey='" + businessKey + '\'' +
-                ", procDefKey='" + procDefKey + '\'' +
-                ", procDefId='" + procDefId + '\'' +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", rootProcInstId='" + rootProcInstId + '\'' +
-                ", state='" + state + '\'' +
-                ", deleteReason='" + deleteReason + '\'' +
-                '}';
-    }
 }

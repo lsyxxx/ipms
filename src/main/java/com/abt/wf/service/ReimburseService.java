@@ -1,52 +1,10 @@
 package com.abt.wf.service;
 
 import com.abt.wf.entity.Reimburse;
-import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.ReimburseRequestForm;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
-
-
-/**
- *
- */
-public interface ReimburseService extends WorkFlowService<ReimburseForm>{
-
-
-    Reimburse findById(String entityId);
-
-    void saveEntity(Reimburse rbs);
-
-    /**
-     * 读取业务流程
-     *
-     * @param entityId 业务实体id
-     */
-    Reimburse load(String entityId);
-
-    ReimburseForm loadReimburseForm(String entityId);
-
-    List<ReimburseForm> findAllByCriteria(ReimburseRequestForm requestForm);
-
-    int countAllByCriteria(ReimburseRequestForm requestForm);
-
-    List<ReimburseForm> findMyApplyByCriteria(ReimburseRequestForm requestForm);
-
-    int countMyApplyByCriteria(ReimburseRequestForm requestForm);
-
-    /**
-     * 查询我的已办列表
-     * criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
-     */
-    List<ReimburseForm> findMyDoneByCriteria(ReimburseRequestForm requestForm);
-
-    int countMyDoneCriteria(ReimburseRequestForm requestForm);
-
-    /**
-     * 查询我的待办列表
-     * criteria: 分页, 审批编号, 状态，流程创建时间，参与人id, 待办/已办
-     */
-    List<ReimburseForm> findMyTodoByCriteria(ReimburseRequestForm requestForm);
-
-    int countMyTodoByCriteria(ReimburseRequestForm requestForm);
+public interface ReimburseService extends WorkFlowService<Reimburse>, BusinessService<ReimburseRequestForm, Reimburse>{
+    Page<Reimburse> findAllByCriteria(ReimburseRequestForm requestForm);
+    Page<Reimburse> findMyApplyByCriteria(ReimburseRequestForm requestForm);
 }

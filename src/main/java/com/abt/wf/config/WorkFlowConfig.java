@@ -36,7 +36,7 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_PAY_VOUCHER = "rbsPay";
     public static final String DEF_KEY_LOAN = "rbsLoan";
     public static final String DEF_KEY_INV = "rbsInv";
-    public static final String DEF_KEY_INVOFFSET = "rbsInvOffset";
+    public static final String DEF_KEY_INVOFFSET = "invOffset";
     /**
      * 特殊审批人的流程
      */
@@ -57,6 +57,8 @@ public class WorkFlowConfig {
 
     public static final List<String> financeWorkflowDef = List.of(DEF_KEY_TRIP, DEF_KEY_RBS, DEF_KEY_INV);
     public static final List<String> financeWorkflowBusinessKey = List.of(SERVICE_RBS, SERVICE_INV, SERVICE_TRIP);
+
+
     /**
      * 查询报销类型
      */
@@ -118,7 +120,7 @@ public class WorkFlowConfig {
     }
 
     @Bean("rbsTripBpmnModelInstance")
-    @Order(101)
+    @Order(100)
     public BpmnModelInstance rbsTripModelInstance() {
         log.info("rbsTripModelInstance bean init...");
         ProcessDefinition rbsDef = this.processDefinitionMap.get(DEF_KEY_TRIP);
@@ -133,7 +135,7 @@ public class WorkFlowConfig {
     }
 
     @Bean("payVoucherBpmnModelInstance")
-    @Order(102)
+    @Order(100)
     public BpmnModelInstance payVoucherModelInstance() {
         log.info("payVoucherModelInstance bean init...");
         ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_PAY_VOUCHER);
@@ -147,7 +149,7 @@ public class WorkFlowConfig {
         return bpmnModelInstance;
     }
     @Bean("loanBpmnModelInstance")
-    @Order(103)
+    @Order(100)
     public BpmnModelInstance loanBpmnModelInstance() {
         log.info("loanBpmnModelInstance bean init...");
         ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_LOAN);
@@ -161,7 +163,7 @@ public class WorkFlowConfig {
     }
 
     @Bean("invoiceApplyBpmnModelInstance")
-    @Order(104)
+    @Order(100)
     public BpmnModelInstance invoiceApplyBpmnModelInstance() {
         log.info("invoiceApplyBpmnModelInstance bean init...");
         ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_INV);
@@ -174,8 +176,22 @@ public class WorkFlowConfig {
         return bpmnModelInstance;
     }
 
+    @Bean("invoiceOffsetBpmnModelInstance")
+    @Order(100)
+    public BpmnModelInstance invoiceOffsetBpmnModelInstance() {
+        log.info("invoiceOffsetBpmnModelInstance bean init...");
+        ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_INVOFFSET);
+        if (definition == null) {
+            definition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_INVOFFSET).latestVersion().singleResult();
+            processDefinitionMap.put(DEF_KEY_INVOFFSET, definition);
+        }
+        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(definition.getId());
+        bpmnModelInstanceMap.put(DEF_KEY_INVOFFSET, bpmnModelInstance);
+        return bpmnModelInstance;
+    }
+
     @Bean("bpmnModelInstanceMap")
-    @Order(500)
+    @Order(5000)
     public Map<String, BpmnModelInstance> getBpmnModelInstanceMap() {
         log.info("getBpmnModelInstanceMap bean init...");
         return bpmnModelInstanceMap;

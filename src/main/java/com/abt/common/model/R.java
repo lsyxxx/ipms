@@ -97,6 +97,10 @@ public class R<T> {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage());
     }
 
+    public static<T> R<T> success(T data, String msg) {
+        return new R<>(data, ResCode.SUCCESS.getCode(), msg);
+    }
+
     public static<T> R<T> success(T data, int count) {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage(), count);
     }

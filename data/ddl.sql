@@ -1,0 +1,16 @@
+-- 业务表中流程关联字段类型，和ACT_表保持一致
+alter table wf_inv alter COLUMN proc_inst_id nvarchar(64);
+alter table wf_inv alter COLUMN proc_def_id nvarchar(64);
+alter table wf_inv alter COLUMN proc_def_key nvarchar(64);
+alter table wf_loan alter COLUMN proc_inst_id nvarchar(64);
+alter table wf_loan alter COLUMN proc_def_id nvarchar(64);
+alter table wf_loan alter COLUMN proc_def_key nvarchar(64);
+alter table wf_pay_voucher alter COLUMN proc_inst_id nvarchar(64);
+alter table wf_pay_voucher alter COLUMN proc_def_id nvarchar(64);
+alter table wf_pay_voucher alter COLUMN proc_def_key nvarchar(64);
+alter table wf_rbs alter COLUMN proc_inst_id nvarchar(64);
+alter table wf_rbs alter COLUMN proc_def_id nvarchar(64);
+alter table wf_rbs alter COLUMN proc_def_key nvarchar(64);
+alter table wf_trip alter COLUMN proc_inst_id nvarchar(64);
+alter table wf_trip alter COLUMN proc_def_id nvarchar(64);
+alter table wf_trip alter COLUMN proc_def_key nvarchar(64);

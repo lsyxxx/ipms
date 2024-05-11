@@ -9,8 +9,10 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
+import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.WorkflowBase;
+import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
@@ -36,6 +38,7 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -193,18 +196,18 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             return returnList;
         }
         //抄送节点
-        UserTaskDTO cc = new UserTaskDTO();
-        cc.setTaskType(Constants.TASK_TYPE_COPY);
-        cc.setTaskName(Constants.TASK_NAME_COPY);
-        cc.setSelectUserType(Constants.SELECT_USER_TYPE_MANUAL);
-        for (String s : copyList) {
-            UserTaskDTO dto = new UserTaskDTO();
-            dto.setOperatorId(s);
-            final User user = userService.getSimpleUserInfo(s);
-            dto.setOperatorName(user.getUsername());
-            cc.addUserTaskDTO(dto);
-        }
-        returnList.add(cc);
+//        UserTaskDTO cc = new UserTaskDTO();
+//        cc.setTaskType(Constants.TASK_TYPE_COPY);
+//        cc.setTaskName(Constants.TASK_NAME_COPY);
+//        cc.setSelectUserType(Constants.SELECT_USER_TYPE_MANUAL);
+//        for (String s : copyList) {
+//            UserTaskDTO dto = new UserTaskDTO();
+//            dto.setOperatorId(s);
+//            final User user = userService.getSimpleUserInfo(s);
+//            dto.setOperatorName(user.getUsername());
+//            cc.addUserTaskDTO(dto);
+//        }
+//        returnList.add(cc);
         return returnList;
     }
 
@@ -360,6 +363,21 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             }
         }
         return entity;
+    }
+
+    public void buildActiveTask(T entity) {
+        final ActRuTask task = entity.getCurrentTask();
+        if (task != null) {
+            entity.setCurrentTaskAssigneeId(task.getAssignee());
+            entity.setCurrentTaskId(task.getId());
+            entity.setCurrentTaskName(task.getName());
+            entity.setCurrentTaskDefId(task.getTaskDefKey());
+            entity.setCurrentTaskStartTime(task.getCreateTime());
+            final User user = userService.getSimpleUserInfo(task.getAssignee());
+            if (user != null) {
+                entity.setCurrentTaskAssigneeName(user.getUsername());
+            }
+        }
     }
 
     /**

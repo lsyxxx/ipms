@@ -4,6 +4,7 @@ import com.abt.common.model.ValidationResult;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
+import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.model.*;
 import com.abt.wf.repository.InvoiceApplyRepository;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.common.util.QueryUtil.like;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_INVOFFSET;
 
 /**
  * 开票申请
@@ -290,4 +292,5 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     public String notifyLink(String id) {
         return "/wf/inv/detail/" + id ;
     }
+
 }

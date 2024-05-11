@@ -9,10 +9,7 @@ import java.util.List;
 
 public interface InvoiceOffsetService extends WorkFlowService<InvoiceOffset>, BusinessService<InvoiceOffsetRequestForm, InvoiceOffset>{
 
-
-    Page<InvoiceOffset> findAllByCriteriaPaged(InvoiceOffsetRequestForm requestForm);
-
-    Page<InvoiceOffset> findMyApplyByCriteriaPaged(InvoiceOffsetRequestForm requestForm);
+    Page<InvoiceOffset> findAllByCriteria(InvoiceOffsetRequestForm requestForm);
 
     InvoiceOffset getEntityWithCurrentTask(String entityId);
 

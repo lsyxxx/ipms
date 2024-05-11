@@ -1,20 +1,22 @@
-package com.abt.wf.model.act;
+package com.abt.wf.entity.act;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Nationalized;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "ACT_HI_TASKINST")
-public class ActHiTaskInstance {
+public class ActHiTaskInst {
     @Id
     @Size(max = 64)
     @Nationalized
@@ -109,14 +111,14 @@ public class ActHiTaskInstance {
     private LocalDateTime endTime;
 
     @Column(name = "DURATION_", precision = 19)
-    private BigDecimal duration;
+    private Integer duration;
 
     @Size(max = 4000)
     @Nationalized
     @Column(name = "DELETE_REASON_", length = 4000, columnDefinition = "NVARCHAR")
     private String deleteReason;
 
-    @Column(name = "PRIORITY_")
+    @Column(name = "PRIORITY_", columnDefinition = "NVARCHAR")
     private Integer priority;
 
     @Column(name = "DUE_DATE_")
@@ -133,25 +135,4 @@ public class ActHiTaskInstance {
     @Column(name = "REMOVAL_TIME_")
     private LocalDateTime removalTime;
 
-    @ManyToOne
-    @JoinColumn(name = "ROOT_PROC_INST_ID_", referencedColumnName = "ID_", insertable = false, updatable = false)
-    private ActHiProcInstance procInstance;
-
-    @Override
-    public String toString() {
-        return "ActHiTaskInstance{" +
-                "id='" + id + '\'' +
-                ", taskDefKey='" + taskDefKey + '\'' +
-                ", procDefKey='" + procDefKey + '\'' +
-                ", procDefId='" + procDefId + '\'' +
-                ", rootProcInstId='" + rootProcInstId + '\'' +
-                ", procInstId='" + procInstId + '\'' +
-                ", name='" + name + '\'' +
-                ", parentTaskId='" + parentTaskId + '\'' +
-                ", assignee='" + assignee + '\'' +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", deleteReason='" + deleteReason + '\'' +
-                '}';
-    }
 }

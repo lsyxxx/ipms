@@ -1,15 +1,12 @@
 package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
-import com.abt.wf.config.Constants;
+import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.listener.JpaWorkflowListener;
-import com.abt.wf.model.act.ActHiProcInstance;
-import com.abt.wf.model.act.ActRuTask;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -27,14 +24,14 @@ import java.util.List;
 public class WorkflowBase extends AuditInfo {
 
     //-- process
-    @Column(name="proc_def_key", columnDefinition="NVARCHR", length = 64)
+    @Column(name="proc_def_key", columnDefinition="NVARCHAR", length = 64)
     private String processDefinitionKey;
 
-    @Column(name="proc_def_id", columnDefinition="NVARCHR", length = 64)
+    @Column(name="proc_def_id", columnDefinition="NVARCHAR", length = 64)
     private String processDefinitionId;
 
     //-- processInstance
-    @Column(name="proc_inst_id", columnDefinition="NVARCHR", length = 64)
+    @Column(name="proc_inst_id", columnDefinition="NVARCHAR", length = 64)
     private String processInstanceId;
 
     /**
@@ -102,6 +99,10 @@ public class WorkflowBase extends AuditInfo {
     @Column(columnDefinition="VARCHAR(1000)")
     private String copy;
 
+    @OneToOne
+    @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    private ActRuTask currentTask;
+
     @Transient
     private String currentTaskId;
     @Transient
@@ -131,12 +132,6 @@ public class WorkflowBase extends AuditInfo {
     private String submitUserid;
     @Transient
     private String submitUsername;
-
-    @Transient
-    private ActHiProcInstance procInstance;
-    @Transient
-    private ActRuTask currentTask;
-
 
     public List<String> copyList() {
         if (this.getCopy() == null) {

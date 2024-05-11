@@ -1,77 +1,77 @@
-package com.abt.wf.model.act;
+package com.abt.wf.entity.act;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.Nationalized;
-import com.abt.common.model.User;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "ACT_RU_TASK")
 @ToString
+@Table(name = "ACT_RU_TASK")
 public class ActRuTask {
     @Id
     @Size(max = 64)
     @Nationalized
-    @Column(name = "ID_", nullable = false, length = 64, columnDefinition = "NVARCHAR")
+    @Column(name = "ID_", nullable = false, length = 64)
     private String id;
 
     @Column(name = "REV_")
     private Integer rev;
 
-    @Column(name = "EXECUTION_ID_", columnDefinition = "NVARCHAR")
-    private String executionId;
-
-    @Column(name = "PROC_INST_ID_", columnDefinition = "NVARCHAR")
+    @Column(name = "PROC_INST_ID_")
     private String procInstId;
 
-    @Column(name = "PROC_DEF_ID_", columnDefinition = "NVARCHAR")
+    @Column(name = "PROC_DEF_ID_")
     private String procDefId;
+
+    @Column(name = "CASE_EXECUTION_ID_")
+    private String caseExecutionId;
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "CASE_INST_ID_", length = 64, columnDefinition = "NVARCHAR")
+    @Column(name = "CASE_INST_ID_", length = 64)
     private String caseInstId;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "NAME_", columnDefinition = "NVARCHAR")
+    @Column(name = "NAME_")
     private String name;
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "PARENT_TASK_ID_", length = 64, columnDefinition = "NVARCHAR")
+    @Column(name = "PARENT_TASK_ID_", length = 64)
     private String parentTaskId;
 
     @Size(max = 4000)
     @Nationalized
-    @Column(name = "DESCRIPTION_", length = 4000, columnDefinition = "NVARCHAR")
+    @Column(name = "DESCRIPTION_", length = 4000)
     private String description;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "TASK_DEF_KEY_", columnDefinition = "NVARCHAR")
+    @Column(name = "TASK_DEF_KEY_")
     private String taskDefKey;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "OWNER_", columnDefinition = "NVARCHAR")
+    @Column(name = "OWNER_")
     private String owner;
 
     @Size(max = 255)
     @Nationalized
-    @Column(name = "ASSIGNEE_", columnDefinition = "NVARCHAR")
+    @Column(name = "ASSIGNEE_")
     private String assignee;
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "DELEGATION_", length = 64, columnDefinition = "NVARCHAR")
+    @Column(name = "DELEGATION_", length = 64)
     private String delegation;
 
     @Column(name = "PRIORITY_")
@@ -94,11 +94,7 @@ public class ActRuTask {
 
     @Size(max = 64)
     @Nationalized
-    @Column(name = "TENANT_ID_", length = 64, columnDefinition = "NVARCHAR")
+    @Column(name = "TENANT_ID_", length = 64)
     private String tenantId;
-
-    @Transient
-    private User assigneeInfo;
-
 
 }

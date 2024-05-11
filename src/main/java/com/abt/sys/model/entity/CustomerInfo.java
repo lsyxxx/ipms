@@ -1,11 +1,21 @@
 package com.abt.sys.model.entity;
 
+import com.abt.common.config.CommonJpaAuditListener;
+import com.abt.common.service.impl.CommonJpaAudit;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -14,10 +24,13 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "T_Customer_Info")
 @Accessors(chain = true)
-public class CustomerInfo {
+@EntityListeners({AuditingEntityListener.class, CommonJpaAuditListener.class})
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CustomerInfo implements CommonJpaAudit {
     @Id
     @Size(max = 50)
     @Column(name = "Id", nullable = false, length = 50)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @Size(max = 50)
@@ -87,6 +100,7 @@ public class CustomerInfo {
     @Size(max = 50)
     @NotNull
     @Column(name = "CreateUserId", nullable = false, length = 50)
+    @CreatedBy
     private String createUserId;
 
     @Size(max = 50)
@@ -96,15 +110,22 @@ public class CustomerInfo {
 
     @NotNull
     @Column(name = "CreateDate", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @CreatedDate
     private LocalDateTime createDate;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "Operator", nullable = false, length = 50)
+    @LastModifiedBy
     private String operator;
 
     @NotNull
     @Column(name = "Operatedate", nullable = false)
+    @LastModifiedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime operatedate;
 
     @Size(max = 50)
@@ -129,5 +150,25 @@ public class CustomerInfo {
                 ", customerName='" + customerName + '\'' +
                 ", customerClass='" + customerClass + '\'' +
                 '}';
+    }
+
+    @Override
+    public String getCreateUserid() {
+        return this.createUserId;
+    }
+
+    @Override
+    public void setCreateUsername(String username) {
+        this.createUserName = username;
+    }
+
+    @Override
+    public String getUpdateUserid() {
+        return this.operator;
+    }
+
+    @Override
+    public void setUpdateUsername(String username) {
+        this.operatorName = username;
     }
 }
