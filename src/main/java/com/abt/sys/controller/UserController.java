@@ -1,9 +1,12 @@
 package com.abt.sys.controller;
 
 import com.abt.common.model.User;
+import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.model.entity.Org;
 import com.abt.sys.service.CompanyService;
+import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,10 +25,12 @@ import java.util.List;
 public class UserController{
     private final UserService<UserView, User> sqlServerUserService;
     private final CompanyService companyService;
+    private final EmployeeService employeeService;
 
-    public UserController(@Qualifier("sqlServerUserService") UserService<UserView, User> sqlServerUserService, CompanyService companyService) {
+    public UserController(@Qualifier("sqlServerUserService") UserService<UserView, User> sqlServerUserService, CompanyService companyService, EmployeeService employeeService) {
         this.sqlServerUserService = sqlServerUserService;
         this.companyService = companyService;
+        this.employeeService = employeeService;
     }
 
     @GetMapping("/all/simple")
@@ -50,5 +55,13 @@ public class UserController{
     public R<List<Org>> findAllDept() {
         final List<Org> allDept = sqlServerUserService.findAllDept();
         return R.success(allDept, allDept.size());
+    }
+
+    @GetMapping("/loginemp")
+    public R<EmployeeInfo> findLoginUserEmployeeInfo() {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        String empnum = user.getEmpnum();
+        final EmployeeInfo employee = employeeService.findByJobNumber(empnum);
+        return R.success(employee);
     }
 }

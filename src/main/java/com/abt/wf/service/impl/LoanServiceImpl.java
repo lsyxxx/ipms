@@ -30,11 +30,13 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.SERVICE_LOAN;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_INVOFFSET;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_LOAN;
 
 /**
  *
  */
-@Service
+@Service(DEF_KEY_LOAN)
 @Slf4j
 public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, LoanRequestForm> implements LoanService {
 
@@ -184,6 +186,11 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     @Override
     public void ensureEntityId(Loan form) {
         ensureProperty(form.getId(), "借款单审批编号(id)");
+    }
+
+    @Override
+    public boolean isApproveUser(Loan form) {
+        return this.doIsApproveUser(form);
     }
 
     @Override

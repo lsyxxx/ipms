@@ -12,7 +12,7 @@
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="taskType" value="apply" />
-          <camunda:property name="selectUserType" value="2" />
+          <camunda:property name="selectUserType" value="1" />
           <camunda:property name="carbonCopy" value="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002" />
         </camunda:properties>
       </bpmn:extensionElements>
@@ -33,12 +33,12 @@
         <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">${nrOfInstances == nrOfCompletedInstances}</bpmn:completionCondition>
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
-    <bpmn:userTask id="invOffset_finAcct" name="财务审批(任意一人审批即可)" camunda:candidateUsers="621faa40-f45c-4da8-9a8f-65b0c5353f40,U202304060130">
+    <bpmn:userTask id="invOffset_finAcct" name="财务审批(任意一人审批即可)" camunda:candidateUsers="U20230406013,U20230406007,b6883628-ab11-4ad8-a533-11632fcdb4f3">
       <bpmn:documentation>财务审批(任意一人审批即可)</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="approvalType" value="1" />
+          <camunda:property name="selectUserType" value="3" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>

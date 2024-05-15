@@ -258,4 +258,10 @@ public class EmployeeInfo {
     @Column(name = "LzDate")
     private LocalDateTime lzDate;
 
+    @Column(name = "IsExit")
+    private boolean isExit;
+
+    @Column(name = "ContractFile")
+    private String contractFile;
+
 }

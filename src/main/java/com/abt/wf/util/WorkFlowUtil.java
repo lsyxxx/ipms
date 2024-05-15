@@ -137,6 +137,7 @@ public class WorkFlowUtil {
 
     public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
         UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
+        final String camundaCandidateUsers = userTaskModel.getCamundaCandidateUsers();
         ExtensionElements extensionElements = userTaskModel.getExtensionElements();
         if (extensionElements != null) {
             return extensionElements.getElementsQuery()

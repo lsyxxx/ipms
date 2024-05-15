@@ -1,6 +1,7 @@
 package com.abt.wf.service;
 
 import com.abt.common.model.RequestForm;
+import com.abt.wf.entity.WorkflowBase;
 import org.camunda.bpm.engine.task.Task;
 import org.springframework.data.domain.Page;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * T: 查询条件
  * R: 返回数据对象实体
  */
-public interface BusinessService<T extends RequestForm, R> {
+public interface BusinessService<T extends RequestForm, R extends WorkflowBase> {
 
     /**
      * 查询所有业务记录

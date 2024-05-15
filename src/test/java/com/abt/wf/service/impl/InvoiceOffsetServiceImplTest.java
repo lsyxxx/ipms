@@ -71,8 +71,8 @@ class InvoiceOffsetServiceImplTest {
 
     @Test
     void find() {
-//        final InvoiceOffset load = invoiceOffsetService.load("202405061714967471225");
-//        assertNotNull(load);
+        final InvoiceOffset load = invoiceOffsetService.load("202405061714967471225");
+        assertNotNull(load);
 //        assertNotNull(load.getCurrentTask());
 //        System.out.println(load.getCurrentTask().toString());
     }

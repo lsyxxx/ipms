@@ -1,12 +1,15 @@
 package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.common.model.User;
 import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.listener.JpaWorkflowListener;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -99,10 +102,14 @@ public class WorkflowBase extends AuditInfo {
     @Column(columnDefinition="VARCHAR(1000)")
     private String copy;
 
-    @OneToOne
+    //--------------------------
+    //     current task
+    //--------------------------
+    //没有查询到则忽略
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
     private ActRuTask currentTask;
-
     @Transient
     private String currentTaskId;
     @Transient
@@ -115,7 +122,14 @@ public class WorkflowBase extends AuditInfo {
     private String currentTaskAssigneeName;
     @Transient
     private LocalDateTime currentTaskStartTime;
+    @Transient
+    private List<User> candidateUsers;
+    @Transient
+    private boolean isApproveUser;
 
+    //--------------------------
+    //     invoked task
+    //--------------------------
     @Transient
     private String invokedTaskId;
     @Transient
@@ -126,8 +140,6 @@ public class WorkflowBase extends AuditInfo {
     private String invokedTaskAssigneeName;
     @Transient
     private String invokedTaskDefId;
-    @Transient
-    private boolean isApproveUser;
     @Transient
     private String submitUserid;
     @Transient

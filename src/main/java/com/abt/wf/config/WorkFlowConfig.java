@@ -37,10 +37,6 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_LOAN = "rbsLoan";
     public static final String DEF_KEY_INV = "rbsInv";
     public static final String DEF_KEY_INVOFFSET = "invOffset";
-    /**
-     * 特殊审批人的流程
-     */
-    public static final String DEF_KEY_RBS_SPC = "rbsMultiSpecial";
 
     public static final String SKIP_MANAGER = "rbsFlowSkipManager";
     public static final String DEFAULT_CC = "rbsDefaultCopy";
@@ -55,7 +51,7 @@ public class WorkFlowConfig {
         this.repositoryService = repositoryService;
     }
 
-    public static final List<String> financeWorkflowDef = List.of(DEF_KEY_TRIP, DEF_KEY_RBS, DEF_KEY_INV);
+    public static final List<String> financeWorkflowDef = List.of(DEF_KEY_TRIP, DEF_KEY_RBS, DEF_KEY_INV, DEF_KEY_PAY_VOUCHER, DEF_KEY_LOAN, DEF_KEY_INVOFFSET);
     public static final List<String> financeWorkflowBusinessKey = List.of(SERVICE_RBS, SERVICE_INV, SERVICE_TRIP);
 
 
@@ -79,6 +75,7 @@ public class WorkFlowConfig {
         processDefinitionMap.put(DEF_KEY_RBS, rbsDef);
         return rbsDef;
     }
+
 
     @Bean("processDefinitionMap")
     @Order(50)

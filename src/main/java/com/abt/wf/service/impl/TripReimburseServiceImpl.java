@@ -49,7 +49,7 @@ import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_TRIP;
  *
  */
 
-@Service
+@Service(DEF_KEY_TRIP)
 @Slf4j
 public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<TripReimburseForm, TripRequestForm> implements TripReimburseService {
     private final FlowOperationLogService flowOperationLogService;
@@ -302,6 +302,11 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     @Override
     public void ensureEntityId(TripReimburseForm form) {
         ensureProperty(form.getRootId(), "业务根节点id(rootId)");
+    }
+
+    @Override
+    public boolean isApproveUser(TripReimburseForm form) {
+        return this.doIsApproveUser(form);
     }
 
     @Override

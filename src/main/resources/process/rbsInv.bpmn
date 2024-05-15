@@ -12,7 +12,7 @@
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="taskType" value="apply" />
-          <camunda:property name="selectUserType" value="2" />
+          <camunda:property name="selectUserType" value="1" />
           <camunda:property name="carbonCopy" value="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002" />
         </camunda:properties>
       </bpmn:extensionElements>

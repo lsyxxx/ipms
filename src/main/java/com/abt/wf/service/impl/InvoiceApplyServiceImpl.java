@@ -30,12 +30,13 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.common.util.QueryUtil.like;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_INV;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_INVOFFSET;
 
 /**
  * 开票申请
  */
-@Service
+@Service(DEF_KEY_INV)
 public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<InvoiceApply, InvoiceApplyRequestForm> implements InvoiceApplyService {
     private final IdentityService identityService;
     private final UserService userService;
@@ -286,6 +287,11 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     @Override
     public void ensureEntityId(InvoiceApply form) {
         ensureProperty(form.getId(), "开票申请审批编号(id)");
+    }
+
+    @Override
+    public boolean isApproveUser(InvoiceApply form) {
+        return this.doIsApproveUser(form);
     }
 
     @Override

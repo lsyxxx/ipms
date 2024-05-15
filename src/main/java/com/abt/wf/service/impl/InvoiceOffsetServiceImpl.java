@@ -1,10 +1,14 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.User;
 import com.abt.common.model.ValidationResult;
+import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.InvoiceOffset;
+import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.model.InvoiceOffsetRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.InvoiceOffsetRepository;
@@ -206,9 +210,28 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public InvoiceOffset getEntityWithCurrentTask(String entityId) {
+        UserView user = TokenUtil.getUserFromAuthToken();
         InvoiceOffset load = this.load(entityId);
         setActiveTask(load);
+        final ActRuTask task = load.getCurrentTask();
+        if (task != null) {
+            final List<User> candidateUsers = this.getCandidateUsers(invoiceOffsetBpmnModelInstance, task.getTaskDefKey());
+            load.setCandidateUsers(candidateUsers);
+            final User appr = candidateUsers.stream().filter(i -> user.getId().equals(i.getId())).findAny().orElse(null);
+            load.setApproveUser(appr != null);
+        }
         return load;
+    }
+
+    @Override
+    public boolean isApproveUser(InvoiceOffset form) {
+        log.info("invoiceOffsetService.isApproveUser");
+        UserView user = TokenUtil.getUserFromAuthToken();
+        String currentTaskId = form.getCurrentTaskId();
+        final Task task = taskService.createTaskQuery().taskId(currentTaskId).active().singleResult();
+        final List<User> candidateUsers = this.getCandidateUsers(invoiceOffsetBpmnModelInstance, task.getTaskDefinitionKey());
+        final User appr = candidateUsers.stream().filter(i -> user.getId().equals(i.getId())).findAny().orElse(null);
+        return appr != null;
     }
 
 //    @Override
@@ -219,8 +242,6 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         }
         return false;
     }
-
-
 
     static class InvoiceOffsetSpecification extends CommonSpecifications<InvoiceOffsetRequestForm, InvoiceOffset> {
 

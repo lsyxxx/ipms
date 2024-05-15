@@ -38,12 +38,10 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
+import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.abt.wf.config.Constants.*;
@@ -126,19 +124,17 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         String procId = baseForm.getProcessInstanceId();
         Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
         //验证用户是否是审批用户
-        baseForm.setCurrentTaskAssigneeId(task.getAssignee());
-        this.isApproveUser(baseForm);
-
+        baseForm.setCurrentTaskId(task.getId());
         //currentTask
         baseForm.setCurrentTaskDefId(task.getTaskDefinitionKey());
         baseForm.setCurrentTaskName(task.getName());
         baseForm.setCurrentTaskId(task.getId());
         baseForm.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
+        this.isApproveUser(baseForm);
         return task;
     }
 
-    @Override
-    public boolean isApproveUser(T form) {
+    public boolean doIsApproveUser(T form) {
         if (!form.getSubmitUserid().equals(form.getCurrentTaskAssigneeId())) {
             throw new BusinessException("登录用户(" + form.getSubmitUsername() + ")不是当前审批用户!不能审批");
         }
@@ -232,7 +228,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             if (parent.isApplyNode()) {
                 child.setOperatorId(form.getSubmitUserid());
                 child.setOperatorName(form.getSubmitUsername());
-            } else {
+            } else if (parent.isSeqApprove()) {
                 String assigneeId = u.getCamundaAssignee();
                 //指定用户才能解析
                 if (parent.isSpecific()) {
@@ -244,6 +240,13 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
                         log.warn("未查询到用户{}", assigneeId);
                     }
                 }
+            } else if (parent.isOrApprove()) {
+                //或签节点，查询候选人
+                final List<User> candidateUsers = getCandidateUsers(bpmnModelInstance, node.getId());
+                parent.setCandidateUsers(candidateUsers);
+
+            } else {
+                log.warn("流程节点未配置审批模式! -- taskDefKey: {}", parent.getTaskDefinitionKey());
             }
         }
         parent.addUserTaskDTO(child);
@@ -278,6 +281,24 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         return completed;
     }
 
+    public List<User> getCandidateUsers(BpmnModelInstance bpmnModelInstance, String taskDefId) {
+        UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
+        final String camundaCandidateUsers = userTaskModel.getCamundaCandidateUsers();
+        List<User> candidateUsers = new ArrayList<>();
+        if (camundaCandidateUsers != null) {
+            List<String> list = List.of(camundaCandidateUsers.split(","));
+            list.forEach(i -> {
+                User user = new User(i);
+                final User simpleUserInfo = userService.getSimpleUserInfo(new User(i));
+                if (simpleUserInfo != null) {
+                    user.setUsername(simpleUserInfo.getUsername());
+                }
+                candidateUsers.add(user);
+            });
+        }
+        return candidateUsers;
+    }
+
     /**
      * 删除校验
      * @param entityId 业务实体id
@@ -296,6 +317,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         return ValidationResult.pass();
     }
     public void commonRejectHandler(T form, Task task, String comment, String id) {
+        taskService.claim(task.getId(), form.getSubmitUserid());
 //        taskService.complete(task.getId());
         //delete process
         runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
@@ -311,6 +333,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     }
 
     public void commonPassHandler(T form, Task task, String comment, String id) {
+        taskService.claim(task.getId(), form.getSubmitUserid());
         taskService.complete(task.getId());
         //update status
         form.setBusinessState(STATE_DETAIL_ACTIVE);

@@ -8,6 +8,7 @@ import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.io.InputStreamResource;

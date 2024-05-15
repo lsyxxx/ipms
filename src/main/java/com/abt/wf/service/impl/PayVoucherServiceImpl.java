@@ -28,11 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.*;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_PAY_VOUCHER;
 
 /**
  *
  */
-@Service
+@Service(DEF_KEY_PAY_VOUCHER)
 @Slf4j
 public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<PayVoucher, PayVoucherRequestForm> implements PayVoucherService {
 
@@ -169,6 +170,11 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     @Override
     public void ensureEntityId(PayVoucher form) {
         ensureProperty(form.getId(), "款项支付审批编号(id)");
+    }
+
+    @Override
+    public boolean isApproveUser(PayVoucher form) {
+        return this.doIsApproveUser(form);
     }
 
     @Override

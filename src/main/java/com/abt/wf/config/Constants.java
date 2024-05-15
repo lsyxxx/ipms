@@ -59,6 +59,10 @@ public class Constants {
      * 审批节点类型：顺序依次审批
      */
     public static final int APPROVAL_TYPE_SEQ = 0;
+    /**
+     * 审批节点类型：或签，任意一人审批即可
+     */
+    public static final int APPROVAL_TYPE_OR = 1;
 
     //--- taskType
     /**
@@ -88,6 +92,11 @@ public class Constants {
      * 指定(不可修改)+自选
      */
     public static final int SELECT_USER_TYPE_MIX = 2;
+
+    /**
+     * 指定的候选用户
+     */
+    public static final int SELECT_USER_TYPE_CANDIDATE = 3;
     /**
      * 选择用户方式-所有人
      * 一般用于申请节点

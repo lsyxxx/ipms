@@ -14,3 +14,6 @@ alter table wf_rbs alter COLUMN proc_def_key nvarchar(64);
 alter table wf_trip alter COLUMN proc_inst_id nvarchar(64);
 alter table wf_trip alter COLUMN proc_def_id nvarchar(64);
 alter table wf_trip alter COLUMN proc_def_key nvarchar(64);
+ALTER TABLE T_car_Info add FilePath varchar(max);
+ALTER TABLE T_EmployeeInfo ADD ContractFile varchar(max);
+ALTER TABLE T_EmployeeInfo ADD IsExit BIT;

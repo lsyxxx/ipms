@@ -5,6 +5,7 @@ import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.WorkFlowConfig;
+import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.TaskWrapper;
 import com.abt.wf.service.ActivitiService;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +32,18 @@ public class WorkflowController {
     /**
      * 获取财务相关流程待办
      */
-    @GetMapping("/fin/todo")
-    public R<List<TaskWrapper>> getMyFinanceTodoList() {
+    @GetMapping("/fin/todo/find1")
+    public R<WorkflowBase> getMyFinanceTodoList() {
         UserView user = TokenUtil.getUserFromAuthToken();
-        List<String> keys = WorkFlowConfig.financeWorkflowDef;
-        final List<TaskWrapper> financeTask = activitiService.findFinanceTask(user.getId(), keys.toArray(new String[0]));
-        return R.success(financeTask, financeTask.size());
+        final WorkflowBase financeTask = activitiService.findFinanceTask(user.getId());
+        return R.success(financeTask);
+    }
+
+    @GetMapping("/fin/todo/count")
+    public R<Long> countMyFinanceTodoList() {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        final long count = activitiService.countUserFinanceTodo(user.getId());
+        return R.success(count);
     }
 
     /**
@@ -54,7 +61,6 @@ public class WorkflowController {
      */
     public void financeUserTodo() {
         UserView user = TokenUtil.getUserFromAuthToken();
-
     }
 
 }

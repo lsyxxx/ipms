@@ -54,6 +54,15 @@ public class UserTaskDTO extends FlowOperationLog {
     private boolean isPreview = true;
 
     /**
+     * 候选人名单
+     */
+    private List<User> candidateUsers = new ArrayList<>();
+
+    public void addCandidateUser(User u) {
+        candidateUsers.add(u);
+    }
+
+    /**
      * 如果是多实例节点，那么有子节点
      */
     private List<UserTaskDTO> taskList = new ArrayList<>();
@@ -88,9 +97,20 @@ public class UserTaskDTO extends FlowOperationLog {
         return Constants.SELECT_USER_TYPE_SPECIFIC == this.selectUserType;
     }
 
+    public boolean isCandidate() {
+        return Constants.SELECT_USER_TYPE_CANDIDATE == this.selectUserType;
+    }
+
     public boolean isActive() {
         this.isActive = !StringUtils.isBlank(this.getTaskResult());
         return isActive;
+    }
+
+    public boolean isSeqApprove() {
+        return Constants.APPROVAL_TYPE_SEQ == this.approvalType;
+    }
+    public boolean isOrApprove() {
+        return Constants.APPROVAL_TYPE_OR == this.approvalType;
     }
 
     public static UserTaskDTO createCopyTask() {

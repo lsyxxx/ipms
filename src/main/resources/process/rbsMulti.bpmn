@@ -3,8 +3,7 @@
   <bpmn:process id="rbsMulti" name="rbsMulti" isExecutable="true" camunda:versionTag="报销流程多实例+监听器" camunda:historyTimeToLive="99999">
     <bpmn:documentation>综合日常报销审批流程</bpmn:documentation>
     <bpmn:extensionElements>
-      <camunda:executionListener delegateExpression="${reimburseProcessEndListener}" event="end">
-      </camunda:executionListener>
+      <camunda:executionListener delegateExpression="${reimburseProcessEndListener}" event="end" />
     </bpmn:extensionElements>
     <bpmn:startEvent id="StartEvent_1" name="报销申请" camunda:initiator="starter">
       <bpmn:outgoing>Flow_1qcaapv</bpmn:outgoing>
@@ -80,7 +79,7 @@
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="taskType" value="apply" />
-          <camunda:property name="selectUserType" value="2" />
+          <camunda:property name="selectUserType" value="1" />
           <camunda:property name="carbonCopy" value="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002" />
         </camunda:properties>
       </bpmn:extensionElements>
@@ -127,10 +126,6 @@
         <dc:Bounds x="1110" y="77" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1aun7s6_di" bpmnElement="rbsMulti_acct">
-        <dc:Bounds x="890" y="300" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_104br8c_di" bpmnElement="EndEvent_1">
         <dc:Bounds x="472" y="322" width="36" height="36" />
         <bpmndi:BPMNLabel>
@@ -139,6 +134,10 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0307g58_di" bpmnElement="rbsMulti_apply">
         <dc:Bounds x="250" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1aun7s6_di" bpmnElement="rbsMulti_acct">
+        <dc:Bounds x="890" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_06au5dy_di" bpmnElement="Flow_06au5dy">

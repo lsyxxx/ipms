@@ -207,6 +207,11 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     }
 
     @Override
+    public boolean isApproveUser(Reimburse form) {
+        return this.doIsApproveUser(form);
+    }
+
+    @Override
     public String notifyLink(String id) {
         return "/wf/rbs/detail/" + id ;
     }
