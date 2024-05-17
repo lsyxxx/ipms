@@ -43,4 +43,12 @@ public class EnumLibConfig {
         log.info("init agreementTypeEnumList...");
         return enumLibRepository.findAllByFtypeidOrderByFid(ENUMLIB_AGREEMENT_TYPE);
     }
+
+    /**
+     * 获取所有enum, key=分类
+     */
+    @Bean("allEnumMap")
+    public Map<String, List<EnumLib>> getAllEnum() {
+        return enumLibRepository.findAll().stream().collect(Collectors.groupingBy(EnumLib::getFtypeid));
+    }
 }

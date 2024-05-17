@@ -1,6 +1,9 @@
 package com.abt.common.util;
 
 
+import com.abt.common.exception.MissingRequiredParameterException;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * 查询工具
  */
@@ -34,6 +37,12 @@ public class QueryUtil {
 
     public static String sql(String sql) {
         return " " + sql + " ";
+    }
+
+    public static void ensureProperty(String prop, String propName) {
+        if (StringUtils.isBlank(prop)) {
+            throw new MissingRequiredParameterException("缺少必要参数(" + propName + ")");
+        }
     }
 
 }

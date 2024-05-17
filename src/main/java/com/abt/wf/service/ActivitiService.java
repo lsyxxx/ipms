@@ -16,4 +16,6 @@ public interface ActivitiService {
     long countUserFinanceTodo(String userid);
 
     long countUserTodo(String userid, List<String> keys);
+
+    void deleteProcessInstance(String processInstanceId, String deleteReason);
 }

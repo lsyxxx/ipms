@@ -135,6 +135,20 @@ public class WorkFlowUtil {
         throw new MissingRequiredParameterException("ProcessInstanceId(流程实例id)");
     }
 
+    public static void ensureProcessId(String processInstanceId) {
+        if (StringUtils.isNotBlank(processInstanceId)) {
+            return;
+        }
+        throw new MissingRequiredParameterException("ProcessInstanceId(流程实例id)");
+    }
+
+    public static void ensureProperty(String prop, String propName) {
+        if (StringUtils.isNotBlank(prop)) {
+            return;
+        }
+        throw new MissingRequiredParameterException("propName");
+    }
+
     public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {
         UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
         final String camundaCandidateUsers = userTaskModel.getCamundaCandidateUsers();

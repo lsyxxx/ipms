@@ -12,8 +12,6 @@ import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceApplyService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.engine.task.Task;
-import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -97,6 +95,12 @@ public class InvoiceApplyController {
     public R<List<FlowOperationLog>> processRecord(@PathVariable String id) {
         final List<FlowOperationLog> processRecord = invoiceApplyService.processRecord(id, Constants.SERVICE_PAY);
         return R.success(processRecord, processRecord.size());
+    }
+
+    @PostMapping("/update")
+    public R<List<FlowOperationLog>> update(@RequestBody InvoiceApply form) {
+        invoiceApplyService.saveEntity(form);
+        return R.success("更新成功");
     }
 
     public void setTokenUser(InvoiceApplyRequestForm form) {

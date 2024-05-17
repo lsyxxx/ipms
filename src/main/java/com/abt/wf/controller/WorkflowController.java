@@ -63,4 +63,14 @@ public class WorkflowController {
         UserView user = TokenUtil.getUserFromAuthToken();
     }
 
+    /**
+     * 删除流程
+     * @param procId 流程实例id
+     * @param deleteReason 删除原因
+     */
+    @GetMapping("/processinstance/del")
+    public void deleteProcessInstance(String procId, String deleteReason) {
+        activitiService.deleteProcessInstance(procId, deleteReason);
+    }
+
 }

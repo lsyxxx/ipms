@@ -1,5 +1,6 @@
 package com.abt.wf.listener;
 
+import com.abt.sys.exception.BusinessException;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.service.InvoiceApplyService;
@@ -27,14 +28,19 @@ public class InvoiceApplyProcessEndListener implements ExecutionListener {
             log.error("款项支付单流程参数中未保存业务实体id! 流程实例id: {}", execution.getProcessInstanceId());
         } else {
             entityId = obj.toString();
-            InvoiceApply invoiceApply = invoiceApplyService.load(entityId);
-            if (Constants.STATE_DETAIL_ACTIVE.equals(invoiceApply.getBusinessState())) {
-                //表示之前一直正常通过，特殊状态在业务中已更改状态
-                invoiceApply.setBusinessState(Constants.STATE_DETAIL_PASS);
-                invoiceApply.setProcessState("COMPLETED");
+            try {
+                InvoiceApply invoiceApply = invoiceApplyService.load(entityId);
+                if (Constants.STATE_DETAIL_ACTIVE.equals(invoiceApply.getBusinessState())) {
+                    //表示之前一直正常通过，特殊状态在业务中已更改状态
+                    invoiceApply.setBusinessState(Constants.STATE_DETAIL_PASS);
+                    invoiceApply.setProcessState("COMPLETED");
+                }
+                invoiceApply.setFinished(true);
+                invoiceApplyService.saveEntity(invoiceApply);
+            } catch (BusinessException e) {
+                log.warn("业务异常: ", e);
             }
-            invoiceApply.setFinished(true);
-            invoiceApplyService.saveEntity(invoiceApply);
+
             //抄送TODO;
         }
     }

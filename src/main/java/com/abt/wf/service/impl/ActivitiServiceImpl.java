@@ -6,6 +6,7 @@ import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.service.ActivitiService;
 import com.abt.wf.service.BusinessService;
+import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RuntimeService;
@@ -103,5 +104,13 @@ public class ActivitiServiceImpl implements ActivitiService {
                 .parameter("userid", userid)
                 .count();
         return count;
+    }
+
+
+    @Override
+    public void deleteProcessInstance(String processInstanceId, String deleteReason) {
+        WorkFlowUtil.ensureProcessId(processInstanceId);
+        WorkFlowUtil.ensureProperty(deleteReason, "deleteReason(流程删除原因)");
+        runtimeService.deleteProcessInstance(processInstanceId, deleteReason);
     }
 }

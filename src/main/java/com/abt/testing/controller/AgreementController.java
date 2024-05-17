@@ -83,5 +83,4 @@ public class AgreementController {
         return R.success(list);
     }
 
-
 }
