@@ -51,7 +51,7 @@ public class FileController {
      */
     @PostMapping("/upload")
     public R<List<SystemFile>> upload(@RequestParam("file") MultipartFile[] files
-            , @RequestParam("service") String service) {
+            , @RequestParam("service") String service, @RequestParam(value = "withTime", required = false, defaultValue = "true") Boolean withTime) {
         UserView user = TokenUtil.getUserFromAuthToken();
         if (files == null || files.length < 1) {
             log.warn("用户没有上传文件");
@@ -65,7 +65,7 @@ public class FileController {
                 continue;
             }
             try {
-                SystemFile systemFile = fileService.saveFile(file, savedRoot, service, true);
+                SystemFile systemFile = fileService.saveFile(file, savedRoot, service, true, withTime);
                 saved.add(systemFile);
             } catch (Exception e) {
                 log.error("保存文件失败", e);

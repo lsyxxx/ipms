@@ -28,8 +28,8 @@ public class FileServiceImpl implements IFileService {
      * @return SystemFile 保存文件的信息
      */
     @Override
-    public SystemFile saveFile(MultipartFile file, String filePath, String service, boolean isRename) {
-        SystemFile systemFile = new SystemFile(file, service, filePath);
+    public SystemFile saveFile(MultipartFile file, String filePath, String service, boolean isRename, Boolean withTime) {
+        SystemFile systemFile = new SystemFile(file, service, filePath, withTime);
         final String newName = FileUtil.saveFile(file, systemFile.getUrl(), isRename);
         systemFile.rename(newName);
         return systemFile;

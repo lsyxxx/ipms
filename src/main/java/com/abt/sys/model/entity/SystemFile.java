@@ -56,13 +56,17 @@ public class SystemFile extends AuditInfo {
     private boolean isDeleted = false;
 
 
-    public SystemFile(MultipartFile file, String service, String filePath) {
+    public SystemFile(MultipartFile file, String service, String filePath, Boolean withTime) {
         super();
         this.id = UUID.randomUUID().toString();
         this.originalName = file.getOriginalFilename();
         this.name = file.getOriginalFilename();
         this.service = service;
-        this.url = this.createPath(filePath);
+        if (withTime != null && withTime) {
+            this.url = this.createPath(filePath);
+        } else {
+            this.url = this.createPath2(filePath);
+        }
         this.fullPath = this.url + file.getOriginalFilename();
     }
 
@@ -88,5 +92,9 @@ public class SystemFile extends AuditInfo {
         this.url = path;
         return path;
     }
+    public String createPath2(String root) {
+        return  root + File.separator + service + File.separator;
+    }
+
 
 }

@@ -6,9 +6,7 @@ import com.abt.market.model.SaleAgreementRequestForm;
 import com.abt.market.service.SaleAgreementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -38,4 +36,42 @@ public class SaleAgreementController {
         saleAgreementService.delete(id);
         return R.success("删除成功");
     }
+
+    @GetMapping("/finda")
+    public R<List<String>> findAllPartyA() {
+        final List<String> allPartyA = saleAgreementService.findAllPartyA();
+        return R.success(allPartyA);
+    }
+
+    @GetMapping("/find/curweek")
+    public R<List<SaleAgreement>> findByCurrentWeek() {
+        final List<SaleAgreement> list = saleAgreementService.findSaleAgreementCreatedByCurrentWeek();
+        return R.success(list);
+    }
+
+    @GetMapping("/find/curmon")
+    public R<List<SaleAgreement>> findByCurrentMonth() {
+        final List<SaleAgreement> list = saleAgreementService.findSaleAgreementCreatedByCurrentMonth();
+        return R.success(list);
+    }
+
+    @GetMapping("/count")
+    public R<Long> countAll() {
+        final long count = saleAgreementService.countAllSaleAgreement();
+        return R.success(count);
+    }
+
+    @PostMapping("/save")
+    public R<Long> save(SaleAgreement saleAgreement) {
+        saleAgreementService.saveSaleAgreement(saleAgreement);
+        return R.success("保存成功");
+    }
+
+    @GetMapping("/load")
+    public R<SaleAgreement> load(String id) {
+        final SaleAgreement saleAgreement = saleAgreementService.LoadSaleAgreement(id);
+        return R.success(saleAgreement);
+    }
+
+
 }
