@@ -1,11 +1,13 @@
 package com.abt.market.controller;
 
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.market.entity.SaleAgreement;
 import com.abt.market.model.SaleAgreementRequestForm;
 import com.abt.market.service.SaleAgreementService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,6 +57,12 @@ public class SaleAgreementController {
         return R.success(list);
     }
 
+    @GetMapping("/find/curyear")
+    public R<List<SaleAgreement>> findByCurrentYeaar() {
+        final List<SaleAgreement> list = saleAgreementService.findSaleAgreementCreatedByCurrentYear();
+        return R.success(list);
+    }
+
     @GetMapping("/count")
     public R<Long> countAll() {
         final long count = saleAgreementService.countAllSaleAgreement();
@@ -62,7 +70,7 @@ public class SaleAgreementController {
     }
 
     @PostMapping("/save")
-    public R<Long> save(SaleAgreement saleAgreement) {
+    public R<Long> save(@Validated(ValidateGroup.Save.class) @RequestBody SaleAgreement saleAgreement) {
         saleAgreementService.saveSaleAgreement(saleAgreement);
         return R.success("保存成功");
     }

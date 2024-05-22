@@ -17,6 +17,8 @@ public interface SaleAgreementService {
 
     List<SaleAgreement> findSaleAgreementCreatedByCurrentMonth();
 
+    List<SaleAgreement> findSaleAgreementCreatedByCurrentYear();
+
     long countAllSaleAgreement();
 
     void saveSaleAgreement(SaleAgreement saleAgreement);

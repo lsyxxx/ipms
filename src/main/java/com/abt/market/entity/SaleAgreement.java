@@ -1,22 +1,20 @@
 package com.abt.market.entity;
 
+import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.abt.common.service.impl.CommonJpaAudit;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
 
 import static com.abt.market.Constant.DEFAULT_TAX;
 
@@ -25,10 +23,10 @@ import static com.abt.market.Constant.DEFAULT_TAX;
 @Entity
 @ToString
 @Table(name = "agr_sale")
-@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SaleAgreement extends AuditInfo {
+@EntityListeners({CommonJpaAuditListener.class})
+public class SaleAgreement extends AuditInfo implements CommonJpaAudit {
 
     @Id
     @Column(name = "id_", nullable = false)
@@ -172,7 +170,7 @@ public class SaleAgreement extends AuditInfo {
      * 是否含税
      */
     @Column(name = "is_tax", columnDefinition = "BIT")
-    private boolean isTax;
+    private boolean includeTax;
     /**
      * 税率，填写百分比数字，如6%，就填写6。
      * 含税由税率
@@ -233,7 +231,7 @@ public class SaleAgreement extends AuditInfo {
         } else if (this.endYear != null && this.endMonth != null) {
             this.endDateStr = this.endYear + "-" + String.format("%02d", this.endMonth);
             if (this.endDay != null) {
-                this.endDateStr = this.endDateStr + "-" + this.endDay;
+                this.endDateStr = this.endDateStr + "-" + String.format("%02d", this.endDay);
             }
         }
     }
@@ -246,7 +244,7 @@ public class SaleAgreement extends AuditInfo {
 
 
     public void defaultTaxRate() {
-        if (isTax) {
+        if (includeTax) {
             this.taxRate = DEFAULT_TAX;
         }
     }

@@ -1,5 +1,6 @@
 package com.abt.common.model;
 
+import com.abt.common.config.CommonJpaAuditListener;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +28,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuditInfo {
     @Schema(description = "最后更新时间")
