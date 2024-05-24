@@ -1,10 +1,9 @@
 package com.abt.common.util;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 
 /**
@@ -23,8 +22,6 @@ public class TimeUtil {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         return LocalDate.now().format(formatter) + System.currentTimeMillis();
     }
-
-
 
     public static LocalDateTime from(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
@@ -56,12 +53,43 @@ public class TimeUtil {
         return localDate.format(dateFormatter);
     }
 
-    public static void main(String[] args) {
-        String dateString = "2024-04-11 12:30:45";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime dateTime = LocalDateTime.parse(dateString, formatter);
-
-        System.out.println();
+    /**
+     * 当前周的周一日期
+     */
+    public static LocalDate startDayOfCurrentWeek() {
+        LocalDate today = LocalDate.now();
+        return today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
+
+    /**
+     * 当前周的周日日期
+     */
+    public static LocalDate endDayOfCurrentWeek() {
+        LocalDate today = LocalDate.now();
+        return today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+    }
+
+    public static LocalDate startDayOfCurrentMonth() {
+        LocalDate today = LocalDate.now();
+        YearMonth currentMonth = YearMonth.of(today.getYear(), today.getMonth());
+        return currentMonth.atDay(1);
+    }
+
+    public static LocalDate endDayOfCurrentMonth() {
+        LocalDate today = LocalDate.now();
+        YearMonth currentMonth = YearMonth.of(today.getYear(), today.getMonth());
+        return currentMonth.atEndOfMonth();
+    }
+
+    public static LocalDate endDayOfCurrentYear() {
+        LocalDate today = LocalDate.now();
+        return LocalDate.of(today.getYear(), 12, 31);
+    }
+
+    public static LocalDate startDayOfCurrentYear() {
+        LocalDate today = LocalDate.now();
+        return LocalDate.of(today.getYear(), 1, 1);
+    }
+
 
 }

@@ -1,9 +1,11 @@
 package com.abt.market.repository;
 
 import com.abt.market.entity.SaleAgreement;
+import com.abt.sys.model.CountQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -48,5 +50,26 @@ class SaleAgreementRepositoryTest {
         assertNotNull(list);
         System.out.println(list.size());
         list.forEach(i -> System.out.println(i.toString()));
+    }
+
+    @Test
+    void query() {
+        final List<CountQuery> list = saleAgreementRepository.findPartyAWithMostContracts(PageRequest.of(0, 1));
+        assertNotNull(list);
+        list.forEach(System.out::println);
+
+    }
+
+    @Test
+    void countAllDistinctByPartyA() {
+        final int total = saleAgreementRepository.countAllDistinctByPartyA();
+        System.out.println(total);
+    }
+
+    @Test
+    void countContractsByYearMonth() {
+        final List<CountQuery> countQueries = saleAgreementRepository.countContractsByYearMonth(2024);
+        assertNotNull(countQueries);
+        countQueries.forEach(System.out::println);
     }
 }

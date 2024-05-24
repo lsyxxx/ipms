@@ -10,7 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -79,6 +81,12 @@ public class SaleAgreementController {
     public R<SaleAgreement> load(String id) {
         final SaleAgreement saleAgreement = saleAgreementService.LoadSaleAgreement(id);
         return R.success(saleAgreement);
+    }
+
+    @GetMapping("/board")
+    public R<Map<String, Object>> board() {
+        final Map<String, Object> map = saleAgreementService.marketBoardData(LocalDate.now().getYear());
+        return R.success(map);
     }
 
 

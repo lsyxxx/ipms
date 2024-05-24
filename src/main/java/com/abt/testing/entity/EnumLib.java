@@ -1,7 +1,6 @@
 package com.abt.testing.entity;
 
-import com.abt.common.config.CommonJpaAuditListener;
-import com.abt.common.service.impl.CommonJpaAudit;
+import com.abt.common.config.ValidateGroup;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +11,6 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Nationalized;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -32,13 +30,14 @@ public class EnumLib {
     @Id
     @Size(max = 50)
     @Nationalized
-    @Column(name = "ID", nullable = false, length = 50)
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "ID", nullable = false, length = 50, unique = true)
+    @NotNull(message = "ID不能为空", groups = {ValidateGroup.Save.class})
     private String id;
 
     /**
      * 枚举项
      */
+    @NotNull(message = "FID不能为空", groups = {ValidateGroup.Save.class})
     @Size(max = 50)
     @Column(name = "FID", length = 50)
     private String fid;
@@ -47,8 +46,8 @@ public class EnumLib {
     /**
      * 分类id
      */
+    @NotNull(message = "FTYPEID不能为空", groups = {ValidateGroup.Save.class})
     @Size(max = 50)
-    @NotNull
     @Nationalized
     @Column(name = "FTYPEID", nullable = false, length = 50)
     private String ftypeid;
@@ -56,14 +55,14 @@ public class EnumLib {
     /**
      * 名称
      */
+    @NotNull(message = "FNAME不能为空", groups = {ValidateGroup.Save.class})
     @Size(max = 50)
-    @NotNull
     @Nationalized
     @Column(name = "FNAME", nullable = false, length = 50)
     private String fname;
 
+    @NotNull(message = "FDESC不能为空", groups = {ValidateGroup.Save.class})
     @Size(max = 50)
-    @NotNull
     @Nationalized
     @Column(name = "FDESC", nullable = false, length = 50)
     private String fdesc;
@@ -80,5 +79,12 @@ public class EnumLib {
     @Nationalized
     @Column(name = "OPERATEDEPT", length = 13)
     private String operateDept;
+
+    /**
+     * 扩展, json保存
+     */
+    @Column(name = "EXTEND")
+    private String extend;
+
 
 }

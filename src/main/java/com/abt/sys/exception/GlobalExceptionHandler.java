@@ -66,14 +66,14 @@ public class GlobalExceptionHandler {
      * @param e 异常
      */
     @ExceptionHandler(BadRequestParameterException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public R<BadRequestParameterException> handleBadRequestParameterException(BadRequestParameterException e) {
         log.error("Client请求参数错误 - ", e);
         return R.badRequest(e.getMessage());
     }
 
     @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public R<Exception> handleBusinessException(BusinessException e) {
         log.error("业务异常! - ", e);
         return R.fail(e.getMessage(), e.getCode());

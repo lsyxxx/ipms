@@ -5,6 +5,7 @@ import com.abt.market.model.SaleAgreementRequestForm;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Map;
 
 public interface SaleAgreementService {
     Page<SaleAgreement> findPaged(SaleAgreementRequestForm requestForm);
@@ -24,4 +25,7 @@ public interface SaleAgreementService {
     void saveSaleAgreement(SaleAgreement saleAgreement);
 
     SaleAgreement LoadSaleAgreement(String id);
+
+    //市场看板数据
+    Map<String, Object> marketBoardData(int currentYear);
 }

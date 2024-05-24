@@ -3,11 +3,13 @@ package com.abt.market.service.impl;
 import com.abt.common.config.CommonSpecification;
 import com.abt.common.util.FileUtil;
 import com.abt.common.util.JsonUtil;
+import com.abt.common.util.TimeUtil;
 import com.abt.market.entity.SaleAgreement;
 import com.abt.market.model.SaleAgreementRequestForm;
 import com.abt.market.repository.SaleAgreementRepository;
 import com.abt.market.service.SaleAgreementService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.CountQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
@@ -19,12 +21,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.temporal.TemporalAdjusters;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.abt.common.util.QueryUtil.ensureProperty;
 
@@ -85,30 +86,20 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
     @Override
     public List<SaleAgreement> findSaleAgreementCreatedByCurrentWeek() {
         //本周登记
-        LocalDate today = LocalDate.now();
-        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-        return saleAgreementRepository.findByCreateDateBetweenOrderByCreateDateDesc(startOfWeek.atStartOfDay(), endOfWeek.atStartOfDay());
+        return saleAgreementRepository.findByCreateDateBetweenOrderByCreateDateDesc(TimeUtil.startDayOfCurrentWeek().atStartOfDay()
+                , TimeUtil.endDayOfCurrentWeek() .atStartOfDay());
     }
 
     @Override
     public List<SaleAgreement> findSaleAgreementCreatedByCurrentMonth() {
-        // 获取当前日期
-        LocalDate today = LocalDate.now();
-        // 获取当前年份和月份
-        YearMonth currentMonth = YearMonth.of(today.getYear(), today.getMonth());
-        // 获取当前月份的第一天:yyyy-mm-dd
-        LocalDate startOfMonth = currentMonth.atDay(1);
-        // 获取当前月份的最后一天:yyyy-mm-dd
-        LocalDate endOfMonth = currentMonth.atEndOfMonth();
-        return saleAgreementRepository.findByCreateDateBetweenOrderByCreateDateDesc(startOfMonth.atStartOfDay(), endOfMonth.atStartOfDay());
+        return saleAgreementRepository.findByCreateDateBetweenOrderByCreateDateDesc(TimeUtil.startDayOfCurrentMonth().atStartOfDay()
+                , TimeUtil.endDayOfCurrentMonth().atStartOfDay());
     }
 
     @Override
     public List<SaleAgreement> findSaleAgreementCreatedByCurrentYear() {
         LocalDate today = LocalDate.now();
         // 获取当前年份和月份
-        YearMonth startMonth = YearMonth.of(today.getYear(), 1);
         LocalDate startDay = LocalDate.of(today.getYear(), 1, 1);
         LocalDate endDay = LocalDate.of(today.getYear(), 12, 31);
         return saleAgreementRepository.findByCreateDateBetweenOrderByCreateDateDesc(startDay.atStartOfDay(), endDay.atStartOfDay());
@@ -121,9 +112,6 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
 
     @Override
     public void saveSaleAgreement(SaleAgreement saleAgreement) {
-//        long count = saleAgreementRepository.count();
-//        count = count + 1;
-//        saleAgreement.setSortNo(count);
         saleAgreementRepository.save(saleAgreement);
     }
 
@@ -132,6 +120,74 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
         final SaleAgreement saleAgreement = saleAgreementRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到销售合同(id=" + id + ")"));
         saleAgreement.format();
         return saleAgreement;
+    }
+
+
+    @Override
+    public Map<String, Object> marketBoardData(int currentYear) {
+        //市场看板数据
+        //返回的数据, key是名称
+        Map<String, Object> boardData = new HashMap<>();
+        //--- 统计数字
+        //本周新增销售合同
+        final int weekCount = saleAgreementRepository.countByCreateDateBetween(TimeUtil.startDayOfCurrentWeek().atStartOfDay(), TimeUtil.endDayOfCurrentWeek().atStartOfDay());
+        boardData.put("saleAgreementCountWeek", weekCount);
+        //本月新增
+        final int monthCount = saleAgreementRepository.countByCreateDateBetween(TimeUtil.startDayOfCurrentMonth().atStartOfDay(), TimeUtil.endDayOfCurrentMonth().atStartOfDay());
+        boardData.put("saleAgreementCountMonth", monthCount);
+        //当年全部合同
+        //合同金额，仅统计有金额的
+        final List<SaleAgreement> yearContractList = findSaleAgreementCreatedByCurrentYear();
+        boardData.put("saleAgreementCountYear", yearContractList.size());
+        //合同金额
+        final BigDecimal contractAmount = calculateContractAmount(yearContractList);
+        boardData.put("contractAmount", contractAmount);
+        //合同最多客户
+        final CountQuery partyACountQuery = findPartyAWithMostContracts();
+        boardData.put("partyACountQuery", partyACountQuery);
+        //全部客户数量
+        final int partyACount = saleAgreementRepository.countAllDistinctByPartyA();
+        boardData.put("partyACount", partyACount);
+
+        //-- 图表数据
+        //每月合同分布图
+        Map<Integer, Long> contractsByMonth = yearContractList.stream()
+                .collect(Collectors.groupingBy(
+                        sa -> sa.getCreateDate().getMonthValue(),
+                        Collectors.counting()
+                ));
+        final Map<Integer, Long> saPerMonth = IntStream.rangeClosed(1, 12).boxed().collect(Collectors.toMap(month -> month, month -> contractsByMonth.getOrDefault(month, 0L)));
+        boardData.put("createContractDataset", saPerMonth);
+        //乙方合同分布
+        final Map<String, Long> countByPartyB = yearContractList.stream().collect(Collectors.groupingBy(SaleAgreement::getPartyB, Collectors.counting()));
+        boardData.put("partyBContractDataset", countByPartyB);
+        return boardData;
+    }
+
+    public BigDecimal calculateContractAmount(List<SaleAgreement> list) {
+        if (list == null || list.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal acc = BigDecimal.ZERO;
+        for (SaleAgreement agr : list) {
+            String amtStr = agr.getAmount();
+            if (StringUtils.isBlank(amtStr)) {
+                continue;
+            }
+            try {
+                BigDecimal cur = new BigDecimal(amtStr);
+                acc = acc.add(cur);
+            } catch (NumberFormatException e) {
+                log.warn("合同金额不是数字，不能计算 - {}", amtStr);
+            }
+        }
+        return acc;
+    }
+
+    public CountQuery findPartyAWithMostContracts() {
+        //使用分页限制只查询一个
+        List<CountQuery> list  = saleAgreementRepository.findPartyAWithMostContracts(PageRequest.of(0, 1));
+        return list.isEmpty() ?  CountQuery.empty() : list.get(0);
     }
 
 
