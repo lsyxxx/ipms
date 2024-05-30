@@ -384,6 +384,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             if (user != null) {
                 entity.setCurrentTaskAssigneeName(user.getUsername());
             }
+            String loginUserid = TokenUtil.getUseridFromAuthToken();
+            entity.setApproveUser(loginUserid.equals(task.getAssignee()));
         }
         return entity;
     }

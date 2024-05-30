@@ -66,3 +66,23 @@ INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERAT
 INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT]) VALUES (N'PB2', '2', N'contractPartyB', N'吉瑞达', N'合同乙方', NULL, NULL, NULL);
 INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT]) VALUES (N'PB3', '3', N'contractPartyB', N'西北大学', N'合同乙方', NULL, NULL, NULL);
 
+
+-- 20240527
+alter table T_ENUMLIB alter column EXTEND VARCHAR(255);
+-- 修改提醒时间
+-- 身份证
+update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 1;
+-- 身份证反面
+update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 2;
+-- 学历证
+update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 3;
+-- 学位证
+update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 4;
+-- 上岗证
+update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 5;
+-- 职称证
+update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 8;
+-- 个人照
+update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 7;
+
+

@@ -12,4 +12,8 @@ public interface EnumLibRepository extends JpaRepository<EnumLib, String> {
    * @param ftypeid 枚举类型id
    */
   List<EnumLib> findAllByFtypeidOrderByFid(String ftypeid);
+
+  int countById(String id);
+
+  int countByFtypeid(String ftypeid);
 }

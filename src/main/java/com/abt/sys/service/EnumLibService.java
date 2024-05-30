@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface EnumLibService {
-    void saveEnumLib(EnumLib enumLib);
+    void updateEnumLib(EnumLib enumLib);
+
+    EnumLib newCertEnumLib();
+
+    void createEnumLib(EnumLib enumLib);
 
     void deleteEnumLib(String id);
 

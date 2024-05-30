@@ -3,7 +3,9 @@ package com.abt.common.model;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 数据校验结果
@@ -29,6 +31,12 @@ public class ValidationResult {
     public static ValidationResult pass() {
         ValidationResult re = new ValidationResult();
         re.setPass(true);
+        return re;
+    }
+
+    public static ValidationResult fail() {
+        ValidationResult re = new ValidationResult();
+        re.setPass(false);
         return re;
     }
 

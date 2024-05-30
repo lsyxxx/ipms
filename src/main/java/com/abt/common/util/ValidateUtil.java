@@ -1,7 +1,15 @@
 package com.abt.common.util;
 
 import com.abt.common.exception.MissingRequiredParameterException;
+import com.abt.common.model.ValidationResult;
+import com.abt.salary.entity.SalaryMain;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Set;
 
 /**
  * 校验
@@ -12,5 +20,34 @@ public class ValidateUtil {
         if (StringUtils.isBlank(propertyValue)) {
             throw new MissingRequiredParameterException(propertyName);
         }
+    }
+
+
+    /**
+     * jakarta.validation 手动校验
+     * @param instance 实体
+     * @param <T> 实体类型
+     */
+    public static <T> ValidationResult validateEntity(T instance) {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<T>> violations = validator.validate(instance);
+        if (!violations.isEmpty()) {
+            ValidationResult err = ValidationResult.fail(instance.getClass() + "实例参数校验失败!");
+            for (ConstraintViolation<T> violation : violations) {
+                String msg = violation.getPropertyPath() + ":" + violation.getMessage();
+                err.addParameterResult(msg);
+            }
+            return err;
+        } else {
+            return ValidationResult.pass();
+        }
+    }
+
+    public static void main(String[] args) {
+        SalaryMain main = new SalaryMain();
+        main.setYearMonth("2024-05");
+        final ValidationResult result = validateEntity(main);
+        System.out.println(result.toString());
     }
 }

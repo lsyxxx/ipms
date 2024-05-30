@@ -28,9 +28,15 @@ public class OASettingController {
     }
 
 
-    @PostMapping("/saveEnum")
-    public R<Object> saveEnumLib(@Validated(value = {ValidateGroup.Save.class}) @RequestBody EnumLib enumLib) {
-        enumLibService.saveEnumLib(enumLib);
+    @PostMapping("/updateEnum")
+    public R<Object> updateEnum(@Validated(value = {ValidateGroup.Save.class}) @RequestBody EnumLib enumLib) {
+        enumLibService.updateEnumLib(enumLib);
+        return R.success("添加成功");
+    }
+
+    @PostMapping("/createEnum")
+    public R<Object> updateEnumLib(@Validated(value = {ValidateGroup.Save.class}) @RequestBody EnumLib enumLib) {
+        enumLibService.createEnumLib(enumLib);
         return R.success("添加成功");
     }
 
@@ -54,6 +60,15 @@ public class OASettingController {
     public R<Map<String, List<EnumLib>>> findAllEnum() {
         final Map<String, List<EnumLib>> allEnum = enumLibService.findAllEnum();
         return R.success(allEnum);
+    }
+
+    /**
+     * 一个新的证件类型Enum
+     */
+    @GetMapping("/cert/new")
+    public R<EnumLib> newCertTypeEnumLib() {
+        final EnumLib enumLib = enumLibService.newCertEnumLib();
+        return R.success(enumLib);
     }
 
 
