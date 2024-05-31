@@ -17,7 +17,10 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
-@Table(name = "sl_dtl")
+@Table(name = "sl_detail", indexes = {
+        @Index(name = "idx_m_id", columnList = "m_id"),
+        @Index(name = "idx_job_number", columnList = "emp_num"),
+})
 public class SalaryDetail {
     @Id
     @Column(name = "id", nullable = false)
@@ -35,7 +38,7 @@ public class SalaryDetail {
     /**
      * 主体数据对象
      */
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "m_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     @NotFound(action= NotFoundAction.IGNORE)
     @ExcelIgnore
@@ -61,7 +64,7 @@ public class SalaryDetail {
      */
     @ExcelProperty("工号")
     @NotNull
-    @Column(name="emp_num")
+    @Column(name="emp_num", columnDefinition = "VARCHAR(255)")
     private String jobNumber;
 
     @ExcelProperty("部门")
@@ -102,7 +105,6 @@ public class SalaryDetail {
     /**
      * 基础工资合计
      */
-    @NotNull
 //    @ExcelProperty(index = 10)
     @Column(name="pay_base_sum", columnDefinition="DECIMAL(10,2)")
     private BigDecimal payBaseSum;
@@ -170,7 +172,6 @@ public class SalaryDetail {
     /**
      * 出勤工资合计
      */
-    @NotNull
 //    @ExcelProperty(index = 21)
     @Column(name="pay_absence_sum", columnDefinition="DECIMAL(10,2)")
     private BigDecimal payAbsenceSum;
@@ -228,7 +229,6 @@ public class SalaryDetail {
     /**
      * 应发合计
      */
-    @NotNull
 //    @ExcelProperty(index = 30)
     @Column(name="pay_sum", columnDefinition="DECIMAL(10,2)")
     private BigDecimal paySum;
@@ -283,7 +283,6 @@ public class SalaryDetail {
     /**
      * 本月实发
      */
-    @NotNull
 //    @ExcelProperty(index = 38)
     @Column(name="net_paid", columnDefinition="DECIMAL(10,2)")
     private BigDecimal netPaid;
@@ -295,7 +294,10 @@ public class SalaryDetail {
     @Column(name="remark_", columnDefinition="VARCHAR(1000)")
     private String remark;
 
-
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", referencedColumnName = "d_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private SalarySlip salarySlip;
 
 
 }

@@ -13,7 +13,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "sl_main")
+@Table(name = "sl_main", indexes = {
+        @Index(name = "idx_year_month", columnList = "name"),
+        @Index(name = "idx_group", columnList = "group_"),
+        @Index(name = "idx_group_year_month", columnList = "group_, name"),
+})
 public class SalaryMain extends AuditInfo {
     @Id
     @Column(name = "id", nullable = false)
@@ -115,5 +119,11 @@ public class SalaryMain extends AuditInfo {
      */
     public static final int STATE_SUCCESS = 2;
 
+    /**
+     * 导入数据存在异常
+     */
+    public void salaryImportError() {
+        this.setState(STATE_ERROR);
+    }
 
 }

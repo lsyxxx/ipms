@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,10 @@ public class SalaryExcelReadListener extends AnalysisEventListener<SalaryDetail>
 
     private SalaryService salaryService;
     private String mainId;
+    /**
+     * 临时表
+     */
+    private List<SalaryDetail> tempSalaryDetails = new ArrayList<>();
 
     /**
      * 每隔5条存储数据库，实际使用中可以100条，然后清理list ，方便内存回收
@@ -44,18 +49,21 @@ public class SalaryExcelReadListener extends AnalysisEventListener<SalaryDetail>
     @Override
     public void invoke(SalaryDetail salaryDetail, AnalysisContext analysisContext) {
         salaryDetail.setMainId(this.mainId);
+        tempSalaryDetails.add(salaryDetail);
         //校验
         final ValidationResult result = salaryService.salaryDetailRowCheck(salaryDetail);
-        errorDetailMap.put(salaryDetail, result);
-        if (result.isPass()) {
-            cachedDataList.add(salaryDetail);
-            // 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
-            if (cachedDataList.size() >= BATCH_COUNT) {
-                saveData();
-                // 存储完成清理 list
-                cachedDataList = ListUtils.newArrayListWithExpectedSize(BATCH_COUNT);
-            }
+        if (!result.isPass()) {
+            errorDetailMap.put(salaryDetail, result);
         }
+//        if (result.isPass()) {
+//            cachedDataList.add(salaryDetail);
+//            // 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
+//            if (cachedDataList.size() >= BATCH_COUNT) {
+//                saveData();
+//                // 存储完成清理 list
+//                cachedDataList = ListUtils.newArrayListWithExpectedSize(BATCH_COUNT);
+//            }
+//        }
     }
 
     @Override

@@ -35,8 +35,8 @@ public class ValidateUtil {
         if (!violations.isEmpty()) {
             ValidationResult err = ValidationResult.fail(instance.getClass() + "实例参数校验失败!");
             for (ConstraintViolation<T> violation : violations) {
-                String msg = violation.getPropertyPath() + ":" + violation.getMessage();
-                err.addParameterResult(msg);
+                String parameter = violation.getPropertyPath().toString();
+                err.addParameterResult(parameter);
             }
             return err;
         } else {

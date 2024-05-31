@@ -47,8 +47,8 @@ public class ValidationResult {
         return re;
     }
 
-    public ValidationResult addParameterResult(String description) {
-        this.parameters.add(description);
+    public ValidationResult addParameterResult(String parameter) {
+        this.parameters.add(parameter);
         return this;
     }
 

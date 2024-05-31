@@ -8,5 +8,4 @@ import java.util.List;
 public interface SalaryMainRepository extends JpaRepository<SalaryMain, String>{
 
     List<SalaryMain> findByYearMonthAndGroup(String yearMonth, String group);
-
 }

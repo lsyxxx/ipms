@@ -264,4 +264,7 @@ public class EmployeeInfo {
     @Column(name = "ContractFile")
     private String contractFile;
 
+    @Column(name="Company", length = 32)
+    private String company;
+
 }

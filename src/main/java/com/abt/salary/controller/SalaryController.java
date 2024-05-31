@@ -31,8 +31,9 @@ public class SalaryController {
     @PostMapping("/test/sl/upload")
     @ResponseBody
     public String upload(MultipartFile file, String yearMonth, String group, String netPaidColumnName) throws IOException {
-        final SalaryMain slm = salaryService.createSalaryDetail(yearMonth, group, netPaidColumnName);
-        salaryService.readSalaryDetail(file.getInputStream(), "2024年3月工资", slm);
+        final SalaryMain slm = salaryService.createSalaryMain(yearMonth, group, netPaidColumnName);
+        //删除已有数据
+        salaryService.previewSalaryDetail(file.getInputStream(), "2024年3月工资", slm);
         return "success";
     }
 
