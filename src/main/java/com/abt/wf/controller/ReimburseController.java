@@ -42,6 +42,9 @@ public class ReimburseController {
 
     @PostMapping("/approve")
     public R<Object> approve(@RequestBody Reimburse form) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        form.setSubmitUserid(user.getId());
+        form.setSubmitUsername(user.getUsername());
         reimburseService.approve(form);
         return R.success("审批成功");
     }

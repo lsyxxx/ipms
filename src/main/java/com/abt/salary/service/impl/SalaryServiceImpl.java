@@ -244,14 +244,14 @@ public class SalaryServiceImpl implements SalaryService {
         mainList.forEach(i -> {
             SalaryMainDTO dto = new SalaryMainDTO();
             dto.setMain(i);
-            SalarySlipBoard board = new SalarySlipBoard();
-            final int checkCount = salarySlipRepository.countByCheckAndMainId(true, i.getId());
-            board.setCheckCount(checkCount);
-            final int readCount = salarySlipRepository.countByReadAndMainId(true, i.getId());
-            board.setReadCount(readCount);
-            final int sendCount = salarySlipRepository.countBySendAndMainId(true, i.getId());
-            board.setSendCount(sendCount);
-            dto.setSalarySlipBoard(board);
+//            SalarySlipBoard board = new SalarySlipBoard();
+//            final int checkCount = salarySlipRepository.countByIsCheckAndMainId(true, i.getId());
+//            board.setCheckCount(checkCount);
+//            final int readCount = salarySlipRepository.countByIsReadAndMainId(true, i.getId());
+//            board.setReadCount(readCount);
+//            final int sendCount = salarySlipRepository.countByIsSendAndMainId(true, i.getId());
+//            board.setSendCount(sendCount);
+//            dto.setSalarySlipBoard(board);
             list.add(dto);
         });
         return list;
@@ -259,13 +259,15 @@ public class SalaryServiceImpl implements SalaryService {
 
     //查看已发送的工资条
     public List<SalarySlip> findSalarySlipByMainIdAndSent(String mainId) {
-        return salarySlipRepository.findByMainIdAndSend(mainId, true);
+//        return salarySlipRepository.findByMainIdAndSend(mainId, true);
+        return null;
     }
 
     @Override
     public SalarySlipBoard createSalaryBoard(String mainId) {
         SalarySlipBoard board = new SalarySlipBoard();
-        final List<SalarySlip> slipList = salarySlipRepository.findByMainIdAndErrorIsNotEmpty(mainId);
+        List<SalarySlip> slipList = new ArrayList<>();
+//        final List<SalarySlip> slipList = salarySlipRepository.findByMainIdAndErrorIsNotEmpty(mainId);
         board.setSlipList(slipList);
         //统计数据
         final int unreadCount = (int)slipList.stream().filter(i -> !i.isRead()).count();

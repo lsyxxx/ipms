@@ -14,9 +14,9 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "sl_main", indexes = {
-        @Index(name = "idx_year_month", columnList = "name"),
+        @Index(name = "idx_year_month", columnList = "year_mon"),
         @Index(name = "idx_group", columnList = "group_"),
-        @Index(name = "idx_group_year_month", columnList = "group_, name"),
+        @Index(name = "idx_group_year_month", columnList = "group_, year_mon"),
 })
 public class SalaryMain extends AuditInfo {
     @Id
