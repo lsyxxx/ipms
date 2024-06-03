@@ -1,7 +1,7 @@
 package com.abt.wf.listener;
 
 import com.abt.sys.model.entity.NotifyMessage;
-import com.abt.sys.service.NotifyMessageService;
+import com.abt.sys.service.SystemMessageService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.service.ReimburseService;
@@ -20,11 +20,11 @@ import java.util.List;
 @Slf4j
 public class ReimburseProcessEndListener implements ExecutionListener {
     private final ReimburseService reimburseService;
-    private final NotifyMessageService notifyMessageService;
+    private final SystemMessageService systemMessageService;
 
-    public ReimburseProcessEndListener(ReimburseService reimburseService, NotifyMessageService notifyMessageService) {
+    public ReimburseProcessEndListener(ReimburseService reimburseService, SystemMessageService systemMessageService) {
         this.reimburseService = reimburseService;
-        this.notifyMessageService = notifyMessageService;
+        this.systemMessageService = systemMessageService;
     }
 
 
@@ -48,10 +48,12 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             reimburseService.saveEntity(rbs);
             //抄送:
             String copyStr = rbs.getCopy();
-            List<String> ids = Arrays.asList(copyStr.split(","));
+            String[] ids = copyStr.split(",");
             for(String userid : ids) {
-                String msg = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
-                notifyMessageService.sendMessage(NotifyMessage.systemMessage(userid, reimburseService.notifyLink(entityId), msg ));
+                String content = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
+//                systemMessageService.sendMessage(NotifyMessage.systemMessage(userid, reimburseService.notifyLink(entityId), msg ));
+                //TODO
+                systemMessageService.sendMessage(systemMessageService.createDefaultCopyMessage(userid, ));
             }
         }
 
