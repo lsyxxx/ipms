@@ -132,4 +132,7 @@ public class RequestForm {
         return this.page - 1;
     }
 
+    public int getSize() {
+        return this.limit;
+    }
 }
