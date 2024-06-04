@@ -14,5 +14,9 @@ public class OAConstants {
      */
     public static final int ANNOUNCEMENT_STATUS_PUBLISH = 1;
 
+    public static final String ANNOUNCEMENT_ZDTYPE_ALL = "1";
+    public static final String ANNOUNCEMENT_ZDTYPE_SPEC = "2";
+
+
 
 }

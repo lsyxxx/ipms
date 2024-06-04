@@ -86,6 +86,9 @@ public class Announcement implements CommonJpaAudit {
     @Column(name = "FileType", length = 3)
     private String fileType;
 
+    /**
+     * OAConstants.ANNOUNCEMENT_ZDTYPE
+     */
     @Size(max = 50)
     @Column(name = "ZdType", length = 50)
     private String zdType;
