@@ -34,6 +34,7 @@ public class UserTaskDTO extends FlowOperationLog {
      * 自定义的task(node)类型
      * apply: 申请节点,Contants.TASK_TYPE_APPLY
      * approval: 审批节点,Contants.TASK_TYPE_APPROVAL
+     * copy: 抄送节点
      *
      */
     private String taskType;

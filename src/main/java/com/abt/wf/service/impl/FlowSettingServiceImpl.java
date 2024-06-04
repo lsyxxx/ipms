@@ -1,11 +1,13 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.util.ValidateUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.wf.service.FlowSettingService;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,5 +42,19 @@ public class FlowSettingServiceImpl implements FlowSettingService {
     @Override
     public void delete(String id) {
         flowSettingRepository.deleteById(id);
+    }
+
+
+    @Transactional
+    @Override
+    public void deleteAndSaveBatch(List<FlowSetting> list, String type) {
+        flowSettingRepository.deleteByType(type);
+        flowSettingRepository.saveAllAndFlush(list);
+    }
+
+    @Override
+    public List<FlowSetting> findByTypeOrderByKeyAsc(String type) {
+        ValidateUtil.ensurePropertyNotnull(type, "type(流程设置类型)");
+        return flowSettingRepository.findByTypeOrderByKeyAsc(type);
     }
 }

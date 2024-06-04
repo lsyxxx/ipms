@@ -150,6 +150,7 @@ public class AgreementServiceImpl implements AgreementService {
         if (entity.getYCompany() != null) {
             entity.setYCompanyName(entity.getYCompany().getCustomerName());
         }
+        entity.doFinish();
         return entity;
     }
 

@@ -1,7 +1,10 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.User;
 import com.abt.common.model.ValidationResult;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.FlowSetting;
+import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.Reimburse;
@@ -21,6 +24,7 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +37,7 @@ import java.util.Map;
 
 import static com.abt.common.util.QueryUtil.like;
 import static com.abt.wf.config.Constants.SERVICE_RBS;
+import static com.abt.wf.config.Constants.SETTING_TYPE_RBS_COPY;
 
 /**
  *
@@ -47,13 +52,19 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final TaskService taskService;
     private final FlowOperationLogService flowOperationLogService;
     private final UserService userService;
+    private final FlowSettingRepository flowSettingRepository;
 
     private final ReimburseRepository reimburseRepository;
     private final ReimburseTaskRepository reimburseTaskRepository;
     private final BpmnModelInstance rbsBpmnModelInstance;
 
+    private List<User> copyList;
+
+    @Value("${wf.rbs.url.pre}")
+    private String urlPrefix;
+
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
-                                FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, ReimburseRepository reimburseRepository,
+                                FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
                                 ReimburseTaskRepository reimburseTaskRepository, @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
         this.identityService = identityService;
@@ -62,6 +73,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.taskService = taskService;
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
+        this.flowSettingRepository = flowSettingRepository;
         this.reimburseRepository = reimburseRepository;
         this.reimburseTaskRepository = reimburseTaskRepository;
         this.rbsBpmnModelInstance = rbsBpmnModelInstance;
@@ -198,7 +210,9 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     @Override
     public List<UserTaskDTO> preview(Reimburse form) {
-        return this.commonPreview(form, createVariableMap(form), rbsBpmnModelInstance, form.copyList());
+        final List<FlowSetting> list = flowSettingRepository.findByTypeOrderByKeyAsc(SETTING_TYPE_RBS_COPY);
+        List<String> strList = list.stream().map(FlowSetting::getValue).toList();
+        return this.commonPreview(form, createVariableMap(form), rbsBpmnModelInstance, strList);
     }
 
     @Override
@@ -213,7 +227,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     @Override
     public String notifyLink(String id) {
-        return "/wf/rbs/detail/" + id ;
+        return this.urlPrefix + id ;
     }
 
     static class ReimburseSpecification extends CommonSpecifications<ReimburseRequestForm, Reimburse> {

@@ -13,4 +13,8 @@ public interface FlowSettingService {
     FlowSetting findById(String id);
 
     void delete(String id);
+
+    void deleteAndSaveBatch(List<FlowSetting> list, String type);
+
+    List<FlowSetting> findByTypeOrderByKeyAsc(String type);
 }

@@ -9,6 +9,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.Flow;
+
+import static com.abt.wf.config.Constants.SETTING_TYPE_RBS_COPY;
 
 /**
  * 流程设置
@@ -51,6 +54,21 @@ public class SettingController {
         ensureEntityId(id);
         flowSettingService.delete(id);
         return R.success("删除成功!");
+    }
+
+    /**
+     * 费用报销流程默认抄送人
+     */
+    @PostMapping("/rbs/copyusers")
+    public R<Object> saveReimburseDefaultCopyUserList(@RequestBody List<FlowSetting> list) {
+        flowSettingService.deleteAndSaveBatch(list, SETTING_TYPE_RBS_COPY);
+        return R.success("更新成功");
+    }
+
+    @GetMapping("/find/{type}")
+    public R<List<FlowSetting>> findByType(@PathVariable String type) {
+        final List<FlowSetting> list = flowSettingService.findByTypeOrderByKeyAsc(type);
+        return R.success(list);
     }
 
     public void ensureEntityId(String id) {

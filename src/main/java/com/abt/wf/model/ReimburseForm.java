@@ -2,7 +2,6 @@ package com.abt.wf.model;
 
 import com.abt.common.entity.Company;
 import com.abt.common.util.JsonUtil;
-import com.abt.finance.entity.DebitBook;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.wf.config.Constants;

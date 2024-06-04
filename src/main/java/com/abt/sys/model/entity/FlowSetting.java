@@ -21,7 +21,6 @@ import org.hibernate.annotations.Comment;
 @ToString
 public class FlowSetting extends AuditInfo {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;

@@ -14,4 +14,8 @@ public interface FlowSettingRepository extends JpaRepository<FlowSetting, String
     List<FlowSetting> findByKeyOrderByCreateDateDesc(@Param("key") String key);
 
     List<FlowSetting> findByTypeOrderByCreateDate(@Param("type") String type);
+
+    List<FlowSetting> findByTypeOrderByKeyAsc(String type);
+
+    void deleteByType(String type);
 }

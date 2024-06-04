@@ -1,11 +1,9 @@
 package com.abt.wf.listener;
 
-import com.abt.sys.service.NotifyMessageService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.service.TripReimburseService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Select;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.springframework.stereotype.Component;
@@ -18,11 +16,9 @@ import org.springframework.stereotype.Component;
 public class TripProcessEndListener implements ExecutionListener {
 
     private final TripReimburseService tripReimburseService;
-    private final NotifyMessageService notifyMessageService;
 
-    public TripProcessEndListener(TripReimburseService tripReimburseService, NotifyMessageService notifyMessageService) {
+    public TripProcessEndListener(TripReimburseService tripReimburseService) {
         this.tripReimburseService = tripReimburseService;
-        this.notifyMessageService = notifyMessageService;
     }
 
     @Override

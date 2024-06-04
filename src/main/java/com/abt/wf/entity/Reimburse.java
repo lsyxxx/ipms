@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.common.model.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;

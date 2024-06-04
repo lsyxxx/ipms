@@ -388,6 +388,10 @@ public class Agreement implements CommonJpaAudit {
         this.operatorName = username;
     }
 
+    public void doFinish() {
+        this.isFinish = "1";
+    }
+
     @Override
     public String toString() {
         return "Agreement{" +

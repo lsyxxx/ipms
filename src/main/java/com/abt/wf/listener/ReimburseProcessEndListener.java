@@ -1,17 +1,17 @@
 package com.abt.wf.listener;
 
-import com.abt.sys.model.entity.NotifyMessage;
+import com.abt.common.model.User;
+import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.service.SystemMessageService;
+import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.service.ReimburseService;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * 报销业务流程结束
@@ -21,10 +21,13 @@ import java.util.List;
 public class ReimburseProcessEndListener implements ExecutionListener {
     private final ReimburseService reimburseService;
     private final SystemMessageService systemMessageService;
+    private final UserService userService;
 
-    public ReimburseProcessEndListener(ReimburseService reimburseService, SystemMessageService systemMessageService) {
+    public ReimburseProcessEndListener(ReimburseService reimburseService, SystemMessageService systemMessageService,
+                                       @Qualifier("sqlServerUserService") UserService userService) {
         this.reimburseService = reimburseService;
         this.systemMessageService = systemMessageService;
+        this.userService = userService;
     }
 
 
@@ -48,12 +51,20 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             reimburseService.saveEntity(rbs);
             //抄送:
             String copyStr = rbs.getCopy();
+            System.out.println("==== copy: " + copyStr);
             String[] ids = copyStr.split(",");
             for(String userid : ids) {
                 String content = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
 //                systemMessageService.sendMessage(NotifyMessage.systemMessage(userid, reimburseService.notifyLink(entityId), msg ));
                 //TODO
-                systemMessageService.sendMessage(systemMessageService.createDefaultCopyMessage(userid, ));
+                String name = "";
+                if (userid != null) {
+                    final User user = userService.getSimpleUserInfo(userid);
+                    name = user.getUsername();
+                }
+                SystemMessage msg = systemMessageService.createDefaultCopyMessage(userid, name, reimburseService.notifyLink(entityId), content);
+                systemMessageService.sendMessage(msg);
+                System.out.println("===== SysMsg: " + msg.toString());
             }
         }
 

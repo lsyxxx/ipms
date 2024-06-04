@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -21,6 +22,7 @@ import java.time.Instant;
 @Entity
 @DynamicInsert
 @DynamicUpdate
+@ToString
 @Table(name = "SysMessage")
 public class SystemMessage {
     @Id
@@ -41,7 +43,7 @@ public class SystemMessage {
 
     @NotNull
     @Column(name = "ToId", nullable = false)
-    private Object toId;
+    private String toId;
 
     @Size(max = 50)
     @Nationalized
