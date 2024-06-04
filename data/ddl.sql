@@ -85,9 +85,3 @@ update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 8;
 -- 个人照
 update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 7;
 
--- 20240604
--- t_announcement 添加字段
--- 是否发布
-alter table [dbo].[T_announcement] add [Status] TINYINT;
--- 发布时间
-ALTER TABLE [dbo].[T_announcement] ADD [PublishTime] datetime NULL;
