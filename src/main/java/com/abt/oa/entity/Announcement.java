@@ -1,12 +1,17 @@
 package com.abt.oa.entity;
 
+import com.abt.common.config.CommonJpaAuditListener;
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.service.impl.CommonJpaAudit;
 import com.abt.oa.OAConstants;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
@@ -15,6 +20,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -26,6 +32,10 @@ import java.time.LocalDateTime;
 @Table(name = "T_announcement")
 @DynamicInsert
 @DynamicUpdate
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@EntityListeners({AuditingEntityListener.class, CommonJpaAuditListener.class})
 public class Announcement implements CommonJpaAudit {
     @Id
     @Size(max = 50)
@@ -34,7 +44,7 @@ public class Announcement implements CommonJpaAudit {
     private String id;
 
     @Size(max = 50)
-    @NotNull
+    @NotNull(message = "标题不能为空", groups = {ValidateGroup.Save.class})
     @Column(name = "Title", nullable = false, length = 50)
     private String title;
 
@@ -47,39 +57,33 @@ public class Announcement implements CommonJpaAudit {
     private String note;
 
     @Size(max = 50)
-    @NotNull
-    @Column(name = "CreateUserId", nullable = false, length = 50)
+    @Column(name = "CreateUserId", length = 50)
     @CreatedBy
     private String createUserId;
 
     @Size(max = 50)
-    @NotNull
-    @Column(name = "CreateUserName", nullable = false, length = 50)
+    @Column(name = "CreateUserName", length = 50)
     private String createUserName;
 
-    @NotNull
-    @Column(name = "CreateDate", nullable = false)
+    @Column(name = "CreateDate")
     @CreatedDate
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ssd")
     private LocalDateTime createDate;
 
     @Size(max = 50)
-    @NotNull
     @Column(name = "Operator", nullable = false, length = 50)
     @LastModifiedBy
     private String operator;
 
-    @NotNull
-    @Column(name = "Operatedate", nullable = false)
+    @Column(name = "Operatedate")
     @LastModifiedDate
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ssd")
     private LocalDateTime operateDate;
 
     @Size(max = 50)
-    @NotNull
-    @Column(name = "OperatorName", nullable = false, length = 50)
+    @Column(name = "OperatorName", length = 50)
     private String operatorName;
 
     @Size(max = 3)
@@ -157,5 +161,7 @@ public class Announcement implements CommonJpaAudit {
         this.publishTime = null;
         this.publishUser = null;
     }
-
+    public boolean isTemp() {
+        return this.status == OAConstants.ANNOUNCEMENT_STATUS_TEMP;
+    }
 }

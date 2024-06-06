@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_15isgch" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_15isgch" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
   <bpmn:process id="rbsInv" name="rbsInv" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:extensionElements>
       <camunda:executionListener delegateExpression="${invoiceApplyProcessEndListener}" event="end" />
@@ -28,7 +28,7 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_186fvry</bpmn:incoming>
-      <bpmn:outgoing>Flow_1008jx2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0s5f0ky</bpmn:outgoing>
       <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="managerList" camunda:elementVariable="manager">
         <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">${nrOfInstances == nrOfCompletedInstances}</bpmn:completionCondition>
       </bpmn:multiInstanceLoopCharacteristics>
@@ -42,14 +42,26 @@
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1008jx2</bpmn:incoming>
+      <bpmn:incoming>Flow_1z04enb</bpmn:incoming>
       <bpmn:outgoing>Flow_0s9w2z1</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_1008jx2" sourceRef="rbsInv_managers" targetRef="rbsInv_finAcct" />
     <bpmn:endEvent id="Event_0w791c4" name="开票审批结束">
       <bpmn:incoming>Flow_0s9w2z1</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0s9w2z1" sourceRef="rbsInv_finAcct" targetRef="Event_0w791c4" />
+    <bpmn:userTask id="rbsInv_finManager" name="财务总监" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
+        <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0s5f0ky</bpmn:incoming>
+      <bpmn:outgoing>Flow_1z04enb</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0s5f0ky" sourceRef="rbsInv_managers" targetRef="rbsInv_finManager" />
+    <bpmn:sequenceFlow id="Flow_1z04enb" sourceRef="rbsInv_finManager" targetRef="rbsInv_finAcct" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsInv">
@@ -67,15 +79,19 @@
         <dc:Bounds x="490" y="57" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0qs3ro3_di" bpmnElement="rbsInv_finAcct">
+      <bpmndi:BPMNShape id="Event_0w791c4_di" bpmnElement="Event_0w791c4">
+        <dc:Bounds x="1162" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1151" y="122" width="66" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12jph1h_di" bpmnElement="rbsInv_finManager">
         <dc:Bounds x="680" y="57" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0w791c4_di" bpmnElement="Event_0w791c4">
-        <dc:Bounds x="832" y="79" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="821" y="122" width="66" height="14" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNShape id="Activity_0qs3ro3_di" bpmnElement="rbsInv_finAcct">
+        <dc:Bounds x="890" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_09ajh3e_di" bpmnElement="Flow_09ajh3e">
         <di:waypoint x="215" y="97" />
@@ -85,13 +101,17 @@
         <di:waypoint x="400" y="97" />
         <di:waypoint x="490" y="97" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1008jx2_di" bpmnElement="Flow_1008jx2">
+      <bpmndi:BPMNEdge id="Flow_0s9w2z1_di" bpmnElement="Flow_0s9w2z1">
+        <di:waypoint x="990" y="97" />
+        <di:waypoint x="1162" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0s5f0ky_di" bpmnElement="Flow_0s5f0ky">
         <di:waypoint x="590" y="97" />
         <di:waypoint x="680" y="97" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0s9w2z1_di" bpmnElement="Flow_0s9w2z1">
+      <bpmndi:BPMNEdge id="Flow_1z04enb_di" bpmnElement="Flow_1z04enb">
         <di:waypoint x="780" y="97" />
-        <di:waypoint x="832" y="97" />
+        <di:waypoint x="890" y="97" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

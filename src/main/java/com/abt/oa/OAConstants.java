@@ -17,6 +17,14 @@ public class OAConstants {
     public static final String ANNOUNCEMENT_ZDTYPE_ALL = "1";
     public static final String ANNOUNCEMENT_ZDTYPE_SPEC = "2";
 
+    public static final String ANNOUNCEMENT_ATTACHMENT_UNREAD = "1";
+    public static final String ANNOUNCEMENT_ATTACHMENT_READ = "2";
+
+    public static final String ANNOUNCEMENT_ATTACHMENT_UNHF = "1";
+    public static final String ANNOUNCEMENT_ATTACHMENT_HF = "2";
+
+    public static final String ANNOUNCEMENT_REQUIRE_HF = "1";
+    public static final String ANNOUNCEMENT_UNREQUIRE_HF = "2";
 
 
 }

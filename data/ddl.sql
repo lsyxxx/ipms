@@ -85,3 +85,9 @@ update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 8;
 -- 个人照
 update T_EmployeeInfo_ListUpload set tixingDay = 0 where ZsFtypeId = 7;
 
+-- 增加字典：行政通知状态
+INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (N'EnumStatus_0', '0', N'EnumPublishStatus', N'草稿', N'通知状态', NULL, NULL, NULL, 'int');
+INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (N'EnumStatus_1', '1', N'EnumPublishStatus', N'已发布', N'通知状态', NULL, NULL, NULL, 'int');
+-- 增加字典：是否回复
+INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (N'EnumHFType_1', '1', N'EnumHFType', N'已回复', N'是否回复', NULL, NULL, NULL, NULL);
+INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (N'EnumHFType_2', '2', N'EnumHFTtype', N'未回复', N'是否回复', NULL, NULL, NULL, NULL);
