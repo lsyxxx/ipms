@@ -41,7 +41,7 @@ public class CarApplyRecord {
     @Column(name = "Peer", length = 40)
     private String peer;
 
-    @Column(name = "PlanKil", nullable = false)
+    @Column(name = "PlanKil", nullable = false, columnDefinition = "DECIMAL(18,2)")
     private Double planKil;
 
     @Size(max = 100)
@@ -75,19 +75,19 @@ public class CarApplyRecord {
     @Column(name = "Backdate")
     private LocalDateTime backdate;
 
-    @Column(name = "CollectPrice", nullable = false)
+    @Column(name = "CollectPrice", nullable = false, columnDefinition = "DECIMAL(18,2)")
     private Double collectPrice;
 
-    @Column(name = "backKil", nullable = false)
+    @Column(name = "backKil", nullable = false, columnDefinition = "DECIMAL(18,2)")
     private Double backKil;
 
-    @Column(name = "CurKil", nullable = false)
+    @Column(name = "CurKil", nullable = false, columnDefinition = "DECIMAL(18,2)")
     private Double curKil;
 
-    @Column(name = "OilFree", nullable = false)
+    @Column(name = "OilFree", nullable = false, columnDefinition = "DECIMAL(18,2)")
     private Double oilFree;
 
-    @Column(name = "OilL", nullable = false)
+    @Column(name = "OilL", nullable = false, columnDefinition = "DECIMAL(18,2)")
     private Double oilL;
 
     @Size(max = 50)
