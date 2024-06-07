@@ -7,6 +7,8 @@ import com.abt.sys.service.EmployeeService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  *
  */
@@ -27,5 +29,17 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new MissingRequiredParameterException("员工工号");
         }
         return employeeRepository.findByJobNumber(jobNumber);
+    }
+
+
+    @Override
+    public List<EmployeeInfo> findAllByExit(boolean exit) {
+        final List<EmployeeInfo> list = employeeRepository.findByIsExit(exit);
+        list.forEach(i -> {
+            if (i.getTUser() != null) {
+                i.setUserid(i.getTUser().getId());
+            }
+        });
+        return list;
     }
 }

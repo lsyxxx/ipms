@@ -15,6 +15,9 @@ import com.abt.oa.reposity.AnnouncementRepository;
 import com.abt.oa.service.AnnouncementService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.repository.EmployeeRepository;
+import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,7 +25,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,12 +37,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.abt.common.util.QueryUtil.like;
 import static com.abt.oa.OAConstants.*;
-import static com.abt.sys.repository.UserRepositoryImpl.USER_ENABLED;
 
 /**
  *
@@ -51,13 +51,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     private final AnnouncementRepository announcementRepository;
     private final AnnouncementAttachmentRepository announcementAttachmentRepository;
-    private final UserService<UserView, User> userService;
+    private final EmployeeService employeeService;
 
-    public AnnouncementServiceImpl(AnnouncementRepository announcementRepository, AnnouncementAttachmentRepository announcementAttachmentRepository,
-                                   @Qualifier("sqlServerUserService") UserService<UserView, User>  userService) {
+    public AnnouncementServiceImpl(AnnouncementRepository announcementRepository, AnnouncementAttachmentRepository announcementAttachmentRepository, EmployeeService employeeService) {
         this.announcementRepository = announcementRepository;
         this.announcementAttachmentRepository = announcementAttachmentRepository;
-        this.userService = userService;
+        this.employeeService = employeeService;
     }
 
     @Override
@@ -111,10 +110,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         List<AnnouncementAttachment> list = new ArrayList<>();
         if (OAConstants.ANNOUNCEMENT_ZDTYPE_ALL.equals(announcement.getZdType())) {
             //所有用户(可用)
-            final List<User> allSimpleUser = userService.getAllSimpleUser(USER_ENABLED);
-            allSimpleUser.forEach(i -> {
-                AnnouncementAttachment attachment = AnnouncementAttachment.create(entity, i.getId(), i.getUsername());
-                list.add(attachment);
+            List<EmployeeInfo> employed = employeeService.findAllByExit(false);
+            employed.forEach(i -> {
+                if (StringUtils.isNotBlank(i.getUserid())) {
+                    //可能存在以前离职的员工没有录入系统User表中
+                    AnnouncementAttachment attachment = AnnouncementAttachment.create(entity, i.getUserid(), i.getName());
+                    list.add(attachment);
+                }
             });
         } else if (OAConstants.ANNOUNCEMENT_ZDTYPE_SPEC.equals(announcement.getZdType())) {
             //指定用户

@@ -3,8 +3,13 @@ package com.abt.sys.model.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +17,9 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "T_EmployeeInfo")
+@NoArgsConstructor
+@AllArgsConstructor
+@Immutable
 public class EmployeeInfo {
     @Id
     @Size(max = 50)
@@ -267,4 +275,27 @@ public class EmployeeInfo {
     @Column(name="Company", length = 32)
     private String company;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "JobNumber", referencedColumnName = "empnum", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private TUser tUser;
+
+    @Transient
+    private String userid;
+
+    public EmployeeInfo(String id, String name, String userid, String jobNumber, String dept,
+                        String createUserId, String createUserName, LocalDateTime createDate,
+                        String operator, String operatorName, LocalDateTime operatedate) {
+        this.id = id;
+        this.userid = userid;
+        this.name = name;
+        this.jobNumber = jobNumber;
+        this.dept = dept;
+        this.createUserId = createUserId;
+        this.createUserName = createUserName;
+        this.createDate = createDate;
+        this.operator = operator;
+        this.operatorName = operatorName;
+        this.operatedate = operatedate;
+    }
 }
