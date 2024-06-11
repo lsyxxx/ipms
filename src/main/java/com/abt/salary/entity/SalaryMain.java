@@ -72,9 +72,9 @@ public class SalaryMain extends AuditInfo {
     /**
      * 实发工资在excel中的列名
      */
-    @NotNull(message = "实发金额对应列名不能为空")
+//    @NotNull(message = "实发金额对应列名不能为空")
     @Column(name="paid_col_name")
-    private String netPaidColumnName;
+    private String netPaidColumnName = "";
 
     @Column(name="paid_col_idx", columnDefinition="TINYINT")
     private int netPaidColumnIndex;

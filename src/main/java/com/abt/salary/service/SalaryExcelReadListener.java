@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * 读取excel，暂存，不保存数据库
  */
 @Slf4j
 @Getter
@@ -44,17 +44,20 @@ public class SalaryExcelReadListener extends AnalysisEventListener<SalaryDetail>
     public SalaryExcelReadListener(SalaryService salaryService, String mainId) {
         this.salaryService = salaryService;
         this.mainId = mainId;
+        System.out.println("==== 注入mainId: " + this.mainId);
     }
 
     @Override
     public void invoke(SalaryDetail salaryDetail, AnalysisContext analysisContext) {
         salaryDetail.setMainId(this.mainId);
+        System.out.println("=== 读取SalaryDetail: " + salaryDetail);
         tempSalaryDetails.add(salaryDetail);
         //校验
         final ValidationResult result = salaryService.salaryDetailRowCheck(salaryDetail);
         if (!result.isPass()) {
             errorDetailMap.put(salaryDetail, result);
         }
+        System.out.println("==== SalaryDetail(" + salaryDetail.getName() + ")校验结果:" + result);
 //        if (result.isPass()) {
 //            cachedDataList.add(salaryDetail);
 //            // 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
@@ -76,7 +79,7 @@ public class SalaryExcelReadListener extends AnalysisEventListener<SalaryDetail>
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
         final Integer rowIndex = context.readRowHolder().getRowIndex();
         this.headMap.put(rowIndex, headMap);
-        log.info("读取表头数据: rowIndex: {}, {}", rowIndex, headMap);
+        log.info("==== 读取表头数据: rowIndex: {}, {}", rowIndex, headMap);
     }
 
     @Override

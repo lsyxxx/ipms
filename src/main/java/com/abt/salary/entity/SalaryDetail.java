@@ -47,14 +47,14 @@ public class SalaryDetail {
     /**
      * 序号
      */
-    @ExcelProperty("序号")
+//    @ExcelProperty("序号")
     @Column(name="no_", columnDefinition="INT")
     private int no;
 
     /**
      * 员工姓名
      */
-    @ExcelProperty("姓名")
+//    @ExcelProperty("姓名")
     @NotNull
     @Column(name="name_", columnDefinition = "VARCHAR(32)")
     private String name;
@@ -62,12 +62,12 @@ public class SalaryDetail {
     /**
      * 工号
      */
-    @ExcelProperty("工号")
+//    @ExcelProperty("工号")
     @NotNull
-    @Column(name="emp_num", columnDefinition = "VARCHAR(255)")
+    @Column(name="emp_num", columnDefinition = "VARCHAR(32)")
     private String jobNumber;
 
-    @ExcelProperty("部门")
+//    @ExcelProperty("部门")
     @Column(name="dept_name")
     private String departmentName;
 
@@ -299,5 +299,18 @@ public class SalaryDetail {
     @NotFound(action= NotFoundAction.IGNORE)
     private SalarySlip salarySlip;
 
-
+    @Override
+    public String toString() {
+        return "SalaryDetail{" +
+                "id='" + id + '\'' +
+                ", mainId='" + mainId + '\'' +
+                ", no=" + no +
+                ", name='" + name + '\'' +
+                ", jobNumber='" + jobNumber + '\'' +
+                ", departmentName='" + departmentName + '\'' +
+                ", position='" + position + '\'' +
+                ", paySum(应发合计)=" + paySum + '\'' +
+                ", netPaid(实发合计)=" + netPaid +
+                '}';
+    }
 }

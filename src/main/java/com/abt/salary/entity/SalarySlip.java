@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 @Table(name = "sl_slip", indexes = {
         @Index(name = "idx_m_id", columnList = "m_id"),
         @Index(name = "idx_d_id", columnList = "d_id"),
-        @Index(name = "idx_d_id", columnList = "d_id"),
 
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)

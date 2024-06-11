@@ -85,16 +85,9 @@ public class SalaryServiceImpl implements SalaryService {
 
     @Override
     public SalaryPreview previewSalaryDetail(InputStream inputStream, String sheetName, SalaryMain salaryMain) {
-        SalaryPreview salaryPreview = SalaryPreview.create();
-//        Map<String, Map<SalaryDetail, ValidationResult>> typedErrorMap = new HashMap<>();
-        //读取excel
+        SalaryPreview salaryPreview = SalaryPreview.create(salaryMain);
         SalaryExcelReadListener listener = new SalaryExcelReadListener(this, salaryMain.getId());
         EasyExcel.read(inputStream, SalaryDetail.class, listener)
-                // 需要读取批注 默认不读取
-//                .extraRead(CellExtraTypeEnum.COMMENT)
-                // 需要读取超链接 默认不读取
-//                .extraRead(CellExtraTypeEnum.HYPERLINK)
-                // 需要读取合并单元格信息 默认不读取
                 .excelType(ExcelTypeEnum.XLSX)
                 .headRowNumber(HEADER_ROW_NUM)
                 .extraRead(CellExtraTypeEnum.MERGE).sheet(sheetName).doRead();
@@ -102,22 +95,30 @@ public class SalaryServiceImpl implements SalaryService {
         salaryPreview.setSalaryDetails(tempSalary);
         final Map<SalaryDetail, ValidationResult> errorDetailMap = listener.getErrorDetailMap();
         final Map<Integer, Map<Integer, String>> headMap = listener.getHeadMap();
-//        final Map<Integer, String> header = createHeader(headMap);
-        if (errorDetailMap != null) {
-            salaryPreview.addErrorMap("异常数据", errorDetailMap);
-            salaryMain.setState(SalaryMain.STATE_ERROR);
+        final Map<Integer, String> header = this.createHeader(headMap);
+        System.out.println("===== Merged header: " + header.toString());
+        //SalaryDetail数据本身有问题
+        if (errorDetailMap != null && !errorDetailMap.isEmpty()) {
+            salaryPreview.addErrorMap("严重异常", errorDetailMap);
+            salaryMain.salaryImportError();
+            //必须处理（异常数据可能导致后续的校验产生错误）,无法保存数据库，直接抛出。
+            return salaryPreview;
         } else {
             salaryMain.setState(SalaryMain.STATE_SUCCESS);
         }
-        final List<EmployeeInfo> emp = employeeRepository.findAll();
+        final List<EmployeeInfo> emp = employeeRepository.findAllSalaryEnabled();
+        System.out.println("启用工资条的人数: " + emp.size());
         //其他校验
         final Map<SalaryDetail, ValidationResult> employNotExistsError = employNotExistsError(salaryMain, tempSalary, emp);
         salaryPreview.addErrorMap("不在人员信息表中", employNotExistsError);
+        salaryMain.salaryImportError();
         final Map<SalaryDetail, ValidationResult> duplicatedNameError = duplicatedJobNumberError(salaryMain, tempSalary);
         salaryPreview.addErrorMap("工号重复", duplicatedNameError);
-        salaryMainRepository.save(salaryMain);
+        salaryMain.salaryImportError();
         final Map<SalaryDetail, ValidationResult> quitError = employeeQuitError(salaryMain, tempSalary, emp);
         salaryPreview.addErrorMap("已离职", quitError);
+        salaryMain.salaryImportError();
+        salaryMainRepository.save(salaryMain);
         return salaryPreview;
     }
 
@@ -148,7 +149,8 @@ public class SalaryServiceImpl implements SalaryService {
     public Map<SalaryDetail, ValidationResult> duplicatedJobNumberError(SalaryMain salaryMain, List<SalaryDetail> tempSalary) {
         Map<SalaryDetail, ValidationResult> dupMap = new HashMap<>();
         //工号重复
-        Set<String> dupJobNumber = tempSalary.stream().collect(Collectors.groupingBy(SalaryDetail::getJobNumber)).keySet();
+        List<String> dupJobNumber = tempSalary.stream().collect(Collectors.groupingBy(SalaryDetail::getJobNumber)).entrySet()
+                        .stream().filter(entry -> entry.getValue().size() > 1).map(Map.Entry::getKey).distinct().toList();
         dupJobNumber.forEach(num -> {
             final List<SalaryDetail> list = tempSalary.stream().filter(i -> Objects.equals(i.getJobNumber(), num)).toList();
             list.forEach(i -> {
@@ -173,7 +175,7 @@ public class SalaryServiceImpl implements SalaryService {
     public Map<SalaryDetail, ValidationResult> employeeQuitError(SalaryMain salaryMain, List<SalaryDetail> tempSalary, List<EmployeeInfo> emp) {
         Map<SalaryDetail, ValidationResult> quitErrorMap = new HashMap<>();
         Set<String> offList = emp.stream().filter(EmployeeInfo::isExit).map(EmployeeInfo::getJobNumber).collect(Collectors.toSet());
-        tempSalary.stream().filter(i -> !offList.contains(i.getJobNumber())).forEach(i -> {
+        tempSalary.stream().filter(i -> offList.contains(i.getJobNumber())).forEach(i -> {
             quitErrorMap.put(i, ValidationResult.fail("离职人员"));
         });
         if (!quitErrorMap.isEmpty()) {
@@ -209,13 +211,13 @@ public class SalaryServiceImpl implements SalaryService {
                 ));
         for (Map.Entry<Integer, List<String>> entry : colMap.entrySet()) {
             Integer colIndex = entry.getKey();
-            String colName = "";
             List<String> colNameList = entry.getValue();
+            String colName = colNameList.get(0);
             for (String c : colNameList) {
                 if (StringUtils.isNotBlank(c)) {
-                    if (StringUtils.isNotBlank(colName)) {
-                        colName = c;
-                    }
+                    //去掉空格/换行/制表符
+                    c = c.replaceAll("\\s+", "");
+                    colName = c;
                 }
             }
             map.put(colIndex, colName);
@@ -244,14 +246,14 @@ public class SalaryServiceImpl implements SalaryService {
         mainList.forEach(i -> {
             SalaryMainDTO dto = new SalaryMainDTO();
             dto.setMain(i);
-//            SalarySlipBoard board = new SalarySlipBoard();
-//            final int checkCount = salarySlipRepository.countByIsCheckAndMainId(true, i.getId());
-//            board.setCheckCount(checkCount);
-//            final int readCount = salarySlipRepository.countByIsReadAndMainId(true, i.getId());
-//            board.setReadCount(readCount);
-//            final int sendCount = salarySlipRepository.countByIsSendAndMainId(true, i.getId());
-//            board.setSendCount(sendCount);
-//            dto.setSalarySlipBoard(board);
+            SalarySlipBoard board = new SalarySlipBoard();
+            final int checkCount = salarySlipRepository.countByMainIdAndIsCheck(i.getId(), true);
+            board.setCheckCount(checkCount);
+            final int readCount = salarySlipRepository.countByMainIdAndIsRead(i.getId(), true);
+            board.setReadCount(readCount);
+            final int sendCount = salarySlipRepository.countByMainIdAndIsSend(i.getId(), true);
+            board.setSendCount(sendCount);
+            dto.setSalarySlipBoard(board);
             list.add(dto);
         });
         return list;
@@ -259,15 +261,13 @@ public class SalaryServiceImpl implements SalaryService {
 
     //查看已发送的工资条
     public List<SalarySlip> findSalarySlipByMainIdAndSent(String mainId) {
-//        return salarySlipRepository.findByMainIdAndSend(mainId, true);
-        return null;
+        return salarySlipRepository.findByMainIdAndIsSend(mainId, true);
     }
 
     @Override
     public SalarySlipBoard createSalaryBoard(String mainId) {
         SalarySlipBoard board = new SalarySlipBoard();
-        List<SalarySlip> slipList = new ArrayList<>();
-//        final List<SalarySlip> slipList = salarySlipRepository.findByMainIdAndErrorIsNotEmpty(mainId);
+        final List<SalarySlip> slipList = salarySlipRepository.findByMainIdAndErrorNotEmpty(mainId);
         board.setSlipList(slipList);
         //统计数据
         final int unreadCount = (int)slipList.stream().filter(i -> !i.isRead()).count();

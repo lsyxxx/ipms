@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 @Table(name = "T_EmployeeInfo")
 @NoArgsConstructor
 @AllArgsConstructor
+//只读，不能修改
 @Immutable
 public class EmployeeInfo {
     @Id
@@ -283,19 +284,19 @@ public class EmployeeInfo {
     @Transient
     private String userid;
 
-    public EmployeeInfo(String id, String name, String userid, String jobNumber, String dept,
-                        String createUserId, String createUserName, LocalDateTime createDate,
-                        String operator, String operatorName, LocalDateTime operatedate) {
-        this.id = id;
-        this.userid = userid;
-        this.name = name;
-        this.jobNumber = jobNumber;
-        this.dept = dept;
-        this.createUserId = createUserId;
-        this.createUserName = createUserName;
-        this.createDate = createDate;
-        this.operator = operator;
-        this.operatorName = operatorName;
-        this.operatedate = operatedate;
-    }
+//    public EmployeeInfo(String id, String name, String userid, String jobNumber, String dept,
+//                        String createUserId, String createUserName, LocalDateTime createDate,
+//                        String operator, String operatorName, LocalDateTime operatedate) {
+//        this.id = id;
+//        this.userid = userid;
+//        this.name = name;
+//        this.jobNumber = jobNumber;
+//        this.dept = dept;
+//        this.createUserId = createUserId;
+//        this.createUserName = createUserName;
+//        this.createDate = createDate;
+//        this.operator = operator;
+//        this.operatorName = operatorName;
+//        this.operatedate = operatedate;
+//    }
 }

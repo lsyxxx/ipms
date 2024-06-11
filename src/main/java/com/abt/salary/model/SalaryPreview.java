@@ -2,6 +2,7 @@ package com.abt.salary.model;
 
 import com.abt.common.model.ValidationResult;
 import com.abt.salary.entity.SalaryDetail;
+import com.abt.salary.entity.SalaryMain;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -24,9 +25,12 @@ public class SalaryPreview {
      * 预览数据
      */
     private List<SalaryDetail> salaryDetails = new ArrayList<>();
+    private SalaryMain salaryMain;
 
-    public static SalaryPreview create() {
-        return new SalaryPreview();
+    public static SalaryPreview create(SalaryMain salaryMain) {
+        SalaryPreview salaryPreview = new SalaryPreview();
+        salaryPreview.setSalaryMain(salaryMain);
+        return salaryPreview;
     }
 
     public SalaryPreview addErrorMap(String typeName, Map<SalaryDetail, ValidationResult> errorMap) {

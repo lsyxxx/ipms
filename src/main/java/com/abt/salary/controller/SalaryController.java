@@ -2,6 +2,7 @@ package com.abt.salary.controller;
 
 import com.abt.common.model.R;
 import com.abt.salary.entity.SalaryMain;
+import com.abt.salary.model.SalaryMainDTO;
 import com.abt.salary.service.SalaryService;
 import com.alibaba.excel.EasyExcel;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  *
@@ -41,16 +43,19 @@ public class SalaryController {
      * 根据选择的年月查询上传的工资
      * @param yearMonth 年月: yyyy-MM
      */
-    public void loadSalaryBill(String yearMonth) {
+    @GetMapping("/test/sl/load")
+    public R<List<SalaryMainDTO>> loadSalaryBill(String yearMonth, String group) {
         //查询上传工资表
         //查询上传工资表对应的发送工资条情况(已发送/已查看/已确认）
+        final List<SalaryMainDTO> list = salaryService.findSalaryMainByYearMonthAndGroup(yearMonth, group);
+        return R.success(list);
     }
 
     /**
      * 删除已上传的工资条
      * @param id 工资表id(sl_main:id)
      */
-    @GetMapping("/test/del/all")
+    @GetMapping("/test/sl/del/all")
     public R<Object> deleteSalaryMain(String id) {
         salaryService.deleteSalaryAll(id);
         return R.success("删除成功");
