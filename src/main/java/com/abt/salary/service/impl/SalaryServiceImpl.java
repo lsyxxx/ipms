@@ -1,6 +1,7 @@
 package com.abt.salary.service.impl;
 
 import com.abt.common.model.ValidationResult;
+import com.abt.common.util.FileUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.salary.entity.SalaryDetail;
 import com.abt.salary.entity.SalaryMain;
@@ -15,6 +16,7 @@ import com.abt.salary.service.SalaryExcelReadListener;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.repository.EmployeeRepository;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.enums.CellExtraTypeEnum;
@@ -24,8 +26,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.View;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.time.format.DateTimeFormatter;
 
 import java.io.InputStream;
@@ -52,51 +55,62 @@ public class SalaryServiceImpl implements SalaryService {
     @Value("${sl.title.format}")
     private String salaryTitleFormat;
 
+    @Value("${com.abt.file.upload.save}")
+    private String excelSaveRoot;
+
+    public static final String SERVICE = "SalaryExcel";
+
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
 
 
-    public SalaryServiceImpl(SalaryDetailRepository salaryDetailRepository, View error, SalaryMainRepository salaryMainRepository, EmployeeRepository employeeRepository, SalarySlipRepository salarySlipRepository) {
+    public SalaryServiceImpl(SalaryDetailRepository salaryDetailRepository, SalaryMainRepository salaryMainRepository, EmployeeRepository employeeRepository, SalarySlipRepository salarySlipRepository) {
         this.salaryDetailRepository = salaryDetailRepository;
         this.salaryMainRepository = salaryMainRepository;
         this.employeeRepository = employeeRepository;
         this.salarySlipRepository = salarySlipRepository;
     }
 
-    @Override
-    public SalaryMain createSalaryMain(String yearMonth, String group, String netPaidColumnName) {
-        //validate
-        ValidateUtil.ensurePropertyNotnull(yearMonth, "yearMonth(必须选择发放工资年月)");
-        ValidateUtil.ensurePropertyNotnull(group, "group(必须选择工资组)");
 
-        //create
+    @Override
+    public SystemFile saveSalaryExcel(MultipartFile file, String yearMonth) {
+        String path = this.excelSaveRoot + File.separator + SERVICE + File.separator + yearMonth + File.separator;
+        SystemFile sysfile = new SystemFile(file, SERVICE, path, false);
+        FileUtil.saveFile(file, path, true);
+        return sysfile;
+    }
+
+    @Override
+    public SalaryMain createSalaryMain(String yearMonth, String group, String netPaidColumnName, String excelPath, String excelName) {
         //应该前端传入SalaryMain对象
         SalaryMain slm = new SalaryMain();
         slm.setYearMonth(yearMonth);
         slm.setGroup(group);
         slm.setNetPaidColumnName(netPaidColumnName);
         slm.setTitle(MessageFormat.format(salaryTitleFormat, group, yearMonth));
+        slm.setFilePath(excelPath);
+        slm.setFileName(excelName);
         final ValidationResult result = ValidateUtil.validateEntity(slm);
         if (!result.isPass()) {
             //校验失败
             throw new BusinessException(result.getDescription() + " " + result.getParameters().toString());
         }
-        return salaryMainRepository.save(slm);
+        return slm;
+//        return salaryMainRepository.save(slm);
     }
 
     @Override
-    public SalaryPreview previewSalaryDetail(InputStream inputStream, String sheetName, SalaryMain salaryMain) {
+    public SalaryPreview previewSalaryDetail(InputStream inputStream, int sheetNo, SalaryMain salaryMain) {
         SalaryPreview salaryPreview = SalaryPreview.create(salaryMain);
         SalaryExcelReadListener listener = new SalaryExcelReadListener(this, salaryMain.getId());
         EasyExcel.read(inputStream, SalaryDetail.class, listener)
                 .excelType(ExcelTypeEnum.XLSX)
                 .headRowNumber(HEADER_ROW_NUM)
-                .extraRead(CellExtraTypeEnum.MERGE).sheet(sheetName).doRead();
+                .extraRead(CellExtraTypeEnum.MERGE).sheet(sheetNo).doRead();
         List<SalaryDetail> tempSalary = listener.getTempSalaryDetails();
         salaryPreview.setSalaryDetails(tempSalary);
         final Map<SalaryDetail, ValidationResult> errorDetailMap = listener.getErrorDetailMap();
         final Map<Integer, Map<Integer, String>> headMap = listener.getHeadMap();
         final Map<Integer, String> header = this.createHeader(headMap);
-        System.out.println("===== Merged header: " + header.toString());
         //SalaryDetail数据本身有问题
         if (errorDetailMap != null && !errorDetailMap.isEmpty()) {
             salaryPreview.addErrorMap("严重异常", errorDetailMap);
@@ -118,7 +132,7 @@ public class SalaryServiceImpl implements SalaryService {
         final Map<SalaryDetail, ValidationResult> quitError = employeeQuitError(salaryMain, tempSalary, emp);
         salaryPreview.addErrorMap("已离职", quitError);
         salaryMain.salaryImportError();
-        salaryMainRepository.save(salaryMain);
+//        salaryMainRepository.save(salaryMain);
         return salaryPreview;
     }
 

@@ -37,6 +37,11 @@ public class R<T> {
      */
     private String msg;
 
+    /**
+     * session id
+     */
+    private String sid;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp = LocalDateTime.now();
@@ -96,6 +101,7 @@ public class R<T> {
     public static<T> R<T> success(T data) {
         return new R<>(data, ResCode.SUCCESS.getCode(), ResCode.SUCCESS.getMessage());
     }
+
 
     public static<T> R<T> success(T data, String msg) {
         return new R<>(data, ResCode.SUCCESS.getCode(), msg);

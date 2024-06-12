@@ -6,6 +6,8 @@ import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.model.SalaryMainDTO;
 import com.abt.salary.model.SalaryPreview;
 import com.abt.salary.model.SalarySlipBoard;
+import com.abt.sys.model.entity.SystemFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.List;
@@ -13,16 +15,22 @@ import java.util.Map;
 
 public interface SalaryService {
 
-    SalaryMain createSalaryMain(String yearMonth, String group, String netPaidColumnName);
+    /**
+     * 保存上传的Excel文件
+     * @param file 上传文件
+     */
+    SystemFile saveSalaryExcel(MultipartFile file, String yearMonth);
+
+    SalaryMain createSalaryMain(String yearMonth, String group, String netPaidColumnName, String excelPath, String excelName);
 
     /**
      * 工资表预览及校验
      * @param inputStream 工资表
-     * @param sheetName excel sheetName
+     * @param sheetNo 默认第一个sheet
      * @param salaryMain 主体
      * @return SalaryPreview
      */
-    SalaryPreview previewSalaryDetail(InputStream inputStream, String sheetName, SalaryMain salaryMain);
+    SalaryPreview previewSalaryDetail(InputStream inputStream, int sheetNo, SalaryMain salaryMain);
 
     /**
      * 每行数据校验
