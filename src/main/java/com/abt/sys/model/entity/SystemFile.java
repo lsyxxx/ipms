@@ -52,7 +52,6 @@ public class SystemFile extends AuditInfo {
 
     private String relationId2;
 
-
     private boolean isDeleted = false;
 
 

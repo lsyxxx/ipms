@@ -54,14 +54,6 @@ public class SalarySlip extends AuditInfo {
     private boolean isSend;
 
     /**
-     * 错误原因
-     * 对应工资数据可能存在问题而不发送
-     * 正常数据为null
-     */
-    @Column(name="error_")
-    private String error;
-
-    /**
      * 用户是否已查看
      */
     @Column(name="is_read", columnDefinition="BIT")
@@ -98,12 +90,18 @@ public class SalarySlip extends AuditInfo {
     private BigDecimal netPaid;
 
     /**
+     * 异常信息
+     */
+    @Transient
+    private String error;
+
+    /**
      * 关联的detail id
      */
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "d_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    @NotFound(action= NotFoundAction.IGNORE)
-    private SalaryDetail salaryDetail;
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "d_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+//    @NotFound(action= NotFoundAction.IGNORE)
+//    private SalaryDetail salaryDetail;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "m_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
@@ -111,22 +109,22 @@ public class SalarySlip extends AuditInfo {
     private SalaryMain salaryMain;
 
 
-    /**
-     * 使用静态创建，不要使用constructor
-     * @param salaryMain 主体
-     * @param salaryDetail 明细
-     * @param jobNumber 工号
-     * @param netPaid 实发
-     * @return SalarySlip
-     */
-    public static SalarySlip create(SalaryMain salaryMain, SalaryDetail salaryDetail, String jobNumber, BigDecimal netPaid) {
-        SalarySlip slip = new SalarySlip();
-        slip.setMainId(salaryMain.getId());
-        slip.setDetailId(salaryDetail.getId());
-        slip.setJobNumber(jobNumber);
-        slip.setNetPaid(netPaid);
-        return slip;
-    }
+//    /**
+//     * 使用静态创建，不要使用constructor
+//     * @param salaryMain 主体
+//     * @param salaryDetail 明细
+//     * @param jobNumber 工号
+//     * @param netPaid 实发
+//     * @return SalarySlip
+//     */
+//    public static SalarySlip create(SalaryMain salaryMain, SalaryDetail salaryDetail, String jobNumber, BigDecimal netPaid) {
+//        SalarySlip slip = new SalarySlip();
+//        slip.setMainId(salaryMain.getId());
+//        slip.setDetailId(salaryDetail.getId());
+//        slip.setJobNumber(jobNumber);
+//        slip.setNetPaid(netPaid);
+//        return slip;
+//    }
 
     public SalarySlip send() {
         if (StringUtils.isNotBlank(this.error)) {

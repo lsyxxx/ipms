@@ -285,22 +285,34 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         return completed;
     }
 
-    public List<User> getCandidateUsers(BpmnModelInstance bpmnModelInstance, String taskDefId) {
+    public List<String> getCandidateUserStringList(BpmnModelInstance bpmnModelInstance, String taskDefId) {
         UserTask userTaskModel = bpmnModelInstance.getModelElementById(taskDefId);
         final String camundaCandidateUsers = userTaskModel.getCamundaCandidateUsers();
-        List<User> candidateUsers = new ArrayList<>();
-        if (camundaCandidateUsers != null) {
-            List<String> list = List.of(camundaCandidateUsers.split(","));
-            list.forEach(i -> {
-                User user = new User(i);
-                final User simpleUserInfo = userService.getSimpleUserInfo(new User(i));
-                if (simpleUserInfo != null) {
-                    user.setUsername(simpleUserInfo.getUsername());
-                }
-                candidateUsers.add(user);
-            });
+        if (StringUtils.isEmpty(camundaCandidateUsers)) {
+            return new ArrayList<>();
         }
-        return candidateUsers;
+        return Arrays.asList(camundaCandidateUsers.split(","));
+    }
+
+    public List<User> userWrapper(List<String> userids) {
+        if (userids == null) {
+            return new ArrayList<>();
+        }
+        List<User> list = new ArrayList<>();
+        userids.forEach(i -> {
+            User user = new User(i);
+            final User simpleUserInfo = userService.getSimpleUserInfo(new User(i));
+            if (simpleUserInfo != null) {
+                user.setUsername(simpleUserInfo.getUsername());
+            }
+            list.add(user);
+        });
+        return list;
+    }
+
+    public List<User> getCandidateUsers(BpmnModelInstance bpmnModelInstance, String taskDefId) {
+        final List<String> candidateUserStringList = getCandidateUserStringList(bpmnModelInstance, taskDefId);
+        return userWrapper(candidateUserStringList);
     }
 
     /**

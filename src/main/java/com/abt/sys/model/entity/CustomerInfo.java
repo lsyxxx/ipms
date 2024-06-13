@@ -141,6 +141,13 @@ public class CustomerInfo implements CommonJpaAudit {
     @Column(name = "IsAvtive", length = 4)
     private String isAvtive;
 
+    /**
+     * 纳税人识别号
+     */
+    @Size(max = 50)
+    @Column(name = "TaxNo", length = 50)
+    private String taxNo;
+
 
     @Override
     public String toString() {

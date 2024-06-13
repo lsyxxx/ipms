@@ -24,6 +24,7 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -215,9 +216,15 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         setActiveTask(load);
         final ActRuTask task = load.getCurrentTask();
         if (task != null) {
-            final List<User> candidateUsers = this.getCandidateUsers(invoiceOffsetBpmnModelInstance, task.getTaskDefKey());
-            load.setCandidateUsers(candidateUsers);
-            final User appr = candidateUsers.stream().filter(i -> user.getId().equals(i.getId())).findAny().orElse(null);
+//            final List<User> candidateUsers = this.getCandidateUsers(invoiceOffsetBpmnModelInstance, task.getTaskDefKey());
+            final List<String> candidateUserStringList = this.getCandidateUserStringList(invoiceOffsetBpmnModelInstance, task.getTaskDefKey());
+            if (candidateUserStringList.isEmpty()) {
+                //没有候选人
+                return load;
+            }
+            final List<User> list = this.userWrapper(candidateUserStringList);
+            load.setCandidateUsers(list);
+            final User appr = list.stream().filter(i -> user.getId().equals(i.getId())).findAny().orElse(null);
             load.setApproveUser(appr != null);
         }
         return load;
@@ -229,9 +236,15 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         UserView user = TokenUtil.getUserFromAuthToken();
         String currentTaskId = form.getCurrentTaskId();
         final Task task = taskService.createTaskQuery().taskId(currentTaskId).active().singleResult();
-        final List<User> candidateUsers = this.getCandidateUsers(invoiceOffsetBpmnModelInstance, task.getTaskDefinitionKey());
-        final User appr = candidateUsers.stream().filter(i -> user.getId().equals(i.getId())).findAny().orElse(null);
-        return appr != null;
+        if (task != null) {
+            if (StringUtils.isNotBlank(task.getAssignee())) {
+                return task.getAssignee().equals(user.getId());
+            }
+            final List<User> candidateUsers = this.getCandidateUsers(invoiceOffsetBpmnModelInstance, task.getTaskDefinitionKey());
+            final User appr = candidateUsers.stream().filter(i -> user.getId().equals(i.getId())).findAny().orElse(null);
+            return appr != null;
+        }
+        return false;
     }
 
 //    @Override

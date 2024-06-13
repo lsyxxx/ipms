@@ -1,11 +1,15 @@
 package com.abt.salary.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.common.util.TimeUtil;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
+
+import static com.abt.salary.Constants.NETPAID_COLNAME;
 
 /**
  * 工资表主体，及配置
@@ -20,8 +24,7 @@ import lombok.Setter;
 })
 public class SalaryMain extends AuditInfo {
     @Id
-    @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, unique = true)
     private String id;
 
     /**
@@ -64,6 +67,12 @@ public class SalaryMain extends AuditInfo {
     private String sheetName;
 
     /**
+     * 导入的sheet 序号 0-based
+     */
+    @Column(name="sheet_no", columnDefinition="TINYINT")
+    private int sheetNo;
+
+    /**
      * 工资条显示的字段,多个字段用逗号分隔
      */
     @Column(name="show_columns", columnDefinition="VARCHAR(1000)")
@@ -72,9 +81,8 @@ public class SalaryMain extends AuditInfo {
     /**
      * 实发工资在excel中的列名
      */
-//    @NotNull(message = "实发金额对应列名不能为空")
     @Column(name="paid_col_name")
-    private String netPaidColumnName = "";
+    private String netPaidColumnName = NETPAID_COLNAME;
 
     @Column(name="paid_col_idx", columnDefinition="TINYINT")
     private int netPaidColumnIndex;
@@ -102,28 +110,34 @@ public class SalaryMain extends AuditInfo {
      * 状态
      */
     @Column(name="state_", columnDefinition="TINYINT")
-    private int state = STATE_NOT_IMPORT;
+    private int state = STATE_TEMP;
 
     /**
-     * 导入数据存在异常
+     * 数据存在异常
      */
     public static final int STATE_ERROR = 1;
 
-    /**
-     * 未导入数据
-     */
-    public static final int STATE_NOT_IMPORT = 0;
 
     /**
-     * 导入成功，无错误
+     * 草稿
      */
-    public static final int STATE_SUCCESS = 2;
+    public static final int STATE_TEMP = 0;
+
+    /**
+     * 已保存数据库
+     */
+    public static final int STATE_PERSIST = 2;
+
 
     /**
      * 导入数据存在异常
      */
     public void salaryImportError() {
         this.setState(STATE_ERROR);
+    }
+
+    public SalaryMain() {
+        this.id = TimeUtil.idGenerator();
     }
 
 }
