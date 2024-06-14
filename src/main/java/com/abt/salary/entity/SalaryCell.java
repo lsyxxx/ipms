@@ -1,5 +1,6 @@
 package com.abt.salary.entity;
 
+import com.abt.common.CommonConstants;
 import com.abt.common.model.AuditInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -11,6 +12,7 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -71,6 +73,39 @@ public class SalaryCell extends AuditInfo {
     @Column(name = "val_type")
     private String valueType;
 
+    /**
+     * cell类型
+     * 空：数据
+     * check_error: 错误信息标志cell
+     */
+    @Transient
+    private String cellType;
+
+    /**
+     * 错误信息
+     */
+    @Transient
+    private List<String> error;
+
+    /**
+     * 状态
+     */
+    @Transient
+    private String rowState = CommonConstants.SUCCESS;
+
+    @Transient
+    private boolean isRowError = false;
+
+    public static final String CELL_TYPE_ERROR = "check_error";
+
+    public void setRowSuccess() {
+        this.rowState = CommonConstants.SUCCESS;
+    }
+
+    public boolean isRowError() {
+        return "error".equals(rowState);
+    }
+
 
     public static SalaryCell createTemp(String columnName, String value, Integer rowIndex, Integer columnIndex) {
         SalaryCell salaryCell = new SalaryCell();
@@ -87,6 +122,18 @@ public class SalaryCell extends AuditInfo {
         salaryCell.setJobNumber(jobNumber);
         salaryCell.setMid(mid);
         return salaryCell;
+    }
+
+    /**
+     * 创建一个cell表示行有错误
+     */
+    public static SalaryCell createErrorCell(int rowIndex, String jobNumber) {
+        SalaryCell cell = new SalaryCell();
+        cell.setRowState(CommonConstants.ERROR);
+        cell.setRowError(true);
+        cell.setRowIndex(rowIndex);
+        cell.setJobNumber(jobNumber);
+        return cell;
     }
 
 }

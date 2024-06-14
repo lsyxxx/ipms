@@ -4,6 +4,7 @@ package com.abt.salary.model;
 import com.abt.salary.entity.SalaryCell;
 import com.abt.sys.model.entity.SystemFile;
 import lombok.Data;
+import com.abt.common.model.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +26,10 @@ public class SalaryPreview {
      * 工资表数据
      */
     private List<List<SalaryCell>> salaryTable;
+    /**
+     * 工资表数据 map版
+     */
+    private List<Map<Integer, String>> rowList;
 
     /**
      * 表头数据
@@ -36,14 +41,35 @@ public class SalaryPreview {
      */
     private List<String> fatalError = new ArrayList<>();
 
-
-    //TODO: 异常数据
-    //数据还是以List<List<SalaryCell>> 形式，表头一样
-    //key: 错误分类
     private Map<String, List<List<SalaryCell>>> typedErrorMap = new HashMap<>();
+
+    private int jobNumberColumnIndex;
+    private int nameColumnIndex;
+    private int netPaidColumnIndex;
+
+    public boolean hasFatalError() {
+        return !fatalError.isEmpty();
+    }
+
+    public boolean hasTypedError() {
+       for (Map.Entry<String, List<List<SalaryCell>>> entry : typedErrorMap.entrySet()) {
+           if (!entry.getValue().isEmpty()) {
+               return true;
+           }
+       }
+       return false;
+    }
+
 
     public void addFatalError(String error) {
         fatalError.add(error);
     }
 
+    public void addTypedErrorRow(String typeName, List<SalaryCell> row) {
+        this.typedErrorMap.getOrDefault(typeName, new ArrayList<>()).add(row);
+    }
+
+    public void addTypedErrorAll(String typeName, List<List<SalaryCell>> rows) {
+        this.typedErrorMap.getOrDefault(typeName, new ArrayList<>()).addAll(rows);
+    }
 }

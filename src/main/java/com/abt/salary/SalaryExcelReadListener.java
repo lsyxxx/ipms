@@ -1,9 +1,9 @@
 package com.abt.salary;
 
+import com.abt.common.model.User;
 import com.abt.salary.entity.SalaryCell;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.alibaba.excel.metadata.Cell;
 import com.alibaba.excel.metadata.CellExtra;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,6 +43,11 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      */
     private int netPaidColumnIndex = EXCLUDE_IDX;
 
+    /**
+     * 姓名 列号
+     */
+    private int nameColumnIndex = EXCLUDE_IDX;
+
 
     /**
      * 用于前端显示table
@@ -66,25 +71,41 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      */
     Map<Integer, Map<Integer, String>> rawHeader = new HashMap<>();
 
+    private Map<String, List<List<SalaryCell>>> typedErrorMap = new HashMap<>();
+
+    /**
+     * 按列存储table
+     * key: 列号，value map：该列所有行的数据
+     * value map：key:行号，value: 值
+     */
+    private Map<Integer, Map<Integer, String>> columnMap = new HashMap<>();
+
+    /**
+     * 按行存储table
+     * map: key: 列号, value: 值
+     */
+    private List<Map<Integer, String>> rowList = new ArrayList<>();
+
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
     public SalaryExcelReadListener(String mainId) {
         this.mainId = mainId;
-        System.out.println("==== 注入mainId: " + this.mainId);
+        typedErrorMap.put(ERR_JOBNUM_NULL, new ArrayList<>());
     }
 
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
-        //key: col 0-based, value: cell value
-        // 获取行号和列号
         int rowNum = analysisContext.readRowHolder().getRowIndex();
-        //TODO: 校验
+        rowList.add(data);
         List<SalaryCell> tableRow = new ArrayList<>();
+        String jobNumber = data.getOrDefault(jobNumberColumnIndex, StringUtils.EMPTY);
+        String name = data.getOrDefault(nameColumnIndex, StringUtils.EMPTY);
         data.forEach((k, v) -> {
-            SalaryCell cell = SalaryCell.createTemp(mergedHeader.get(k), v, rowNum, k, mainId, "");
-            tableRow.add(cell);
+            SalaryCell cell = SalaryCell.createTemp(mergedHeader.get(k), v, rowNum, k, mainId, jobNumber);
+            tableRow.add(k, cell);
         });
+
         tableList.add(tableRow);
     }
 
@@ -120,6 +141,8 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
                 this.netPaidColumnIndex = k;
             } else if (JOBNUMBER_COLNAME.equals(v)) {
                 this.jobNumberColumnIndex = k;
+            } else if (NAME_COLNAME.equals(v)) {
+                this.nameColumnIndex = k;
             }
         });
     }
@@ -130,6 +153,10 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
 
     public boolean includeNetPaid() {
         return this.netPaidColumnIndex > 0;
+    }
+
+    public boolean includeName() {
+        return this.nameColumnIndex > 0;
     }
 
 

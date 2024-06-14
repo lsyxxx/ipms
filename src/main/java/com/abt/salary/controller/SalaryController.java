@@ -5,7 +5,6 @@ import com.abt.common.util.ValidateUtil;
 import com.abt.salary.model.SalaryPreview;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
   */
 @RestController
 @Slf4j
-@RequestMapping("/sl")
+@RequestMapping("/test/sl")
 public class SalaryController {
 
     private final SalaryService salaryService;
