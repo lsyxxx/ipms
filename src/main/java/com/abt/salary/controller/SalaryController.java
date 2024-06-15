@@ -2,6 +2,7 @@ package com.abt.salary.controller;
 
 import com.abt.common.model.R;
 import com.abt.common.util.ValidateUtil;
+import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.model.SalaryPreview;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
@@ -13,6 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.UUID;
+
+import static com.abt.salary.Constants.*;
 
 /**
   * 
@@ -37,7 +43,7 @@ public class SalaryController {
      */
     @PostMapping("/upload")
     @ResponseBody
-    public R<SalaryPreview> upload(MultipartFile file, String yearMonth, String group, Integer sheetNo, HttpServletRequest request) {
+    public R<SalaryPreview> upload(MultipartFile file, String yearMonth, String group, Integer sheetNo, HttpServletRequest request) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new BusinessException("请上传工资表!");
         }
@@ -53,31 +59,30 @@ public class SalaryController {
         if (session == null) {
             session = request.getSession(true);
         }
-        clearSession();
-        SalaryPreview preview = new SalaryPreview();
+        clearSession(session);
+        final SalaryMain salaryMain = salaryService.createSalaryMain(file, yearMonth, group);
+        final SalaryPreview salaryPreview = salaryService.extractAndValidate(file.getInputStream(), salaryMain.getId());
+        //保存session
+        session.setAttribute(S_SL_UUID, UUID.randomUUID().toString());
+        session.setAttribute(S_SL_MAIN, salaryMain);
+        session.setAttribute(S_SL_PREVIEW, salaryPreview);
+        session.setAttribute(S_SL_FILE, file);
 
-        //1. 保存文件信息
-        //2. 抽取数据
-        //3. 校验异常数据
-        //4. 形成salaryPreview
-        //5. 数据保存在session
-        //6. response
-
-
-
-//        final SystemFile sysfile = salaryService.saveSalaryExcel(file, yearMonth);
-//        System.out.println("上传文件: " + sysfile.toString());
-//        session.setAttribute(S_SL_FILE, sysfile);
-//        final SalaryMain slm = salaryService.createSalaryMain(yearMonth, group, "", sysfile.getFullPath(), sysfile.getName());
-//        session.setAttribute(S_SL_MAIN, slm);
-//        final SalaryPreview salaryPreview = salaryService.previewSalaryDetail(file.getInputStream(), 1, slm);
-//        session.setAttribute(S_SL_MAP, salaryPreview);
-
-        return R.success(preview);
+        return R.success(salaryPreview);
     }
 
-    //TODO: 清空session中相关数据
-    private void clearSession() {
-
+    private void clearSession(HttpSession session) {
+        session.removeAttribute(S_SL_MAIN);
+        session.removeAttribute(S_SL_PREVIEW);
+        session.removeAttribute(S_SL_FILE);
     }
+
+//    private boolean validateSession(HttpSession session) {
+//        if (session == null) {
+//            return false;
+//        }
+//        final String uuid = session.getAttribute(S_SL_UUID).toString();
+//    }
+
+
 }

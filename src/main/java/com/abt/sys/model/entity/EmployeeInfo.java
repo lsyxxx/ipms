@@ -275,28 +275,29 @@ public class EmployeeInfo {
 
     @Column(name="Company", length = 32)
     private String company;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "JobNumber", referencedColumnName = "empnum", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    @NotFound(action= NotFoundAction.IGNORE)
-    private TUser tUser;
+//
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "JobNumber", referencedColumnName = "empnum", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+//    @NotFound(action= NotFoundAction.IGNORE)
+//    private TUser tUser;
 
     @Transient
     private String userid;
 
-//    public EmployeeInfo(String id, String name, String userid, String jobNumber, String dept,
-//                        String createUserId, String createUserName, LocalDateTime createDate,
-//                        String operator, String operatorName, LocalDateTime operatedate) {
-//        this.id = id;
-//        this.userid = userid;
-//        this.name = name;
-//        this.jobNumber = jobNumber;
-//        this.dept = dept;
-//        this.createUserId = createUserId;
-//        this.createUserName = createUserName;
-//        this.createDate = createDate;
-//        this.operator = operator;
-//        this.operatorName = operatorName;
-//        this.operatedate = operatedate;
-//    }
+    public EmployeeInfo(EmployeeInfo e, String userid) {
+        this.id = e.id;
+        this.userid = userid;
+    }
+
+    @Override
+    public String toString() {
+        return "EmployeeInfo{" +
+                "id='" + id + '\'' +
+                ", jobNumber='" + jobNumber + '\'' +
+                ", name='" + name + '\'' +
+                ", dept='" + dept + '\'' +
+                ", sex='" + sex + '\'' +
+                ", userid='" + userid + '\'' +
+                '}';
+    }
 }

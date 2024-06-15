@@ -10,9 +10,10 @@ public class Constants {
     /**
      * 工资临时数据SESSION key
      */
-    public static final String S_SL_MAP = "SalaryTemp";
-    public static final String S_SL_FILE = "SalaryFile";
+    public static final String S_SL_UUID = "SalaryUUID";
     public static final String S_SL_MAIN = "SalaryMain";
+    public static final String S_SL_PREVIEW = "SalaryPreview";
+    public static final String S_SL_FILE = "SalaryFile";
 
     public static final String NETPAID_COLNAME = "本月实发工资";
     public static final String JOBNUMBER_COLNAME = "工号";
@@ -31,6 +32,8 @@ public class Constants {
     public static final String ERR_NETPAID_NULL = "本月实发工资数据缺失";
     public static final String ERR_USER_NOT_FIT = "工号和姓名不一致";
     public static final String ERR_USER_EXIT = "存在离职员工";
+
+    public static final int SL_ROW_INFO_IDX = 0;
 }
 
 

@@ -34,12 +34,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeInfo> findAllByExit(boolean exit) {
-        final List<EmployeeInfo> list = employeeRepository.findByIsExit(exit);
-        list.forEach(i -> {
-            if (i.getTUser() != null) {
-                i.setUserid(i.getTUser().getId());
-            }
-        });
-        return list;
+        return employeeRepository.findByIsExit(exit);
     }
 }

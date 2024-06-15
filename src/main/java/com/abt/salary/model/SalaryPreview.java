@@ -22,19 +22,23 @@ public class SalaryPreview {
      */
     private SystemFile uploadFile;
 
+    private String filePath;
+
     /**
-     * 工资表数据
+     * 工资表原始数据
      */
-    private List<List<SalaryCell>> salaryTable;
+    private List<List<SalaryCell>> rawTable;
+
     /**
-     * 工资表数据 map版
+     * 处理后的仅无问题，可以发放工资条的数据
      */
-    private List<Map<Integer, String>> rowList;
+    private List<List<SalaryCell>> slipTable;
 
     /**
      * 表头数据
      */
     private List<SalaryCell> header;
+    private Map<Integer, String> headerMap;
 
     /**
      * 严重错误，不允许进行下一步的
@@ -48,7 +52,7 @@ public class SalaryPreview {
     private int netPaidColumnIndex;
 
     public boolean hasFatalError() {
-        return !fatalError.isEmpty();
+        return fatalError.isEmpty();
     }
 
     public boolean hasTypedError() {
@@ -66,10 +70,14 @@ public class SalaryPreview {
     }
 
     public void addTypedErrorRow(String typeName, List<SalaryCell> row) {
-        this.typedErrorMap.getOrDefault(typeName, new ArrayList<>()).add(row);
+        final List<List<SalaryCell>> errList = this.typedErrorMap.getOrDefault(typeName, new ArrayList<>());
+        errList.add(row);
+        this.typedErrorMap.put(typeName, errList);
     }
 
     public void addTypedErrorAll(String typeName, List<List<SalaryCell>> rows) {
-        this.typedErrorMap.getOrDefault(typeName, new ArrayList<>()).addAll(rows);
+        final List<List<SalaryCell>> errList = this.typedErrorMap.getOrDefault(typeName, new ArrayList<>());
+        errList.addAll(rows);
+        this.typedErrorMap.put(typeName, errList);
     }
 }

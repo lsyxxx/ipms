@@ -17,6 +17,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
 
     List<EmployeeInfo> findByCompanyAndIsActive(String company, String isActive);
 
+    @Query("select new com.abt.sys.model.entity.EmployeeInfo(e, u.id) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where e.isExit = :isExit")
     List<EmployeeInfo> findByIsExit(boolean isExit);
 
     /**
@@ -25,6 +26,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
     @Query("select e from EmployeeInfo e where e.isActive = '1'")
     List<EmployeeInfo> findAllSalaryEnabled();
 
-
+    @Query("select new com.abt.sys.model.entity.EmployeeInfo(e, u.id) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where u.id = :userid")
+    List<EmployeeInfo> findAllByUserid(String userid);
 
 }

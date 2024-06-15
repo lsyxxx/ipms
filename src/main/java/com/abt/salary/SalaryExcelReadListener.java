@@ -51,6 +51,8 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
 
     /**
      * 用于前端显示table
+     * index=0 表示行信息位
+     * index=1 开始是数据
      */
     private List<List<SalaryCell>> tableList = new ArrayList<>();
 
@@ -81,12 +83,6 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     private Map<Integer, Map<Integer, String>> columnMap = new HashMap<>();
 
     /**
-     * 按行存储table
-     * map: key: 列号, value: 值
-     */
-    private List<Map<Integer, String>> rowList = new ArrayList<>();
-
-    /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
     public SalaryExcelReadListener(String mainId) {
@@ -96,14 +92,16 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
 
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
+        //空行不读取
         int rowNum = analysisContext.readRowHolder().getRowIndex();
-        rowList.add(data);
         List<SalaryCell> tableRow = new ArrayList<>();
-        String jobNumber = data.getOrDefault(jobNumberColumnIndex, StringUtils.EMPTY);
-        String name = data.getOrDefault(nameColumnIndex, StringUtils.EMPTY);
+        String jobNumber = data.getOrDefault(jobNumberColumnIndex - 1, StringUtils.EMPTY);
+        String name = data.getOrDefault(nameColumnIndex - 1, StringUtils.EMPTY);
+        tableRow.add(SL_ROW_INFO_IDX, SalaryCell.createEmpty(rowNum, jobNumber, name, mainId));
         data.forEach((k, v) -> {
-            SalaryCell cell = SalaryCell.createTemp(mergedHeader.get(k), v, rowNum, k, mainId, jobNumber);
-            tableRow.add(k, cell);
+            int tableIndex = k + 1;
+            SalaryCell cell = SalaryCell.createTemp(mergedHeader.get(tableIndex), v, rowNum, tableIndex, mainId, jobNumber);
+            tableRow.add(tableIndex, cell);
         });
 
         tableList.add(tableRow);
@@ -131,18 +129,20 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      * 一般同一列多行有值表示同一类别下的多个分类
      */
     private void mergeHeader(Map<Integer, String> currentMap) {
+        //存在infoCell
         currentMap.forEach((k, v) -> {
+            Integer tableIndex = k + 1;
             if (StringUtils.isNotBlank(v)) {
                 //去掉空格/换行/制表符
                 v = v.replaceAll("\\s+", "");
-                this.mergedHeader.put(k, v);
+                this.mergedHeader.put(tableIndex, v);
             }
             if (NETPAID_COLNAME.equals(v)) {
-                this.netPaidColumnIndex = k;
+                this.netPaidColumnIndex = tableIndex;
             } else if (JOBNUMBER_COLNAME.equals(v)) {
-                this.jobNumberColumnIndex = k;
+                this.jobNumberColumnIndex = tableIndex;
             } else if (NAME_COLNAME.equals(v)) {
-                this.nameColumnIndex = k;
+                this.nameColumnIndex = tableIndex;
             }
         });
     }
