@@ -8,11 +8,9 @@ import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -25,7 +23,7 @@ import static com.abt.salary.Constants.*;
   */
 @RestController
 @Slf4j
-@RequestMapping("/test/sl")
+@RequestMapping("/sl")
 public class SalaryController {
 
     private final SalaryService salaryService;
@@ -71,18 +69,18 @@ public class SalaryController {
         return R.success(salaryPreview);
     }
 
+    @GetMapping("/import")
+    public void importDb(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        if (session == null) {
+            throw new BusinessException("会话失效，请刷新后重新进入");
+        }
+    }
+
     private void clearSession(HttpSession session) {
         session.removeAttribute(S_SL_MAIN);
         session.removeAttribute(S_SL_PREVIEW);
         session.removeAttribute(S_SL_FILE);
     }
-
-//    private boolean validateSession(HttpSession session) {
-//        if (session == null) {
-//            return false;
-//        }
-//        final String uuid = session.getAttribute(S_SL_UUID).toString();
-//    }
-
 
 }

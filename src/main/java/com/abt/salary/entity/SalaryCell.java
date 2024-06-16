@@ -152,6 +152,7 @@ public class SalaryCell extends AuditInfo {
 
     public static SalaryCell createEmpty(int rowIndex, String jobNumber, String name, String mid) {
         SalaryCell cell = new SalaryCell();
+        cell.setId(UUID.randomUUID().toString());
         cell.setRowIndex(rowIndex);
         cell.setColumnIndex(0);
         cell.setJobNumber(jobNumber);

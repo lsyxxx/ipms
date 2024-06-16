@@ -138,18 +138,16 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     private void checkNetPaidNull(SalaryPreview preview) {
-        List<List<SalaryCell>> errorList = new ArrayList<>();
         preview.getRawTable().forEach(row -> {
             row.forEach(cell -> {
                 if (cell.getColumnIndex() == preview.getNetPaidColumnIndex()) {
                     if (StringUtils.isBlank(cell.getValue())) {
                         setRowErrorFlag(row);
-                        errorList.add(row);
+                        preview.addTypedErrorRow(ERR_NETPAID_NULL, row);
                     }
                 }
             });
         });
-        preview.addTypedErrorAll(ERR_NETPAID_NULL, errorList);
     }
 
 
