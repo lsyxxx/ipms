@@ -17,6 +17,7 @@ import static com.abt.salary.Constants.*;
 /**
  * 读取excel，暂存，不保存数据库
  * easyexcel col/row index 都是从0开始
+ * 业务上处理index=0 添加信息位，业务数据(excel数据)index=1开始
  */
 @Slf4j
 @Getter
@@ -97,10 +98,11 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         List<SalaryCell> tableRow = new ArrayList<>();
         String jobNumber = data.getOrDefault(jobNumberColumnIndex - 1, StringUtils.EMPTY);
         String name = data.getOrDefault(nameColumnIndex - 1, StringUtils.EMPTY);
-        tableRow.add(SL_ROW_INFO_IDX, SalaryCell.createEmpty(rowNum, jobNumber, name, mainId));
+        SalaryCell rowCell = SalaryCell.createRowCell(rowNum, jobNumber, name, mainId);
+        tableRow.add(SL_ROW_INFO_IDX, rowCell);
         data.forEach((k, v) -> {
             int tableIndex = k + 1;
-            SalaryCell cell = SalaryCell.createTemp(mergedHeader.get(tableIndex), v, rowNum, tableIndex, mainId, jobNumber);
+            SalaryCell cell = SalaryCell.createTemp(mergedHeader.get(tableIndex), v, rowNum, tableIndex, mainId, jobNumber, rowCell.getRowId());
             tableRow.add(tableIndex, cell);
         });
 
@@ -129,7 +131,8 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      * 一般同一列多行有值表示同一类别下的多个分类
      */
     private void mergeHeader(Map<Integer, String> currentMap) {
-        //存在infoCell
+        //存在infoCell,表头一致，信息位
+        this.mergedHeader.put(0, "");
         currentMap.forEach((k, v) -> {
             Integer tableIndex = k + 1;
             if (StringUtils.isNotBlank(v)) {

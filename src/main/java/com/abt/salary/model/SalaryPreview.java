@@ -2,20 +2,23 @@ package com.abt.salary.model;
 
 
 import com.abt.salary.entity.SalaryCell;
+import com.abt.salary.entity.SalaryMain;
 import com.abt.sys.model.entity.SystemFile;
 import lombok.Data;
-import com.abt.common.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
   *  预览工资数据及错误信息
   */
 @Data
 public class SalaryPreview {
+
+    private String tempId;
+    private String group;
+    private String yearMonth;
+
+    private SalaryMain salaryMain;
 
     /**
      * 上传的文件
@@ -27,18 +30,19 @@ public class SalaryPreview {
     /**
      * 工资表原始数据
      */
-    private List<List<SalaryCell>> rawTable;
+    private List<List<SalaryCell>> rawTable = new ArrayList<>();
 
     /**
      * 处理后的仅无问题，可以发放工资条的数据
+     * 不包含信息位!
      */
-    private List<List<SalaryCell>> slipTable;
+    private List<List<SalaryCell>> slipTable = new ArrayList<>();
 
     /**
      * 表头数据
      */
-    private List<SalaryCell> header;
-    private Map<Integer, String> headerMap;
+    private List<SalaryCell> header = new ArrayList<>();
+    private Map<Integer, String> headerMap = new HashMap<>();
 
     /**
      * 严重错误，不允许进行下一步的
@@ -79,5 +83,16 @@ public class SalaryPreview {
         final List<List<SalaryCell>> errList = this.typedErrorMap.getOrDefault(typeName, new ArrayList<>());
         errList.addAll(rows);
         this.typedErrorMap.put(typeName, errList);
+    }
+
+    public void buildHeader() {
+        this.headerMap.forEach((k, v) -> {
+            SalaryCell cell = SalaryCell.createTemp(v, v, 0, k);
+            this.header.add(cell);
+        });
+    }
+
+    public void tempId() {
+        this.tempId = UUID.randomUUID().toString();
     }
 }

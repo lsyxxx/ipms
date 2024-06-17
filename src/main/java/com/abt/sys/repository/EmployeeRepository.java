@@ -29,4 +29,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
     @Query("select new com.abt.sys.model.entity.EmployeeInfo(e, u.id) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where u.id = :userid")
     List<EmployeeInfo> findAllByUserid(String userid);
 
+    @Query("select distinct e.company from EmployeeInfo e")
+    List<String> findDistinctGroup();
+
 }

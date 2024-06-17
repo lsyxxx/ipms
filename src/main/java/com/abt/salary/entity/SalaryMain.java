@@ -2,11 +2,14 @@ package com.abt.salary.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.common.util.TimeUtil;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
 import static com.abt.salary.Constants.NETPAID_COLNAME;
@@ -22,6 +25,9 @@ import static com.abt.salary.Constants.NETPAID_COLNAME;
         @Index(name = "idx_group", columnList = "group_"),
         @Index(name = "idx_group_year_month", columnList = "group_, year_mon"),
 })
+@DynamicUpdate
+@DynamicInsert
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SalaryMain extends AuditInfo {
     @Id
     @Column(name = "id", nullable = false, unique = true)
@@ -84,8 +90,26 @@ public class SalaryMain extends AuditInfo {
     @Column(name="paid_col_name")
     private String netPaidColumnName = NETPAID_COLNAME;
 
-    @Column(name="paid_col_idx", columnDefinition="TINYINT")
-    private int netPaidColumnIndex;
+    /**
+     * 实发工资列号 1-based
+     */
+    @NotNull
+    @Column(name="col_idx_netpaid", columnDefinition="TINYINT", nullable = false)
+    private Integer netPaidColumnIndex;
+
+    /**
+     * 工号列号 1-based
+     */
+    @NotNull
+    @Column(name="col_idx_jobnum", columnDefinition="TINYINT", nullable = false)
+    private Integer jobNumberColumnIndex;
+
+    /**
+     * 姓名列号 1-based
+     */
+    @NotNull
+    @Column(name="col_idx_name", length = 32, nullable = false)
+    private Integer name;
 
     /**
      * 是否显示温馨提示
@@ -128,6 +152,17 @@ public class SalaryMain extends AuditInfo {
      */
     public static final int STATE_PERSIST = 2;
 
+    @Transient
+    private Integer sendCount;
+
+    @Transient
+    private Integer readCount;
+
+    @Transient
+    private Integer checkCount;
+
+    @Transient
+    private Integer feedBackCount;
 
     /**
      * 导入数据存在异常

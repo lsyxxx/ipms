@@ -29,17 +29,22 @@ public class SalaryCell extends AuditInfo {
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-
     /**
      * 列名
      */
     @Size(max = 255)
     @Column(name = "col_name")
-    private String columnName;
+    private String label;
 
     @Size(max = 255)
     @Column(name = "val")
-    private String value;
+    private String value = "";
+
+    /**
+     * 行唯一id
+     */
+    @Column(name = "rid", length = 128, nullable = false)
+    private String rowId;
 
     /**
      * 行号：从0开始
@@ -66,11 +71,11 @@ public class SalaryCell extends AuditInfo {
      */
     @Size(max = 255)
     @Column(name = "job_num", nullable = false)
-    private String jobNumber;
+    private String jobNumber = "";
 
     @Size(max = 32)
     @Column(name = "name_", columnDefinition = "VARCHAR(32)")
-    private String name;
+    private String name = "";
 
     /**
      * 数据类型
@@ -115,17 +120,18 @@ public class SalaryCell extends AuditInfo {
     public static SalaryCell createTemp(String columnName, String value, Integer rowIndex, Integer columnIndex) {
         SalaryCell salaryCell = new SalaryCell();
         salaryCell.id = UUID.randomUUID().toString();
-        salaryCell.columnName = columnName;
+        salaryCell.label = columnName;
         salaryCell.value = value;
         salaryCell.rowIndex = rowIndex;
         salaryCell.columnIndex = columnIndex;
         return salaryCell;
     }
 
-    public static SalaryCell createTemp(String columnName, String value, Integer rowIndex, Integer columnIndex, String mid, String jobNumber) {
+    public static SalaryCell createTemp(String columnName, String value, Integer rowIndex, Integer columnIndex, String mid, String jobNumber, String rowId) {
         SalaryCell salaryCell = createTemp(columnName, value, rowIndex, columnIndex);
         salaryCell.setJobNumber(jobNumber);
         salaryCell.setMid(mid);
+        salaryCell.setRowId(rowId);
         return salaryCell;
     }
 
@@ -137,16 +143,9 @@ public class SalaryCell extends AuditInfo {
         this.setRowState(CommonConstants.ERROR);
     }
 
-    /**
-     * 创建一个cell表示行有错误
-     */
-    public static SalaryCell createErrorCell(int rowIndex, String jobNumber) {
-        SalaryCell cell = new SalaryCell();
-        cell.setRowState(CommonConstants.ERROR);
-        cell.setRowError(true);
-        cell.setRowIndex(rowIndex);
-        cell.setJobNumber(jobNumber);
-        cell.setCellType(CELL_TYPE_ERROR);
+    public static SalaryCell createRowCell(int rowIndex, String jobNumber, String name, String mid) {
+        SalaryCell cell = createEmpty(rowIndex, jobNumber, name, mid);
+        cell.setRowId(UUID.randomUUID().toString());
         return cell;
     }
 
@@ -164,7 +163,7 @@ public class SalaryCell extends AuditInfo {
     @Override
     public String toString() {
         return "SalaryCell{" +
-                "columnName='" + columnName + '\'' +
+                "columnName='" + label + '\'' +
                 ", value='" + value + '\'' +
                 ", rowIndex=" + rowIndex +
                 ", columnIndex=" + columnIndex +

@@ -51,8 +51,6 @@ public class FileUtil {
         if (file == null) {
             return "";
         }
-
-
         String fileName = file.getOriginalFilename();
         File directory = new File(path);
         if (!directory.exists()) {
@@ -65,6 +63,24 @@ public class FileUtil {
         try {
             file.transferTo(dest);
             return fileName;
+        } catch (IOException e) {
+            log.error("保存文件失败", e);
+            throw new BusinessException(e);
+        }
+    }
+
+    public static void saveFile(MultipartFile file, String path, String newName) {
+        if (file == null) {
+            return ;
+        }
+        String fileName = file.getOriginalFilename();
+        File directory = new File(path);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        File dest = new File(directory, newName);
+        try {
+            file.transferTo(dest);
         } catch (IOException e) {
             log.error("保存文件失败", e);
             throw new BusinessException(e);

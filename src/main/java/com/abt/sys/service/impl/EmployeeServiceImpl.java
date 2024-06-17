@@ -36,4 +36,5 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeInfo> findAllByExit(boolean exit) {
         return employeeRepository.findByIsExit(exit);
     }
+
 }

@@ -275,11 +275,6 @@ public class EmployeeInfo {
 
     @Column(name="Company", length = 32)
     private String company;
-//
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "JobNumber", referencedColumnName = "empnum", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-//    @NotFound(action= NotFoundAction.IGNORE)
-//    private TUser tUser;
 
     @Transient
     private String userid;
@@ -288,6 +283,12 @@ public class EmployeeInfo {
         this.id = e.id;
         this.userid = userid;
     }
+
+    public boolean salaryIsEnabled() {
+        return this.isActive.equals("1");
+    }
+
+
 
     @Override
     public String toString() {

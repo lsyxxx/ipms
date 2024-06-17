@@ -21,4 +21,12 @@ class EmployeeRepositoryTest {
         System.out.println(list.size());
         list.forEach(System.out::println);
     }
+
+    @Test
+    void testDistinct() {
+        final List<String> list = employeeRepository.findDistinctGroup();
+        assertNotNull(list);
+        System.out.println(list);
+    }
+
 }
