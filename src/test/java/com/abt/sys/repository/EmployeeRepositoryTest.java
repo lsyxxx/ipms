@@ -29,4 +29,13 @@ class EmployeeRepositoryTest {
         System.out.println(list);
     }
 
+    @Test
+    void findDept() {
+        final List<EmployeeInfo> list = employeeRepository.findAllWithDept();
+        assertNotNull(list);
+        list.forEach(i -> {
+            System.out.println(String.format("name: %s, dept: %s, deptName: %s", i.getName(), i.getDept(), i.getDeptName()));
+        });
+    }
+
 }

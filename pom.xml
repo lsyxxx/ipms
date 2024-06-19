@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.abt</groupId>
     <artifactId>abt</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>abt</name>
     <description>阿伯塔数字化平台</description>
     <properties>

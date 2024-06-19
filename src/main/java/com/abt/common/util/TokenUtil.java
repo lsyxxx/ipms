@@ -34,6 +34,10 @@ public class TokenUtil {
     }
 
 
+    public static String getUserJobNumberFromAuthToken() {
+        return getUserFromAuthToken().getEmpnum();
+    }
+
     /**
      * 获取token value
      * @return 如果没有认证则返回空字符串

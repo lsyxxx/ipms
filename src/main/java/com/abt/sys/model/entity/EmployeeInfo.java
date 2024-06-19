@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 //只读，不能修改
 @Immutable
+@NamedEntityGraph(name = "Employee.withDepartment", attributeNodes = @NamedAttributeNode("department"))
 public class EmployeeInfo {
     @Id
     @Size(max = 50)
@@ -279,6 +280,14 @@ public class EmployeeInfo {
     @Transient
     private String userid;
 
+    @Transient
+    private String deptName;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Dept", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private Org department;
+
     public EmployeeInfo(EmployeeInfo e, String userid) {
         this.id = e.id;
         this.userid = userid;
@@ -288,7 +297,9 @@ public class EmployeeInfo {
         return this.isActive.equals("1");
     }
 
-
+    public boolean salaryDisabled() {
+        return this.isActive.equals("2");
+    }
 
     @Override
     public String toString() {

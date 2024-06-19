@@ -1,22 +1,34 @@
 package com.abt.salary.service.impl;
 
+import com.abt.common.model.ValidationResult;
 import com.abt.common.util.FileUtil;
+import com.abt.common.util.TokenUtil;
+import com.abt.common.util.ValidateUtil;
 import com.abt.salary.SalaryExcelReadListener;
 import com.abt.salary.entity.SalaryCell;
+import com.abt.salary.entity.SalaryEnc;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
+import com.abt.salary.model.PwdForm;
 import com.abt.salary.model.SalaryPreview;
+import com.abt.salary.model.UserSlip;
 import com.abt.salary.repository.SalaryCellRepository;
+import com.abt.salary.repository.SalaryEncRepository;
 import com.abt.salary.repository.SalaryMainRepository;
 import com.abt.salary.repository.SalarySlipRepository;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.model.entity.TUser;
 import com.abt.sys.repository.EmployeeRepository;
+import com.abt.sys.repository.TUserRepository;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.enums.CellExtraTypeEnum;
 import com.alibaba.excel.support.ExcelTypeEnum;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,6 +37,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.abt.salary.Constants.*;
@@ -40,15 +56,26 @@ public class SalaryServiceImpl implements SalaryService {
     private final SalaryMainRepository salaryMainRepository;
     private final SalaryCellRepository salaryCellRepository;
     private final SalarySlipRepository salarySlipRepository;
+    private final SalaryEncRepository salaryEncRepository;
+    private final TUserRepository tUserRepository;
 
     @Value("${com.abt.file.upload.save}")
     private String fileRoot;
 
-    public SalaryServiceImpl(EmployeeRepository employeeRepository, SalaryMainRepository salaryMainRepository, SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository) {
+    /**
+     * 超时时间:分钟
+     */
+    @Value("${sl.my.session.timeout}")
+    private Integer sessionTimeout;
+
+    public SalaryServiceImpl(EmployeeRepository employeeRepository, SalaryMainRepository salaryMainRepository,
+                             SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository) {
         this.employeeRepository = employeeRepository;
         this.salaryMainRepository = salaryMainRepository;
         this.salaryCellRepository = salaryCellRepository;
         this.salarySlipRepository = salarySlipRepository;
+        this.salaryEncRepository = salaryEncRepository;
+        this.tUserRepository = tUserRepository;
     }
 
     @Override
@@ -64,7 +91,7 @@ public class SalaryServiceImpl implements SalaryService {
     //抽取excel数据
     @Override
     public SalaryPreview extractAndValidate(InputStream fis, SalaryMain salaryMain) {
-        final SalaryExcelReadListener listener = new SalaryExcelReadListener(salaryMain.getId());
+        final SalaryExcelReadListener listener = new SalaryExcelReadListener(salaryMain.getId(), salaryMain.getYearMonth());
         EasyExcel.read(fis, listener)
                 .excelType(ExcelTypeEnum.XLSX)
                 .headRowNumber(SalaryExcelReadListener.DATA_START_IDX)
@@ -163,7 +190,7 @@ public class SalaryServiceImpl implements SalaryService {
             SalaryCell jobNumCell = row.get(preview.getJobNumberColumnIndex());
             String jobNumber = jobNumCell.getValue();
 //            final boolean match = employees.stream().anyMatch(employee -> employee.getJobNumber().equals(jobNumber) && employee.isExit());
-            final Optional<EmployeeInfo> emp = employees.stream().filter(i -> i.getJobNumber().equals(jobNumber) && (i.isExit() || !i.salaryIsEnabled())).findAny();
+            final Optional<EmployeeInfo> emp = employees.stream().filter(i -> i.getJobNumber().equals(jobNumber) && (i.isExit() || i.salaryDisabled())).findAny();
             if (emp.isPresent()) {
                 System.out.println("离职/未启用员工: " + jobNumber);
                 setRowErrorFlag(row);
@@ -194,16 +221,14 @@ public class SalaryServiceImpl implements SalaryService {
 
     //工号不存在
     public void checkUserContains(SalaryPreview preview, List<EmployeeInfo> employees) {
-        List<List<SalaryCell>> errorList = new ArrayList<>();
         preview.getRawTable().forEach(row -> {
              String jobNumber = row.get(0).getJobNumber();
             final boolean exists = employees.stream().anyMatch(i -> i.getJobNumber().equals(jobNumber));
             if (!exists) {
                 setRowErrorFlag(row);
-                errorList.add(row);
+                preview.addTypedErrorRow(ERR_JOBNUM_NOT_EXIST, row);
             }
         });
-        preview.addTypedErrorAll(ERR_JOBNUM_NOT_EXIST, errorList);
     }
 
     //工号/姓名/工资组 与employee要一致
@@ -220,33 +245,29 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     public void checkUsernameNull(SalaryPreview preview) {
-        List<List<SalaryCell>> errorList = new ArrayList<>();
         preview.getRawTable().forEach(row -> {
             row.forEach(cell -> {
                 if (cell.getColumnIndex() == preview.getNameColumnIndex()) {
                     if (StringUtils.isBlank(cell.getValue())) {
                         setRowErrorFlag(row);
-                        errorList.add(row);
+                        preview.addTypedErrorRow(ERR_USERNAME_NULL, row);
                     }
                 }
             });
         });
-        preview.addTypedErrorAll(ERR_USERNAME_NULL, errorList);
     }
 
     /**
      * 校验工号是否存在空数据
      */
     public void checkJobNumberNull(SalaryPreview preview) {
-        List<List<SalaryCell>> errorList = new ArrayList<>();
         preview.getRawTable().forEach(row -> {
             SalaryCell cell = row.get(0);
             if (StringUtils.isBlank(cell.getJobNumber())) {
                 setRowErrorFlag(row);
-                errorList.add(row);
+                preview.addTypedErrorRow(ERR_JOBNUM_NULL, row);
             }
         });
-        preview.addTypedErrorAll(ERR_JOBNUM_NULL, errorList);
     }
 
     private SalaryCell setRowErrorFlag(List<SalaryCell> row) {
@@ -294,44 +315,74 @@ public class SalaryServiceImpl implements SalaryService {
     @Transactional
     @Override
     public void salaryImport(SalaryMain main, SalaryPreview preview) {
-        //生成工资条
-        List<SalarySlip> slips = new ArrayList<>();
-        for (List<SalaryCell> row : preview.getSlipTable()) {
-            final String jobNumber = row.get(SL_ROW_INFO_IDX).getJobNumber();
-            final String rowId = row.get(SL_ROW_INFO_IDX).getRowId();
-            SalarySlip slip = SalarySlip.create(main, jobNumber, rowId);
-            slip.send();
-            slips.add(slip);
-        }
         //保存
         salaryMainRepository.save(main);
-        preview.getSlipTable().forEach(salaryCellRepository::saveAll);
-        salarySlipRepository.saveAll(slips);
+        //生成工资条
+        for (List<SalaryCell> row : preview.getSlipTable()) {
+            final String jobNumber = row.get(0).getJobNumber();
+            final String name = row.get(0).getName();
+            SalarySlip slip = SalarySlip.create(main, jobNumber);
+            slip.setName(name);
+            slip.setYearMonth(main.getYearMonth());
+            Integer idx = main.getNetPaidColumnIndex() - 1;
+            String netPaid = row.get(idx).getValue();
+            if (netPaid != null) {
+                slip.setNetPaid(new BigDecimal(netPaid));
+            }
+            slip.send();
+            slip = salarySlipRepository.save(slip);
+            for (SalaryCell cell : row) {
+                cell.setSlipId(slip.getId());
+            }
+            salaryCellRepository.saveAll(row);
+
+        }
+
     }
 
     //根据 工资年月/工资组查看导入/发送工资条记录
     @Override
-    public List<SalaryMain> findImportRecordBy(String yearMonth, String group) {
-        final List<SalaryMain> list = salaryMainRepository.findByYearMonthAndGroupNullable(yearMonth, group);
+    public List<SalaryMain> findImportRecordBy(String yearMonth) {
+        final List<SalaryMain> list = salaryMainRepository.findByYearMonthNullable(yearMonth);
         //统计数据
+        list.forEach(m -> {
+            final int sendCount = salarySlipRepository.countByIsSendAndMainId(true, m.getId());
+            m.setSendCount(sendCount);
+            final int readCount = salarySlipRepository.countByIsReadAndMainId(true, m.getId());
+            m.setReadCount(readCount);
+            final int checkCount = salarySlipRepository.countByIsCheckAndMainId(true, m.getId());
+            m.setCheckCount(checkCount);
+            final int feedBackCount = salarySlipRepository.countByIsFeedBackAndMainId(true, m.getId());
+            m.setFeedBackCount(feedBackCount);
 
-        return null;
+        });
+        return list;
 
+    }
+
+    @Override
+    public SalaryMain findSalaryMainById(String id) {
+        return salaryMainRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到上传工资表(id=" + id + ")"));
     }
 
     //根据salaryMain.id查询发送情况
     @Override
     public List<SalarySlip> findSendSlips(String mid) {
-        return salarySlipRepository.findByMainIdOrderByJobNumberAsc(mid);
+        final List<SalarySlip> list = salarySlipRepository.findEntireDataByMainIdOrderByJobNumber(mid);
+        list.forEach(i -> {
+            i.user();
+            i.erase();
+        });
+        return list;
     }
 
     @Transactional
     @Override
     public void deleteSalaryRecord(String mid) {
         try {
-            salaryCellRepository.deleteByMid(mid);
-            salarySlipRepository.deleteByMainId(mid);
-            salaryCellRepository.deleteByMid(mid);
+            salaryCellRepository.deleteAllByMid(mid);
+            salarySlipRepository.deleteAllByMainId(mid);
+            salaryMainRepository.deleteById(mid);
         } catch (Exception e) {
             log.error("删除工资条记录失败!", e);
             throw new BusinessException("删除工资条记录失败!");
@@ -343,6 +394,176 @@ public class SalaryServiceImpl implements SalaryService {
         return employeeRepository.findDistinctGroup();
     }
 
+    @Override
+    public List<UserSlip> findUserSlipListByCurrentYear(String jobNumber) {
+        ValidateUtil.ensurePropertyNotnull(jobNumber, "工号(jobNumber)");
+        final int year = LocalDate.now().getYear();
+        final List<SalarySlip> list = salarySlipRepository.findByJobNumberAndYearMonthContaining(jobNumber, String.valueOf(year));
+        return list.stream().map(UserSlip::createBy).toList();
+    }
 
+
+    @Override
+    public void verifySessionTimeout(HttpSession session) {
+        if (session == null) {
+            log.info("session超时，session is null!");
+            throw new BusinessException("会话超时，请刷新后重新进入");
+        }
+        final LocalDateTime time = (LocalDateTime) session.getAttribute(S_SL_MY);
+        if (time == null) {
+            log.info("session超时，last time is null!");
+            throw new BusinessException("会话超时，请刷新后重新进入");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        long dur = Duration.between(time, now).toMinutes();
+        if (dur > this.sessionTimeout) {
+            log.info("session 超时, 上次进入时间: {}", time);
+            throw new BusinessException("会话超时，请刷新后重新进入");
+        }
+    }
+
+
+    //根据slip id查询一条工资条详情
+    @Override
+    public List<SalaryCell> getSalaryDetail(String slipId, String mainId) {
+        final SalaryMain main = this.findSalaryMainById(mainId);
+        List<SalaryCell> list = salaryCellRepository.findBySlipIdOrderByColumnIndex(slipId);
+        if (!main.isShowEmptyColumn()) {
+            list = formatSalaryDetails(list);
+        }
+        return list;
+    }
+
+    /**
+     * 格式化工资详情，去掉空数据，或者值为0的
+     * @param list 工资数据
+     */
+    private List<SalaryCell> formatSalaryDetails(List<SalaryCell> list) {
+        List<SalaryCell> newList = new ArrayList<>();
+        list.forEach(cell -> {
+            final String value = cell.getValue();
+            final String label = cell.getLabel();
+            if (!"序号".equals(label)) {
+                if (StringUtils.isNotBlank(value)) {
+                    try {
+                        BigDecimal b = new BigDecimal(value);
+                        //是数字不是0
+                        if (b.compareTo(BigDecimal.ZERO) != 0) {
+                            newList.add(cell);
+                        }
+                    } catch (Exception e) {
+                        log.debug("不是数字不能转换 - " + value);
+                        newList.add(cell);
+                    }
+                }
+            }
+
+        });
+        return newList;
+    }
+
+    //重置为初始状态，重置密码
+    @Override
+    public void resetFirst() {
+        final UserView userFromAuthToken = TokenUtil.getUserFromAuthToken();
+        final String jobNumber = userFromAuthToken.getEmpnum();
+        final SalaryEnc enc = findAndCreateSalaryEnc(jobNumber);
+        enc.reset(encrypt(DEFAULT_PWD));
+    }
+
+    @Override
+    public boolean verifyFirst(String jobNumber) {
+        SalaryEnc enc = findAndCreateSalaryEnc(jobNumber);
+        return enc.isFirst();
+    }
+
+    /**
+     * 创建工资密码
+     */
+    private SalaryEnc createSalaryEnc(String jobNumber) {
+        ensureUserExists(jobNumber);
+        return salaryEncRepository.save(SalaryEnc.create(jobNumber));
+    }
+
+    private void ensureUserExists(String jobNumber) {
+        final EmployeeInfo emp = employeeRepository.findByJobNumber(jobNumber);
+        if (emp == null) {
+            throw new BusinessException("《员工信息》中不存在该用户(工号: " + jobNumber + ")，请添加!");
+        }
+        final TUser user = tUserRepository.findByEmpnum(jobNumber);
+        if (user == null) {
+            throw new BusinessException("员工不存在(工号:" + jobNumber + ")!");
+        }
+    }
+
+    /**
+     * 查找enc，没有查到就创建
+     * @param jobNumber 工号
+     */
+    private SalaryEnc findAndCreateSalaryEnc(String jobNumber) {
+        ValidateUtil.ensurePropertyNotnull(jobNumber, "工号(jobNumber)");
+        SalaryEnc enc = salaryEncRepository.findByJobNumber(jobNumber);
+        if (enc == null) {
+            enc = createSalaryEnc(jobNumber);
+        }
+        return enc;
+    }
+
+    @Override
+    public void updateEnc(String pwd, String jobNumber) {
+        final SalaryEnc enc = findAndCreateSalaryEnc(jobNumber);
+        updateAndPersistEnc(enc, pwd);
+    }
+
+    private void updateAndPersistEnc(SalaryEnc enc, String newPwd) {
+        encRule(newPwd);
+        enc.setPwd(encrypt(newPwd));
+        enc.setFirst(false);
+        salaryEncRepository.save(enc);
+    }
+
+
+    @Override
+    public void verifyPwd(String pwd, String jobNumber) {
+        final SalaryEnc enc = findAndCreateSalaryEnc(jobNumber);
+        if (!encrypt(pwd).equals(enc.getPwd())) {
+            throw new BusinessException("密码错误！");
+        }
+    }
+
+    public void verifyPwdForm(PwdForm pwdForm, String jobNumber) {
+//        final ValidationResult r1 = verifyPwd(pwdForm.getPwd1(), jobNumber);
+//        final ValidationResult r2 = verifyConfirmedPwd(pwdForm.getPwd1(), pwdForm.getPwd2());
+    }
+
+    private ValidationResult verifyConfirmedPwd(String pwd1, String pwd2) {
+        if (!pwd1.equals(pwd2)) {
+            ValidationResult.fail("两次输入密码不一致");
+        }
+        return ValidationResult.pass();
+    }
+
+
+    private String encrypt(String pwd) {
+       return DigestUtils.md5Hex(pwd);
+    }
+
+    private void encRule(String pwd) {
+        //1. 6位密码
+        if (StringUtils.isNotBlank(pwd)) {
+            if (pwd.length() != PWD_LEN) {
+                throw new BusinessException("密码长度为6位");
+            }
+        } else {
+            throw new BusinessException("请输入密码");
+        }
+    }
+
+    public Integer getSessionTimeout() {
+        if (this.sessionTimeout == null) {
+            return 5;
+        }
+        return this.sessionTimeout;
+    }
 
 }

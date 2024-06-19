@@ -6,6 +6,7 @@ import com.abt.sys.exception.BusinessException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +24,13 @@ import java.util.UUID;
 @DynamicUpdate
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Table(name = "sl_cell")
+@Table(name = "sl_cell", indexes = {
+        @Index(name = "idx_mid", columnList = "mid"),
+        @Index(name = "idx_emp_num", columnList = "emp_num"),
+        @Index(name = "idx_id", columnList = "sid"),
+        @Index(name = "idx_year_mon", columnList = "year_mon"),
+    }
+)
 public class SalaryCell extends AuditInfo {
     @Id
     @Column(name = "id", nullable = false)
@@ -40,11 +47,12 @@ public class SalaryCell extends AuditInfo {
     @Column(name = "val")
     private String value = "";
 
+
     /**
-     * 行唯一id
+     * 关联slip id
      */
-    @Column(name = "rid", length = 128, nullable = false)
-    private String rowId;
+    @Column(name = "sid", length = 128, nullable = false)
+    private String slipId;
 
     /**
      * 行号：从0开始
@@ -70,12 +78,20 @@ public class SalaryCell extends AuditInfo {
      * 关联用户工号
      */
     @Size(max = 255)
-    @Column(name = "job_num", nullable = false)
+    @Column(name = "emp_num", nullable = false)
     private String jobNumber = "";
 
     @Size(max = 32)
     @Column(name = "name_", columnDefinition = "VARCHAR(32)")
     private String name = "";
+
+    /**
+     * 工资年月: yyyy-MM
+     */
+    @NotNull(message = "工资发放年月不能为空")
+    @Pattern(regexp = "^\\d{4}-(0[1-9]|1[0-2])$", message = "选择工资发放年月必须是yyyy-MM格式")
+    @Column(name="year_mon", columnDefinition = "VARCHAR(32)")
+    private String yearMonth;
 
     /**
      * 数据类型
@@ -127,11 +143,10 @@ public class SalaryCell extends AuditInfo {
         return salaryCell;
     }
 
-    public static SalaryCell createTemp(String columnName, String value, Integer rowIndex, Integer columnIndex, String mid, String jobNumber, String rowId) {
+    public static SalaryCell createTemp(String columnName, String value, Integer rowIndex, Integer columnIndex, String mid, String jobNumber) {
         SalaryCell salaryCell = createTemp(columnName, value, rowIndex, columnIndex);
         salaryCell.setJobNumber(jobNumber);
         salaryCell.setMid(mid);
-        salaryCell.setRowId(rowId);
         return salaryCell;
     }
 
@@ -144,9 +159,7 @@ public class SalaryCell extends AuditInfo {
     }
 
     public static SalaryCell createRowCell(int rowIndex, String jobNumber, String name, String mid) {
-        SalaryCell cell = createEmpty(rowIndex, jobNumber, name, mid);
-        cell.setRowId(UUID.randomUUID().toString());
-        return cell;
+        return createEmpty(rowIndex, jobNumber, name, mid);
     }
 
     public static SalaryCell createEmpty(int rowIndex, String jobNumber, String name, String mid) {

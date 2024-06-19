@@ -10,10 +10,7 @@ public class Constants {
     /**
      * 工资临时数据SESSION key
      */
-    public static final String S_SL_UUID = "SalaryUUID";
-    public static final String S_SL_MAIN = "SalaryMain";
     public static final String S_SL_PREVIEW = "SalaryPreview";
-    public static final String S_SL_FILE = "SalaryFile";
 
     public static final String NETPAID_COLNAME = "本月实发工资";
     public static final String JOBNUMBER_COLNAME = "工号";
@@ -36,6 +33,12 @@ public class Constants {
     public static final int SL_ROW_INFO_IDX = 0;
 
     public static final String SERVICE = "sl_excel";
+
+    public static final String DEFAULT_PWD = "888888";
+
+    public static final int PWD_LEN = 6;
+
+    public static final String S_SL_MY = "mySalary";
 }
 
 

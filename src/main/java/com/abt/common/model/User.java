@@ -40,6 +40,12 @@ public class User implements Serializable {
     private String teamId;
     private String teamName;
 
+    //岗位
+    private String position;
+
+    //employee表唯一id
+    private String employeeId;
+
     public User() {
         super();
     }

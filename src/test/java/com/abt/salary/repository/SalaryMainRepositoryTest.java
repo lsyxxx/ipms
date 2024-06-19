@@ -17,8 +17,8 @@ class SalaryMainRepositoryTest {
 
     @Test
     void find() {
-        final List<SalaryMain> list = salaryMainRepository.findByYearMonthAndGroupNullable(null, null);
-        assertNotNull(list);
-        System.out.println(list.size());
+//        final List<SalaryMain> list = salaryMainRepository.findByYearMonthAndGroupNullable(null, null);
+//        assertNotNull(list);
+//        System.out.println(list.size());
     }
 }

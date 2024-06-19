@@ -80,10 +80,10 @@ public class SecurityConfig {
                 .requestCache((cache) -> cache
                         .requestCache(nullRequestCache))
                 .sessionManagement(session -> {
-                             session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+                             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                              //每个用户最多一个session
-                             session.maximumSessions(1);
-                             session.invalidSessionUrl("/test/sl/session/invalid");
+//                             session.maximumSessions(1);
+//                             session.invalidSessionUrl("/test/sl/session/invalid");
                         }
 
                 )

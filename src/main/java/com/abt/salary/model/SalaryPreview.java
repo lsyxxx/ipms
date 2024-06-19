@@ -4,6 +4,7 @@ package com.abt.salary.model;
 import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.sys.model.entity.SystemFile;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.util.*;
@@ -12,9 +13,9 @@ import java.util.*;
   *  预览工资数据及错误信息
   */
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SalaryPreview {
 
-    private String tempId;
     private String group;
     private String yearMonth;
 
@@ -74,13 +75,13 @@ public class SalaryPreview {
     }
 
     public void addTypedErrorRow(String typeName, List<SalaryCell> row) {
-        final List<List<SalaryCell>> errList = this.typedErrorMap.getOrDefault(typeName, new ArrayList<>());
+        List<List<SalaryCell>> errList = this.typedErrorMap.computeIfAbsent(typeName, k -> new ArrayList<>());
         errList.add(row);
         this.typedErrorMap.put(typeName, errList);
     }
 
     public void addTypedErrorAll(String typeName, List<List<SalaryCell>> rows) {
-        final List<List<SalaryCell>> errList = this.typedErrorMap.getOrDefault(typeName, new ArrayList<>());
+        List<List<SalaryCell>> errList = this.typedErrorMap.computeIfAbsent(typeName, k -> new ArrayList<>());
         errList.addAll(rows);
         this.typedErrorMap.put(typeName, errList);
     }
@@ -90,9 +91,5 @@ public class SalaryPreview {
             SalaryCell cell = SalaryCell.createTemp(v, v, 0, k);
             this.header.add(cell);
         });
-    }
-
-    public void tempId() {
-        this.tempId = UUID.randomUUID().toString();
     }
 }

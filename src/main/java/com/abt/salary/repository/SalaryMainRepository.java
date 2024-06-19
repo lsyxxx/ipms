@@ -11,8 +11,7 @@ public interface SalaryMainRepository extends JpaRepository<SalaryMain, String> 
 
 
     @Query("select m from SalaryMain m " +
-            "where (:yearMonth IS NULL or  m.yearMonth = :yearMonth) " +
-            "and (:group is null or m.group = :group) " +
+            "where (m.yearMonth IS NULL or  m.yearMonth = :yearMonth) " +
             "order by m.createDate desc")
-    List<SalaryMain> findByYearMonthAndGroupNullable(@Param("yearMonth") String yearMonth, @Param("group") String group);
+    List<SalaryMain> findByYearMonthNullable(@Param("yearMonth") String yearMonth);
 }

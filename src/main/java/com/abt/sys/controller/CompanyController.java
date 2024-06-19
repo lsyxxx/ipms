@@ -61,6 +61,7 @@ public class CompanyController {
 
     @PostMapping("/j/add")
     public R<CustomerInfo> addCutomer(@RequestBody CustomerInfo customerForm) {
+        customerForm.setCreateUserId(TokenUtil.getUseridFromAuthToken());
         final CustomerInfo customerInfo = companyService.addCustomer(customerForm);
         return R.success(customerInfo, "添加成功");
     }

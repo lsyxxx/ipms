@@ -52,4 +52,10 @@ public class ValidationResult {
         return this;
     }
 
+    public ValidationResult doFail(String description) {
+        this.setPass(false);
+        this.addParameterResult(description);
+        return this;
+    }
+
 }

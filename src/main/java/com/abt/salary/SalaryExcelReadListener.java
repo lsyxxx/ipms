@@ -26,6 +26,8 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
 
     private String mainId;
 
+    private String yearMonth;
+
     /**
      * 标题行，从0开始
      */
@@ -86,11 +88,14 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
-    public SalaryExcelReadListener(String mainId) {
+    public SalaryExcelReadListener(String mainId, String yearMonth) {
         this.mainId = mainId;
+        this.yearMonth = yearMonth;
         typedErrorMap.put(ERR_JOBNUM_NULL, new ArrayList<>());
     }
 
+    //会读取超过预期的行，比如一整行单元格都有颜色，那么读取该行会认为所有有颜色的单元格
+    //但是读取表头就是正确的
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
         //空行不读取
@@ -98,14 +103,13 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         List<SalaryCell> tableRow = new ArrayList<>();
         String jobNumber = data.getOrDefault(jobNumberColumnIndex - 1, StringUtils.EMPTY);
         String name = data.getOrDefault(nameColumnIndex - 1, StringUtils.EMPTY);
-        SalaryCell rowCell = SalaryCell.createRowCell(rowNum, jobNumber, name, mainId);
-        tableRow.add(SL_ROW_INFO_IDX, rowCell);
-        data.forEach((k, v) -> {
-            int tableIndex = k + 1;
-            SalaryCell cell = SalaryCell.createTemp(mergedHeader.get(tableIndex), v, rowNum, tableIndex, mainId, jobNumber, rowCell.getRowId());
-            tableRow.add(tableIndex, cell);
+        //根据表头读取数据
+        this.mergedHeader.forEach((k, v) -> {
+            SalaryCell cell = SalaryCell.createTemp(v, data.get(k-1), rowNum, k, mainId, jobNumber);
+            cell.setName(name);
+            cell.setYearMonth(yearMonth);
+            tableRow.add(k, cell);
         });
-
         tableList.add(tableRow);
     }
 

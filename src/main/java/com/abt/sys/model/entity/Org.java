@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Nationalized;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "Org")
+@Immutable
 public class Org {
     @Id
     @Column(name = "Id", nullable = false)

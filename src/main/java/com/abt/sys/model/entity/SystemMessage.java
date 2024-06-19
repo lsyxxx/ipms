@@ -17,6 +17,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.Instant;
 
+
+/**
+ * 原有的SystemMessage
+ */
+
 @Getter
 @Setter
 @Entity

@@ -1,25 +1,27 @@
 package com.abt.salary.controller;
 
 import com.abt.common.model.R;
-import com.abt.common.util.FileUtil;
+import com.abt.common.model.ValidationResult;
+import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
+import com.abt.salary.model.PwdForm;
 import com.abt.salary.model.SalaryPreview;
+import com.abt.salary.model.UserSlip;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import lombok.Getter;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static com.abt.salary.Constants.*;
 
@@ -88,19 +90,35 @@ public class SalaryController {
         return R.success("发送成功!");
     }
 
+    /**
+     * 查看上传工资表记录
+     * @param yearMonth 发送年月
+     */
     @GetMapping("/find/main/record")
-    public R<List<SalaryMain>> findImportedSalaryRecordByYearMonth(@RequestParam(required = false) String yearMonth, @RequestParam(required = false) String group) {
-        final List<SalaryMain> list = salaryService.findImportRecordBy(yearMonth, group);
+    public R<List<SalaryMain>> findImportedSalaryRecordByYearMonth(@RequestParam(required = false) String yearMonth) {
+        final List<SalaryMain> list = salaryService.findImportRecordBy(yearMonth);
+        //TODO: 通知
         return R.success(list);
     }
 
+
     /**
      * 查看发送详情
+     * 1. 发送的salarySlip，显示实发工资
      * @param mid 关联id
      */
     @GetMapping("/find/slips")
     public R<List<SalarySlip>> findSendSlip(String mid) {
         final List<SalarySlip> list = salaryService.findSendSlips(mid);
+        return R.success(list);
+    }
+
+    /**
+     * 发送工资条详情
+     */
+    @GetMapping("/find/cells")
+    public R<List<SalaryCell>> findSalaryCellsBySlipId(String slipId, String mid) {
+        final List<SalaryCell> list = salaryService.getSalaryDetail(slipId, mid);
         return R.success(list);
     }
 
@@ -118,6 +136,77 @@ public class SalaryController {
     public R<List<String>> getSalaryGroup() {
         final List<String> list = salaryService.getSalaryGroup();
         return R.success(list);
+    }
+
+    //------------------------------
+    // 我的薪资
+    //------------------------------
+    /**
+     * 进入页面的验证
+     */
+    @GetMapping("/my/entry")
+    public R<Boolean> entry(HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+        session.setAttribute(S_SL_MY, LocalDateTime.now());
+        final String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
+        //首次进入
+        final boolean isFirst = salaryService.verifyFirst(jobNumber);
+        return R.success(isFirst);
+    }
+
+    @GetMapping("/my/find/slip/u")
+    public R<List<UserSlip>> findUserSalaryDetailsYear(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        salaryService.verifySessionTimeout(session);
+        String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
+        final List<UserSlip> list = salaryService.findUserSlipListByCurrentYear(jobNumber);
+        return R.success(list);
+    }
+
+    /**
+     * 重置密码为初始状态
+     */
+    @GetMapping("/pwd/reset")
+    public R<Object> resetFirst() {
+        salaryService.resetFirst();
+        return R.success("已重置");
+    }
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("/my/pwd/update")
+    public R<Object> updateSalaryPwd(@RequestBody PwdForm form) {
+        String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
+        salaryService.verifyPwd(form.getPwd1(), jobNumber);
+//        if (!result.isPass()) {
+//            return R.fail(result.getDescription());
+//        }
+        salaryService.updateEnc(form.getPwd2(), jobNumber);
+        return R.success("修改成功");
+    }
+
+    /**
+     * 初次修改密码
+     */
+    @PostMapping("/my/pwd/first")
+    public R<Object> firstReset(@RequestBody PwdForm form) {
+        final String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
+        final boolean isFirst = salaryService.verifyFirst(jobNumber);
+        if (!isFirst) {
+            throw new BusinessException("请输入旧密码");
+        }
+        salaryService.updateEnc(form.getPwd1(), jobNumber);
+        return R.success("密码已修改");
+    }
+
+    @PostMapping("/my/pwd/verify")
+    public R<Object> verifyPwd(@RequestBody PwdForm form, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        salaryService.verifySessionTimeout(session);
+        String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
+        salaryService.verifyPwd(form.getPwd1(), jobNumber);
+        return R.success("验证成功");
     }
 
     private void copyForm(SalaryMain slipForm, SalaryMain main) {
