@@ -124,6 +124,12 @@ public class SalarySlip extends AuditInfo {
     private String feedBackContent;
 
     /**
+     * 自动确认时间
+     */
+    @Column(name="auto_check_time")
+    private LocalDateTime autoCheckTime;
+
+    /**
      * 异常信息
      */
     @Transient
@@ -148,7 +154,7 @@ public class SalarySlip extends AuditInfo {
      *  擦除关联对象信息。尽量少泄露
      */
     public void erase() {
-        this.employeeInfo = null;
+//        this.employeeInfo = null;
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.abt.salary.controller;
 
 import com.abt.common.model.R;
-import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.salary.entity.SalaryCell;
@@ -14,7 +13,6 @@ import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -179,9 +177,7 @@ public class SalaryController {
     public R<Object> updateSalaryPwd(@RequestBody PwdForm form) {
         String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
         salaryService.verifyPwd(form.getPwd1(), jobNumber);
-//        if (!result.isPass()) {
-//            return R.fail(result.getDescription());
-//        }
+        salaryService.verifyConfirmedPwd(form.getPwd1(), form.getPwd2());
         salaryService.updateEnc(form.getPwd2(), jobNumber);
         return R.success("修改成功");
     }
@@ -208,6 +204,33 @@ public class SalaryController {
         salaryService.verifyPwd(form.getPwd1(), jobNumber);
         return R.success("验证成功");
     }
+
+    @GetMapping("/my/find/slip/u/y")
+    public R<List<UserSlip>> findUserSlipListByYearMonth(String yearMonth) {
+        final List<UserSlip> list = salaryService.findUserSalarySlipByYearMonth(TokenUtil.getUserJobNumberFromAuthToken(), yearMonth);
+        return R.success(list);
+    }
+
+    @GetMapping("/my/read")
+    public R<Object> readSalarySlip(String id) {
+        salaryService.readSalarySlip(id);
+        return R.success("已读");
+    }
+
+    @GetMapping("/my/check")
+    public R<Object> checkSalarySlip(String id) {
+        salaryService.checkSalarySlip(id);
+        return R.success("已确认");
+    }
+
+    @GetMapping("/autocheck")
+    public R<Object> autoCheck(String id) {
+//        salaryService.slipAutoCheck(id);
+//        return R.success("已确认");
+        return null;
+    }
+
+
 
     private void copyForm(SalaryMain slipForm, SalaryMain main) {
         main.setTitle(slipForm.getTitle());

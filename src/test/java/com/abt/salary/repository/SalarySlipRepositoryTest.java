@@ -40,4 +40,16 @@ class SalarySlipRepositoryTest {
             System.out.printf("时间: %s%n", i.getYearMonth());
         });
     }
+
+    @Test
+    void findAllUserUnchecked() {
+        System.out.println("===== findAllUserUnchecked");
+        final List<SalarySlip> list = salarySlipRepository.findAllUnchecked();
+        assertNotNull(list);
+        System.out.println(list.size());
+        list.forEach(i -> {
+            System.out.printf("user: %s%n", i.getName());
+        });
+
+    }
 }

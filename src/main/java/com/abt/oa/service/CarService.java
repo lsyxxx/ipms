@@ -10,7 +10,7 @@ import java.util.List;
  *
  */
 public interface CarService {
-    List<CarApplyRecord> findBy(CarApplyRequestForm requestForm);
+//    List<CarApplyRecord> findBy(CarApplyRequestForm requestForm);
 
-    void writeExcel(List<CarApplyRecord> list) throws IOException;
+//    void writeExcel(List<CarApplyRecord> list) throws IOException;
 }

@@ -2,14 +2,18 @@ package com.abt.salary;
 
 import com.abt.common.model.User;
 import com.abt.salary.entity.SalaryCell;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.enums.CellExtraTypeEnum;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.metadata.CellExtra;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.*;
 
 import static com.abt.salary.Constants.*;
@@ -86,6 +90,11 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     private Map<Integer, Map<Integer, String>> columnMap = new HashMap<>();
 
     /**
+     * 合并单元格
+     */
+    List<CellExtra> extraCellList = new ArrayList<>();
+
+    /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
     public SalaryExcelReadListener(String mainId, String yearMonth) {
@@ -128,14 +137,13 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     /**
      * 合并表头
      * headMap: key=rowIndex(based 1), value = columnIndex(based 1), headerName
-     * 合并规则：
-     * 第一行是标题，忽略
-     * 第二行 至 HEADER_ROW_NUM行：表头，多行是因为可能存在合并单元格情况
-     * 同一列，优先取有值的；若一列存在多个值，则使用行号大的列的值，如2, 3行都有值，那么使用3行的值
-     * 一般同一列多行有值表示同一类别下的多个分类
+     * 第一行：表格标题
+     * 第二行：一级标题
+     * 第三行：二级标题
      */
     private void mergeHeader(Map<Integer, String> currentMap) {
         //存在infoCell,表头一致，信息位
+        System.out.println("=== header map: " + currentMap);
         this.mergedHeader.put(0, "");
         currentMap.forEach((k, v) -> {
             Integer tableIndex = k + 1;
@@ -171,8 +179,10 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     public void extra(CellExtra extra, AnalysisContext context) {
         final Integer firstColumnIndex = extra.getFirstColumnIndex();
         final Integer firstRowIndex = extra.getFirstRowIndex();
-        final String text = extra.getText();
-//        log.info("读取合并单元格数据: [col,row]: [{},{}], text: {}", firstRowIndex, firstColumnIndex, text);
+        final Integer lastRowIndex = extra.getLastRowIndex();
+        final Integer lastColumnIndex = extra.getLastColumnIndex();
+        extraCellList.add(extra);
+        log.info("读取合并单元格数据: First[row, col]: [{},{}], Last[row, col]: [{},{}]", firstRowIndex, firstColumnIndex, lastRowIndex, lastColumnIndex);
     }
 
     /**
@@ -181,5 +191,14 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     @Override
     public void onException(Exception exception, AnalysisContext context) {
         log.error("SalaryExcelReadMapListener - Failed!", exception);
+    }
+
+    public static void main(String[] args) {
+        SalaryExcelReadListener salaryExcelReadListener = new SalaryExcelReadListener("slm1", "2024-06");
+        EasyExcel.read(new File("C:\\Users\\Administrator\\Desktop\\salary_test.xlsx"), salaryExcelReadListener)
+                .excelType(ExcelTypeEnum.XLSX)
+                .headRowNumber(SalaryExcelReadListener.DATA_START_IDX)
+                //sheetNo从0开始
+                .extraRead(CellExtraTypeEnum.MERGE).sheet(0).doRead();
     }
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,9 @@ public class UserSlip {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ssd")
     private LocalDateTime sendTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ssd")
+    private LocalDateTime autoCheckTime;
 
     public static UserSlip createBy(SalarySlip salarySlip) {
         UserSlip us = new UserSlip();
@@ -51,6 +55,7 @@ public class UserSlip {
         us.setCheck(salarySlip.isCheck());
         us.setCheckTime(salarySlip.getCheckTime());
         us.setSendTime(salarySlip.getSendTime());
+        us.setAutoCheckTime(salarySlip.getAutoCheckTime());
         return us;
     }
 }

@@ -3,6 +3,7 @@ package com.abt.common.util;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 
@@ -89,6 +90,13 @@ public class TimeUtil {
     public static LocalDate startDayOfCurrentYear() {
         LocalDate today = LocalDate.now();
         return LocalDate.of(today.getYear(), 1, 1);
+    }
+
+    /**
+     * 比较2个时间在分钟级别是否先沟通
+     */
+    public static boolean compareWithMin(LocalDateTime t1, LocalDateTime t2) {
+        return ChronoUnit.MINUTES.between(t1, t2) == 0;
     }
 
 

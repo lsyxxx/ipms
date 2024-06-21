@@ -32,7 +32,7 @@ public class ReimburseProcessEndListener implements ExecutionListener {
 
 
     @Override
-    public void notify(DelegateExecution execution) throws Exception {
+    public void notify(DelegateExecution execution) {
         log.info("报销业务流程结束 -- 流程id: {}", execution.getProcessInstanceId());
         Object obj = execution.getVariable(Constants.VAR_KEY_ENTITY);
         String entityId = "";
@@ -51,21 +51,25 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             reimburseService.saveEntity(rbs);
             //抄送:
             String copyStr = rbs.getCopy();
-            System.out.println("==== copy: " + copyStr);
-            String[] ids = copyStr.split(",");
-            for(String userid : ids) {
-                String content = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
+            if (copyStr != null) {
+                System.out.println("==== copy: " + copyStr);
+                String[] ids = copyStr.split(",");
+                for(String userid : ids) {
+                    String content = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
 //                systemMessageService.sendMessage(NotifyMessage.systemMessage(userid, reimburseService.notifyLink(entityId), msg ));
-                //TODO
-                String name = "";
-                if (userid != null) {
-                    final User user = userService.getSimpleUserInfo(userid);
-                    name = user.getUsername();
+                    //TODO
+                    String name = "";
+                    if (userid != null) {
+                        final User user = userService.getSimpleUserInfo(userid);
+                        name = user.getUsername();
+                    }
+                    SystemMessage msg = systemMessageService.createDefaultCopyMessage(userid, name, reimburseService.notifyLink(entityId), content);
+                    systemMessageService.sendMessage(msg);
+                    System.out.println("===== SysMsg: " + msg.toString());
                 }
-                SystemMessage msg = systemMessageService.createDefaultCopyMessage(userid, name, reimburseService.notifyLink(entityId), content);
-                systemMessageService.sendMessage(msg);
-                System.out.println("===== SysMsg: " + msg.toString());
             }
+
+
         }
 
 

@@ -20,11 +20,8 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
     @Query("select new com.abt.sys.model.entity.EmployeeInfo(e, u.id) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where e.isExit = :isExit")
     List<EmployeeInfo> findByIsExit(boolean isExit);
 
-    /**
-     * 查询启动工资的人
-     */
-    @Query("select e from EmployeeInfo e where e.isActive = '1'")
-    List<EmployeeInfo> findAllSalaryEnabled();
+//    @Query("select e from EmployeeInfo e where e.isActive = '1'")
+//    List<EmployeeInfo> findAllSalaryEnabled();
 
     @Query("select new com.abt.sys.model.entity.EmployeeInfo(e, u.id) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where u.id = :userid")
     List<EmployeeInfo> findAllByUserid(String userid);

@@ -16,12 +16,12 @@ import java.time.LocalDateTime;
 /**
  * 只读
  */
-@Getter
-@Setter
-@Entity
-@Table(name = "T_card_apply")
-@NoArgsConstructor
-@Immutable
+//@Getter
+//@Setter
+//@Entity
+//@Table(name = "T_card_apply")
+//@NoArgsConstructor
+//@Immutable
 public class CarApplyRecord {
 
     /**
@@ -188,7 +188,7 @@ public class CarApplyRecord {
                 ", peer='" + peer + '\'' +
                 ", applyUserID='" + applyUserID + '\'' +
                 ", id='" + id + '\'' +
-                ", carNo='" + this.getCarInfo().getCarNo() + '\'' +
+//                ", carNo='" + this.getCarInfo().getCarNo() + '\'' +
                 '}';
     }
 }

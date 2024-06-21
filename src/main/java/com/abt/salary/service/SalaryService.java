@@ -60,4 +60,28 @@ public interface SalaryService {
     void updateEnc(String pwd, String jobNumber);
 
     void verifyPwd(String pwd, String jobNumber);
+
+    void verifyConfirmedPwd(String pwd1, String pwd2);
+
+    //根据年月查询UserSlip
+    List<UserSlip> findUserSalarySlipByYearMonth(String jobNumber, String yearMonth);
+
+    void readSalarySlip(String slipId);
+
+    //工资条确认
+    void checkSalarySlip(String slipId);
+
+    /**
+     *  自动确认
+     */
+    void slipAutoCheck(String slipId);
+
+    /**
+     * 查询所有未确认的（手动未确认和自动未确认）
+     */
+    List<SalarySlip> findSalarySlipUnchecked();
+
+    void getSlipAutoCheckTime(SalarySlip slip);
+
+    void saveAllSlip(List<SalarySlip> list);
 }

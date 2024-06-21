@@ -1,6 +1,5 @@
 package com.abt.salary.service.impl;
 
-import com.abt.common.model.ValidationResult;
 import com.abt.common.util.FileUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
@@ -9,7 +8,6 @@ import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.entity.SalaryEnc;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
-import com.abt.salary.model.PwdForm;
 import com.abt.salary.model.SalaryPreview;
 import com.abt.salary.model.UserSlip;
 import com.abt.salary.repository.SalaryCellRepository;
@@ -68,6 +66,12 @@ public class SalaryServiceImpl implements SalaryService {
     @Value("${sl.my.session.timeout}")
     private Integer sessionTimeout;
 
+    /**
+     * 自动确认天数
+     */
+    @Value("${sl.my.autocheck}")
+    private Integer defaultAutoCheck;
+
     public SalaryServiceImpl(EmployeeRepository employeeRepository, SalaryMainRepository salaryMainRepository,
                              SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository) {
         this.employeeRepository = employeeRepository;
@@ -122,7 +126,7 @@ public class SalaryServiceImpl implements SalaryService {
         }
         //严重错误直接抛出，否则后续可能存在问题
         if (!preview.hasFatalError()) {
-            log.info("==== 存在严重错误! {}",  preview.getFatalError());
+            log.info("==== FATAL ERROR! {}",  preview.getFatalError());
             return preview;
         }
 
@@ -136,7 +140,7 @@ public class SalaryServiceImpl implements SalaryService {
         //2. 工号和姓名是否对应（工号作为key，校验姓名）
         //3. 是否有重复人员(工号重复)
         //4. excel中是否存在离职员工
-        final List<EmployeeInfo> employees = employeeRepository.findAll();
+        final List<EmployeeInfo> employees = employeeRepository.findAllWithDept();
         checkJobNumberNull(preview);
         checkUsernameNull(preview);
         checkUserContains(preview, employees);
@@ -149,7 +153,7 @@ public class SalaryServiceImpl implements SalaryService {
 
         //整合数据
         preview.setSlipTable(this.buildSlipTable(preview.getRawTable()));
-        log.info("===== 抽取数据及校验完成=======");
+        log.info("===== extractAndValidate DONE =======");
         return preview;
     }
 
@@ -329,7 +333,9 @@ public class SalaryServiceImpl implements SalaryService {
             if (netPaid != null) {
                 slip.setNetPaid(new BigDecimal(netPaid));
             }
+            //自动确认时间
             slip.send();
+            this.getSlipAutoCheckTime(slip);
             slip = salarySlipRepository.save(slip);
             for (SalaryCell cell : row) {
                 cell.setSlipId(slip.getId());
@@ -354,7 +360,6 @@ public class SalaryServiceImpl implements SalaryService {
             m.setCheckCount(checkCount);
             final int feedBackCount = salarySlipRepository.countByIsFeedBackAndMainId(true, m.getId());
             m.setFeedBackCount(feedBackCount);
-
         });
         return list;
 
@@ -531,16 +536,11 @@ public class SalaryServiceImpl implements SalaryService {
         }
     }
 
-    public void verifyPwdForm(PwdForm pwdForm, String jobNumber) {
-//        final ValidationResult r1 = verifyPwd(pwdForm.getPwd1(), jobNumber);
-//        final ValidationResult r2 = verifyConfirmedPwd(pwdForm.getPwd1(), pwdForm.getPwd2());
-    }
-
-    private ValidationResult verifyConfirmedPwd(String pwd1, String pwd2) {
+    @Override
+    public void verifyConfirmedPwd(String pwd1, String pwd2) {
         if (!pwd1.equals(pwd2)) {
-            ValidationResult.fail("两次输入密码不一致");
+            throw new BusinessException("两次输入密码不一致");
         }
-        return ValidationResult.pass();
     }
 
 
@@ -565,5 +565,69 @@ public class SalaryServiceImpl implements SalaryService {
         }
         return this.sessionTimeout;
     }
+
+    //根据年月查询
+    @Override
+    public List<UserSlip> findUserSalarySlipByYearMonth(String jobNumber, String yearMonth) {
+        final List<SalarySlip> list = salarySlipRepository.findByJobNumberAndYearMonth(jobNumber, yearMonth);
+        return list.stream().map(UserSlip::createBy).toList();
+    }
+
+
+    @Override
+    public void readSalarySlip(String slipId) {
+        final SalarySlip salarySlip = findSalarySlipEntityById(slipId);
+        //只记录第一次的
+        if (!salarySlip.isRead()) {
+            salarySlip.read();
+            salarySlipRepository.save(salarySlip);
+        }
+    }
+
+    //工资条确认
+    @Override
+    public void checkSalarySlip(String slipId) {
+        final SalarySlip salarySlip = findSalarySlipEntityById(slipId);
+        salarySlip.check();
+        salarySlipRepository.save(salarySlip);
+    }
+
+    private SalarySlip findSalarySlipEntityById(String id) {
+       return salarySlipRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到工资条(id=" + id + ")"));
+    }
+
+    //自动确认
+    @Override
+    public void slipAutoCheck(String slipId) {
+        final SalarySlip slip = findSalarySlipEntityById(slipId);
+//        getSlipAutoCheckTime(slip);
+        salarySlipRepository.save(slip);
+    }
+
+    @Override
+    public List<SalarySlip> findSalarySlipUnchecked() {
+       return salarySlipRepository.findAllUnchecked();
+    }
+
+    @Override
+    public void getSlipAutoCheckTime(SalarySlip slip) {
+        final LocalDateTime sendTime = slip.getSendTime();
+        final LocalDateTime autoCheckTime = sendTime.plusDays(getDefaultAutoCheck());
+        slip.setAutoCheckTime(autoCheckTime);
+    }
+
+    @Override
+    public void saveAllSlip(List<SalarySlip> list) {
+        salarySlipRepository.saveAllAndFlush(list);
+    }
+
+
+    public Integer getDefaultAutoCheck() {
+        if (this.defaultAutoCheck == null) {
+            this.defaultAutoCheck = 3;
+        }
+        return this.defaultAutoCheck;
+    }
+
 
 }
