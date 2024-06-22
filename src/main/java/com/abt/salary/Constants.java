@@ -36,7 +36,7 @@ public class Constants {
 
     public static final String DEFAULT_PWD = "888888";
 
-    public static final int PWD_LEN = 6;
+    public static final int PWD_LEN = 8;
 
     public static final String S_SL_MY = "mySalary";
 }

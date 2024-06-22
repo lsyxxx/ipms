@@ -1,26 +1,28 @@
 package com.abt.salary.model;
 
-import com.abt.salary.entity.SalaryCell;
-import com.abt.salary.entity.SalaryMain;
-import com.abt.salary.entity.SalarySlip;
 import lombok.Data;
 
 import java.util.List;
 
 /**
- * 详情
+ * 工资条详情
  */
 @Data
 public class SalaryDetail {
 
     /**
-     * 工资条
+     * 标题
      */
-    private SalarySlip slip;
+    private String label = "";
 
-    private SalaryMain main;
+    /**
+     * 对应值
+     */
+    private String value = "";
 
-    private List<SalaryCell> salaryDetails;
-
+    /**
+     * 子节点
+     */
+    private List<SalaryDetail> children;
 
 }

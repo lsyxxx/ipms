@@ -36,6 +36,10 @@ public class SalaryCell extends AuditInfo {
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    //父标题
+    @Transient
+    private String parentLabel;
     /**
      * 列名
      */

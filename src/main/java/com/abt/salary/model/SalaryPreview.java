@@ -2,6 +2,7 @@ package com.abt.salary.model;
 
 
 import com.abt.salary.entity.SalaryCell;
+import com.abt.salary.entity.SalaryHeader;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.sys.model.entity.SystemFile;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,6 +12,7 @@ import java.util.*;
 
 /**
   *  预览工资数据及错误信息
+  *  表头统一用SalaryHeader
   */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -42,8 +44,11 @@ public class SalaryPreview {
     /**
      * 表头数据
      */
-    private List<SalaryCell> header = new ArrayList<>();
-    private Map<Integer, String> headerMap = new HashMap<>();
+//    private List<SalaryCell> header = new ArrayList<>();
+    //表头数据
+    private List<SalaryHeader> header = new ArrayList<>();
+
+    private Map<Integer, String> mergedHeader = new HashMap<>();
 
     /**
      * 严重错误，不允许进行下一步的
@@ -86,10 +91,25 @@ public class SalaryPreview {
         this.typedErrorMap.put(typeName, errList);
     }
 
-    public void buildHeader() {
-        this.headerMap.forEach((k, v) -> {
-            SalaryCell cell = SalaryCell.createTemp(v, v, 0, k);
-            this.header.add(cell);
+//    public void buildHeader() {
+//        this.mergedHeader.forEach((k, v) -> {
+//            SalaryCell cell = SalaryCell.createTemp(v, v, 0, k);
+//            this.header.add(cell);
+//        });
+//    }
+
+    //生成sl_header
+    public void buildHeader(Map<Integer, Map<Integer, String>> rawHeader, String mid) {
+        this.header = new ArrayList<>();
+        rawHeader.forEach((r, row) -> {
+            row.forEach((c, cell) -> {
+                SalaryHeader header = new SalaryHeader();
+                header.setMid(mid);
+                header.setName(cell);
+                this.header.add(header);
+            });
         });
+
     }
+
 }

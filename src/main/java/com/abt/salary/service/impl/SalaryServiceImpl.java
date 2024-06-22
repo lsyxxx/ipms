@@ -4,16 +4,11 @@ import com.abt.common.util.FileUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.salary.SalaryExcelReadListener;
-import com.abt.salary.entity.SalaryCell;
-import com.abt.salary.entity.SalaryEnc;
-import com.abt.salary.entity.SalaryMain;
-import com.abt.salary.entity.SalarySlip;
+import com.abt.salary.entity.*;
+import com.abt.salary.model.SalaryDetail;
 import com.abt.salary.model.SalaryPreview;
 import com.abt.salary.model.UserSlip;
-import com.abt.salary.repository.SalaryCellRepository;
-import com.abt.salary.repository.SalaryEncRepository;
-import com.abt.salary.repository.SalaryMainRepository;
-import com.abt.salary.repository.SalarySlipRepository;
+import com.abt.salary.repository.*;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
@@ -56,6 +51,7 @@ public class SalaryServiceImpl implements SalaryService {
     private final SalarySlipRepository salarySlipRepository;
     private final SalaryEncRepository salaryEncRepository;
     private final TUserRepository tUserRepository;
+    private final SalaryHeaderRepository salaryHeaderRepository;
 
     @Value("${com.abt.file.upload.save}")
     private String fileRoot;
@@ -73,13 +69,14 @@ public class SalaryServiceImpl implements SalaryService {
     private Integer defaultAutoCheck;
 
     public SalaryServiceImpl(EmployeeRepository employeeRepository, SalaryMainRepository salaryMainRepository,
-                             SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository) {
+                             SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository, SalaryHeaderRepository salaryHeaderRepository) {
         this.employeeRepository = employeeRepository;
         this.salaryMainRepository = salaryMainRepository;
         this.salaryCellRepository = salaryCellRepository;
         this.salarySlipRepository = salarySlipRepository;
         this.salaryEncRepository = salaryEncRepository;
         this.tUserRepository = tUserRepository;
+        this.salaryHeaderRepository = salaryHeaderRepository;
     }
 
     @Override
@@ -167,11 +164,11 @@ public class SalaryServiceImpl implements SalaryService {
             return preview;
         }
         preview.setRawTable(listener.getTableList());
-        preview.setHeaderMap(listener.getMergedHeader());
+        preview.setMergedHeader(listener.getMergedHeader());
         preview.setNameColumnIndex(listener.getNameColumnIndex());
         preview.setNetPaidColumnIndex(listener.getNetPaidColumnIndex());
         preview.setJobNumberColumnIndex(listener.getJobNumberColumnIndex());
-        preview.buildHeader();
+        preview.buildHeader(listener.getRawHeader(), main.getId());
         return preview;
     }
 
@@ -193,10 +190,8 @@ public class SalaryServiceImpl implements SalaryService {
         preview.getRawTable().forEach(row -> {
             SalaryCell jobNumCell = row.get(preview.getJobNumberColumnIndex());
             String jobNumber = jobNumCell.getValue();
-//            final boolean match = employees.stream().anyMatch(employee -> employee.getJobNumber().equals(jobNumber) && employee.isExit());
             final Optional<EmployeeInfo> emp = employees.stream().filter(i -> i.getJobNumber().equals(jobNumber) && (i.isExit() || i.salaryDisabled())).findAny();
             if (emp.isPresent()) {
-                System.out.println("离职/未启用员工: " + jobNumber);
                 setRowErrorFlag(row);
                 preview.addTypedErrorRow(ERR_USER_EXIT, row);
             }
@@ -321,6 +316,7 @@ public class SalaryServiceImpl implements SalaryService {
     public void salaryImport(SalaryMain main, SalaryPreview preview) {
         //保存
         salaryMainRepository.save(main);
+
         //生成工资条
         for (List<SalaryCell> row : preview.getSlipTable()) {
             final String jobNumber = row.get(0).getJobNumber();
@@ -387,6 +383,7 @@ public class SalaryServiceImpl implements SalaryService {
         try {
             salaryCellRepository.deleteAllByMid(mid);
             salarySlipRepository.deleteAllByMainId(mid);
+            salaryHeaderRepository.deleteByMid(mid);
             salaryMainRepository.deleteById(mid);
         } catch (Exception e) {
             log.error("删除工资条记录失败!", e);
@@ -433,6 +430,11 @@ public class SalaryServiceImpl implements SalaryService {
     public List<SalaryCell> getSalaryDetail(String slipId, String mainId) {
         final SalaryMain main = this.findSalaryMainById(mainId);
         List<SalaryCell> list = salaryCellRepository.findBySlipIdOrderByColumnIndex(slipId);
+        final List<SalaryHeader> header = salaryHeaderRepository.findByMid(mainId);
+        //TODO: 组装
+        List<SalaryDetail> details = new ArrayList<>();
+
+
         if (!main.isShowEmptyColumn()) {
             list = formatSalaryDetails(list);
         }
@@ -549,10 +551,10 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     private void encRule(String pwd) {
-        //1. 6位密码
+        //1. 密码位数
         if (StringUtils.isNotBlank(pwd)) {
             if (pwd.length() != PWD_LEN) {
-                throw new BusinessException("密码长度为6位");
+                throw new BusinessException("密码长度为8位");
             }
         } else {
             throw new BusinessException("请输入密码");
@@ -628,6 +630,5 @@ public class SalaryServiceImpl implements SalaryService {
         }
         return this.defaultAutoCheck;
     }
-
 
 }

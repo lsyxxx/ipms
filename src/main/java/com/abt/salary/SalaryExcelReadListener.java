@@ -2,6 +2,7 @@ package com.abt.salary;
 
 import com.abt.common.model.User;
 import com.abt.salary.entity.SalaryCell;
+import com.abt.salary.model.SalaryDetail;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.enums.CellExtraTypeEnum;
@@ -70,8 +71,10 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
 
 
     /**
-     * 组装好的header,
-     * key: 列号， value：列名
+     * 组装好的header, 将所有标题合并为一行。key: 列号， value：列名
+     * 合并规则：
+     * 1.使用有值的
+     * 2. 同一列，不同行都有值，使用最后一行的，如1，2，3行都有值，那么使用第三行的数据
      */
     Map<Integer, String> mergedHeader = new HashMap<>();
     /**
@@ -94,6 +97,9 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      */
     List<CellExtra> extraCellList = new ArrayList<>();
 
+    //表格所有原始数据，包含title
+    Map<Integer, Map<Integer, String>> rawTable = new HashMap<>();
+
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
@@ -109,6 +115,7 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
         //空行不读取
         int rowNum = analysisContext.readRowHolder().getRowIndex();
+        rawTable.put(rowNum, data);
         List<SalaryCell> tableRow = new ArrayList<>();
         String jobNumber = data.getOrDefault(jobNumberColumnIndex - 1, StringUtils.EMPTY);
         String name = data.getOrDefault(nameColumnIndex - 1, StringUtils.EMPTY);
@@ -124,13 +131,17 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
-        log.info("所有数据解析完成！");
+        log.info("doAfterAllAnalysed...");
+        this.extraCellList.forEach(i -> divideAndFulfilMergedCell(i, this.rawTable));
     }
 
+    //先读取表头再读取合并单元格
     @Override
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
+        System.out.println("invokeHeadMap");
         final Integer rowIndex = context.readRowHolder().getRowIndex();
         rawHeader.put(rowIndex, headMap);
+        rawTable.put(rowIndex, headMap);
         this.mergeHeader(headMap);
     }
 
@@ -143,7 +154,6 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      */
     private void mergeHeader(Map<Integer, String> currentMap) {
         //存在infoCell,表头一致，信息位
-        System.out.println("=== header map: " + currentMap);
         this.mergedHeader.put(0, "");
         currentMap.forEach((k, v) -> {
             Integer tableIndex = k + 1;
@@ -193,6 +203,24 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         log.error("SalaryExcelReadMapListener - Failed!", exception);
     }
 
+    /**
+     * 拆分和填充合并单元格
+     */
+    private void divideAndFulfilMergedCell(CellExtra extra, Map<Integer, Map<Integer, String>> rawTable) {
+        final Integer firstColumnIndex = extra.getFirstColumnIndex();
+        final Integer firstRowIndex = extra.getFirstRowIndex();
+        final Integer lastRowIndex = extra.getLastRowIndex();
+        final Integer lastColumnIndex = extra.getLastColumnIndex();
+        //填充值，(firstRowIndex, firstColumnIndex)
+        String cellValue = rawTable.get(firstRowIndex).get(firstColumnIndex);
+        cellValue = cellValue.replaceAll("\\s+", "");
+        for (int r = firstRowIndex; r <= lastRowIndex; r++) {
+            for (int c = firstColumnIndex; c <= lastColumnIndex; c++) {
+                rawTable.get(r).put(c, cellValue);
+            }
+        }
+    }
+
     public static void main(String[] args) {
         SalaryExcelReadListener salaryExcelReadListener = new SalaryExcelReadListener("slm1", "2024-06");
         EasyExcel.read(new File("C:\\Users\\Administrator\\Desktop\\salary_test.xlsx"), salaryExcelReadListener)
@@ -200,5 +228,7 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
                 .headRowNumber(SalaryExcelReadListener.DATA_START_IDX)
                 //sheetNo从0开始
                 .extraRead(CellExtraTypeEnum.MERGE).sheet(0).doRead();
+        System.out.println(salaryExcelReadListener.getRawHeader());
+
     }
 }
