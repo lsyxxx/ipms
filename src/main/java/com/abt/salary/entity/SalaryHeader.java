@@ -18,7 +18,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "sl_header", indexes = {
         @Index(name = "idx_mid", columnList = "mid"),
-        @Index(name = "idx_mid_row", columnList = "mid,row"),
 })
 @NoArgsConstructor
 @AllArgsConstructor
@@ -51,10 +50,10 @@ public class SalaryHeader {
     private int startColumn;
 
     //结束单元格(如果是合并的）
-    @Column(name = "end_row")
-    private int endRow;
-    @Column(name="end_col")
-    private int endColumn;
+//    @Column(name = "end_row")
+//    private int endRow;
+//    @Column(name="end_col")
+//    private int endColumn;
 
 
 

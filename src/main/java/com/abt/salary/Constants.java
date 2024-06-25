@@ -1,5 +1,7 @@
 package com.abt.salary;
 
+import org.hibernate.validator.internal.engine.PredefinedScopeValidatorFactoryImpl;
+
 /**
  *
  */
@@ -31,6 +33,12 @@ public class Constants {
     public static final String ERR_USER_EXIT = "存在离职员工";
 
     public static final int SL_ROW_INFO_IDX = 0;
+
+    //一级标题
+    public static final int SL_ROW_L1_IDX = 1;
+    //二级标题
+    public static final int SL_ROW_L2_IDX = 2;
+
 
     public static final String SERVICE = "sl_excel";
 

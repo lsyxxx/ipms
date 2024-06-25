@@ -5,8 +5,9 @@ import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.salary.SalaryExcelReadListener;
 import com.abt.salary.entity.*;
-import com.abt.salary.model.SalaryDetail;
+import com.abt.salary.model.PwdForm;
 import com.abt.salary.model.SalaryPreview;
+import com.abt.salary.model.UserSalaryDetail;
 import com.abt.salary.model.UserSlip;
 import com.abt.salary.repository.*;
 import com.abt.salary.service.SalaryService;
@@ -35,6 +36,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.abt.salary.Constants.*;
 
@@ -98,12 +100,12 @@ public class SalaryServiceImpl implements SalaryService {
                 .headRowNumber(SalaryExcelReadListener.DATA_START_IDX)
                 //sheetNo从0开始
                 .extraRead(CellExtraTypeEnum.MERGE).sheet(salaryMain.getSheetNo()).doRead();
-        salaryMain.setNetPaidColumnIndex(listener.getNetPaidColumnIndex());
-        salaryMain.setJobNumberColumnIndex(listener.getJobNumberColumnIndex());
-        salaryMain.setName(listener.getNameColumnIndex());
+        salaryMain.setNetPaidColumnIndex(listener.getNetPaidRawColumnIndex());
+        salaryMain.setJobNumberColumnIndex(listener.getJobNumberRawColumnIndex());
+        salaryMain.setName(listener.getNameRawColumnIndex());
 
-        final int jobNumberColumnIndex = listener.getJobNumberColumnIndex();
-        final int netPaidColumnIndex = listener.getNetPaidColumnIndex();
+        final int jobNumberColumnIndex = listener.getJobNumberRawColumnIndex();
+        final int netPaidColumnIndex = listener.getNetPaidRawColumnIndex();
         log.info("=== jobNumberColumnIndex {} =======", jobNumberColumnIndex);
         log.info("=== netPaidColumnIndex {} =======", netPaidColumnIndex);
 
@@ -127,9 +129,9 @@ public class SalaryServiceImpl implements SalaryService {
             return preview;
         }
 
-        preview.setJobNumberColumnIndex(listener.getJobNumberColumnIndex());
-        preview.setNetPaidColumnIndex(listener.getNetPaidColumnIndex());
-        preview.setNameColumnIndex(listener.getNameColumnIndex());
+        preview.setJobNumberColumnIndex(listener.getJobNumberRawColumnIndex());
+        preview.setNetPaidColumnIndex(listener.getNetPaidRawColumnIndex());
+        preview.setNameColumnIndex(listener.getNameRawColumnIndex());
 
         //-- 校验人员信息:目的是保证工资条正确发放
         //0. 所有人员工号是否都存在
@@ -165,9 +167,9 @@ public class SalaryServiceImpl implements SalaryService {
         }
         preview.setRawTable(listener.getTableList());
         preview.setMergedHeader(listener.getMergedHeader());
-        preview.setNameColumnIndex(listener.getNameColumnIndex());
-        preview.setNetPaidColumnIndex(listener.getNetPaidColumnIndex());
-        preview.setJobNumberColumnIndex(listener.getJobNumberColumnIndex());
+        preview.setNameColumnIndex(listener.getNameRawColumnIndex());
+        preview.setNetPaidColumnIndex(listener.getNetPaidRawColumnIndex());
+        preview.setJobNumberColumnIndex(listener.getJobNumberRawColumnIndex());
         preview.buildHeader(listener.getRawHeader(), main.getId());
         return preview;
     }
@@ -289,7 +291,6 @@ public class SalaryServiceImpl implements SalaryService {
             List<SalaryCell> newRow = new ArrayList<>(row);
             SalaryCell infoCell = getRowInfoCell(newRow);
             if (!infoCell.isRowError()) {
-                newRow.remove(SL_ROW_INFO_IDX);
                 slipTable.add(newRow);
             }
         });
@@ -316,6 +317,7 @@ public class SalaryServiceImpl implements SalaryService {
     public void salaryImport(SalaryMain main, SalaryPreview preview) {
         //保存
         salaryMainRepository.save(main);
+        salaryHeaderRepository.saveAll(preview.getHeader());
 
         //生成工资条
         for (List<SalaryCell> row : preview.getSlipTable()) {
@@ -324,7 +326,7 @@ public class SalaryServiceImpl implements SalaryService {
             SalarySlip slip = SalarySlip.create(main, jobNumber);
             slip.setName(name);
             slip.setYearMonth(main.getYearMonth());
-            Integer idx = main.getNetPaidColumnIndex() - 1;
+            Integer idx = main.getNetPaidColumnIndex();
             String netPaid = row.get(idx).getValue();
             if (netPaid != null) {
                 slip.setNetPaid(new BigDecimal(netPaid));
@@ -337,7 +339,6 @@ public class SalaryServiceImpl implements SalaryService {
                 cell.setSlipId(slip.getId());
             }
             salaryCellRepository.saveAll(row);
-
         }
 
     }
@@ -427,18 +428,36 @@ public class SalaryServiceImpl implements SalaryService {
 
     //根据slip id查询一条工资条详情
     @Override
-    public List<SalaryCell> getSalaryDetail(String slipId, String mainId) {
+    public List<UserSalaryDetail> getSalaryDetail(String slipId, String mainId) {
         final SalaryMain main = this.findSalaryMainById(mainId);
-        List<SalaryCell> list = salaryCellRepository.findBySlipIdOrderByColumnIndex(slipId);
-        final List<SalaryHeader> header = salaryHeaderRepository.findByMid(mainId);
-        //TODO: 组装
-        List<SalaryDetail> details = new ArrayList<>();
-
-
+        List<SalaryCell> list = salaryCellRepository.findBySlipIdAndValueIsNotNullOrderByColumnIndexAsc(slipId);
         if (!main.isShowEmptyColumn()) {
             list = formatSalaryDetails(list);
         }
-        return list;
+        //组装成UserSalaryDetail
+        List<UserSalaryDetail> userSalaryDetails = new ArrayList<>();
+        final Map<String, List<SalaryCell>> map = list.stream().collect(Collectors.groupingBy(SalaryCell::getParentLabel, Collectors.toList()));
+        map.forEach((k, v) -> {
+            UserSalaryDetail us = new UserSalaryDetail();
+            us.setLabel(k);
+            if (v != null && !v.isEmpty()) {
+                us.setChildren(new ArrayList<>());
+                v.forEach(cell -> {
+                    UserSalaryDetail child = new UserSalaryDetail();
+                    child.setValue(cell.getValue());
+                    child.setLabel(cell.getLabel());
+                    child.setColumnIndex(cell.getColumnIndex());
+                    //给父节点赋值，方便排序，是哪个cell col index不重要。
+                    us.setColumnIndex(cell.getColumnIndex());
+                    us.addChild(child);
+                });
+                //对child排序
+                us.getChildren().sort(Comparator.comparingInt(UserSalaryDetail::getColumnIndex));
+            }
+            userSalaryDetails.add(us);
+        });
+        userSalaryDetails.sort(Comparator.comparing(UserSalaryDetail::getColumnIndex));
+        return userSalaryDetails;
     }
 
     /**
@@ -503,6 +522,15 @@ public class SalaryServiceImpl implements SalaryService {
         }
     }
 
+    @Override
+    public void updateEncNotFirst(PwdForm form, String jobNumber) {
+        final SalaryEnc enc = this.findAndCreateSalaryEnc(jobNumber);
+        verifyLastPwd(form.getPwd1(), enc);
+        verifyPwd(form.getOldPwd(), jobNumber);
+        verifyConfirmedPwd(form.getPwd1(), form.getPwd2());
+        updateAndPersistEnc(enc, form.getPwd1());
+    }
+
     /**
      * 查找enc，没有查到就创建
      * @param jobNumber 工号
@@ -529,22 +557,30 @@ public class SalaryServiceImpl implements SalaryService {
         salaryEncRepository.save(enc);
     }
 
+    public void verifyLastPwd(String newPwd, SalaryEnc enc) {
+        final String encrypt = this.encrypt(newPwd);
+        if (enc.getPwd().equals(encrypt)) {
+            throw new BusinessException("新旧密码不能相同！");
+        }
+    }
 
     @Override
     public void verifyPwd(String pwd, String jobNumber) {
-        final SalaryEnc enc = findAndCreateSalaryEnc(jobNumber);
+        final SalaryEnc enc = this.findAndCreateSalaryEnc(jobNumber);
+        doVerifyPwd(pwd, enc);
+    }
+
+    public void doVerifyPwd(String pwd, SalaryEnc enc) {
         if (!encrypt(pwd).equals(enc.getPwd())) {
             throw new BusinessException("密码错误！");
         }
     }
 
-    @Override
     public void verifyConfirmedPwd(String pwd1, String pwd2) {
         if (!pwd1.equals(pwd2)) {
             throw new BusinessException("两次输入密码不一致");
         }
     }
-
 
     private String encrypt(String pwd) {
        return DigestUtils.md5Hex(pwd);

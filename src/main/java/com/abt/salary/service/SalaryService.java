@@ -6,7 +6,9 @@ import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.entity.SalaryEnc;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
+import com.abt.salary.model.PwdForm;
 import com.abt.salary.model.SalaryPreview;
+import com.abt.salary.model.UserSalaryDetail;
 import com.abt.salary.model.UserSlip;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,14 +52,21 @@ public interface SalaryService {
     /**
      * 根据slip id查询一条工资条详情
      */
-    List<SalaryCell> getSalaryDetail(String slipId, String mainId);
+    List<UserSalaryDetail> getSalaryDetail(String slipId, String mainId);
 
     //重置为初始状态
     void resetFirst();
 
     boolean verifyFirst(String jobNumber);
 
+    /**
+     * 修改密码
+     */
+    void updateEncNotFirst(PwdForm form, String jobNumber);
+
     void updateEnc(String pwd, String jobNumber);
+
+    void verifyLastPwd(String newPwd, SalaryEnc enc);
 
     void verifyPwd(String pwd, String jobNumber);
 

@@ -38,7 +38,8 @@ public class SalaryCell extends AuditInfo {
     private String id;
 
     //父标题
-    @Transient
+    @Size(max = 255)
+    @Column(name = "col_parent")
     private String parentLabel;
     /**
      * 列名

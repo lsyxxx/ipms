@@ -17,20 +17,20 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
 
     List<EmployeeInfo> findByCompanyAndIsActive(String company, String isActive);
 
-    @Query("select new com.abt.sys.model.entity.EmployeeInfo(e, u.id) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where e.isExit = :isExit")
+    @Query("select new com.abt.sys.model.entity.EmployeeInfo(e.id, u.id, e.name, e.dept) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where e.isExit = :isExit")
     List<EmployeeInfo> findByIsExit(boolean isExit);
 
 //    @Query("select e from EmployeeInfo e where e.isActive = '1'")
 //    List<EmployeeInfo> findAllSalaryEnabled();
-
-    @Query("select new com.abt.sys.model.entity.EmployeeInfo(e, u.id) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where u.id = :userid")
-    List<EmployeeInfo> findAllByUserid(String userid);
+//
+//    @Query("select new com.abt.sys.model.entity.EmployeeInfo(e, u.id) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where u.id = :userid")
+//    List<EmployeeInfo> findAllByUserid(String userid);
 
     @Query("select distinct e.company from EmployeeInfo e")
     List<String> findDistinctGroup();
 
-    @Query("SELECT e FROM EmployeeInfo e JOIN FETCH e.department where e.jobNumber = :jobNumber order by e.jobNumber")
-    List<EmployeeInfo> findWithDeptByJobNumber(String jobNumber);
+//    @Query("SELECT e FROM EmployeeInfo e JOIN FETCH e.department where e.jobNumber = :jobNumber order by e.jobNumber")
+//    List<EmployeeInfo> findWithDeptByJobNumber(String jobNumber);
 
     @Query("SELECT e FROM EmployeeInfo e JOIN FETCH e.department order by e.jobNumber")
     List<EmployeeInfo> findAllWithDept();

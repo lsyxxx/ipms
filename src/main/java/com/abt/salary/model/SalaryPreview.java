@@ -35,19 +35,21 @@ public class SalaryPreview {
      */
     private List<List<SalaryCell>> rawTable = new ArrayList<>();
 
+    private Map<Integer, Map<Integer, String>> rawHeader = new HashMap<>();
+
     /**
      * 处理后的仅无问题，可以发放工资条的数据
-     * 不包含信息位!
      */
     private List<List<SalaryCell>> slipTable = new ArrayList<>();
 
     /**
      * 表头数据
      */
-//    private List<SalaryCell> header = new ArrayList<>();
-    //表头数据
     private List<SalaryHeader> header = new ArrayList<>();
 
+    /**
+     * 多行表头合并成一行的
+     */
     private Map<Integer, String> mergedHeader = new HashMap<>();
 
     /**
@@ -102,12 +104,16 @@ public class SalaryPreview {
     public void buildHeader(Map<Integer, Map<Integer, String>> rawHeader, String mid) {
         this.header = new ArrayList<>();
         rawHeader.forEach((r, row) -> {
-            row.forEach((c, cell) -> {
-                SalaryHeader header = new SalaryHeader();
-                header.setMid(mid);
-                header.setName(cell);
-                this.header.add(header);
-            });
+            if (r != 0) {
+                row.forEach((c, cell) -> {
+                    SalaryHeader header = new SalaryHeader();
+                    header.setMid(mid);
+                    header.setName(cell);
+                    header.setStartRow(r);
+                    header.setStartColumn(c);
+                    this.header.add(header);
+                });
+            }
         });
 
     }

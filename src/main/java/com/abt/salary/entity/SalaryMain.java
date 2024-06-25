@@ -91,21 +91,21 @@ public class SalaryMain extends AuditInfo {
     private String netPaidColumnName = NETPAID_COLNAME;
 
     /**
-     * 实发工资列号 1-based
+     * 实发工资列号 0-based
      */
     @NotNull
     @Column(name="col_idx_netpaid", columnDefinition="TINYINT", nullable = false)
     private Integer netPaidColumnIndex;
 
     /**
-     * 工号列号 1-based
+     * 工号列号 0-based
      */
     @NotNull
     @Column(name="col_idx_jobnum", columnDefinition="TINYINT", nullable = false)
     private Integer jobNumberColumnIndex;
 
     /**
-     * 姓名列号 1-based
+     * 姓名列号 0-based
      */
     @NotNull
     @Column(name="col_idx_name", length = 32, nullable = false)

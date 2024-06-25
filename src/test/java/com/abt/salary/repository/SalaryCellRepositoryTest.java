@@ -24,4 +24,15 @@ class SalaryCellRepositoryTest {
 //        });
 
     }
+
+    @Test
+    void findBySlipIdAndValueIsNotNullOrderByColumnIndexAsc() {
+
+        final List<SalaryCell> list = repository.findBySlipIdAndValueIsNotNullOrderByColumnIndexAsc("c22919a1-6405-45f8-b75c-b88def8a5d66");
+        assertNotNull(list);
+        System.out.println("=== list.size: " + list.size());
+        list.forEach(i -> {
+            System.out.printf("name: %s, value: %s%n", i.getName(), i.getValue());
+        });
+    }
 }

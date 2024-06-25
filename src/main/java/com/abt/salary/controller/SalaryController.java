@@ -8,6 +8,7 @@ import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
 import com.abt.salary.model.PwdForm;
 import com.abt.salary.model.SalaryPreview;
+import com.abt.salary.model.UserSalaryDetail;
 import com.abt.salary.model.UserSlip;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
@@ -95,7 +96,6 @@ public class SalaryController {
     @GetMapping("/find/main/record")
     public R<List<SalaryMain>> findImportedSalaryRecordByYearMonth(@RequestParam(required = false) String yearMonth) {
         final List<SalaryMain> list = salaryService.findImportRecordBy(yearMonth);
-        //TODO: 通知
         return R.success(list);
     }
 
@@ -115,8 +115,8 @@ public class SalaryController {
      * 发送工资条详情
      */
     @GetMapping("/find/cells")
-    public R<List<SalaryCell>> findSalaryCellsBySlipId(String slipId, String mid) {
-        final List<SalaryCell> list = salaryService.getSalaryDetail(slipId, mid);
+    public R<List<UserSalaryDetail>> findSalaryCellsBySlipId(String slipId, String mid) {
+        final List<UserSalaryDetail> list = salaryService.getSalaryDetail(slipId, mid);
         return R.success(list);
     }
 
@@ -176,9 +176,10 @@ public class SalaryController {
     @PostMapping("/my/pwd/update")
     public R<Object> updateSalaryPwd(@RequestBody PwdForm form) {
         String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
-        salaryService.verifyPwd(form.getPwd1(), jobNumber);
-        salaryService.verifyConfirmedPwd(form.getPwd1(), form.getPwd2());
-        salaryService.updateEnc(form.getPwd2(), jobNumber);
+        ValidateUtil.ensurePropertyNotnull(form.getPwd1(), "请输入新密码");
+        ValidateUtil.ensurePropertyNotnull(form.getPwd2(), "请输入新密码确认密码");
+        ValidateUtil.ensurePropertyNotnull(form.getOldPwd(), "请输入旧密码");
+        salaryService.updateEncNotFirst(form, jobNumber);
         return R.success("修改成功");
     }
 

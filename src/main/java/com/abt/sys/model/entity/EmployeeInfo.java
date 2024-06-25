@@ -293,6 +293,13 @@ public class EmployeeInfo {
         this.userid = userid;
     }
 
+    public EmployeeInfo(String userid,  String employeeId, String name, String deptId) {
+        this.id = employeeId;
+        this.userid = userid;
+        this.name = name;
+        this.dept = deptId;
+    }
+
     public boolean salaryIsEnabled() {
         return this.isActive.equals("1");
     }

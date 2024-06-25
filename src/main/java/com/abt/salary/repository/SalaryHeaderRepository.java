@@ -9,5 +9,8 @@ public interface SalaryHeaderRepository extends JpaRepository<SalaryHeader, Stri
 
     int deleteByMid(String mid);
 
-    List<SalaryHeader> findByMid(String mid);
+    List<SalaryHeader> findByMidAndStartRowOrderByStartColumnAsc(String mid, int startRow);
+
+
+
 }

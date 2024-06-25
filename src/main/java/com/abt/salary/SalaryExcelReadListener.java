@@ -1,8 +1,7 @@
 package com.abt.salary;
 
-import com.abt.common.model.User;
 import com.abt.salary.entity.SalaryCell;
-import com.abt.salary.model.SalaryDetail;
+import com.abt.salary.model.UserSalaryDetail;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.enums.CellExtraTypeEnum;
@@ -22,7 +21,6 @@ import static com.abt.salary.Constants.*;
 /**
  * 读取excel，暂存，不保存数据库
  * easyexcel col/row index 都是从0开始
- * 业务上处理index=0 添加信息位，业务数据(excel数据)index=1开始
  */
 @Slf4j
 @Getter
@@ -43,24 +41,27 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     public static final int DATA_START_IDX = 3;
 
     /**
-     * 工号列号
+     * 一级标题 行号 0-based
      */
-    private int jobNumberColumnIndex = EXCLUDE_IDX;
-    /**
-     * 实发工资 列号
-     */
-    private int netPaidColumnIndex = EXCLUDE_IDX;
+    public static final int HEADER_L1_RAW_IDX = 1;
 
     /**
-     * 姓名 列号
+     * 工号列号 0-based
      */
-    private int nameColumnIndex = EXCLUDE_IDX;
+    private int jobNumberRawColumnIndex = EXCLUDE_IDX;
+    /**
+     * 实发工资 列号 0-based
+     */
+    private int netPaidRawColumnIndex = EXCLUDE_IDX;
+
+    /**
+     * 姓名 列号 0-based
+     */
+    private int nameRawColumnIndex = EXCLUDE_IDX;
 
 
     /**
      * 用于前端显示table
-     * index=0 表示行信息位
-     * index=1 开始是数据
      */
     private List<List<SalaryCell>> tableList = new ArrayList<>();
 
@@ -117,15 +118,26 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         int rowNum = analysisContext.readRowHolder().getRowIndex();
         rawTable.put(rowNum, data);
         List<SalaryCell> tableRow = new ArrayList<>();
-        String jobNumber = data.getOrDefault(jobNumberColumnIndex - 1, StringUtils.EMPTY);
-        String name = data.getOrDefault(nameColumnIndex - 1, StringUtils.EMPTY);
+        String jobNumber = data.getOrDefault(jobNumberRawColumnIndex , StringUtils.EMPTY);
+        String name = data.getOrDefault(nameRawColumnIndex, StringUtils.EMPTY);
         //根据表头读取数据
-        this.mergedHeader.forEach((k, v) -> {
-            SalaryCell cell = SalaryCell.createTemp(v, data.get(k-1), rowNum, k, mainId, jobNumber);
+//        this.mergedHeader.forEach((k, v) -> {
+//            SalaryCell cell = SalaryCell.createTemp(v, data.get(k-1), rowNum, k, mainId, jobNumber);
+//            cell.setName(name);
+//            cell.setYearMonth(yearMonth);
+//            //TODO: 父标题
+//            cell.setParentLabel("");
+//            tableRow.add(k, cell);
+//        });
+        data.forEach((k, v) -> {
+            //二级标题
+            String header2 = this.mergedHeader.get(k);
+            SalaryCell cell = SalaryCell.createTemp(header2, v, rowNum, k, mainId, jobNumber);
             cell.setName(name);
             cell.setYearMonth(yearMonth);
-            tableRow.add(k, cell);
+            tableRow.add(cell);
         });
+
         tableList.add(tableRow);
     }
 
@@ -133,12 +145,27 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
         log.info("doAfterAllAnalysed...");
         this.extraCellList.forEach(i -> divideAndFulfilMergedCell(i, this.rawTable));
+        fulfilParentLabel();
+    }
+
+    /**
+     * salaryCell填充父标题
+     */
+    private void fulfilParentLabel() {
+        this.tableList.forEach(row -> {
+            row.forEach(cell -> {
+                cell.setParentLabel(getHeader1(cell));
+            });
+        });
+    }
+
+    private String getHeader1(SalaryCell cell) {
+        return this.rawHeader.get(HEADER_L1_RAW_IDX).get(cell.getColumnIndex());
     }
 
     //先读取表头再读取合并单元格
     @Override
     public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
-        System.out.println("invokeHeadMap");
         final Integer rowIndex = context.readRowHolder().getRowIndex();
         rawHeader.put(rowIndex, headMap);
         rawTable.put(rowIndex, headMap);
@@ -153,46 +180,43 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      * 第三行：二级标题
      */
     private void mergeHeader(Map<Integer, String> currentMap) {
-        //存在infoCell,表头一致，信息位
-        this.mergedHeader.put(0, "");
         currentMap.forEach((k, v) -> {
-            Integer tableIndex = k + 1;
             if (StringUtils.isNotBlank(v)) {
                 //去掉空格/换行/制表符
                 v = v.replaceAll("\\s+", "");
-                this.mergedHeader.put(tableIndex, v);
+                this.mergedHeader.put(k, v);
             }
             if (NETPAID_COLNAME.equals(v)) {
-                this.netPaidColumnIndex = tableIndex;
+                this.netPaidRawColumnIndex = k;
             } else if (JOBNUMBER_COLNAME.equals(v)) {
-                this.jobNumberColumnIndex = tableIndex;
+                this.jobNumberRawColumnIndex = k;
             } else if (NAME_COLNAME.equals(v)) {
-                this.nameColumnIndex = tableIndex;
+                this.nameRawColumnIndex = k;
             }
         });
     }
 
     public boolean includeJobNumber() {
-        return this.jobNumberColumnIndex > 0;
+        return this.jobNumberRawColumnIndex > 0;
     }
 
     public boolean includeNetPaid() {
-        return this.netPaidColumnIndex > 0;
+        return this.netPaidRawColumnIndex > 0;
     }
 
     public boolean includeName() {
-        return this.nameColumnIndex > 0;
+        return this.nameRawColumnIndex > 0;
     }
 
 
     @Override
     public void extra(CellExtra extra, AnalysisContext context) {
-        final Integer firstColumnIndex = extra.getFirstColumnIndex();
-        final Integer firstRowIndex = extra.getFirstRowIndex();
-        final Integer lastRowIndex = extra.getLastRowIndex();
-        final Integer lastColumnIndex = extra.getLastColumnIndex();
+//        final Integer firstColumnIndex = extra.getFirstColumnIndex();
+//        final Integer firstRowIndex = extra.getFirstRowIndex();
+//        final Integer lastRowIndex = extra.getLastRowIndex();
+//        final Integer lastColumnIndex = extra.getLastColumnIndex();
         extraCellList.add(extra);
-        log.info("读取合并单元格数据: First[row, col]: [{},{}], Last[row, col]: [{},{}]", firstRowIndex, firstColumnIndex, lastRowIndex, lastColumnIndex);
+//        log.info("读取合并单元格数据: First[row, col]: [{},{}], Last[row, col]: [{},{}]", firstRowIndex, firstColumnIndex, lastRowIndex, lastColumnIndex);
     }
 
     /**
@@ -213,6 +237,9 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         final Integer lastColumnIndex = extra.getLastColumnIndex();
         //填充值，(firstRowIndex, firstColumnIndex)
         String cellValue = rawTable.get(firstRowIndex).get(firstColumnIndex);
+        if (cellValue == null) {
+            cellValue = "";
+        }
         cellValue = cellValue.replaceAll("\\s+", "");
         for (int r = firstRowIndex; r <= lastRowIndex; r++) {
             for (int c = firstColumnIndex; c <= lastColumnIndex; c++) {
@@ -229,6 +256,8 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
                 //sheetNo从0开始
                 .extraRead(CellExtraTypeEnum.MERGE).sheet(0).doRead();
         System.out.println(salaryExcelReadListener.getRawHeader());
+        final Map<Integer, Map<Integer, String>> map1 = salaryExcelReadListener.getRawHeader();
+        List<UserSalaryDetail> userSalaryDetails = new ArrayList<>();
 
     }
 }
