@@ -1,10 +1,12 @@
 package com.abt.wf.listener;
 
 import com.abt.common.model.User;
+import com.abt.sys.config.SystemConstants;
 import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.service.SystemMessageService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
+import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.service.ReimburseService;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +65,7 @@ public class ReimburseProcessEndListener implements ExecutionListener {
                         final User user = userService.getSimpleUserInfo(userid);
                         name = user.getUsername();
                     }
-                    SystemMessage msg = systemMessageService.createDefaultCopyMessage(userid, name, reimburseService.notifyLink(entityId), content);
+                    SystemMessage msg = systemMessageService.createDefaultCopyMessage(userid, name, reimburseService.notifyLink(entityId), content, WorkFlowConfig.SERVICE_RBS);
                     systemMessageService.sendMessage(msg);
                     System.out.println("===== SysMsg: " + msg.toString());
                 }

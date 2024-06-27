@@ -38,6 +38,13 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_INV = "rbsInv";
     public static final String DEF_KEY_INVOFFSET = "invOffset";
 
+    public static final String SERVICE_RBS = "reimburse";
+    public static final String SERVICE_TRIP = "trip";
+    public static final String SERVICE_PAY = "pay";
+    public static final String SERVICE_LOAN = "loan";
+    public static final String SERVICE_INV = "inv";
+    public static final String SERVICE_INVOFFSET = "invoffset";
+
     public static final String SKIP_MANAGER = "rbsFlowSkipManager";
     public static final String DEFAULT_CC = "rbsDefaultCopy";
 

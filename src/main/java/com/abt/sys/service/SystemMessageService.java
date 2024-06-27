@@ -9,5 +9,5 @@ public interface SystemMessageService {
      */
     void sendMessage(SystemMessage message);
 
-    SystemMessage createDefaultCopyMessage(String toId, String toName, String href, String content);
+    SystemMessage createDefaultCopyMessage(String toId, String toName, String href, String content, String service);
 }

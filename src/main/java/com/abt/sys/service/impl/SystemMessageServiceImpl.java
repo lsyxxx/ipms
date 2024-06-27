@@ -27,7 +27,7 @@ public class SystemMessageServiceImpl implements SystemMessageService {
      * 创建一条抄送信息
      */
     @Override
-    public SystemMessage createDefaultCopyMessage(String toId, String toName, String href, String content) {
+    public SystemMessage createDefaultCopyMessage(String toId, String toName, String href, String content, String service) {
         SystemMessage copyMessage = new SystemMessage();
         copyMessage.setTypeId(SystemConstants.SYSMSG_TYPE_NAME_COPY);
         copyMessage.setTypeName(SystemConstants.SYSMSG_TYPE_ID_COPY);
@@ -37,7 +37,12 @@ public class SystemMessageServiceImpl implements SystemMessageService {
         copyMessage.setToName(toName);
         copyMessage.setHref(href);
         copyMessage.setContent(content);
-
+        copyMessage.setService(service);
         return copyMessage;
+    }
+
+    //获取用户的所有抄送信息
+    public void findUserCopySystemMessagesAll(String userid) {
+        systemMessageRepository.findByToIdOrderByUpdateTimeDesc(userid);
     }
 }

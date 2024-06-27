@@ -2,6 +2,7 @@ package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.common.model.User;
+import com.abt.wf.entity.act.ActHiTaskInst;
 import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.listener.JpaWorkflowListener;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -110,6 +111,11 @@ public class WorkflowBase extends AuditInfo {
     @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     @NotFound(action= NotFoundAction.IGNORE)
     private ActRuTask currentTask;
+
+//    @OneToMany(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+//    private List<ActHiTaskInst> historicTaskList;
+
     @Transient
     private String currentTaskId;
     @Transient

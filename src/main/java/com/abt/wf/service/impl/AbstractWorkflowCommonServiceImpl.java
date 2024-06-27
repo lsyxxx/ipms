@@ -192,22 +192,22 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             return returnList;
         }
         //抄送节点
-        UserTaskDTO cc = new UserTaskDTO();
-        cc.setTaskType(Constants.TASK_TYPE_COPY);
-        cc.setTaskName(Constants.TASK_NAME_COPY);
-        cc.setSelectUserType(Constants.SELECT_USER_TYPE_COPY);
-        for (String s : copyList) {
-            UserTaskDTO dto = new UserTaskDTO();
-            dto.setOperatorId(s);
-            dto.setTaskType(TASK_TYPE_COPY);
-            dto.setTaskName(TASK_NAME_COPY);
-            dto.setSelectUserType(SELECT_USER_TYPE_SPECIFIC);
-            final User user = userService.getSimpleUserInfo(s);
-            dto.setOperatorName(user.getUsername());
-            cc.addUserTaskDTO(dto);
-
-        }
-        returnList.add(cc);
+//        UserTaskDTO cc = new UserTaskDTO();
+//        cc.setTaskType(Constants.TASK_TYPE_COPY);
+//        cc.setTaskName(Constants.TASK_NAME_COPY);
+//        cc.setSelectUserType(Constants.SELECT_USER_TYPE_COPY);
+//        for (String s : copyList) {
+//            UserTaskDTO dto = new UserTaskDTO();
+//            dto.setOperatorId(s);
+//            dto.setTaskType(TASK_TYPE_COPY);
+//            dto.setTaskName(TASK_NAME_COPY);
+//            dto.setSelectUserType(SELECT_USER_TYPE_SPECIFIC);
+//            final User user = userService.getSimpleUserInfo(s);
+//            dto.setOperatorName(user.getUsername());
+//            cc.addUserTaskDTO(dto);
+//
+//        }
+//        returnList.add(cc);
         return returnList;
     }
 

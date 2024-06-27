@@ -2,9 +2,7 @@ package com.abt.wf.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
@@ -18,7 +16,8 @@ import java.time.LocalDate;
  * 明细数据：只保存rootId，以及差旅明细数据，以及processDefKey/instId/DefId这类不可修改的
  */
 
-@Data
+@Getter
+@Setter
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "wf_trip")

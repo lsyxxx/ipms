@@ -1,5 +1,6 @@
 package com.abt.wf.entity.act;
 
+import com.abt.sys.model.entity.TUser;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -7,6 +8,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.Nationalized;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.time.LocalDateTime;
 
@@ -96,5 +99,10 @@ public class ActRuTask {
     @Nationalized
     @Column(name = "TENANT_ID_", length = 64)
     private String tenantId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ASSIGNEE_", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private TUser tuser;
 
 }
