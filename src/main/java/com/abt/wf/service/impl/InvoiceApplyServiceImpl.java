@@ -1,10 +1,10 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.model.ValidationResult;
+import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
-import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.model.*;
 import com.abt.wf.repository.InvoiceApplyRepository;
@@ -20,6 +20,7 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,7 +32,6 @@ import java.util.Map;
 
 import static com.abt.common.util.QueryUtil.like;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_INV;
-import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_INVOFFSET;
 
 /**
  * 开票申请
@@ -203,6 +203,44 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
                 requestForm.getState(), requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getContractNo(), requestForm.getContractName(),
                 requestForm.getClientId(), requestForm.getClientName(), requestForm.getProject(), requestForm.getDeptId(), requestForm.getDeptName());
     }
+
+    @Override
+    public Page<InvoiceApply> findMyApplyByQueryPaged(InvoiceApplyRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<InvoiceApply> page = invoiceApplyRepository.findUserApplyByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
+    }
+
+    @Override
+    public Page<InvoiceApply> findAllByQueryPaged(InvoiceApplyRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<InvoiceApply> page = invoiceApplyRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
+    }
+
+    @Override
+    public Page<InvoiceApply> findMyTodoByQueryPaged(InvoiceApplyRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<InvoiceApply> page = invoiceApplyRepository.findUserTodoByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
+    }
+
+    @Override
+    public Page<InvoiceApply> findMyDoneByQueryPaged(InvoiceApplyRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<InvoiceApply> page = invoiceApplyRepository.findUserDoneByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
+    }
+
+
 
     @Override
     public int countMyApplyByCriteria(InvoiceApplyRequestForm requestForm) {

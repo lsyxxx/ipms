@@ -2,6 +2,7 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.model.User;
 import com.abt.common.model.ValidationResult;
+import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
@@ -9,6 +10,7 @@ import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.InvoiceOffset;
 import com.abt.wf.entity.act.ActRuTask;
+import com.abt.wf.model.InvoiceOffsetRequestForm;
 import com.abt.wf.model.InvoiceOffsetRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.InvoiceOffsetRepository;
@@ -24,7 +26,6 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
-import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -121,6 +122,42 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         final Page<InvoiceOffset> all = invoiceOffsetRepository.findAll(criteria, pageable);
         all.getContent().forEach(this::buildActiveTask);
         return all;
+    }
+
+    @Override
+    public Page<InvoiceOffset> findAllByQueryPaged(InvoiceOffsetRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<InvoiceOffset> page = invoiceOffsetRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
+    }
+
+    @Override
+    public Page<InvoiceOffset> findMyTodoByQueryPaged(InvoiceOffsetRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<InvoiceOffset> page = invoiceOffsetRepository.findUserTodoByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
+    }
+
+    @Override
+    public Page<InvoiceOffset> findMyDoneByQueryPaged(InvoiceOffsetRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<InvoiceOffset> page = invoiceOffsetRepository.findUserDoneByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
+    }
+
+    @Override
+    public Page<InvoiceOffset> findMyApplyByQueryPaged(InvoiceOffsetRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<InvoiceOffset> page = invoiceOffsetRepository.findUserApplyByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
 

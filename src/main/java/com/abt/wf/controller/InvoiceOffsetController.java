@@ -49,30 +49,28 @@ public class InvoiceOffsetController {
         setTokenUser(requestForm);
         //criteria
         //申请人，申请时间，审批编号
-        final List<InvoiceOffset> todo = invoiceOffsetService.findMyTodoByCriteria(requestForm);
-        final int total = invoiceOffsetService.countMyTodoByCriteria(requestForm);
-        return R.success(todo, total);
+        final Page<InvoiceOffset> page = invoiceOffsetService.findMyTodoByQueryPaged(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/done")
     public R<List<InvoiceOffset>> doneList(InvoiceOffsetRequestForm requestForm) {
         setTokenUser(requestForm);
-        final List<InvoiceOffset> done = invoiceOffsetService.findMyDoneByCriteriaPageable(requestForm);
-        final int total = invoiceOffsetService.countMyDoneByCriteria(requestForm);
-        return R.success(done, total);
+        final Page<InvoiceOffset> page = invoiceOffsetService.findMyDoneByQueryPaged(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/myapply")
     public R<List<InvoiceOffset>> myApplyList(InvoiceOffsetRequestForm requestForm) {
         setTokenUser(requestForm);
-        final Page<InvoiceOffset> myApply = invoiceOffsetService.findAllByCriteria(requestForm);
-        return R.success(myApply.getContent(), (int) myApply.getTotalElements());
+        final Page<InvoiceOffset> page = invoiceOffsetService.findMyApplyByQueryPaged(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<InvoiceOffset>> all(@ModelAttribute InvoiceOffsetRequestForm requestForm) {
-        final Page<InvoiceOffset> all = invoiceOffsetService.findAllByCriteria(requestForm);
-        return R.success(all.getContent(), (int)all.getTotalElements());
+        final Page<InvoiceOffset> page = invoiceOffsetService.findAllByQueryPaged(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/load/{id}")

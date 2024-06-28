@@ -2,6 +2,7 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.model.User;
 import com.abt.common.model.ValidationResult;
+import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.repository.FlowSettingRepository;
@@ -137,6 +138,42 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     @Override
     public List<Reimburse> findMyApplyByCriteriaPageable(ReimburseRequestForm requestForm) {
         return List.of();
+    }
+
+    @Override
+    public Page<Reimburse> findAllByQueryPaged(ReimburseRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<Reimburse> page = reimburseRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
+    }
+
+    @Override
+    public Page<Reimburse> findMyApplyByQueryPageable(ReimburseRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<Reimburse> myApplyPaged = reimburseRepository.findMyApplyPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        myApplyPaged.getContent().forEach(this::buildActiveTask);
+        return myApplyPaged;
+    }
+
+    @Override
+    public Page<Reimburse> findMyTodoByQueryPageable(ReimburseRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<Reimburse> myTodoPaged = reimburseRepository.findMyTodoPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        myTodoPaged.getContent().forEach(this::buildActiveTask);
+        return myTodoPaged;
+    }
+
+    @Override
+    public Page<Reimburse> findMyDoneByQueryPageable(ReimburseRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<Reimburse> myDonePaged = reimburseRepository.findMyDonePaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        myDonePaged.getContent().forEach(this::buildActiveTask);
+        return myDonePaged;
     }
 
     @Override

@@ -94,7 +94,7 @@ public class InvoiceApply extends WorkflowBase {
     /**
      * 合同金额
      */
-    @Positive(message = "合同金额必须大于0", groups = {ValidateGroup.Apply.class})
+//    @Positive(message = "合同金额必须大于0", groups = {ValidateGroup.Apply.class})
 //    @NotNull(message = "合同金额必填", groups = {ValidateGroup.Apply.class})
     @Column(name="contract_amt", columnDefinition="DECIMAL(10,2)")
     private Double contractAmount;

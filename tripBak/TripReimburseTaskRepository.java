@@ -1,7 +1,5 @@
 package com.abt.wf.repository;
 
-import com.abt.wf.entity.TripReimburse;
-
 import java.util.List;
 
 public interface TripReimburseTaskRepository {

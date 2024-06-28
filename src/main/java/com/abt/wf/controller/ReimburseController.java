@@ -51,32 +51,38 @@ public class ReimburseController {
 
     @GetMapping("/todo")
     public R<List<Reimburse>> todoList(@ModelAttribute ReimburseRequestForm requestForm) {
+//        setTokenUser(requestForm);
+//        //criteria
+//        //申请人，申请时间，审批编号
+//        final List<Reimburse> todo = reimburseService.findMyTodoByCriteria(requestForm);
+//        final int total = reimburseService.countMyTodoByCriteria(requestForm);
+//        return R.success(todo, total);
         setTokenUser(requestForm);
-        //criteria
-        //申请人，申请时间，审批编号
-        final List<Reimburse> todo = reimburseService.findMyTodoByCriteria(requestForm);
-        final int total = reimburseService.countMyTodoByCriteria(requestForm);
-        return R.success(todo, total);
+        final Page<Reimburse> page = reimburseService.findMyTodoByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/done")
     public R<List<Reimburse>> doneList(ReimburseRequestForm requestForm) {
         setTokenUser(requestForm);
-        final List<Reimburse> done = reimburseService.findMyDoneByCriteriaPageable(requestForm);
-        final int total = reimburseService.countMyDoneByCriteria(requestForm);
-        return R.success(done, total);
+        final Page<Reimburse> page = reimburseService.findMyDoneByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
+
     }
 
     @GetMapping("/myapply")
     public R<List<Reimburse>> myApplyList(ReimburseRequestForm requestForm) {
+//        setTokenUser(requestForm);
+//        final Page<Reimburse> myApply = reimburseService.findMyApplyByCriteria(requestForm);
+//        return R.success(myApply.getContent(), (int) myApply.getTotalElements());
         setTokenUser(requestForm);
-        final Page<Reimburse> myApply = reimburseService.findMyApplyByCriteria(requestForm);
-        return R.success(myApply.getContent(), (int) myApply.getTotalElements());
+        final Page<Reimburse> page = reimburseService.findMyApplyByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<Reimburse>> all(@ModelAttribute ReimburseRequestForm requestForm) {
-        final Page<Reimburse> all = reimburseService.findAllByCriteria(requestForm);
+        final Page<Reimburse> all = reimburseService.findAllByQueryPaged(requestForm);
         return R.success(all.getContent(), (int)all.getTotalElements());
     }
 

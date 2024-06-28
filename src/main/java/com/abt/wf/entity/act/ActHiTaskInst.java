@@ -1,14 +1,15 @@
 package com.abt.wf.entity.act;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.abt.sys.model.entity.TUser;
+import com.abt.wf.entity.WorkflowBase;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Nationalized;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.time.LocalDateTime;
 
@@ -134,5 +135,10 @@ public class ActHiTaskInst {
 
     @Column(name = "REMOVAL_TIME_")
     private LocalDateTime removalTime;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ASSIGNEE_", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private TUser assigneeUser;
 
 }

@@ -4,6 +4,7 @@ import com.abt.sys.model.entity.TUser;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Formula;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@ToString
+@NoArgsConstructor
 @Table(name = "ACT_RU_TASK")
 public class ActRuTask {
     @Id

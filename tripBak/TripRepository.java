@@ -1,8 +1,5 @@
 package com.abt.wf.repository;
 
-import com.abt.wf.entity.Reimburse;
-import com.abt.wf.entity.TripReimburse;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 

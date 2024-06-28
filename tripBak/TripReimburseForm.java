@@ -1,6 +1,5 @@
 package com.abt.wf.model;
 
-import com.abt.wf.entity.TripReimburse;
 import com.abt.wf.entity.WorkflowBase;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

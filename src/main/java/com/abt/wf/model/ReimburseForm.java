@@ -83,7 +83,6 @@ public class ReimburseForm extends Reimburse {
     public Map<String, Object> variableMap() {
         this.variableMap.clear();
         this.variableMap.put(KEY_COST, this.getCost());
-        this.variableMap.put(KEY_IS_LEADER, this.isLeader());
         this.variableMap.put(KEY_MANAGER_LIST, this.getManagerList());
         this.variableMap.put(KEY_STARTER, this.getCreateUserid());
         this.variableMap.put(VAR_KEY_DESC, this.description());
@@ -139,7 +138,6 @@ public class ReimburseForm extends Reimburse {
         form.setBusinessState(rbs.getBusinessState());
         form.setProcessState(rbs.getProcessState());
         form.setFinished(rbs.isFinished());
-        form.setLeader(rbs.isLeader());
         form.setManagers(rbs.getManagers());
         form.setDeleteReason(rbs.getDeleteReason());
         form.setServiceName(rbs.getServiceName());
@@ -200,7 +198,6 @@ public class ReimburseForm extends Reimburse {
         rbs.setFinished(this.isFinished());
         rbs.setPdfFileList(this.getPdfFileList());
         rbs.setOtherFileList(this.getOtherFileList());
-        rbs.setLeader(this.isLeader());
         rbs.setManagers(this.getManagers());
         rbs.setDeleteReason(this.getDeleteReason());
         rbs.setServiceName(this.getServiceName());

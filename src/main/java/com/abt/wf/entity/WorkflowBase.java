@@ -19,7 +19,9 @@ import java.util.List;
 /**
  * 流程基础数据
  */
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @MappedSuperclass
@@ -112,9 +114,10 @@ public class WorkflowBase extends AuditInfo {
     @NotFound(action= NotFoundAction.IGNORE)
     private ActRuTask currentTask;
 
-//    @OneToMany(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-//    private List<ActHiTaskInst> historicTaskList;
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PROC_INST_ID_", referencedColumnName = "proc_inst_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @Transient
+    private List<ActHiTaskInst> historicTaskList;
 
     @Transient
     private String currentTaskId;

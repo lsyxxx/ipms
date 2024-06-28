@@ -1,5 +1,7 @@
 package com.abt.common.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -97,6 +99,14 @@ public class TimeUtil {
      */
     public static boolean compareWithMin(LocalDateTime t1, LocalDateTime t2) {
         return ChronoUnit.MINUTES.between(t1, t2) == 0;
+    }
+
+    public static LocalDateTime toLocalDateTime(String yyyy_MM_dd) {
+        if (StringUtils.isBlank(yyyy_MM_dd)) {
+            return null;
+        }
+        LocalDate localDate = LocalDate.parse(yyyy_MM_dd, dateFormatter);
+        return localDate.atStartOfDay();
     }
 
 

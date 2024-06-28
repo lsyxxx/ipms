@@ -2,6 +2,7 @@ package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.User;
+import com.abt.wf.entity.act.ActHiTaskInst;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -112,14 +113,6 @@ public class Reimburse extends WorkflowBase {
     @Column(name = "team_name", columnDefinition="VARCHAR(128)")
     private String teamName;
 
-
-
-    /**
-     * starter is leader
-     */
-    @Column(name="is_leader", columnDefinition="BIT")
-    private boolean isLeader = false;
-
     /**
      * 附件信息，json格式保存
      */
@@ -129,12 +122,14 @@ public class Reimburse extends WorkflowBase {
     @Column(name = "other_file", columnDefinition = "VARCHAR(MAX)")
     private String otherFileList;
 
+    @Column(name="rec_user")
+    private String receiveUser;
+
     /**
      * 选择的审批人 json
      */
     @Column(columnDefinition="VARCHAR(1600)")
     private String managers;
-
 
     //-- 审批
     @Transient
@@ -152,7 +147,6 @@ public class Reimburse extends WorkflowBase {
     public HashMap<String, Object> createVariableMap() {
         this.variableMap.clear();
         this.variableMap.put(KEY_COST, this.getCost());
-        this.variableMap.put(KEY_IS_LEADER, this.isLeader());
         if (StringUtils.isBlank(this.getManagers())) {
             variableMap.put(KEY_MANAGER, List.of());
         } else {
@@ -170,11 +164,11 @@ public class Reimburse extends WorkflowBase {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Reimburse reimburse = (Reimburse) o;
-        return voucherNum == reimburse.voucherNum && isLeader == reimburse.isLeader && Objects.equals(id, reimburse.id) && Objects.equals(cost, reimburse.cost) && Objects.equals(reserveLoan, reimburse.reserveLoan) && Objects.equals(reserveRefund, reimburse.reserveRefund) && Objects.equals(reason, reimburse.reason) && Objects.equals(rbsDate, reimburse.rbsDate) && Objects.equals(rbsType, reimburse.rbsType) && Objects.equals(company, reimburse.company) && Objects.equals(project, reimburse.project) && Objects.equals(departmentId, reimburse.departmentId) && Objects.equals(departmentName, reimburse.departmentName) && Objects.equals(teamId, reimburse.teamId) && Objects.equals(teamName, reimburse.teamName) && Objects.equals(pdfFileList, reimburse.pdfFileList) && Objects.equals(otherFileList, reimburse.otherFileList) && Objects.equals(managers, reimburse.managers);
+        return voucherNum == reimburse.voucherNum && Objects.equals(id, reimburse.id) && Objects.equals(cost, reimburse.cost) && Objects.equals(reserveLoan, reimburse.reserveLoan) && Objects.equals(reserveRefund, reimburse.reserveRefund) && Objects.equals(reason, reimburse.reason) && Objects.equals(rbsDate, reimburse.rbsDate) && Objects.equals(rbsType, reimburse.rbsType) && Objects.equals(company, reimburse.company) && Objects.equals(project, reimburse.project) && Objects.equals(departmentId, reimburse.departmentId) && Objects.equals(departmentName, reimburse.departmentName) && Objects.equals(teamId, reimburse.teamId) && Objects.equals(teamName, reimburse.teamName) && Objects.equals(pdfFileList, reimburse.pdfFileList) && Objects.equals(otherFileList, reimburse.otherFileList) && Objects.equals(managers, reimburse.managers);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, cost, reserveLoan, reserveRefund, reason, rbsDate, voucherNum, rbsType, company, project, departmentId, departmentName, teamId, teamName, isLeader, pdfFileList, otherFileList, managers);
+        return Objects.hash(super.hashCode(), id, cost, reserveLoan, reserveRefund, reason, rbsDate, voucherNum, rbsType, company, project, departmentId, departmentName, teamId, teamName, pdfFileList, otherFileList, managers);
     }
 }

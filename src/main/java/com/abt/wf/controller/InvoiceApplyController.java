@@ -12,6 +12,7 @@ import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceApplyService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,32 +45,30 @@ public class InvoiceApplyController {
     public R<List<InvoiceApply>> todoList(@ModelAttribute InvoiceApplyRequestForm requestForm) {
         setTokenUser(requestForm);
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称，合同编号, 客户id， 客户name, 项目名称，申请部门id, 申请部门name
-        final List<InvoiceApply> todo = invoiceApplyService.findMyTodoByCriteria(requestForm);
-        final int total = invoiceApplyService.countMyTodoByCriteria(requestForm);
-        return R.success(todo, todo.size());
+//        final List<InvoiceApply> todo = invoiceApplyService.findMyTodoByCriteria(requestForm);
+//        final int total = invoiceApplyService.countMyTodoByCriteria(requestForm);
+        final Page<InvoiceApply> page = invoiceApplyService.findMyTodoByQueryPaged(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/done")
     public R<List<InvoiceApply>> doneList(InvoiceApplyRequestForm requestForm) {
         setTokenUser(requestForm);
-        final List<InvoiceApply> done = invoiceApplyService.findMyDoneByCriteriaPageable(requestForm);
-        final int total = invoiceApplyService.countMyDoneByCriteria(requestForm);
-        return R.success(done, total);
+        final Page<InvoiceApply> page = invoiceApplyService.findMyDoneByQueryPaged(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/myapply")
     public R<List<InvoiceApply>> myApplyList(InvoiceApplyRequestForm requestForm) {
         setTokenUser(requestForm);
-        final List<InvoiceApply> myApply = invoiceApplyService.findMyApplyByCriteriaPageable(requestForm);
-        final int total = invoiceApplyService.countMyApplyByCriteria(requestForm);
-        return R.success(myApply, total);
+        final Page<InvoiceApply> page = invoiceApplyService.findMyApplyByQueryPaged(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<InvoiceApply>> all(@ModelAttribute InvoiceApplyRequestForm requestForm) {
-        final List<InvoiceApply> all = invoiceApplyService.findAllByCriteriaPageable(requestForm);
-        final int total = invoiceApplyService.countAllByCriteria(requestForm);
-        return R.success(all, total);
+        final Page<InvoiceApply> page = invoiceApplyService.findAllByQueryPaged(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/load/{id}")

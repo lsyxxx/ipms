@@ -414,9 +414,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             entity.setCurrentTaskName(task.getName());
             entity.setCurrentTaskDefId(task.getTaskDefKey());
             entity.setCurrentTaskStartTime(task.getCreateTime());
-            final User user = userService.getSimpleUserInfo(task.getAssignee());
-            if (user != null) {
-                entity.setCurrentTaskAssigneeName(user.getUsername());
+            if (task.getTuser() != null) {
+                entity.setCurrentTaskAssigneeName(task.getTuser().getName());
             }
         }
     }

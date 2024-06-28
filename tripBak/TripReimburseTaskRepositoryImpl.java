@@ -1,7 +1,6 @@
 package com.abt.wf.repository;
 
 import com.abt.common.util.TimeUtil;
-import com.abt.wf.entity.TripReimburse;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
