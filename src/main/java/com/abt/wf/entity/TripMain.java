@@ -4,6 +4,7 @@ import com.abt.common.config.ValidateGroup;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,11 +51,25 @@ public class TripMain extends WorkflowBase {
     private String staff;
 
     /**
+     * 关联项目
+     */
+    @Column(name="project")
+    private String project;
+
+    /**
      * 收款人
      */
-    @NotNull(message = "收款人不能为空", groups = {ValidateGroup.Save.class})
-    @Column(name="rec_user", length = 32)
-    private String receiveUser;
+    @Column(name="rec_userid", length = 32)
+    private String receiveUserid;
+
+    @Column(name="rec_username", length = 32)
+    private String receiveUsername;
+
+    /**
+     * 收款账号
+     */
+    @Column(name="rec_account")
+    private String receiveAccount;
 
     /**
      * 出差事由
@@ -88,7 +103,7 @@ public class TripMain extends WorkflowBase {
     @Column(name="managers", columnDefinition = "VARCHAR(1600)")
     private String managers;
 
-    @Column(name = "other_file", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "file_list", columnDefinition = "VARCHAR(MAX)")
     private String fileList;
 
     /**
@@ -97,6 +112,13 @@ public class TripMain extends WorkflowBase {
     @NotNull(groups = {ValidateGroup.Preview.class, ValidateGroup.Save.class})
     @Column(name="sum_", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal sum;
+
+    /**
+     * 单据及附件数量
+     */
+    @Max(value = 99, message = "单据数量不能超过99个", groups = {ValidateGroup.Save.class})
+    @Column(name="voucher_num", columnDefinition = "TINYINT")
+    private int voucherNum;
 
     /**
      * 删除的级联操作

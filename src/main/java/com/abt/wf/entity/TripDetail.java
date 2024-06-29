@@ -72,20 +72,9 @@ public class TripDetail extends AuditInfo {
     /**
      * 住宿费-金额
      */
-    @Column(name="lodging_amt", columnDefinition="DECIMAL(10,2)")
-    private BigDecimal lodgingAmount;
+    @Column(name="lodging_exp", columnDefinition="DECIMAL(10,2)")
+    private BigDecimal lodgingExpense;
 
-    /**
-     * 其他项目，允许有多个项目
-     */
-    @Column(name="oth_exp_desc", columnDefinition="VARCHAR(128)")
-    private String otherDesc;
-
-    /**
-     * 其他费用金额
-     */
-    @Column(name="oth_exp", columnDefinition="VARCHAR(128)")
-    private String otherExpense;
     /**
      * 本次项目合计
      */
