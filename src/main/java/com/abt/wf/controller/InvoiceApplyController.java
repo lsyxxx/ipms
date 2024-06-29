@@ -47,27 +47,27 @@ public class InvoiceApplyController {
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称，合同编号, 客户id， 客户name, 项目名称，申请部门id, 申请部门name
 //        final List<InvoiceApply> todo = invoiceApplyService.findMyTodoByCriteria(requestForm);
 //        final int total = invoiceApplyService.countMyTodoByCriteria(requestForm);
-        final Page<InvoiceApply> page = invoiceApplyService.findMyTodoByQueryPaged(requestForm);
+        final Page<InvoiceApply> page = invoiceApplyService.findMyTodoByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/done")
     public R<List<InvoiceApply>> doneList(InvoiceApplyRequestForm requestForm) {
         setTokenUser(requestForm);
-        final Page<InvoiceApply> page = invoiceApplyService.findMyDoneByQueryPaged(requestForm);
+        final Page<InvoiceApply> page = invoiceApplyService.findMyDoneByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/myapply")
     public R<List<InvoiceApply>> myApplyList(InvoiceApplyRequestForm requestForm) {
         setTokenUser(requestForm);
-        final Page<InvoiceApply> page = invoiceApplyService.findMyApplyByQueryPaged(requestForm);
+        final Page<InvoiceApply> page = invoiceApplyService.findMyApplyByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<InvoiceApply>> all(@ModelAttribute InvoiceApplyRequestForm requestForm) {
-        final Page<InvoiceApply> page = invoiceApplyService.findAllByQueryPaged(requestForm);
+        final Page<InvoiceApply> page = invoiceApplyService.findAllByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 

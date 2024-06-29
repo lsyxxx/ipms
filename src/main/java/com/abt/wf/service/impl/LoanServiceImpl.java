@@ -20,6 +20,7 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -245,6 +246,26 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     @Override
     public String getServiceName() {
         return SERVICE_LOAN;
+    }
+
+    @Override
+    public Page<Loan> findAllByQueryPageable(LoanRequestForm requestForm) {
+        return null;
+    }
+
+    @Override
+    public Page<Loan> findMyApplyByQueryPageable(LoanRequestForm requestForm) {
+        return null;
+    }
+
+    @Override
+    public Page<Loan> findMyTodoByQueryPageable(LoanRequestForm requestForm) {
+        return null;
+    }
+
+    @Override
+    public Page<Loan> findMyDoneByQueryPageable(LoanRequestForm requestForm) {
+        return null;
     }
 
     @Override

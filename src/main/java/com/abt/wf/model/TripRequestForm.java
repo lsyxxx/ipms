@@ -18,7 +18,4 @@ public class TripRequestForm extends RequestForm {
      * 出差人员包含
      */
     private String staff;
-
-    private String assigneeId;
-    private String assigneeName;
 }

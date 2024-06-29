@@ -72,9 +72,6 @@ public class ReimburseController {
 
     @GetMapping("/myapply")
     public R<List<Reimburse>> myApplyList(ReimburseRequestForm requestForm) {
-//        setTokenUser(requestForm);
-//        final Page<Reimburse> myApply = reimburseService.findMyApplyByCriteria(requestForm);
-//        return R.success(myApply.getContent(), (int) myApply.getTotalElements());
         setTokenUser(requestForm);
         final Page<Reimburse> page = reimburseService.findMyApplyByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
@@ -82,7 +79,7 @@ public class ReimburseController {
 
     @GetMapping("/all")
     public R<List<Reimburse>> all(@ModelAttribute ReimburseRequestForm requestForm) {
-        final Page<Reimburse> all = reimburseService.findAllByQueryPaged(requestForm);
+        final Page<Reimburse> all = reimburseService.findAllByQueryPageable(requestForm);
         return R.success(all.getContent(), (int)all.getTotalElements());
     }
 

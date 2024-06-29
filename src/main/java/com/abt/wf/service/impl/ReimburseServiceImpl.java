@@ -141,7 +141,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     }
 
     @Override
-    public Page<Reimburse> findAllByQueryPaged(ReimburseRequestForm requestForm) {
+    public Page<Reimburse> findAllByQueryPageable(ReimburseRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<Reimburse> page = reimburseRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
@@ -179,11 +179,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     @Override
     public int countMyApplyByCriteria(ReimburseRequestForm requestForm) {
         return 0;
-    }
-
-    @Override
-    public Page<Reimburse> findMyApplyByCriteria(ReimburseRequestForm requestForm) {
-        return this.findAllByCriteria(requestForm);
     }
 
     @Override

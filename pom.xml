@@ -127,7 +127,11 @@
             <artifactId>easyexcel</artifactId>
             <version>3.3.4</version>
         </dependency>
-
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
 
     </dependencies>

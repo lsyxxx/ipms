@@ -11,11 +11,15 @@ import org.hibernate.annotations.DynamicUpdate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
+ * 差旅报销详情
  */
-@Table(name = "wf_trip_detail")
+@Table(name = "wf_trip_detail", indexes = {
+        @Index(name = "idx_mid", columnList = "mid"),
+})
 @Entity
 @Getter
 @Setter
@@ -28,9 +32,6 @@ public class TripDetail extends AuditInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-
-    @Column(name = "mid")
-    private String mid;
 
     @Column(name="start_date")
     private LocalDate startDate;
@@ -74,12 +75,44 @@ public class TripDetail extends AuditInfo {
     @Column(name="lodging_amt", columnDefinition="DECIMAL(10,2)")
     private BigDecimal lodgingAmount;
 
+    /**
+     * 其他项目，允许有多个项目
+     */
     @Column(name="oth_exp_desc", columnDefinition="VARCHAR(128)")
-    private String otherExpenseDesc;
+    private String otherDesc;
 
+    /**
+     * 其他费用金额
+     */
     @Column(name="oth_exp", columnDefinition="VARCHAR(128)")
     private String otherExpense;
+    /**
+     * 本次项目合计
+     */
+    @Column(name="sum_", columnDefinition="DECIMAL(10,2)")
     private BigDecimal sum;
+    @Column(name="sort_", columnDefinition = "TINYINT")
     private int sort;
+
+    /**
+     * 关联
+     * 必须赋值，否则无法保存mid
+     */
+    @ManyToOne
+    @JoinColumn(name = "mid")
+    private TripMain main;
+
+    /**
+     * 其他项目对象集合
+     */
+    @OneToMany(mappedBy = "detail", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<TripOtherItem> items = new ArrayList<>();
+
+
+    public TripDetail relate(TripMain main) {
+        this.setMain(main);
+        return this;
+    }
+
 
 }
