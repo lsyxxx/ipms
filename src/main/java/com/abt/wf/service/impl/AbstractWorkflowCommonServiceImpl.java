@@ -77,17 +77,21 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     @Override
     public void approve(T form) {
+        final String entityId = getEntityId(form);
+        final T entity = load(entityId);
         String decision = getDecision(form);
-        Task task = beforeApprove(form, form.getSubmitUserid(), decision);
+        //set
+        this.setApprovalResult(form, entity);
+        Task task = beforeApprove(entity, form.getSubmitUserid(), decision);
         if (WorkFlowUtil.isPass(decision)) {
-            passHandler(form, task);
+            passHandler(entity, task);
         } else if (WorkFlowUtil.isReject(decision)) {
-            rejectHandler(form, task);
+            rejectHandler(entity, task);
         } else {
             throw new BusinessException("审批结果只能是pass/reject，实际传入: " + decision);
         }
 
-        afterApprove(form);
+        afterApprove(entity);
         clearAuthUser();
     }
 
@@ -353,6 +357,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         taskService.complete(task.getId());
         //update status
         form.setBusinessState(STATE_DETAIL_ACTIVE);
+        saveEntity(form);
         //pass log
         FlowOperationLog optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, id);
         optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
@@ -435,5 +440,6 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     abstract void passHandler(T form, Task task);
     abstract void rejectHandler(T form, Task task);
     abstract void afterApprove(T form);
+    abstract void setApprovalResult(T form, T entity);
 
 }

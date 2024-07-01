@@ -343,6 +343,14 @@ public class TripReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
+    void setApprovalResult(TripReimburseForm form, TripReimburseForm entity) {
+        entity.setDecision(form.getDecision());
+        entity.setComment(form.getComment());
+        entity.setSubmitUserid(form.getSubmitUserid());
+        entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
     public TripReimburseForm load(String rootId) {
         final TripReimburse common = tripRepository.findById(rootId).orElseThrow(() -> new BusinessException("未查询到差旅报销业务(rootId=" + rootId + ")"));
         final List<TripReimburse> trips = tripRepository.findByRootIdOrderBySortAsc(rootId);

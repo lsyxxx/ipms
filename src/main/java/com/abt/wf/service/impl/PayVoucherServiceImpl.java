@@ -213,6 +213,14 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     }
 
     @Override
+    void setApprovalResult(PayVoucher form, PayVoucher entity) {
+        entity.setDecision(form.getDecision());
+        entity.setComment(form.getComment());
+        entity.setSubmitUserid(form.getSubmitUserid());
+        entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
     public PayVoucher load(String id) {
         return payVoucherRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到款项支付单(id=" + id + ")"));
     }
