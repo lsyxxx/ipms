@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,14 +45,17 @@ public class TripMainRepositoryTest {
         main.setDaySum(1);
         main.setSum(new BigDecimal("3333.66"));
         main.setCompany("ABT");
+        main.setProcessDefinitionKey("rbsTrip");
+//        main.setCreateDate(LocalDateTime.now());
+//        main.setUpdateDate(LocalDateTime.now());
 
-        TripDetail d1 = new TripDetail();
-        d1.setStartDate(LocalDate.now());
-        d1.setTransportation("飞机");
-        d1.setTransExpense(new BigDecimal("3333.66"));
-        d1.setSum(new BigDecimal("3333.66"));
-        d1.setMain(main);
-        main.getDetails().add(d1);
+//        TripDetail d1 = new TripDetail();
+//        d1.setStartDate(LocalDate.now());
+//        d1.setTransportation("飞机");
+//        d1.setTransExpense(new BigDecimal("3333.66"));
+//        d1.setSum(new BigDecimal("3333.66"));
+//        d1.setMain(main);
+//        main.getDetails().add(d1);
 
 
         tripMainRepository.save(main);

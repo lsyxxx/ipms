@@ -2,7 +2,6 @@ package com.abt.wf.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +13,8 @@ import java.math.BigDecimal;
 /**
  * 差旅报销-其他项目
  */
-@Table(name = "wf_trip_other", indexes = {
-        @Index(name = "idx_did", columnList = "did")
+@Table(name = "wf_trip_item", indexes = {
+        @Index(name = "idx_did", columnList = "did"),
 })
 @Entity
 @Getter
@@ -34,16 +33,19 @@ public class TripOtherItem {
     /**
      * 排序
      */
+    @Column(name="sort_", columnDefinition = "TINYINT")
     private int sort;
 
     /**
      * 说明
      */
+    @Column(name="desc_", columnDefinition = "VARCHAR(1000)")
     private String desc;
 
     /**
      * 项目花费
      */
+    @Column(name="expense_", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal expense;
 
     @ManyToOne(fetch = FetchType.EAGER)

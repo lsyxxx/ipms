@@ -52,7 +52,7 @@ public class AuditInfo {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @CreatedDate
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ssd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name="create_date")
     private LocalDateTime createDate;
 

@@ -27,7 +27,7 @@ import java.util.List;
 @DynamicUpdate
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class TripDetail extends AuditInfo {
+public class TripDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -76,6 +76,12 @@ public class TripDetail extends AuditInfo {
     private BigDecimal lodgingExpense;
 
     /**
+     * 出差补助
+     */
+    @Column(name="allowance", columnDefinition = "DECIMAL(10,2)")
+    private BigDecimal allowance;
+
+    /**
      * 本次项目合计
      */
     @Column(name="sum_", columnDefinition="DECIMAL(10,2)")
@@ -94,7 +100,7 @@ public class TripDetail extends AuditInfo {
     /**
      * 其他项目对象集合
      */
-    @OneToMany(mappedBy = "detail", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "detail", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<TripOtherItem> items = new ArrayList<>();
 
 

@@ -7,10 +7,13 @@ import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.TripMain;
+import com.abt.wf.entity.TripOtherItem;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.TripRequestForm;
 import com.abt.wf.model.UserTaskDTO;
+import com.abt.wf.repository.TripDetailRepository;
 import com.abt.wf.repository.TripMainRepository;
+import com.abt.wf.repository.TripOtherItemRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.TripService;
 import org.camunda.bpm.engine.IdentityService;
@@ -23,7 +26,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,13 +46,15 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
     private final RuntimeService runtimeService;
     private final BpmnModelInstance rbsTripBpmnModelInstance;
     private final TripMainRepository tripMainRepository;
+    private final TripDetailRepository tripDetailRepository;
+    private final TripOtherItemRepository tripOtherItemRepository;
 
     @Value("${wf.trip.url.pre}")
     private String urlPrefix;
 
     public TripServiceImpl(IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService, RuntimeService runtimeService,
-                           BpmnModelInstance rbsTripBpmnModelInstance, TripMainRepository tripMainRepository) {
+                           BpmnModelInstance rbsTripBpmnModelInstance, TripMainRepository tripMainRepository, TripDetailRepository tripDetailRepository, TripOtherItemRepository tripOtherItemRepository) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
         this.identityService = identityService;
         this.userService = userService;
@@ -57,6 +64,8 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         this.runtimeService = runtimeService;
         this.rbsTripBpmnModelInstance = rbsTripBpmnModelInstance;
         this.tripMainRepository = tripMainRepository;
+        this.tripDetailRepository = tripDetailRepository;
+        this.tripOtherItemRepository = tripOtherItemRepository;
     }
 
 
@@ -126,15 +135,23 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         return 0;
     }
 
+    @Transactional
     @Override
     public TripMain saveEntity(TripMain entity) {
         //设置关联
+        List<TripOtherItem> list = new ArrayList<>();
+
         entity.getDetails().forEach(d -> {
             d.relate(entity);
             d.getItems().forEach(i -> {
                 i.relate(d);
+                list.add(i);
             });
         });
+        tripMainRepository.save(entity);
+        tripDetailRepository.saveAll(entity.getDetails());
+        tripOtherItemRepository.saveAll(list);
+
         return entity;
     }
 

@@ -47,7 +47,7 @@ public class TripMain extends WorkflowBase {
      * 出差人姓名，多人用逗号分隔
      */
     @NotNull(message = "出差人不能为空", groups = {ValidateGroup.Save.class})
-    @Column(name="staff_")
+    @Column(name="staff_", length = 1000)
     private String staff;
 
     /**
@@ -59,10 +59,10 @@ public class TripMain extends WorkflowBase {
     /**
      * 收款人
      */
-    @Column(name="rec_userid", length = 32)
+    @Column(name="rec_userid")
     private String receiveUserid;
 
-    @Column(name="rec_username", length = 32)
+    @Column(name="rec_username", length = 128)
     private String receiveUsername;
 
     /**
@@ -123,7 +123,7 @@ public class TripMain extends WorkflowBase {
     /**
      * 删除的级联操作
      */
-    @OneToMany(mappedBy = "main", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "main", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<TripDetail> details = new ArrayList<>();
 
     @Transient
