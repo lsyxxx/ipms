@@ -48,14 +48,14 @@ public class Reimburse extends WorkflowBase {
     /**
      * 原借款，借了准备金需要填写，没有则不填
      */
-    @Positive(message = "原借款金额不能小于0.00")
+    @PositiveOrZero(message = "原借款金额不能小于0.00")
     @Column(name="reserve_loan", columnDefinition="DECIMAL(10, 2)")
     private Double reserveLoan;
 
     /**
      * 应退余额，借了准备金有退款余额，没有则不填
      */
-    @Positive(message = "应退金额不能小于0.00")
+//    @Positive(message = "应退金额不能小于0.00")
     @Column(name="reserve_refund", columnDefinition="DECIMAL(10, 2)")
     private Double reserveRefund;
 
