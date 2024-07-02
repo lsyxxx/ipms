@@ -134,6 +134,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         baseForm.setCurrentTaskName(task.getName());
         baseForm.setCurrentTaskId(task.getId());
         baseForm.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
+        baseForm.setCurrentTaskAssigneeId(task.getAssignee());
         this.isApproveUser(baseForm);
         return task;
     }
