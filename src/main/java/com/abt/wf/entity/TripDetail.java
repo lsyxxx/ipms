@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -103,6 +104,7 @@ public class TripDetail {
      */
     @ManyToOne
     @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @JsonIgnore
     private TripMain main;
 
     /**
@@ -110,5 +112,12 @@ public class TripDetail {
      */
     @OneToMany(mappedBy = "detail", fetch = FetchType.EAGER)
     private List<TripOtherItem> items = new ArrayList<>();
+
+    public void addItem(TripOtherItem item) {
+        if (this.getItems() == null) {
+            this.items = new ArrayList<>();
+        }
+        this.items.add(item);
+    }
 
 }

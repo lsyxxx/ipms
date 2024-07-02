@@ -69,24 +69,23 @@ public class TripMainRepositoryTest {
 
     @Test
     void find() {
-        final TripMain main = tripMainRepository.findById("202406291719630045126").orElseThrow(() -> new RuntimeException("没找到"));
-        assertNotNull(main);
-        final List<TripDetail> details = main.getDetails();
-        assertNotNull(details);
-        System.out.println("details size: " + details);
-        details.forEach(d -> {
-            System.out.printf("mid:%s,sum:%s", d.getMain().getId(), d.getSum());
-        });
+        final TripMain main = tripMainRepository.findWithCurrentTaskById("202407021719901761542");
+        printTrip(main);
+    }
+    @Test
+    void find2() {
+        final TripMain main = tripMainRepository.findById("202407021719901761542").orElseThrow(() -> new RuntimeException("没找到"));
+        printOnlyMain(main);
     }
 
     @Test
     void findUserApplyByQueryPaged() {
-        final Page<TripMain> page = tripMainRepository.findUserApplyByQueryPaged("", "刘", "", null, null, this.page);
+        final Page<TripMain> page = tripMainRepository.findUserApplyByQueryPaged("", "宇", "", null, null, this.page);
         assertNotNull(page);
         System.out.println("total: " + page.getTotalElements());
         page.getContent().forEach(i -> {
-            System.out.printf("-编号:%s,出差人员:%s,起止时间:%s-%s,金额:%s%n",
-                    i.getId(), i.getStaff(), i.getTripStartDate(), i.getTripEndDate(), i.getSum());
+            System.out.printf("-编号:%s,出差人员:%s,起止时间:%s-%s,金额:%s。当前审批人id:%s%n",
+                    i.getId(), i.getStaff(), i.getTripStartDate(), i.getTripEndDate(), i.getSum(), i.getCurrentTask().getAssignee());
             if (i.getDetails() != null) {
                 i.getDetails().forEach(d -> {
                     System.out.printf("--行程:日期:%s|天数:%d|起讫地址:%s-%s|小计:%s%n",
@@ -95,5 +94,27 @@ public class TripMainRepositoryTest {
             }
 
         });
+    }
+
+    void printOnlyMain(TripMain i) {
+        if (i == null) {
+            throw new RuntimeException("trip is null");
+        }
+        System.out.printf("-编号:%s,出差人员:%s,起止时间:%s-%s,金额:%s。当前审批人id:%s%n",
+                i.getId(), i.getStaff(), i.getTripStartDate(), i.getTripEndDate(), i.getSum(), i.getCurrentTask().getAssignee());
+    }
+
+    void printTrip(TripMain i) {
+        if (i == null) {
+            throw new RuntimeException("trip is null");
+        }
+        System.out.printf("-编号:%s,出差人员:%s,起止时间:%s-%s,金额:%s。当前审批人id:%s%n",
+                i.getId(), i.getStaff(), i.getTripStartDate(), i.getTripEndDate(), i.getSum(), i.getCurrentTask().getAssignee());
+        if (i.getDetails() != null) {
+            i.getDetails().forEach(d -> {
+                System.out.printf("--行程:日期:%s|天数:%d|起讫地址:%s-%s|小计:%s%n",
+                        d.getStartDate(), d.getDaySum(), d.getTripOrigin(), d.getTripArrival(), d.getSum());
+            });
+        }
     }
 }

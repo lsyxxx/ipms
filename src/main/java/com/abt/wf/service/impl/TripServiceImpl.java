@@ -1,6 +1,7 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.model.ValidationResult;
+import com.abt.common.util.TimeUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
@@ -26,6 +27,9 @@ import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -138,29 +142,28 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
 
     @Transactional
     @Override
-    public TripMain saveEntity(TripMain entity) {
-        //设置关联
-        List<TripOtherItem> list = new ArrayList<>();
-        entity = tripMainRepository.save(entity);
-        final String mid = entity.getId();
-        entity.getDetails().forEach(d -> {
+    public TripMain saveEntity(TripMain form) {
+        tripMainRepository.save(form);
+        final String mid = form.getId();
+        for (TripDetail d : form.getDetails()) {
             d.setMid(mid);
             d = tripDetailRepository.save(d);
-            final String did = d.getId();
-            System.out.println("did==" + did);
+            String did = d.getId();
             d.getItems().forEach(i -> {
                 i.setDid(did);
-                list.add(i);
+                i = tripOtherItemRepository.save(i);
             });
-        });
-
-        tripOtherItemRepository.saveAll(list);
-        return entity;
+        }
+        return form;
     }
 
     @Override
     public TripMain load(String entityId) {
-        return tripMainRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到差旅报销申请(id=" + entityId + ")"));
+        final TripMain main = tripMainRepository.findWithCurrentTaskById(entityId);
+        if (main == null) {
+            throw new BusinessException("未查询到差旅报销申请(id=" + entityId + ")");
+        }
+        return main;
     }
 
     @Override
@@ -175,23 +178,47 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
 
     @Override
     public Page<TripMain> findAllByQueryPageable(TripRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "createDate"));
+        final Page<TripMain> page = tripMainRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        if (!page.getContent().isEmpty()) {
+            page.getContent().forEach(this::buildActiveTask);
+        }
+        return page;
     }
 
     @Override
     public Page<TripMain> findMyApplyByQueryPageable(TripRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "createDate"));
+        final Page<TripMain> page = tripMainRepository.findUserApplyByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        if (!page.getContent().isEmpty()) {
+            page.getContent().forEach(this::buildActiveTask);
+        }
+        return page;
     }
 
     //审批编号/出差人员/总金额/申请人,状态,创建时间
     @Override
     public Page<TripMain> findMyTodoByQueryPageable(TripRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "createDate"));
+        final Page<TripMain> page = tripMainRepository.findUserTodoByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        if (!page.getContent().isEmpty()) {
+            page.getContent().forEach(this::buildActiveTask);
+        }
+        return page;
     }
 
     @Override
     public Page<TripMain> findMyDoneByQueryPageable(TripRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "createDate"));
+        final Page<TripMain> page = tripMainRepository.findUserDoneByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        if (!page.getContent().isEmpty()) {
+            page.getContent().forEach(this::buildActiveTask);
+        }
+        return page;
     }
 
     @Override
@@ -226,7 +253,8 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
 
     @Override
     public TripMain getEntityWithCurrentTask(String id) {
-
-        return null;
+        final TripMain main = this.load(id);
+        buildActiveTask(main);
+        return main;
     }
 }

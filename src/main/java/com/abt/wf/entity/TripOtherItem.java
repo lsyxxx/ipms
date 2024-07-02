@@ -1,5 +1,6 @@
 package com.abt.wf.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -57,6 +58,7 @@ public class TripOtherItem {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "did", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @JsonIgnore
     private TripDetail detail;
 
 

@@ -123,7 +123,7 @@ public class TripMain extends WorkflowBase {
     /**
      * 删除的级联操作
      */
-    @OneToMany(mappedBy = "main", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "main", fetch = FetchType.LAZY)
     private List<TripDetail> details = new ArrayList<>();
 
     @Transient
@@ -148,5 +148,10 @@ public class TripMain extends WorkflowBase {
         return this.variableMap;
     }
 
-
+    public void addDetail(TripDetail detail) {
+        if (this.details == null) {
+            this.details = new ArrayList<>();
+        }
+        this.details.add(detail);
+    }
 }
