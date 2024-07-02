@@ -123,7 +123,7 @@ public class TripMain extends WorkflowBase {
     /**
      * 删除的级联操作
      */
-    @OneToMany(mappedBy = "main", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "main", fetch = FetchType.EAGER)
     private List<TripDetail> details = new ArrayList<>();
 
     @Transient
@@ -147,7 +147,6 @@ public class TripMain extends WorkflowBase {
 
         return this.variableMap;
     }
-
 
 
 }

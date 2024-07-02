@@ -183,6 +183,7 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         return null;
     }
 
+    //审批编号/出差人员/总金额/申请人,状态,创建时间
     @Override
     public Page<TripMain> findMyTodoByQueryPageable(TripRequestForm requestForm) {
         return null;

@@ -28,6 +28,8 @@ public class TripMainRepositoryTest {
     @Autowired
     private TripDetailRepository tripDetailRepository;
 
+    private final Pageable page = PageRequest.of(0, 10, Sort.by("createDate").descending());
+
     @BeforeEach
     void setUp() {
     }
@@ -75,6 +77,24 @@ public class TripMainRepositoryTest {
         System.out.println("details size: " + details);
         details.forEach(d -> {
             System.out.printf("mid:%s,sum:%s", d.getMain().getId(), d.getSum());
+        });
+    }
+
+    @Test
+    void findUserApplyByQueryPaged() {
+        final Page<TripMain> page = tripMainRepository.findUserApplyByQueryPaged("", "刘", "", null, null, this.page);
+        assertNotNull(page);
+        System.out.println("total: " + page.getTotalElements());
+        page.getContent().forEach(i -> {
+            System.out.printf("-编号:%s,出差人员:%s,起止时间:%s-%s%n",
+                    i.getId(), i.getStaff(), i.getTripStartDate(), i.getTripEndDate());
+            if (i.getDetails() != null) {
+                i.getDetails().forEach(d -> {
+                    System.out.printf("--行程:日期:%s|天数:%d|起讫地址:%s-%s|小计:%s%n",
+                            d.getStartDate(), d.getDaySum(), d.getTripOrigin(), d.getTripArrival(), d.getSum());
+                });
+            }
+
         });
     }
 }

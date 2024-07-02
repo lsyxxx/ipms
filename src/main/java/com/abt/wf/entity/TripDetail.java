@@ -108,7 +108,7 @@ public class TripDetail {
     /**
      * 其他项目对象集合
      */
-    @OneToMany(mappedBy = "detail", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "detail", fetch = FetchType.EAGER)
     private List<TripOtherItem> items = new ArrayList<>();
 
 }
