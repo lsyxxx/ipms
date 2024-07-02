@@ -2,6 +2,7 @@ package com.abt.wf.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,6 +30,12 @@ public class TripOtherItem {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    /**
+     * 关联detail id
+     */
+    @NotNull
+    @Column(name="did")
+    private String did;
 
     /**
      * 排序
@@ -40,7 +47,7 @@ public class TripOtherItem {
      * 说明
      */
     @Column(name="desc_", columnDefinition = "VARCHAR(1000)")
-    private String desc;
+    private String description;
 
     /**
      * 项目花费
@@ -49,13 +56,8 @@ public class TripOtherItem {
     private BigDecimal expense;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "did")
+    @JoinColumn(name = "did", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private TripDetail detail;
-
-    public TripOtherItem relate(TripDetail detail) {
-        this.setDetail(detail);
-        return this;
-    }
 
 
 }

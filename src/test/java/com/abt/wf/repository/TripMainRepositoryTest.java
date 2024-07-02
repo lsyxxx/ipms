@@ -25,6 +25,8 @@ public class TripMainRepositoryTest {
 
     @Autowired
     private TripMainRepository tripMainRepository;
+    @Autowired
+    private TripDetailRepository tripDetailRepository;
 
     @BeforeEach
     void setUp() {
@@ -38,7 +40,7 @@ public class TripMainRepositoryTest {
     public void saveTest() {
 
         TripMain main = new TripMain();
-        main.setReason("测试222");
+        main.setReason("测试4444");
         main.setStaff("刘宋菀");
         main.setTripStartDate(LocalDate.now());
         main.setTripEndDate(LocalDate.now());
@@ -48,17 +50,20 @@ public class TripMainRepositoryTest {
         main.setProcessDefinitionKey("rbsTrip");
 //        main.setCreateDate(LocalDateTime.now());
 //        main.setUpdateDate(LocalDateTime.now());
+        main = tripMainRepository.save(main);
 
-//        TripDetail d1 = new TripDetail();
-//        d1.setStartDate(LocalDate.now());
-//        d1.setTransportation("飞机");
-//        d1.setTransExpense(new BigDecimal("3333.66"));
-//        d1.setSum(new BigDecimal("3333.66"));
-//        d1.setMain(main);
-//        main.getDetails().add(d1);
+        TripDetail d1 = new TripDetail();
+        d1.setMid(main.getId());
+        d1.setStartDate(LocalDate.now());
+        d1.setTransportation("飞机");
+        d1.setTransExpense(new BigDecimal("3333.66"));
+        d1.setSum(new BigDecimal("3333.66"));
+        d1.setMain(main);
+        main.getDetails().add(d1);
 
 
-        tripMainRepository.save(main);
+
+        tripDetailRepository.save(d1);
     }
 
     @Test

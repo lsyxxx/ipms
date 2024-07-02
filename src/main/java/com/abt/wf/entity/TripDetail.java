@@ -3,6 +3,7 @@ package com.abt.wf.entity;
 import com.abt.common.model.AuditInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,6 +33,13 @@ public class TripDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    /**
+     * 关联mid
+     */
+    @NotNull
+    @Column(name="mid")
+    private String mid;
 
     @Column(name="start_date")
     private LocalDate startDate;
@@ -94,7 +102,7 @@ public class TripDetail {
      * 必须赋值，否则无法保存mid
      */
     @ManyToOne
-    @JoinColumn(name = "mid")
+    @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private TripMain main;
 
     /**
@@ -102,12 +110,5 @@ public class TripDetail {
      */
     @OneToMany(mappedBy = "detail", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<TripOtherItem> items = new ArrayList<>();
-
-
-    public TripDetail relate(TripMain main) {
-        this.setMain(main);
-        return this;
-    }
-
 
 }

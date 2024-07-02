@@ -6,6 +6,7 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.Reimburse;
+import com.abt.wf.entity.TripDetail;
 import com.abt.wf.entity.TripMain;
 import com.abt.wf.entity.TripOtherItem;
 import com.abt.wf.model.ReimburseRequestForm;
@@ -140,18 +141,20 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
     public TripMain saveEntity(TripMain entity) {
         //设置关联
         List<TripOtherItem> list = new ArrayList<>();
-
+        entity = tripMainRepository.save(entity);
+        final String mid = entity.getId();
         entity.getDetails().forEach(d -> {
-            d.relate(entity);
+            d.setMid(mid);
+            d = tripDetailRepository.save(d);
+            final String did = d.getId();
+            System.out.println("did==" + did);
             d.getItems().forEach(i -> {
-                i.relate(d);
+                i.setDid(did);
                 list.add(i);
             });
         });
-        tripMainRepository.save(entity);
-        tripDetailRepository.saveAll(entity.getDetails());
-        tripOtherItemRepository.saveAll(list);
 
+        tripOtherItemRepository.saveAll(list);
         return entity;
     }
 
