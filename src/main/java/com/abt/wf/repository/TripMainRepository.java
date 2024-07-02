@@ -13,8 +13,7 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
 
     //审批编号/出差人员/总金额/申请人,状态,创建时间
     @Query("select e from TripMain e " +
-//            "left join fetch e.details d " +
-//            "left join fetch d.items " +
+            "left join fetch e.details  " +
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu " +
             "where (:userid is null or :userid = '' or e.createUserid = :userid) " +
@@ -27,5 +26,8 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
             "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL OR e.createDate <= :endDate) ")
     Page<TripMain> findUserApplyByQueryPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+
+
+
 
 }

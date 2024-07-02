@@ -2,7 +2,6 @@ package com.abt.wf.repository;
 
 import com.abt.wf.entity.TripDetail;
 import com.abt.wf.entity.TripMain;
-import jdk.swing.interop.SwingInterOpUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,8 +85,8 @@ public class TripMainRepositoryTest {
         assertNotNull(page);
         System.out.println("total: " + page.getTotalElements());
         page.getContent().forEach(i -> {
-            System.out.printf("-编号:%s,出差人员:%s,起止时间:%s-%s%n",
-                    i.getId(), i.getStaff(), i.getTripStartDate(), i.getTripEndDate());
+            System.out.printf("-编号:%s,出差人员:%s,起止时间:%s-%s,金额:%s%n",
+                    i.getId(), i.getStaff(), i.getTripStartDate(), i.getTripEndDate(), i.getSum());
             if (i.getDetails() != null) {
                 i.getDetails().forEach(d -> {
                     System.out.printf("--行程:日期:%s|天数:%d|起讫地址:%s-%s|小计:%s%n",
