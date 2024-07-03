@@ -72,7 +72,6 @@ public class ActivitiServiceImpl implements ActivitiService {
         if (!CollectionUtils.isEmpty(list)) {
             //1. 获取对应的业务实体
             Task task = list.get(0);
-            System.out.println(task.getProcessInstanceId());
             String procId = task.getProcessInstanceId();
             final HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(procId).singleResult();
             final VariableInstance variableInstance = runtimeService.createVariableInstanceQuery().processInstanceIdIn(procId).variableName(Constants.VAR_KEY_ENTITY).singleResult();

@@ -93,3 +93,6 @@ INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERAT
 INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (N'EnumHFType_2', '2', N'EnumHFTtype', N'未回复', N'是否回复', NULL, NULL, NULL, NULL);
 
 
+alter table wf_trip_main alter COLUMN proc_inst_id nvarchar(64);
+alter table wf_trip_main alter COLUMN proc_def_id nvarchar(64);
+alter table wf_trip_main alter COLUMN proc_def_key nvarchar(64);
