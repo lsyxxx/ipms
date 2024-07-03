@@ -103,6 +103,14 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
+    void setApprovalResult(InvoiceOffset form, InvoiceOffset entity) {
+        entity.setDecision(form.getDecision());
+        entity.setComment(form.getComment());
+        entity.setSubmitUserid(form.getSubmitUserid());
+        entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
     public List<InvoiceOffset> findAllByCriteriaPageable(InvoiceOffsetRequestForm requestForm) {
         return List.of();
     }

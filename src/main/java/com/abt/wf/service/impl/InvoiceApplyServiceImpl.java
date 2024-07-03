@@ -95,6 +95,14 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     }
 
     @Override
+    void setApprovalResult(InvoiceApply form, InvoiceApply entity) {
+        entity.setDecision(form.getDecision());
+        entity.setComment(form.getComment());
+        entity.setSubmitUserid(form.getSubmitUserid());
+        entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
     public List<InvoiceApply> findAllByCriteriaPageable(InvoiceApplyRequestForm requestForm) {
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称，合同编号, 客户id， 客户name, 项目名称，申请部门id, 申请部门name
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),

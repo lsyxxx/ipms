@@ -77,17 +77,21 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     @Override
     public void approve(T form) {
+        final String entityId = getEntityId(form);
+        final T entity = load(entityId);
         String decision = getDecision(form);
-        Task task = beforeApprove(form, form.getSubmitUserid(), decision);
+        //set
+        this.setApprovalResult(form, entity);
+        Task task = beforeApprove(entity, form.getSubmitUserid(), decision);
         if (WorkFlowUtil.isPass(decision)) {
-            passHandler(form, task);
+            passHandler(entity, task);
         } else if (WorkFlowUtil.isReject(decision)) {
-            rejectHandler(form, task);
+            rejectHandler(entity, task);
         } else {
             throw new BusinessException("审批结果只能是pass/reject，实际传入: " + decision);
         }
 
-        afterApprove(form);
+        afterApprove(entity);
         clearAuthUser();
     }
 
@@ -121,18 +125,17 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         WorkFlowUtil.ensureProcessId(baseForm);
         WorkFlowUtil.decisionTranslate(decision);
         setAuthUser(authUser);
-        final T entity = load(getEntityId(baseForm));
         String procId = baseForm.getProcessInstanceId();
         Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
         //验证用户是否是审批用户
-        entity.setCurrentTaskId(task.getId());
+        baseForm.setCurrentTaskId(task.getId());
         //currentTask
-        entity.setCurrentTaskDefId(task.getTaskDefinitionKey());
-        entity.setCurrentTaskName(task.getName());
-        entity.setCurrentTaskId(task.getId());
-        entity.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
-        entity.setCurrentTaskAssigneeId(task.getAssignee());
-        this.isApproveUser(entity);
+        baseForm.setCurrentTaskDefId(task.getTaskDefinitionKey());
+        baseForm.setCurrentTaskName(task.getName());
+        baseForm.setCurrentTaskId(task.getId());
+        baseForm.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
+        baseForm.setCurrentTaskAssigneeId(task.getAssignee());
+        this.isApproveUser(baseForm);
         return task;
     }
 
@@ -352,9 +355,13 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     public void commonPassHandler(T form, Task task, String comment, String id) {
         taskService.claim(task.getId(), form.getSubmitUserid());
-        taskService.complete(task.getId());
         //update status
         form.setBusinessState(STATE_DETAIL_ACTIVE);
+
+        //如果是最后一个节点，complete以后会跳到endListener
+        taskService.complete(task.getId());
+        //如果是最后一个节点，此时不能保存。
+        saveEntity(form);
         //pass log
         FlowOperationLog optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, id);
         optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
@@ -437,5 +444,6 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     abstract void passHandler(T form, Task task);
     abstract void rejectHandler(T form, Task task);
     abstract void afterApprove(T form);
+    abstract void setApprovalResult(T form, T entity);
 
 }

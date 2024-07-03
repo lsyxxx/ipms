@@ -17,7 +17,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
 
     List<EmployeeInfo> findByCompanyAndIsActive(String company, String isActive);
 
-    @Query("select new com.abt.sys.model.entity.EmployeeInfo(e.id, u.id, e.name, e.dept) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where e.isExit = :isExit")
+    @Query("select new com.abt.sys.model.entity.EmployeeInfo(u.id, e.id, e.name, e.dept) from EmployeeInfo e left join TUser u on u.empnum = e.jobNumber where e.isExit = :isExit")
     List<EmployeeInfo> findByIsExit(boolean isExit);
 
 //    @Query("select e from EmployeeInfo e where e.isActive = '1'")

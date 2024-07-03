@@ -86,6 +86,7 @@ public class InvoiceApplyController {
 
     @PostMapping("/preview")
     public R<List<UserTaskDTO>> preview(@RequestBody InvoiceApply form) {
+        setSubmitUser(form);
         final List<UserTaskDTO> preview = invoiceApplyService.preview(form);
         return R.success(preview, preview.size());
     }
@@ -106,6 +107,12 @@ public class InvoiceApplyController {
         UserView user = TokenUtil.getUserFromAuthToken();
         form.setUserid(user.getId());
         form.setUsername(user.getName());
+    }
+
+    public void setSubmitUser(InvoiceApply form) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        form.setSubmitUserid(user.getId());
+        form.setSubmitUsername(user.getName());
     }
 
 }

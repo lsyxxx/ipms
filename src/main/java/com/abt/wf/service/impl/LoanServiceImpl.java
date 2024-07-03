@@ -224,6 +224,14 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     }
 
     @Override
+    void setApprovalResult(Loan form, Loan entity) {
+        entity.setDecision(form.getDecision());
+        entity.setComment(form.getComment());
+        entity.setSubmitUserid(form.getSubmitUserid());
+        entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
     public Loan load(String entityId) {
         return loanRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到业务实体(loan)"));
     }

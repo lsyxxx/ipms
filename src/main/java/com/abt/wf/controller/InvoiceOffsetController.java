@@ -91,6 +91,7 @@ public class InvoiceOffsetController {
 
     @PostMapping("/preview")
     public R<List<UserTaskDTO>> preview(@RequestBody InvoiceOffset form) {
+        setSubmitUser(form);
         final List<UserTaskDTO> preview = invoiceOffsetService.preview(form);
         return R.success(preview, preview.size());
     }
@@ -105,5 +106,10 @@ public class InvoiceOffsetController {
         UserView user = TokenUtil.getUserFromAuthToken();
         form.setUserid(user.getId());
         form.setUsername(user.getName());
+    }
+
+    public void setSubmitUser(InvoiceOffset form) {
+        form.setSubmitUserid(TokenUtil.getUserFromAuthToken().getId());
+        form.setSubmitUsername(TokenUtil.getUserFromAuthToken().getName());
     }
 }

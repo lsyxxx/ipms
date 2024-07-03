@@ -107,6 +107,14 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     }
 
     @Override
+    void setApprovalResult(Reimburse form, Reimburse entity) {
+        entity.setDecision(form.getDecision());
+        entity.setComment(form.getComment());
+        entity.setSubmitUserid(form.getSubmitUserid());
+        entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
     @Deprecated
     public List<Reimburse> findAllByCriteriaPageable(ReimburseRequestForm requestForm) {
         return List.of();
