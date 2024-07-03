@@ -20,6 +20,7 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +48,9 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     private final InvoiceApplyTaskRepository invoiceApplyTaskRepository;
     private final InvoiceApplyRepository invoiceApplyRepository;
     private final BpmnModelInstance invoiceApplyBpmnModelInstance;
+
+    @Value("${wf.inv.url.pre}")
+    private String urlPrefix;
 
     public InvoiceApplyServiceImpl(IdentityService identityService, @Qualifier("sqlServerUserService")  UserService userService,
                                    TaskService taskService, FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
@@ -213,7 +217,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     }
 
     @Override
-    public Page<InvoiceApply> findMyApplyByQueryPaged(InvoiceApplyRequestForm requestForm) {
+    public Page<InvoiceApply> findMyApplyByQueryPageable(InvoiceApplyRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<InvoiceApply> page = invoiceApplyRepository.findUserApplyByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
@@ -222,7 +226,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     }
 
     @Override
-    public Page<InvoiceApply> findAllByQueryPaged(InvoiceApplyRequestForm requestForm) {
+    public Page<InvoiceApply> findAllByQueryPageable(InvoiceApplyRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<InvoiceApply> page = invoiceApplyRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
@@ -231,7 +235,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     }
 
     @Override
-    public Page<InvoiceApply> findMyTodoByQueryPaged(InvoiceApplyRequestForm requestForm) {
+    public Page<InvoiceApply> findMyTodoByQueryPageable(InvoiceApplyRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<InvoiceApply> page = invoiceApplyRepository.findUserTodoByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
@@ -240,7 +244,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     }
 
     @Override
-    public Page<InvoiceApply> findMyDoneByQueryPaged(InvoiceApplyRequestForm requestForm) {
+    public Page<InvoiceApply> findMyDoneByQueryPageable(InvoiceApplyRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<InvoiceApply> page = invoiceApplyRepository.findUserDoneByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
@@ -342,7 +346,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
 
     @Override
     public String notifyLink(String id) {
-        return "/wf/inv/detail/" + id ;
+        return urlPrefix + id ;
     }
 
 }

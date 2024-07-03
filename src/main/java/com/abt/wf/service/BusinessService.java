@@ -1,7 +1,9 @@
 package com.abt.wf.service;
 
 import com.abt.common.model.RequestForm;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.WorkflowBase;
+import com.abt.wf.model.ReimburseRequestForm;
 import org.camunda.bpm.engine.task.Task;
 import org.springframework.data.domain.Page;
 
@@ -48,9 +50,12 @@ public interface BusinessService<T extends RequestForm, R extends WorkflowBase> 
     String getEntityId(R entity);
     String getServiceName();
 
-    /**
-     * task service是否支持
-     */
-//    boolean supports(Task task);
+    Page<R> findAllByQueryPageable(T requestForm);
+
+    Page<R> findMyApplyByQueryPageable(T requestForm);
+
+    Page<R> findMyTodoByQueryPageable(T requestForm);
+
+    Page<R> findMyDoneByQueryPageable(T requestForm);
 
 }

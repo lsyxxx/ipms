@@ -133,7 +133,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
-    public Page<InvoiceOffset> findAllByQueryPaged(InvoiceOffsetRequestForm requestForm) {
+    public Page<InvoiceOffset> findAllByQueryPageable(InvoiceOffsetRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<InvoiceOffset> page = invoiceOffsetRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
@@ -142,7 +142,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
-    public Page<InvoiceOffset> findMyTodoByQueryPaged(InvoiceOffsetRequestForm requestForm) {
+    public Page<InvoiceOffset> findMyTodoByQueryPageable(InvoiceOffsetRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<InvoiceOffset> page = invoiceOffsetRepository.findUserTodoByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
@@ -151,7 +151,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
-    public Page<InvoiceOffset> findMyDoneByQueryPaged(InvoiceOffsetRequestForm requestForm) {
+    public Page<InvoiceOffset> findMyDoneByQueryPageable(InvoiceOffsetRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<InvoiceOffset> page = invoiceOffsetRepository.findUserDoneByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
@@ -160,7 +160,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
-    public Page<InvoiceOffset> findMyApplyByQueryPaged(InvoiceOffsetRequestForm requestForm) {
+    public Page<InvoiceOffset> findMyApplyByQueryPageable(InvoiceOffsetRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<InvoiceOffset> page = invoiceOffsetRepository.findUserApplyByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);

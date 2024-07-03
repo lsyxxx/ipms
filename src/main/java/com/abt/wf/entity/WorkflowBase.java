@@ -30,14 +30,14 @@ import java.util.List;
 public class WorkflowBase extends AuditInfo {
 
     //-- process
-    @Column(name="proc_def_key", columnDefinition="NVARCHAR", length = 64)
+    @Column(name="proc_def_key", columnDefinition="NVARCHAR(64)")
     private String processDefinitionKey;
 
-    @Column(name="proc_def_id", columnDefinition="NVARCHAR", length = 64)
+    @Column(name="proc_def_id", columnDefinition="NVARCHAR(64)")
     private String processDefinitionId;
 
     //-- processInstance
-    @Column(name="proc_inst_id", columnDefinition="NVARCHAR", length = 64)
+    @Column(name="proc_inst_id", columnDefinition="NVARCHAR(64)")
     private String processInstanceId;
 
     /**

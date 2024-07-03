@@ -18,6 +18,7 @@ import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -241,6 +242,26 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     @Override
     public String getServiceName() {
         return SERVICE_PAY;
+    }
+
+    @Override
+    public Page<PayVoucher> findAllByQueryPageable(PayVoucherRequestForm requestForm) {
+        return null;
+    }
+
+    @Override
+    public Page<PayVoucher> findMyApplyByQueryPageable(PayVoucherRequestForm requestForm) {
+        return null;
+    }
+
+    @Override
+    public Page<PayVoucher> findMyTodoByQueryPageable(PayVoucherRequestForm requestForm) {
+        return null;
+    }
+
+    @Override
+    public Page<PayVoucher> findMyDoneByQueryPageable(PayVoucherRequestForm requestForm) {
+        return null;
     }
 
     static class PayVoucherSpecifications extends CommonSpecifications<PayVoucherRequestForm, PayVoucher> {

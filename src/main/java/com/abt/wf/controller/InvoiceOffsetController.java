@@ -49,27 +49,27 @@ public class InvoiceOffsetController {
         setTokenUser(requestForm);
         //criteria
         //申请人，申请时间，审批编号
-        final Page<InvoiceOffset> page = invoiceOffsetService.findMyTodoByQueryPaged(requestForm);
+        final Page<InvoiceOffset> page = invoiceOffsetService.findMyTodoByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/done")
     public R<List<InvoiceOffset>> doneList(InvoiceOffsetRequestForm requestForm) {
         setTokenUser(requestForm);
-        final Page<InvoiceOffset> page = invoiceOffsetService.findMyDoneByQueryPaged(requestForm);
+        final Page<InvoiceOffset> page = invoiceOffsetService.findMyDoneByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/myapply")
     public R<List<InvoiceOffset>> myApplyList(InvoiceOffsetRequestForm requestForm) {
         setTokenUser(requestForm);
-        final Page<InvoiceOffset> page = invoiceOffsetService.findMyApplyByQueryPaged(requestForm);
+        final Page<InvoiceOffset> page = invoiceOffsetService.findMyApplyByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<InvoiceOffset>> all(@ModelAttribute InvoiceOffsetRequestForm requestForm) {
-        final Page<InvoiceOffset> page = invoiceOffsetService.findAllByQueryPaged(requestForm);
+        final Page<InvoiceOffset> page = invoiceOffsetService.findAllByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 

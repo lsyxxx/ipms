@@ -12,13 +12,13 @@ public interface InvoiceOffsetService extends WorkFlowService<InvoiceOffset>, Bu
 
     Page<InvoiceOffset> findAllByCriteria(InvoiceOffsetRequestForm requestForm);
 
-    Page<InvoiceOffset> findAllByQueryPaged(InvoiceOffsetRequestForm requestForm);
-
-    Page<InvoiceOffset> findMyTodoByQueryPaged(InvoiceOffsetRequestForm requestForm);
-
-    Page<InvoiceOffset> findMyDoneByQueryPaged(InvoiceOffsetRequestForm requestForm);
-
-    Page<InvoiceOffset> findMyApplyByQueryPaged(InvoiceOffsetRequestForm requestForm);
+//    Page<InvoiceOffset> findAllByQueryPaged(InvoiceOffsetRequestForm requestForm);
+//
+//    Page<InvoiceOffset> findMyTodoByQueryPaged(InvoiceOffsetRequestForm requestForm);
+//
+//    Page<InvoiceOffset> findMyDoneByQueryPaged(InvoiceOffsetRequestForm requestForm);
+//
+//    Page<InvoiceOffset> findMyApplyByQueryPaged(InvoiceOffsetRequestForm requestForm);
 
     InvoiceOffset getEntityWithCurrentTask(String entityId);
 

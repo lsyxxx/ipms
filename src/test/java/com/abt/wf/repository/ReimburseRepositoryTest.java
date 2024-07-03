@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -78,4 +79,16 @@ class ReimburseRepositoryTest {
         });
     }
 
+    @Test
+    void insert() {
+        Reimburse rbs = new Reimburse();
+        rbs.setCost(1222.00);
+        rbs.setRbsType("猜哦股");
+        rbs.setRbsDate(LocalDate.now());
+        rbs.setCompany("ABT");
+        rbs.setReason("reason1231312");
+
+        reimburseRepository.save(rbs);
+
+    }
 }
