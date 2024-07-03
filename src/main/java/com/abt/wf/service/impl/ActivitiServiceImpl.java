@@ -76,6 +76,10 @@ public class ActivitiServiceImpl implements ActivitiService {
             String procId = task.getProcessInstanceId();
             final HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(procId).singleResult();
             final VariableInstance variableInstance = runtimeService.createVariableInstanceQuery().processInstanceIdIn(procId).variableName(Constants.VAR_KEY_ENTITY).singleResult();
+            if (variableInstance == null) {
+                //临时处理，存在null情况
+                return null;
+            }
             final String entityId = variableInstance.getValue().toString();
             BusinessService businessService = serviceMap.get(historicProcessInstance.getProcessDefinitionKey());
             final WorkflowBase load = businessService.load(entityId);
