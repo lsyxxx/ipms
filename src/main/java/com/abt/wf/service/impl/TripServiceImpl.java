@@ -102,6 +102,14 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
 
     }
 
+    @Override
+    void setApprovalResult(TripMain form, TripMain entity) {
+        entity.setDecision(form.getDecision());
+        entity.setComment(form.getComment());
+        entity.setSubmitUserid(form.getSubmitUserid());
+        entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
 
     @Override
     public List<TripMain> findAllByCriteriaPageable(TripRequestForm requestForm) {
