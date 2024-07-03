@@ -1,5 +1,6 @@
 package com.abt.wf.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -56,10 +57,11 @@ public class TripOtherItem {
     @Column(name="expense_", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal expense;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "did", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    @JsonIgnore
-    private TripDetail detail;
+//    @ManyToOne(fetch = FetchType.EAGER)
+//    @JoinColumn(name = "did", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+//    @JsonIgnore
+//    @JsonBackReference
+//    private TripDetail detail;
 
 
 }

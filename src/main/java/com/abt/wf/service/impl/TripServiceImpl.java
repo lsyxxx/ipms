@@ -158,11 +158,12 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         final String mid = form.getId();
         for (TripDetail d : form.getDetails()) {
             d.setMid(mid);
+            List<TripOtherItem> iList = d.getItems();
             d = tripDetailRepository.save(d);
             String did = d.getId();
-            d.getItems().forEach(i -> {
+            iList.forEach(i -> {
                 i.setDid(did);
-                i = tripOtherItemRepository.save(i);
+                tripOtherItemRepository.save(i);
             });
         }
         return form;

@@ -120,10 +120,10 @@ public class TripMain extends WorkflowBase {
     @Column(name="voucher_num", columnDefinition = "TINYINT")
     private int voucherNum;
 
-    /**
-     * 删除的级联操作
-     */
-    @OneToMany(mappedBy = "main", fetch = FetchType.LAZY)
+//    @OneToMany(mappedBy = "main", fetch = FetchType.LAZY)
+
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private List<TripDetail> details = new ArrayList<>();
 
     @Transient

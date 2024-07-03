@@ -59,7 +59,6 @@ public class TripMainRepositoryTest {
         d1.setTransportation("飞机");
         d1.setTransExpense(new BigDecimal("3333.66"));
         d1.setSum(new BigDecimal("3333.66"));
-        d1.setMain(main);
         main.getDetails().add(d1);
 
 

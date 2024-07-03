@@ -98,19 +98,16 @@ public class TripDetail {
     @Column(name="sort_", columnDefinition = "TINYINT")
     private int sort;
 
-    /**
-     * 关联
-     * 必须赋值，否则无法保存mid
-     */
-    @ManyToOne
-    @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    @JsonIgnore
-    private TripMain main;
+//    @ManyToOne
+//    @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+//    @JsonIgnore
+//    private TripMain main;
 
     /**
      * 其他项目对象集合
      */
-    @OneToMany(mappedBy = "detail", fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "did", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private List<TripOtherItem> items = new ArrayList<>();
 
     public void addItem(TripOtherItem item) {
