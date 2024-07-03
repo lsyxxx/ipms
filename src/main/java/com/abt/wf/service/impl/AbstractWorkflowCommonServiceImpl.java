@@ -121,16 +121,18 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         WorkFlowUtil.ensureProcessId(baseForm);
         WorkFlowUtil.decisionTranslate(decision);
         setAuthUser(authUser);
+        final T entity = load(getEntityId(baseForm));
         String procId = baseForm.getProcessInstanceId();
         Task task = taskService.createTaskQuery().processInstanceId(procId).active().singleResult();
         //验证用户是否是审批用户
-        baseForm.setCurrentTaskId(task.getId());
+        entity.setCurrentTaskId(task.getId());
         //currentTask
-        baseForm.setCurrentTaskDefId(task.getTaskDefinitionKey());
-        baseForm.setCurrentTaskName(task.getName());
-        baseForm.setCurrentTaskId(task.getId());
-        baseForm.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
-        this.isApproveUser(baseForm);
+        entity.setCurrentTaskDefId(task.getTaskDefinitionKey());
+        entity.setCurrentTaskName(task.getName());
+        entity.setCurrentTaskId(task.getId());
+        entity.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
+        entity.setCurrentTaskAssigneeId(task.getAssignee());
+        this.isApproveUser(entity);
         return task;
     }
 

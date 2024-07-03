@@ -46,7 +46,7 @@ public class TripMain extends WorkflowBase {
     /**
      * 出差人姓名，多人用逗号分隔
      */
-    @NotNull(message = "出差人不能为空", groups = {ValidateGroup.Save.class})
+    @NotNull(message = "出差人不能为空", groups = {ValidateGroup.Apply.class})
     @Column(name="staff_", length = 1000)
     private String staff;
 
@@ -74,17 +74,17 @@ public class TripMain extends WorkflowBase {
     /**
      * 出差事由
      */
-    @NotNull(message = "出差事由不能为空", groups = {ValidateGroup.Save.class})
+    @NotNull(message = "出差事由不能为空", groups = {ValidateGroup.Apply.class})
     @Column(name="reason", columnDefinition = "VARCHAR(1000)")
     private String reason;
 
-    @NotNull(message = "出差开始日期不能为空", groups = {ValidateGroup.Save.class})
+    @NotNull(message = "出差开始日期不能为空", groups = {ValidateGroup.Apply.class})
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name="trip_start_date")
     private LocalDate tripStartDate;
 
-    @NotNull(message = "出差结束日期不能为空", groups = {ValidateGroup.Save.class})
+    @NotNull(message = "出差结束日期不能为空", groups = {ValidateGroup.Apply.class})
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name="trip_end_date")
@@ -96,7 +96,7 @@ public class TripMain extends WorkflowBase {
     @Column(name="day_sum")
     private int daySum;
 
-    @NotNull(message = "业务归属不能为空")
+    @NotNull(message = "业务归属不能为空", groups = {ValidateGroup.Apply.class})
     @Column(name = "company_")
     private String company;
 
@@ -109,14 +109,14 @@ public class TripMain extends WorkflowBase {
     /**
      * 总金额
      */
-    @NotNull(groups = {ValidateGroup.Preview.class, ValidateGroup.Save.class})
+    @NotNull(groups = {ValidateGroup.Preview.class, ValidateGroup.Apply.class})
     @Column(name="sum_", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal sum;
 
     /**
      * 单据及附件数量
      */
-    @Max(value = 99, message = "单据数量不能超过99个", groups = {ValidateGroup.Save.class})
+    @Max(value = 99, message = "单据数量不能超过99个", groups = {ValidateGroup.Apply.class})
     @Column(name="voucher_num", columnDefinition = "TINYINT")
     private int voucherNum;
 

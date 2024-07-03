@@ -2,10 +2,13 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
+import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
+import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.TripDetail;
 import com.abt.wf.entity.TripMain;
@@ -40,7 +43,7 @@ import java.util.Map;
 /**
  *
  */
-@Service
+@Service(WorkFlowConfig.DEF_KEY_TRIP)
 public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain, TripRequestForm> implements TripService  {
 
     private final IdentityService identityService;
@@ -253,8 +256,10 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
 
     @Override
     public TripMain getEntityWithCurrentTask(String id) {
+        UserView user = TokenUtil.getUserFromAuthToken();
         final TripMain main = this.load(id);
         buildActiveTask(main);
+        main.setApproveUser(user.getId().equals(main.getCurrentTaskAssigneeId()));
         return main;
     }
 }

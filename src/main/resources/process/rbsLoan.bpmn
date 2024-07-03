@@ -30,7 +30,7 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_02cbf5y</bpmn:incoming>
-      <bpmn:outgoing>Flow_0a6mk7z</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1p7dmo6</bpmn:outgoing>
       <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="managerList" camunda:elementVariable="manager">
         <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">${nrOfInstances == nrOfCompletedInstances}</bpmn:completionCondition>
       </bpmn:multiInstanceLoopCharacteristics>
@@ -45,10 +45,9 @@
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0a6mk7z</bpmn:incoming>
-      <bpmn:outgoing>Flow_1tyqcd2</bpmn:outgoing>
+      <bpmn:incoming>Flow_0tg101u</bpmn:incoming>
+      <bpmn:outgoing>Flow_0e8vudv</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_0a6mk7z" sourceRef="rbsLoan_managers" targetRef="rbsLoan_finMgr" />
     <bpmn:userTask id="rbsLoan_ceo" name="总经理" camunda:assignee="U20230406002">
       <bpmn:extensionElements>
         <camunda:properties>
@@ -57,11 +56,10 @@
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1tyqcd2</bpmn:incoming>
-      <bpmn:outgoing>Flow_13enk9n</bpmn:outgoing>
-      <bpmn:outgoing>Flow_136c7sg</bpmn:outgoing>
+      <bpmn:incoming>Flow_0e8vudv</bpmn:incoming>
+      <bpmn:outgoing>Flow_0r51oxu</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0rs33vq</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_1tyqcd2" sourceRef="rbsLoan_finMgr" targetRef="rbsLoan_ceo" />
     <bpmn:userTask id="rbsLoan_cashier" name="出纳" camunda:assignee="U20230406007">
       <bpmn:extensionElements>
         <camunda:properties>
@@ -70,13 +68,9 @@
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_13enk9n</bpmn:incoming>
-      <bpmn:incoming>Flow_1ekjsfz</bpmn:incoming>
+      <bpmn:incoming>Flow_1jbc8x6</bpmn:incoming>
       <bpmn:outgoing>Flow_18wy4p8</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_13enk9n" name="金额小于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_cashier">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
     <bpmn:userTask id="rbsLoan_chief" name="董事长" camunda:assignee="U20230406001">
       <bpmn:extensionElements>
         <camunda:properties>
@@ -85,94 +79,135 @@
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_136c7sg</bpmn:incoming>
-      <bpmn:outgoing>Flow_1ekjsfz</bpmn:outgoing>
+      <bpmn:incoming>Flow_0r51oxu</bpmn:incoming>
+      <bpmn:outgoing>Flow_1w0jun1</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_136c7sg" name="金额大于等于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_chief">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1ekjsfz" sourceRef="rbsLoan_chief" targetRef="rbsLoan_cashier" />
     <bpmn:endEvent id="Event_1mt8dt2" name="借款审批结束">
       <bpmn:incoming>Flow_18wy4p8</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_18wy4p8" sourceRef="rbsLoan_cashier" targetRef="Event_1mt8dt2" />
+    <bpmn:userTask id="rbsLoan_acc_vch" name="会计制证" camunda:assignee="U20230406013">
+          <bpmn:extensionElements>
+            <camunda:properties>
+              <camunda:property name="approvalType" value="0" />
+              <camunda:property name="selectUserType" value="1" />
+              <camunda:property name="taskType" value="approval" />
+            </camunda:properties>
+          </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1w0jun1</bpmn:incoming>
+      <bpmn:incoming>Flow_0rs33vq</bpmn:incoming>
+      <bpmn:outgoing>Flow_1jbc8x6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1w0jun1" sourceRef="rbsLoan_chief" targetRef="rbsLoan_acc_vch" />
+    <bpmn:sequenceFlow id="Flow_1jbc8x6" sourceRef="rbsLoan_acc_vch" targetRef="rbsLoan_cashier" />
+    <bpmn:userTask id="rbsLoan_acc" name="会计" camunda:assignee="U20230406013">
+          <bpmn:extensionElements>
+            <camunda:properties>
+              <camunda:property name="approvalType" value="0" />
+              <camunda:property name="selectUserType" value="1" />
+              <camunda:property name="taskType" value="approval" />
+            </camunda:properties>
+          </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1p7dmo6</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tg101u</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1p7dmo6" sourceRef="rbsLoan_managers" targetRef="rbsLoan_acc" />
+    <bpmn:sequenceFlow id="Flow_0tg101u" sourceRef="rbsLoan_acc" targetRef="rbsLoan_finMgr" />
+    <bpmn:sequenceFlow id="Flow_0e8vudv" sourceRef="rbsLoan_finMgr" targetRef="rbsLoan_ceo" />
+    <bpmn:sequenceFlow id="Flow_0r51oxu" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_chief">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0rs33vq" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_acc_vch">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsLoan">
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-        <dc:Bounds x="179" y="79" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_1mt8dt2_di" bpmnElement="Event_1mt8dt2">
+        <dc:Bounds x="222" y="312" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="164" y="122" width="66" height="14" />
+          <dc:Bounds x="209" y="355" width="66" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_11eydw5_di" bpmnElement="rbsLoan_apply">
-        <dc:Bounds x="270" y="57" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1xsduq1_di" bpmnElement="rbsLoan_managers">
-        <dc:Bounds x="430" y="57" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1j0ob8v_di" bpmnElement="rbsLoan_finMgr">
-        <dc:Bounds x="590" y="57" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0y0gtu5_di" bpmnElement="rbsLoan_ceo">
-        <dc:Bounds x="750" y="57" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_144yvgd_di" bpmnElement="rbsLoan_cashier">
-        <dc:Bounds x="910" y="57" width="100" height="80" />
+        <dc:Bounds x="340" y="290" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_126cqbt_di" bpmnElement="rbsLoan_chief">
-        <dc:Bounds x="750" y="290" width="100" height="80" />
+        <dc:Bounds x="780" y="290" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1mt8dt2_di" bpmnElement="Event_1mt8dt2">
-        <dc:Bounds x="1072" y="79" width="36" height="36" />
+      <bpmndi:BPMNShape id="Activity_0y0gtu5_di" bpmnElement="rbsLoan_ceo">
+        <dc:Bounds x="960" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1j0ob8v_di" bpmnElement="rbsLoan_finMgr">
+        <dc:Bounds x="960" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1cdtzku_di" bpmnElement="rbsLoan_acc">
+        <dc:Bounds x="750" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1xsduq1_di" bpmnElement="rbsLoan_managers">
+        <dc:Bounds x="520" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_11eydw5_di" bpmnElement="rbsLoan_apply">
+        <dc:Bounds x="340" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="212" y="79" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1059" y="122" width="66" height="14" />
+          <dc:Bounds x="197" y="122" width="66" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0u3sbth_di" bpmnElement="rbsLoan_acc_vch">
+        <dc:Bounds x="560" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1erl8o0_di" bpmnElement="Flow_1erl8o0">
-        <di:waypoint x="215" y="97" />
-        <di:waypoint x="270" y="97" />
+        <di:waypoint x="248" y="97" />
+        <di:waypoint x="340" y="97" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_02cbf5y_di" bpmnElement="Flow_02cbf5y">
-        <di:waypoint x="370" y="97" />
-        <di:waypoint x="430" y="97" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0a6mk7z_di" bpmnElement="Flow_0a6mk7z">
-        <di:waypoint x="530" y="97" />
-        <di:waypoint x="590" y="97" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1tyqcd2_di" bpmnElement="Flow_1tyqcd2">
-        <di:waypoint x="690" y="97" />
-        <di:waypoint x="750" y="97" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_13enk9n_di" bpmnElement="Flow_13enk9n">
-        <di:waypoint x="850" y="97" />
-        <di:waypoint x="910" y="97" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="846" y="79" width="68" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_136c7sg_di" bpmnElement="Flow_136c7sg">
-        <di:waypoint x="800" y="137" />
-        <di:waypoint x="800" y="290" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="770" y="211" width="90" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ekjsfz_di" bpmnElement="Flow_1ekjsfz">
-        <di:waypoint x="850" y="330" />
-        <di:waypoint x="960" y="330" />
-        <di:waypoint x="960" y="137" />
+        <di:waypoint x="440" y="97" />
+        <di:waypoint x="520" y="97" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_18wy4p8_di" bpmnElement="Flow_18wy4p8">
-        <di:waypoint x="1010" y="97" />
-        <di:waypoint x="1072" y="97" />
+        <di:waypoint x="340" y="330" />
+        <di:waypoint x="258" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jbc8x6_di" bpmnElement="Flow_1jbc8x6">
+        <di:waypoint x="560" y="330" />
+        <di:waypoint x="440" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1w0jun1_di" bpmnElement="Flow_1w0jun1">
+        <di:waypoint x="780" y="330" />
+        <di:waypoint x="660" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1p7dmo6_di" bpmnElement="Flow_1p7dmo6">
+        <di:waypoint x="620" y="97" />
+        <di:waypoint x="750" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tg101u_di" bpmnElement="Flow_0tg101u">
+        <di:waypoint x="850" y="97" />
+        <di:waypoint x="960" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0e8vudv_di" bpmnElement="Flow_0e8vudv">
+        <di:waypoint x="1010" y="137" />
+        <di:waypoint x="1010" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0r51oxu_di" bpmnElement="Flow_0r51oxu">
+        <di:waypoint x="960" y="330" />
+        <di:waypoint x="880" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rs33vq_di" bpmnElement="Flow_0rs33vq">
+        <di:waypoint x="1010" y="370" />
+        <di:waypoint x="1010" y="460" />
+        <di:waypoint x="610" y="460" />
+        <di:waypoint x="610" y="370" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
