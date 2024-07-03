@@ -355,9 +355,12 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     public void commonPassHandler(T form, Task task, String comment, String id) {
         taskService.claim(task.getId(), form.getSubmitUserid());
-        taskService.complete(task.getId());
         //update status
         form.setBusinessState(STATE_DETAIL_ACTIVE);
+
+        //如果是最后一个节点，complete以后会跳到endListener
+        taskService.complete(task.getId());
+        //如果是最后一个节点，此时不能保存。
         saveEntity(form);
         //pass log
         FlowOperationLog optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, id);
