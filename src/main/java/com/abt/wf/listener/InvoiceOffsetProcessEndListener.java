@@ -28,8 +28,9 @@ public class InvoiceOffsetProcessEndListener implements ExecutionListener {
         } else {
             entityId = obj.toString();
             InvoiceOffset invoiceOffset = invoiceOffsetService.load(entityId);
-            if (Constants.STATE_DETAIL_ACTIVE.equals(invoiceOffset.getBusinessState())) {
-                //表示之前一直正常通过，特殊状态在业务中已更改状态
+            if (Constants.STATE_DETAIL_ACTIVE.equals(invoiceOffset.getBusinessState())
+                || Constants.STATE_DETAIL_APPLY.equals(invoiceOffset.getBusinessState())) {
+                //表示之前一直正常通过或上一个节点是申请节点，特殊状态在业务中已更改状态
                 invoiceOffset.setBusinessState(Constants.STATE_DETAIL_PASS);
                 invoiceOffset.setProcessState("COMPLETED");
             }
