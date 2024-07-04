@@ -109,7 +109,7 @@ public class TripMain extends WorkflowBase {
     /**
      * 总金额
      */
-    @NotNull(groups = {ValidateGroup.Preview.class, ValidateGroup.Apply.class})
+    @NotNull(message = "报销总金额不能为空", groups = {ValidateGroup.Preview.class, ValidateGroup.Apply.class})
     @Column(name="sum_", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal sum;
 

@@ -7,10 +7,12 @@ import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.model.ActionEnum;
@@ -40,7 +42,9 @@ import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -392,9 +396,41 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         }
     }
 
-    @Override
-    public void revoke(String entityId) {
+    public T beforeRevoke(String id, String operatorId) {
+        //1. 已结束的
+        final T entity = load(id);
+        if (entity.isFinished()) {
+            throw new BusinessException("已结束流程无法撤销!");
+        }
+        //2. 只有自己创建的可以撤销
+        if (!operatorId.equals(entity.getCreateUserid())) {
+            throw new BusinessException("只能撤销自己创建的流程!");
+        }
+        return entity;
+    }
 
+    public void doRevoke(T entity) {
+        //listener会修改状态，所以先删除
+        runtimeService.deleteProcessInstance(entity.getProcessInstanceId(), DEL_REASON_REVOKE);
+        //3. 修改状态
+        entity.setBusinessState(STATE_DETAIL_REVOKE);
+        entity.setProcessState("INTERNALLY_TERMINATED");
+        entity.setFinished(true);
+        entity.setEndTime(LocalDateTime.now());
+        saveEntity(entity);
+    }
+
+    @Transactional
+    @Override
+    public void revoke(String entityId, String operatorId, String operatorName) {
+        WorkFlowUtil.ensureProperty(entityId, "审批编号（entityId)");
+        //0. 校验
+        T entity = beforeRevoke(entityId, operatorId);
+        //1. 执行
+        doRevoke(entity);
+        //2. 添加log
+        FlowOperationLog log = FlowOperationLog.revokeLog(operatorId, operatorName, entity, entityId);
+        flowOperationLogService.saveLog(log);
     }
 
     public T setActiveTask(T entity) {
@@ -430,6 +466,32 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     }
 
     /**
+     * 复制业务
+     * @param copyId 复制对象id
+     */
+    public T getCopyEntity(String copyId) {
+        if (StringUtils.isBlank(copyId)) {
+            throw new BusinessException("请选择一个流程提交");
+        }
+
+        //1. 获取copyId对应的实体
+        T copyEntity = load(copyId);
+
+        //清空其他数据
+        clearEntityId(copyEntity);
+        copyEntity.setProcessInstanceId(null);
+        copyEntity.setProcessDefinitionKey(null);
+        copyEntity.setBusinessState(null);
+        copyEntity.setProcessState(null);
+        copyEntity.setFinished(false);
+        copyEntity.setEndTime(null);
+        copyEntity.setDelete(false);
+        copyEntity.setDeleteReason(null);
+        return copyEntity;
+    }
+
+
+    /**
      * 预览前验证
      * @param form 表单
      */
@@ -445,5 +507,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     abstract void rejectHandler(T form, Task task);
     abstract void afterApprove(T form);
     abstract void setApprovalResult(T form, T entity);
+
+    abstract void clearEntityId(T entity);
 
 }

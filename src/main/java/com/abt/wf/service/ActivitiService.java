@@ -7,6 +7,8 @@ import com.abt.wf.model.TaskWrapper;
 import java.util.List;
 
 public interface ActivitiService {
+    List<WorkflowBase> findUserTodoAll(String userid, String query);
+
     WorkflowBase findFinanceTask(String assignee);
 
     List<User> findDefaultCopyUsers();

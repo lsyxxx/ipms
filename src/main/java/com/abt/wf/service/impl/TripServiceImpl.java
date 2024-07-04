@@ -110,6 +110,11 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         entity.setSubmitUsername(form.getSubmitUsername());
     }
 
+    @Override
+    void clearEntityId(TripMain entity) {
+        entity.setId(null);
+    }
+
 
     @Override
     public List<TripMain> findAllByCriteriaPageable(TripRequestForm requestForm) {
@@ -261,6 +266,11 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
     @Override
     public String notifyLink(String id) {
         return urlPrefix + id;
+    }
+
+    @Override
+    public List<String> createBriefDesc(TripMain entity) {
+        return List.of();
     }
 
     @Override

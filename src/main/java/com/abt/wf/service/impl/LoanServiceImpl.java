@@ -1,8 +1,11 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
+import com.abt.wf.entity.InvoiceOffset;
 import com.abt.wf.entity.Loan;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.LoanRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
@@ -200,6 +203,11 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     }
 
     @Override
+    public List<String> createBriefDesc(Loan entity) {
+        return List.of();
+    }
+
+    @Override
     ValidationResult beforePreview(Loan form) {
         return ValidationResult.pass();
     }
@@ -232,6 +240,11 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     }
 
     @Override
+    void clearEntityId(Loan entity) {
+        entity.setId(null);
+    }
+
+    @Override
     public Loan load(String entityId) {
         return loanRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到业务实体(loan)"));
     }
@@ -258,22 +271,38 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
 
     @Override
     public Page<Loan> findAllByQueryPageable(LoanRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<Loan> page = loanRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
     @Override
     public Page<Loan> findMyApplyByQueryPageable(LoanRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<Loan> page = loanRepository.findUserApplyByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
     @Override
     public Page<Loan> findMyTodoByQueryPageable(LoanRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<Loan> page = loanRepository.findUserTodoByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
     @Override
     public Page<Loan> findMyDoneByQueryPageable(LoanRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<Loan> page = loanRepository.findUserDoneByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
     @Override

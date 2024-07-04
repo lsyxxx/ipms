@@ -5,13 +5,13 @@ import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.WorkFlowConfig;
+import com.abt.wf.entity.Loan;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.TaskWrapper;
 import com.abt.wf.service.ActivitiService;
+import com.abt.wf.service.WorkFlowService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,21 +39,32 @@ public class WorkflowController {
         return R.success(financeTask);
     }
 
-    @GetMapping("/fin/todo/count")
-    public R<Long> countMyFinanceTodoList() {
-        UserView user = TokenUtil.getUserFromAuthToken();
-        final long count = activitiService.countUserFinanceTodo(user.getId());
-        return R.success(count);
-    }
+//    @GetMapping("/fin/todo/count")
+//    public R<Long> countMyFinanceTodoList() {
+//        UserView user = TokenUtil.getUserFromAuthToken();
+//        final long count = activitiService.countUserFinanceTodo(user.getId());
+//        return R.success(count);
+//    }
 
     /**
      * 默认抄送人
-     * @return
      */
     @GetMapping("/defaultcc")
     public R<List<User>> getDefaultCopyUser() {
         final List<User> defaultCopyUsers = activitiService.findDefaultCopyUsers();
         return R.success(defaultCopyUsers, defaultCopyUsers.size());
+    }
+
+    @GetMapping("/find/todo/all")
+    public R<List<WorkflowBase>> findUserTodoAll(@RequestParam(required = false) String query, @RequestParam(required = false) String type) {
+        final List<WorkflowBase> all = activitiService.findUserTodoAll(TokenUtil.getUseridFromAuthToken(), query);
+        return R.success(all, all.size());
+    }
+
+    @GetMapping("/fin/todo/count")
+    public R<Integer> findUserTodoCount() {
+        final List<WorkflowBase> all = activitiService.findUserTodoAll(TokenUtil.getUseridFromAuthToken(), null);
+        return R.success(all.size(), all.size());
     }
 
     /**

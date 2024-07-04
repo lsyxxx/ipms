@@ -32,6 +32,17 @@ public class InvoiceOffsetController {
         this.invoiceOffsetService = invoiceOffsetService;
     }
 
+    /**
+     * 撤销一个流程
+     * @param id: 撤销的流程的id
+     */
+    @GetMapping("/revoke")
+    public R<Object> revoke(String id) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        invoiceOffsetService.revoke(id, user.getId(), user.getName());
+        return R.success("撤销成功");
+    }
+
     @PostMapping("/apply")
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody InvoiceOffset form) {
         invoiceOffsetService.apply(form);

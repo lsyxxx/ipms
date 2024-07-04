@@ -33,6 +33,23 @@ public class ReimburseController {
     private final ReimburseService reimburseService;
 
 
+    /**
+     * 撤销一个流程
+     * @param id: 撤销的流程的id
+     */
+    @GetMapping("/revoke")
+    public R<Object> revoke(String id) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        reimburseService.revoke(id, user.getId(), user.getName());
+        return R.success("撤销成功");
+    }
+
+    @GetMapping("/restart")
+    public R<Reimburse> copyEntity(String id) {
+        final Reimburse copyEntity = reimburseService.getCopyEntity(id);
+        return R.success(copyEntity);
+    }
+
     @PostMapping("/apply")
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody Reimburse form) {
         form.setRbsDate(LocalDate.now());
@@ -51,12 +68,6 @@ public class ReimburseController {
 
     @GetMapping("/todo")
     public R<List<Reimburse>> todoList(@ModelAttribute ReimburseRequestForm requestForm) {
-//        setTokenUser(requestForm);
-//        //criteria
-//        //申请人，申请时间，审批编号
-//        final List<Reimburse> todo = reimburseService.findMyTodoByCriteria(requestForm);
-//        final int total = reimburseService.countMyTodoByCriteria(requestForm);
-//        return R.success(todo, total);
         setTokenUser(requestForm);
         final Page<Reimburse> page = reimburseService.findMyTodoByQueryPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements());
@@ -101,6 +112,9 @@ public class ReimburseController {
 
     @PostMapping("/preview")
     public R<List<UserTaskDTO>> preview(@RequestBody Reimburse form) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        form.setSubmitUserid(user.getId());
+        form.setSubmitUsername(user.getUsername());
         final List<UserTaskDTO> preview = reimburseService.preview(form);
         return R.success(preview, preview.size());
     }

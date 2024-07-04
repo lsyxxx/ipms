@@ -33,6 +33,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -113,6 +114,12 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
     }
+
+    @Override
+    void clearEntityId(Reimburse entity) {
+        entity.setId(null);
+    }
+
 
     @Override
     @Deprecated
@@ -267,6 +274,22 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     @Override
     public String notifyLink(String id) {
         return this.urlPrefix + id ;
+    }
+
+    /**
+     * 卡片简述
+     */
+    @Override
+    public List<String> createBriefDesc(Reimburse entity) {
+        //报销金额
+        List<String> list = new ArrayList<>();
+        if (entity == null) {
+            return list;
+        }
+        list.add("报销金额:" + entity.getCost() + "(元)");
+        list.add("报销类别:" + entity.getRbsType());
+        list.add("报销事由:" + entity.getReason());
+        return list;
     }
 
     static class ReimburseSpecification extends CommonSpecifications<ReimburseRequestForm, Reimburse> {

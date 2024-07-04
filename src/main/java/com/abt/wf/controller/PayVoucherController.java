@@ -7,11 +7,13 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PayVoucher;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.PayVoucherService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,12 @@ import java.util.List;
 public class PayVoucherController {
     private final PayVoucherService payVoucherService;
 
+
+    @GetMapping("/restart")
+    public R<PayVoucher> copyEntity(String id) {
+        final PayVoucher copyEntity = payVoucherService.getCopyEntity(id);
+        return R.success(copyEntity);
+    }
 
     @PostMapping("/apply")
     public R<Object> apply(@Validated(ValidateGroup.Apply.class) @RequestBody PayVoucher payVoucher) {
@@ -44,34 +52,30 @@ public class PayVoucherController {
 
     @GetMapping("/todo")
     public R<List<PayVoucher>> todoList(@ModelAttribute PayVoucherRequestForm requestForm) {
-        //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
         setUser(requestForm);
-        final List<PayVoucher> todo = payVoucherService.findMyTodoByCriteria(requestForm);
-        final int total = payVoucherService.countMyTodoByCriteria(requestForm);
-        return R.success(todo, total);
+        final Page<PayVoucher> page = payVoucherService.findMyTodoByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/done")
     public R<List<PayVoucher>> doneList(@ModelAttribute PayVoucherRequestForm requestForm) {
         setUser(requestForm);
-        final List<PayVoucher> done = payVoucherService.findMyDoneByCriteriaPageable(requestForm);
-        final int total = payVoucherService.countMyDoneByCriteria(requestForm);
-        return R.success(done, total);
+        final Page<PayVoucher> page = payVoucherService.findMyDoneByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/myapply")
     public R<List<PayVoucher>> myApplyList(@ModelAttribute PayVoucherRequestForm requestForm) {
         setUser(requestForm);
-        final List<PayVoucher> myApplyList = payVoucherService.findMyApplyByCriteriaPageable(requestForm);
-        final int total = payVoucherService.countMyApplyByCriteria(requestForm);
-        return R.success(myApplyList, total);
+        final Page<PayVoucher> page = payVoucherService.findMyApplyByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<PayVoucher>> all(@ModelAttribute PayVoucherRequestForm requestForm) {
-        final List<PayVoucher> all = payVoucherService.findAllByCriteriaPageable(requestForm);
-        final int total = payVoucherService.countAllByCriteria(requestForm);
-        return R.success(all, total);
+        setUser(requestForm);
+        final Page<PayVoucher> page = payVoucherService.findAllByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/load/{id}")
@@ -88,6 +92,7 @@ public class PayVoucherController {
 
     @PostMapping("/preview")
     public R<List<UserTaskDTO>> preview(@Validated(ValidateGroup.Preview.class) @RequestBody PayVoucher payVoucher) {
+        setSubmitUser(payVoucher);
         final List<UserTaskDTO> preview = payVoucherService.preview(payVoucher);
         return R.success(preview, preview.size());
     }

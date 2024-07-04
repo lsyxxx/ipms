@@ -177,6 +177,20 @@ public class FlowOperationLog {
         return optLog;
     }
 
+    public static FlowOperationLog revokeLog(String operatorId, String operatorName, WorkflowBase form, String entityId) {
+        FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName,
+                form.getProcessInstanceId(), form.getProcessDefinitionId(), form.getProcessDefinitionKey(),
+                form.getServiceName());
+        optLog.setEntityId(entityId);
+        optLog.setTaskName("用户撤销");
+        optLog.setTaskStartTime(LocalDateTime.now());
+        optLog.setTaskEndTime(LocalDateTime.now());
+        optLog.setAction(ActionEnum.REVOKE.name());
+        optLog.setComment("系统：用户主动撤销");
+        optLog.setTaskResult(STATE_DETAIL_REVOKE);
+        return optLog;
+    }
+
 
 
     /**

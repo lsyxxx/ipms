@@ -7,6 +7,7 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Loan;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.LoanRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.LoanService;
@@ -28,8 +29,10 @@ public class LoanController {
 
     private final LoanService loanService;
 
+
     @PostMapping("/apply")
     public R<Object> apply(@Validated(ValidateGroup.Apply.class) @RequestBody Loan loan) {
+        setSubmitUser(loan);
         loanService.apply(loan);
         return R.success("申请成功");
     }
@@ -85,8 +88,9 @@ public class LoanController {
     }
 
     @PostMapping("/preview")
-    public R<List<UserTaskDTO>> preview(@Validated(ValidateGroup.Preview.class) @RequestBody Loan Loan) {
-        final List<UserTaskDTO> preview = loanService.preview(Loan);
+    public R<List<UserTaskDTO>> preview(@Validated(ValidateGroup.Preview.class) @RequestBody Loan loan) {
+        setSubmitUser(loan);
+        final List<UserTaskDTO> preview = loanService.preview(loan);
         return R.success(preview, preview.size());
     }
 
@@ -100,5 +104,11 @@ public class LoanController {
         final UserView user = TokenUtil.getUserFromAuthToken();
         requestForm.setUserid(user.getId());
         requestForm.setUsername(user.getUsername());
+    }
+
+    public void setSubmitUser(Loan loan) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        loan.setSubmitUserid(user.getId());
+        loan.setSubmitUsername(user.getUsername());
     }
 }

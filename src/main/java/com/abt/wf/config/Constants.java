@@ -50,6 +50,8 @@ public class Constants {
     public static final String OPERATE_TYPE_SYS = "system";
     public static final String OPERATE_TYPE_USER = "user";
 
+    public static final String DEL_REASON_REVOKE = "用户主动撤销";
+
     /*-----------------------
      * 流程节点
      * ----------------------

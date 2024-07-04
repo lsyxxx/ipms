@@ -1,8 +1,10 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
+import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.entity.PayVoucher;
 import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -157,12 +159,6 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         return Constants.SERVICE_PAY;
     }
 
-
-    @Override
-    public void revoke(String entityId) {
-
-    }
-
     @Override
     public List<UserTaskDTO> preview(PayVoucher form) {
         return this.commonPreview(form,  form.createVarMap(), payVoucherModelInstance, form.copyList());
@@ -181,6 +177,11 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     @Override
     public String notifyLink(String id) {
         return "/wf/pay/detail/" + id;
+    }
+
+    @Override
+    public List<String> createBriefDesc(PayVoucher entity) {
+        return List.of();
     }
 
     @Override
@@ -222,6 +223,11 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     }
 
     @Override
+    void clearEntityId(PayVoucher entity) {
+        entity.setId(null);
+    }
+
+    @Override
     public PayVoucher load(String id) {
         return payVoucherRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到款项支付单(id=" + id + ")"));
     }
@@ -246,22 +252,38 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
 
     @Override
     public Page<PayVoucher> findAllByQueryPageable(PayVoucherRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<PayVoucher> page = payVoucherRepository.findAllByQueryPaged(requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
     @Override
     public Page<PayVoucher> findMyApplyByQueryPageable(PayVoucherRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<PayVoucher> page = payVoucherRepository.findUserApplyByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
     @Override
     public Page<PayVoucher> findMyTodoByQueryPageable(PayVoucherRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<PayVoucher> page = payVoucherRepository.findUserTodoByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
     @Override
     public Page<PayVoucher> findMyDoneByQueryPageable(PayVoucherRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<PayVoucher> page = payVoucherRepository.findUserDoneByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
+        page.getContent().forEach(this::buildActiveTask);
+        return page;
     }
 
     static class PayVoucherSpecifications extends CommonSpecifications<PayVoucherRequestForm, PayVoucher> {

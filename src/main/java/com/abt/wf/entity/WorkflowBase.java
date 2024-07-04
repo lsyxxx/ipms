@@ -28,7 +28,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners(JpaWorkflowListener.class)
 public class WorkflowBase extends AuditInfo {
-
     //-- process
     @Column(name="proc_def_key", columnDefinition="NVARCHAR(64)")
     private String processDefinitionKey;
@@ -153,6 +152,9 @@ public class WorkflowBase extends AuditInfo {
     private String submitUserid;
     @Transient
     private String submitUsername;
+
+    @Transient
+    private List<String> briefDesc;
 
     public List<String> copyList() {
         if (this.getCopy() == null) {

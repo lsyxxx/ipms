@@ -6,6 +6,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.TripMain;
 import com.abt.wf.model.TripRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -30,6 +31,24 @@ public class TripController {
 
     public TripController(TripService tripService) {
         this.tripService = tripService;
+    }
+
+
+    /**
+     * 撤销一个流程
+     * @param id: 撤销的流程的id
+     */
+    @GetMapping("/revoke")
+    public R<Object> revoke(String id) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        tripService.revoke(id, user.getId(), user.getName());
+        return R.success("撤销成功");
+    }
+
+    @GetMapping("/restart")
+    public R<TripMain> copyEntity(String id) {
+        final TripMain copyEntity = tripService.getCopyEntity(id);
+        return R.success(copyEntity);
     }
 
 
@@ -89,6 +108,7 @@ public class TripController {
 
     @PostMapping("/preview")
     public R<List<UserTaskDTO>> preview(@RequestBody TripMain form) {
+        setSubmitUser(form);
         final List<UserTaskDTO> preview = tripService.preview(form);
         return R.success(preview, preview.size());
     }

@@ -1,6 +1,7 @@
 package com.abt.wf.service;
 
 
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.entity.FlowOperationLog;
@@ -52,7 +53,7 @@ public interface WorkFlowService<T> {
      * 撤销
      * @param entityId 业务实体id
      */
-    void revoke(String entityId);
+    void revoke(String entityId, String operatorId, String operatorName);
 
     /**
      * 删除流程
@@ -92,4 +93,8 @@ public interface WorkFlowService<T> {
      * 流程记录，包含已完成的和正在进行的
      */
     List<FlowOperationLog> processRecord(String entityId, String serviceName);
+
+    T getCopyEntity(String copyId);
+
+    List<String> createBriefDesc(T entity);
 }

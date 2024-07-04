@@ -3,9 +3,10 @@ package com.abt.wf.service.impl;
 import com.abt.common.model.User;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
+import com.abt.wf.entity.TripMain;
 import com.abt.wf.entity.WorkflowBase;
-import com.abt.wf.service.ActivitiService;
-import com.abt.wf.service.BusinessService;
+import com.abt.wf.model.*;
+import com.abt.wf.service.*;
 import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.HistoryService;
@@ -14,9 +15,11 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.runtime.VariableInstance;
 import org.camunda.bpm.engine.task.Task;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,12 +38,85 @@ public class ActivitiServiceImpl implements ActivitiService {
 
     private final Map<String, BusinessService> serviceMap;
 
-    public ActivitiServiceImpl(WorkFlowConfig workFlowConfig, TaskService taskService, HistoryService historyService, RuntimeService runtimeService, Map<String, BusinessService> serviceMap) {
+    private final ReimburseService reimburseService;
+    private final TripService tripService;
+    private final InvoiceApplyService invoiceApplyService;
+    private final InvoiceOffsetService invoiceOffsetService;
+    private final LoanService loanService;
+    private final PayVoucherService payVoucherService;
+
+    public ActivitiServiceImpl(WorkFlowConfig workFlowConfig, TaskService taskService, HistoryService historyService, RuntimeService runtimeService, Map<String, BusinessService> serviceMap, ReimburseService reimburseService, TripService tripService, InvoiceApplyService invoiceApplyService, InvoiceOffsetService invoiceOffsetService, LoanService loanService, PayVoucherService payVoucherService) {
         this.workFlowConfig = workFlowConfig;
         this.taskService = taskService;
         this.historyService = historyService;
         this.runtimeService = runtimeService;
         this.serviceMap = serviceMap;
+        this.reimburseService = reimburseService;
+        this.tripService = tripService;
+        this.invoiceApplyService = invoiceApplyService;
+        this.invoiceOffsetService = invoiceOffsetService;
+        this.loanService = loanService;
+        this.payVoucherService = payVoucherService;
+    }
+    @Override
+    public List<WorkflowBase> findUserTodoAll(String userid, String query) {
+        List<WorkflowBase> list = new ArrayList<>();
+
+        TripRequestForm tripForm = new TripRequestForm();
+        tripForm.setPage(1);
+        tripForm.setLimit(9999);
+        tripForm.setUserid(userid);
+        tripForm.setQuery(query);
+        list.addAll(tripService.findMyTodoByQueryPageable(tripForm).getContent());
+
+        InvoiceApplyRequestForm invForm = new InvoiceApplyRequestForm();
+        invForm.setPage(1);
+        invForm.setLimit(9999);
+        invForm.setUserid(userid);
+        invForm.setQuery(query);
+        list.addAll(invoiceApplyService.findMyTodoByQueryPageable(invForm).getContent());
+
+
+        PayVoucherRequestForm payForm = new PayVoucherRequestForm();
+        payForm.setPage(1);
+        payForm.setLimit(9999);
+        payForm.setUserid(userid);
+        payForm.setQuery(query);
+        list.addAll(payVoucherService.findMyTodoByQueryPageable(payForm).getContent());
+
+
+        LoanRequestForm loanForm = new LoanRequestForm();
+        loanForm.setPage(1);
+        loanForm.setLimit(9999);
+        loanForm.setUserid(userid);
+        loanForm.setQuery(query);
+        list.addAll(loanService.findMyTodoByQueryPageable(loanForm).getContent());
+
+
+        ReimburseRequestForm rbsForm = new ReimburseRequestForm();
+        rbsForm.setPage(1);
+        rbsForm.setLimit(9999);
+        rbsForm.setUserid(userid);
+        rbsForm.setQuery(query);
+        list.addAll(reimburseService.findMyTodoByQueryPageable(rbsForm).getContent());
+
+        InvoiceOffsetRequestForm ioForm = new InvoiceOffsetRequestForm();
+        ioForm.setPage(1);
+        ioForm.setLimit(9999);
+        ioForm.setUserid(userid);
+        ioForm.setQuery(query);
+        list.addAll(invoiceOffsetService.findMyTodoByQueryPageable(ioForm).getContent());
+
+        list.sort((o1, o2) -> {
+            if (o1.getCreateDate().isBefore(o2.getCreateDate())) {
+                return 1;
+            } else if (o1.getCreateDate().isAfter(o2.getCreateDate())) {
+                return -1;
+            } else {
+                return 0;
+            }
+        });
+        return list;
     }
 
     @Override

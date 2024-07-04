@@ -6,5 +6,4 @@ import org.springframework.data.domain.Page;
 
 public interface ReimburseService extends WorkFlowService<Reimburse>, BusinessService<ReimburseRequestForm, Reimburse>{
     Page<Reimburse> findAllByCriteria(ReimburseRequestForm requestForm);
-
 }

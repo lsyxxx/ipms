@@ -111,6 +111,11 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     }
 
     @Override
+    void clearEntityId(InvoiceOffset entity) {
+        entity.setId(null);
+    }
+
+    @Override
     public List<InvoiceOffset> findAllByCriteriaPageable(InvoiceOffsetRequestForm requestForm) {
         return List.of();
     }
@@ -252,6 +257,11 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     @Override
     public String notifyLink(String id) {
         return "/wf/invoffset/detail/" + id ;
+    }
+
+    @Override
+    public List<String> createBriefDesc(InvoiceOffset entity) {
+        return List.of();
     }
 
     @Override
