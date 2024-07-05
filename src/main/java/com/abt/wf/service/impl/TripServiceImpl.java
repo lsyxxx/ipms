@@ -207,6 +207,7 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
     @Override
     public Page<TripMain> findMyApplyByQueryPageable(TripRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "createDate"));
+//        Pageable pageable = PageRequest.of(1, 20, Sort.by(Sort.Direction.DESC, "createDate"));
         final Page<TripMain> page = tripMainRepository.findUserApplyByQueryPaged(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         if (!page.getContent().isEmpty()) {

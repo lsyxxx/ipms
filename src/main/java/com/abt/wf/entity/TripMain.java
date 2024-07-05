@@ -122,7 +122,7 @@ public class TripMain extends WorkflowBase {
 
 //    @OneToMany(mappedBy = "main", fetch = FetchType.LAZY)
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private List<TripDetail> details = new ArrayList<>();
 
