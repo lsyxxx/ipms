@@ -192,4 +192,5 @@ public class ActivitiServiceImpl implements ActivitiService {
         WorkFlowUtil.ensureProperty(deleteReason, "deleteReason(流程删除原因)");
         runtimeService.deleteProcessInstance(processInstanceId, deleteReason);
     }
+
 }

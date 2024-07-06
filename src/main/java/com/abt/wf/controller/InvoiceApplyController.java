@@ -7,6 +7,7 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.InvoiceApply;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.InvoiceApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceApplyService;
@@ -39,6 +40,12 @@ public class InvoiceApplyController {
         UserView user = TokenUtil.getUserFromAuthToken();
         invoiceApplyService.revoke(id, user.getId(), user.getName());
         return R.success("撤销成功");
+    }
+
+    @GetMapping("/restart")
+    public R<InvoiceApply> copyEntity(String id) {
+        final InvoiceApply copyEntity = invoiceApplyService.getCopyEntity(id);
+        return R.success(copyEntity);
     }
 
     @PostMapping("/apply")

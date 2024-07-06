@@ -39,13 +39,6 @@ public class WorkflowController {
         return R.success(financeTask);
     }
 
-//    @GetMapping("/fin/todo/count")
-//    public R<Long> countMyFinanceTodoList() {
-//        UserView user = TokenUtil.getUserFromAuthToken();
-//        final long count = activitiService.countUserFinanceTodo(user.getId());
-//        return R.success(count);
-//    }
-
     /**
      * 默认抄送人
      */
@@ -83,5 +76,4 @@ public class WorkflowController {
     public void deleteProcessInstance(String procId, String deleteReason) {
         activitiService.deleteProcessInstance(procId, deleteReason);
     }
-
 }
