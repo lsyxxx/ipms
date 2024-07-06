@@ -52,26 +52,24 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             rbs.setFinished(true);
             reimburseService.saveEntity(rbs);
             //抄送:
-            String copyStr = rbs.getCopy();
-            if (copyStr != null) {
-                System.out.println("==== copy: " + copyStr);
-                String[] ids = copyStr.split(",");
-                for(String userid : ids) {
-                    String content = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
-//                systemMessageService.sendMessage(NotifyMessage.systemMessage(userid, reimburseService.notifyLink(entityId), msg ));
-                    //TODO
-                    String name = "";
-                    if (userid != null) {
-                        final User user = userService.getSimpleUserInfo(userid);
-                        name = user.getUsername();
-                    }
-                    SystemMessage msg = systemMessageService.createDefaultCopyMessage(userid, name, reimburseService.notifyLink(entityId), content, WorkFlowConfig.SERVICE_RBS);
-                    systemMessageService.sendMessage(msg);
-                    System.out.println("===== SysMsg: " + msg.toString());
-                }
-            }
-
-
+//            String copyStr = rbs.getCopy();
+//            if (copyStr != null) {
+//                System.out.println("==== copy: " + copyStr);
+//                String[] ids = copyStr.split(",");
+//                for(String userid : ids) {
+//                    String content = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
+////                systemMessageService.sendMessage(NotifyMessage.systemMessage(userid, reimburseService.notifyLink(entityId), msg ));
+//                    //TODO
+//                    String name = "";
+//                    if (userid != null) {
+//                        final User user = userService.getSimpleUserInfo(userid);
+//                        name = user.getUsername();
+//                    }
+//                    SystemMessage msg = systemMessageService.createDefaultCopyMessage(userid, name, reimburseService.notifyLink(entityId), content, WorkFlowConfig.SERVICE_RBS);
+//                    systemMessageService.sendMessage(msg);
+//                    System.out.println("===== SysMsg: " + msg.toString());
+//                }
+//            }
         }
 
 
