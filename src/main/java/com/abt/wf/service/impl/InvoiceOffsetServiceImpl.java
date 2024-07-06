@@ -11,10 +11,8 @@ import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.InvoiceOffset;
 import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.model.InvoiceOffsetRequestForm;
-import com.abt.wf.model.InvoiceOffsetRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.InvoiceOffsetRepository;
-import com.abt.wf.repository.InvoiceOffsetTaskRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.InvoiceOffsetService;
@@ -57,13 +55,12 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     private final UserService userService;
 
     private final InvoiceOffsetRepository invoiceOffsetRepository;
-    private final InvoiceOffsetTaskRepository invoiceOffsetTaskRepository;
 
     private final BpmnModelInstance invoiceOffsetBpmnModelInstance;
 
     public InvoiceOffsetServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                     @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService,
-                                    InvoiceOffsetRepository invoiceOffsetRepository, InvoiceOffsetTaskRepository invoiceOffsetTaskRepository,
+                                    InvoiceOffsetRepository invoiceOffsetRepository,
                                     @Qualifier("invoiceOffsetBpmnModelInstance") BpmnModelInstance invoiceOffsetBpmnModelInstance) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
         this.identityService = identityService;
@@ -73,7 +70,6 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
         this.invoiceOffsetRepository = invoiceOffsetRepository;
-        this.invoiceOffsetTaskRepository = invoiceOffsetTaskRepository;
         this.invoiceOffsetBpmnModelInstance = invoiceOffsetBpmnModelInstance;
     }
 
@@ -115,10 +111,6 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         entity.setId(null);
     }
 
-    @Override
-    public List<InvoiceOffset> findAllByCriteriaPageable(InvoiceOffsetRequestForm requestForm) {
-        return List.of();
-    }
 
     @Override
     public Page<InvoiceOffset> findAllByCriteria(InvoiceOffsetRequestForm requestForm) {
@@ -171,47 +163,6 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         page.getContent().forEach(this::buildActiveTask);
         return page;
-    }
-
-
-    @Override
-    public int countAllByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return 0;
-    }
-
-    @Override
-    public List<InvoiceOffset> findMyApplyByCriteriaPageable(InvoiceOffsetRequestForm requestForm) {
-        return invoiceOffsetTaskRepository.findUserApplyList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
-    }
-
-    @Override
-    public int countMyApplyByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return 0;
-    }
-
-    @Override
-    public List<InvoiceOffset> findMyDoneByCriteriaPageable(InvoiceOffsetRequestForm requestForm) {
-        return invoiceOffsetTaskRepository.findDoneList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
-    }
-
-    @Override
-    public int countMyDoneByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return invoiceOffsetTaskRepository.countDoneList(requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
-    }
-
-    @Override
-    public List<InvoiceOffset> findMyTodoByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return invoiceOffsetTaskRepository.findTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
-    }
-
-    @Override
-    public int countMyTodoByCriteria(InvoiceOffsetRequestForm requestForm) {
-        return invoiceOffsetTaskRepository.countTodoList(requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getState(), requestForm.getId(), requestForm.getContractName());
     }
 
     @Override

@@ -50,13 +50,13 @@ public class WorkflowController {
 
     @GetMapping("/find/todo/all")
     public R<List<WorkflowBase>> findUserTodoAll(@RequestParam(required = false) String query, @RequestParam(required = false) String type) {
-        final List<WorkflowBase> all = activitiService.findUserTodoAll(TokenUtil.getUseridFromAuthToken(), query);
+        final List<WorkflowBase> all = activitiService.findUserTodoAll(TokenUtil.getUseridFromAuthToken(), query, 0, 0);
         return R.success(all, all.size());
     }
 
     @GetMapping("/fin/todo/count")
     public R<Integer> findUserTodoCount() {
-        final List<WorkflowBase> all = activitiService.findUserTodoAll(TokenUtil.getUseridFromAuthToken(), null);
+        final List<WorkflowBase> all = activitiService.findUserTodoAll(TokenUtil.getUseridFromAuthToken(), null, 0, 0);
         return R.success(all.size(), all.size());
     }
 

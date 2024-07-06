@@ -13,6 +13,7 @@ import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.LoanService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,32 +48,28 @@ public class LoanController {
     public R<List<Loan>> todoList(@ModelAttribute LoanRequestForm requestForm) {
         setTokenUser(requestForm);
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 支付方式,项目，借款部门
-        final List<Loan> todo = loanService.findMyTodoByCriteria(requestForm);
-        final int total = loanService.countMyTodoByCriteria(requestForm);
-        return R.success(todo, total);
+        final Page<Loan> page = loanService.findMyTodoByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/done")
     public R<List<Loan>> doneList(LoanRequestForm requestForm) {
         setTokenUser(requestForm);
-        final List<Loan> done = loanService.findMyDoneByCriteriaPageable(requestForm);
-        final int total = loanService.countMyDoneByCriteria(requestForm);
-        return R.success(done, total);
+        final Page<Loan> page = loanService.findMyDoneByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/myapply")
     public R<List<Loan>> myApplyList(LoanRequestForm requestForm) {
         setTokenUser(requestForm);
-        final List<Loan> myApplyList = loanService.findMyApplyByCriteriaPageable(requestForm);
-        final int total = loanService.countMyApplyByCriteria(requestForm);
-        return R.success(myApplyList, total);
+        final Page<Loan> page = loanService.findMyApplyByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/all")
     public R<List<Loan>> all(LoanRequestForm requestForm) {
-        final List<Loan> all = loanService.findAllByCriteriaPageable(requestForm);
-        final int total = loanService.countAllByCriteria(requestForm);
-        return R.success(all, total);
+        final Page<Loan> page = loanService.findAllByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int)page.getTotalElements());
     }
 
     @GetMapping("/load/{id}")

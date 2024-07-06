@@ -12,7 +12,6 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.ReimburseRepository;
-import com.abt.wf.repository.ReimburseTaskRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
@@ -57,7 +56,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final FlowSettingRepository flowSettingRepository;
 
     private final ReimburseRepository reimburseRepository;
-    private final ReimburseTaskRepository reimburseTaskRepository;
     private final BpmnModelInstance rbsBpmnModelInstance;
 
     private List<User> copyList;
@@ -67,7 +65,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
-                                ReimburseTaskRepository reimburseTaskRepository, @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance) {
+                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
@@ -77,7 +75,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.userService = userService;
         this.flowSettingRepository = flowSettingRepository;
         this.reimburseRepository = reimburseRepository;
-        this.reimburseTaskRepository = reimburseTaskRepository;
         this.rbsBpmnModelInstance = rbsBpmnModelInstance;
     }
 
@@ -122,12 +119,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
 
     @Override
-    @Deprecated
-    public List<Reimburse> findAllByCriteriaPageable(ReimburseRequestForm requestForm) {
-        return List.of();
-    }
-
-    @Override
     public Page<Reimburse> findAllByCriteria(ReimburseRequestForm requestForm) {
         requestForm.forcePaged();
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
@@ -143,16 +134,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         final Page<Reimburse> all = reimburseRepository.findAll(criteria, pageable);
         all.getContent().forEach(this::buildActiveTask);
         return all;
-    }
-
-    @Override
-    public int countAllByCriteria(ReimburseRequestForm requestForm) {
-        return 0;
-    }
-
-    @Override
-    public List<Reimburse> findMyApplyByCriteriaPageable(ReimburseRequestForm requestForm) {
-        return List.of();
     }
 
     @Override
@@ -189,37 +170,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         myDonePaged.getContent().forEach(this::buildActiveTask);
         return myDonePaged;
-    }
-
-    @Override
-    public int countMyApplyByCriteria(ReimburseRequestForm requestForm) {
-        return 0;
-    }
-
-    @Override
-    public List<Reimburse> findMyDoneByCriteriaPageable(ReimburseRequestForm requestForm) {
-        return reimburseTaskRepository.findDoneList(requestForm.getPage(),  requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject());
-    }
-
-    @Override
-    public int countMyDoneByCriteria(ReimburseRequestForm requestForm) {
-        return reimburseTaskRepository.countDoneList(requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject());
-    }
-
-    @Override
-    public List<Reimburse> findMyTodoByCriteria(ReimburseRequestForm requestForm) {
-//        reimburseRepository.findTodoList(requestForm)
-
-        return reimburseTaskRepository.findTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject());
-    }
-
-    @Override
-    public int countMyTodoByCriteria(ReimburseRequestForm requestForm) {
-        return reimburseTaskRepository.countTodoList(requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject());
     }
 
     @Override

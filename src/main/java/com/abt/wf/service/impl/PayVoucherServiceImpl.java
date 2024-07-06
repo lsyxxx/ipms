@@ -4,13 +4,11 @@ import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
-import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.entity.PayVoucher;
 import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
 import com.abt.wf.repository.PayVoucherRepository;
-import com.abt.wf.repository.PayVoucherTaskRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.PayVoucherService;
@@ -47,12 +45,11 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     private final RepositoryService repositoryService;
     private final RuntimeService runtimeService;
     private final PayVoucherRepository payVoucherRepository;
-    private final PayVoucherTaskRepository payVoucherTaskRepository;
 
     private final BpmnModelInstance payVoucherModelInstance;
 
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
-                                 @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository, PayVoucherTaskRepository payVoucherTaskRepository,
+                                 @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository,
                                  @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
         this.identityService = identityService;
@@ -62,91 +59,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.payVoucherRepository = payVoucherRepository;
-        this.payVoucherTaskRepository = payVoucherTaskRepository;
         this.payVoucherModelInstance = payVoucherModelInstance;
-    }
-
-    @Override
-    public List<PayVoucher> findAllByCriteriaPageable(PayVoucherRequestForm requestForm) {
-        requestForm.forcePaged();
-        //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
-                Sort.by(Sort.Order.desc("createDate")));
-        PayVoucherSpecifications specifications = new PayVoucherSpecifications();
-        Specification<PayVoucher> spec = Specification.where(specifications.beforeEndDate(requestForm))
-                .and(specifications.afterStartDate(requestForm))
-                .and(specifications.createUsernameLike(requestForm))
-                .and(specifications.isNotDelete(requestForm))
-                .and(specifications.stateEqual(requestForm))
-                .and(specifications.contractNoLike(requestForm))
-                .and(specifications.contractNameLike(requestForm))
-                .and(specifications.entityIdLike(requestForm))
-                ;
-        return payVoucherRepository.findAll(spec, pageable).getContent();
-    }
-
-    @Override
-    public int countAllByCriteria(PayVoucherRequestForm requestForm) {
-        PayVoucherSpecifications specifications = new PayVoucherSpecifications();
-        Specification<PayVoucher> spec = Specification.where(specifications.beforeEndDate(requestForm))
-                .and(specifications.afterStartDate(requestForm))
-                .and(specifications.createUsernameLike(requestForm))
-                .and(specifications.isNotDelete(requestForm))
-                .and(specifications.stateEqual(requestForm))
-                .and(specifications.contractNoLike(requestForm))
-                .and(specifications.contractNameLike(requestForm))
-                .and(specifications.entityIdLike(requestForm))
-                ;
-        return (int) payVoucherRepository.count(spec);
-    }
-
-    @Override
-    public List<PayVoucher> findMyApplyByCriteriaPageable(PayVoucherRequestForm requestForm) {
-        requestForm.forcePaged();
-        //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        return payVoucherTaskRepository.findPayVoucherUserApplyList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
-                requestForm.getContractNo(), requestForm.getContractName());
-    }
-
-    @Override
-    public int countMyApplyByCriteria(PayVoucherRequestForm requestForm) {
-        return payVoucherTaskRepository.countPayVoucherUserApplyList(requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
-                requestForm.getContractNo(), requestForm.getContractName());
-    }
-
-    @Override
-    public List<PayVoucher> findMyDoneByCriteriaPageable(PayVoucherRequestForm requestForm) {
-        requestForm.forcePaged();
-        //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        return payVoucherTaskRepository.findPayVoucherDoneList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
-                requestForm.getContractNo(), requestForm.getContractName());
-
-    }
-
-    @Override
-    public int countMyDoneByCriteria(PayVoucherRequestForm requestForm) {
-        return payVoucherTaskRepository.countPayVoucherDoneList(requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
-                requestForm.getContractNo(), requestForm.getContractName());
-    }
-
-    @Override
-    public List<PayVoucher> findMyTodoByCriteria(PayVoucherRequestForm requestForm) {
-        requestForm.forcePaged();
-        //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        return payVoucherTaskRepository.findPayVoucherTodoList(requestForm.getPage(), requestForm.getLimit(), requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
-                requestForm.getContractNo(), requestForm.getContractName());
-    }
-
-    @Override
-    public int countMyTodoByCriteria(PayVoucherRequestForm requestForm) {
-        return payVoucherTaskRepository.countPayVoucherTodoList(requestForm.getUserid(), requestForm.getUsername(),
-                requestForm.getStartDate(), requestForm.getEndDate(), requestForm.getId(), requestForm.getState(), requestForm.getProject(),
-                requestForm.getContractNo(), requestForm.getContractName());
     }
 
     @Override

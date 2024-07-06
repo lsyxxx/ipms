@@ -2,12 +2,14 @@ package com.abt.wf.service;
 
 import com.abt.common.model.User;
 import com.abt.wf.entity.WorkflowBase;
-import com.abt.wf.model.TaskWrapper;
 
 import java.util.List;
 
 public interface ActivitiService {
-    List<WorkflowBase> findUserTodoAll(String userid, String query);
+    /**
+     *
+     */
+    List<WorkflowBase> findUserTodoAll(String userid, String query, int page, int limit);
 
     WorkflowBase findFinanceTask(String assignee);
 

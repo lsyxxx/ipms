@@ -115,47 +115,6 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         entity.setId(null);
     }
 
-
-    @Override
-    public List<TripMain> findAllByCriteriaPageable(TripRequestForm requestForm) {
-        return List.of();
-    }
-
-    @Override
-    public int countAllByCriteria(TripRequestForm requestForm) {
-        return 0;
-    }
-
-    @Override
-    public List<TripMain> findMyApplyByCriteriaPageable(TripRequestForm requestForm) {
-        return List.of();
-    }
-
-    @Override
-    public int countMyApplyByCriteria(TripRequestForm requestForm) {
-        return 0;
-    }
-
-    @Override
-    public List<TripMain> findMyDoneByCriteriaPageable(TripRequestForm requestForm) {
-        return List.of();
-    }
-
-    @Override
-    public int countMyDoneByCriteria(TripRequestForm requestForm) {
-        return 0;
-    }
-
-    @Override
-    public List<TripMain> findMyTodoByCriteria(TripRequestForm requestForm) {
-        return List.of();
-    }
-
-    @Override
-    public int countMyTodoByCriteria(TripRequestForm requestForm) {
-        return 0;
-    }
-
     @Transactional
     @Override
     public TripMain saveEntity(TripMain form) {
