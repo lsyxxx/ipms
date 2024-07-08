@@ -2,10 +2,13 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.model.User;
 import com.abt.common.model.ValidationResult;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.FlowSetting;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.repository.FlowSettingRepository;
+import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.Reimburse;
@@ -15,6 +18,8 @@ import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.IdentityService;
@@ -32,6 +37,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +64,8 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final ReimburseRepository reimburseRepository;
     private final BpmnModelInstance rbsBpmnModelInstance;
 
+    private final IFileService fileService;
+
     private List<User> copyList;
 
     @Value("${wf.rbs.url.pre}")
@@ -65,7 +73,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
-                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance) {
+                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
@@ -76,6 +84,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.flowSettingRepository = flowSettingRepository;
         this.reimburseRepository = reimburseRepository;
         this.rbsBpmnModelInstance = rbsBpmnModelInstance;
+        this.fileService = fileService;
     }
 
 
@@ -115,6 +124,46 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     @Override
     void clearEntityId(Reimburse entity) {
         entity.setId(null);
+    }
+
+    //    @Override
+    void copyFile(Reimburse entity) throws JsonProcessingException {
+        String rawFile = entity.getOtherFileList();
+        if (StringUtils.isBlank(rawFile)) {
+            return;
+        }
+        entity.setOtherFileList(null);
+        List<SystemFile> list = JsonUtil.toObject(rawFile, new TypeReference<List<SystemFile>>() {});
+        List<SystemFile> newList = new ArrayList<>();
+        list.forEach(i -> {
+            File file = new File(i.getFullPath());
+            final SystemFile newFile = fileService.copyFile(file, i.getOriginalName(), SERVICE_RBS, true, true);
+            newList.add(newFile);
+        });
+        entity.setOtherFileList(JsonUtil.toJson(newList));
+    }
+
+    @Override
+    public Reimburse getRbsCopyEntity(String copyId) throws Exception{
+        if (StringUtils.isBlank(copyId)) {
+            throw new BusinessException("请选择一个流程提交");
+        }
+
+        //1. 获取copyId对应的实体
+        Reimburse copyEntity = load(copyId);
+
+        //清空其他数据
+        clearEntityId(copyEntity);
+        copyEntity.setProcessInstanceId(null);
+        copyEntity.setProcessDefinitionKey(null);
+        copyEntity.setBusinessState(null);
+        copyEntity.setProcessState(null);
+        copyEntity.setFinished(false);
+        copyEntity.setEndTime(null);
+        copyEntity.setDelete(false);
+        copyEntity.setDeleteReason(null);
+        copyFile(copyEntity);
+        return copyEntity;
     }
 
 
@@ -179,9 +228,9 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     @Override
     public Reimburse load(String entityId) {
-         Reimburse reimburse = reimburseRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到费用报销单(审批编号=" + entityId + ")"));
-         setActiveTask(reimburse);
-         return reimburse;
+        Reimburse reimburse = reimburseRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到费用报销单(审批编号=" + entityId + ")"));
+        setActiveTask(reimburse);
+        return reimburse;
     }
 
     @Override
@@ -223,7 +272,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     @Override
     public String notifyLink(String id) {
-        return this.urlPrefix + id ;
+        return this.urlPrefix + id;
     }
 
     /**
@@ -252,4 +301,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
             };
         }
     }
+
 }
+

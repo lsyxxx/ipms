@@ -6,10 +6,12 @@ import com.abt.sys.exception.SystemFileNotFoundException;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.Optional;
 
 /**
@@ -20,6 +22,11 @@ import java.util.Optional;
 public class FileServiceImpl implements IFileService {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
+
+    @Value("${com.abt.file.upload.save}")
+    private String savedRoot;
+
+
 
     /**
      * 仅保存文件到服务器，不保存信息到数据库
@@ -34,6 +41,15 @@ public class FileServiceImpl implements IFileService {
         systemFile.rename(newName);
         return systemFile;
     }
+
+    @Override
+    public SystemFile copyFile(File file, String originalName, String service, boolean isRename, Boolean withTime) {
+        SystemFile systemFile = new SystemFile(originalName,  service, savedRoot, withTime);
+        final String newName = FileUtil.copyFile(file, systemFile.getUrl(), systemFile.getFullPath(), isRename);
+        systemFile.rename(newName);
+        return systemFile;
+    }
+
 
     @Override
     public boolean delete(String fullUrl) {

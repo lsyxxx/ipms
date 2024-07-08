@@ -509,5 +509,6 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     abstract void setApprovalResult(T form, T entity);
 
     abstract void clearEntityId(T entity);
+//    abstract void copyFile(T entity);
 
 }

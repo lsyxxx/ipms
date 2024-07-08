@@ -11,6 +11,8 @@ public interface ActivitiService {
      */
     List<WorkflowBase> findUserTodoAll(String userid, String query, int page, int limit);
 
+    List<WorkflowBase>  findDoneByQuery(String userid, String query, int page, int limit);
+
     WorkflowBase findFinanceTask(String assignee);
 
     List<User> findDefaultCopyUsers();

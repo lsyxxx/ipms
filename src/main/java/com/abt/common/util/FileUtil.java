@@ -47,6 +47,29 @@ public class FileUtil {
         return TimeUtil.idGenerator() + originalFileName;
     }
 
+    public static String copyFile(File file, String originalName, String path, boolean isRename) {
+        if (file == null) {
+            return "";
+        }
+        String fileName = originalName;
+        File directory = new File(path);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        if (isRename) {
+            fileName = rename(fileName);
+        }
+        File dest = new File(directory, fileName);
+        try {
+            FileUtils.copyFile(file, dest);
+            return fileName;
+        } catch (IOException e) {
+            log.error("保存文件失败", e);
+            throw new BusinessException(e);
+        }
+    }
+
+
     public static String saveFile(MultipartFile file, String path, boolean isRename) {
         if (file == null) {
             return "";

@@ -31,7 +31,6 @@ public interface ReimburseRepository extends JpaRepository<Reimburse, String>, J
             "AND (:endDate IS NULL OR r.createDate <= :endDate) ")
     Page<Reimburse> findMyTodoPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
-
     /**
      * 我创建的
      */
@@ -84,6 +83,8 @@ public interface ReimburseRepository extends JpaRepository<Reimburse, String>, J
             "AND (:startDate IS NULL OR r.createDate >= :startDate) " +
             "AND (:endDate IS NULL OR r.createDate <= :endDate) ")
     Page<Reimburse> findAllByQueryPaged(String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+
+
 
 
 }

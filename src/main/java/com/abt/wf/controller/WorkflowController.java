@@ -32,12 +32,12 @@ public class WorkflowController {
     /**
      * 获取财务相关流程待办
      */
-    @GetMapping("/fin/todo/find1")
-    public R<WorkflowBase> getMyFinanceTodoList() {
-        UserView user = TokenUtil.getUserFromAuthToken();
-        final WorkflowBase financeTask = activitiService.findFinanceTask(user.getId());
-        return R.success(financeTask);
-    }
+//    @GetMapping("/fin/todo/find1")
+//    public R<WorkflowBase> getMyFinanceTodoList() {
+//        UserView user = TokenUtil.getUserFromAuthToken();
+//        final WorkflowBase financeTask = activitiService.findFinanceTask(user.getId());
+//        return R.success(financeTask);
+//    }
 
     /**
      * 默认抄送人

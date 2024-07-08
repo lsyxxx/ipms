@@ -69,6 +69,21 @@ public class SystemFile extends AuditInfo {
         this.fullPath = this.url + file.getOriginalFilename();
     }
 
+
+    public SystemFile(String originalName, String service, String filePath, Boolean withTime) {
+        super();
+        this.id = UUID.randomUUID().toString();
+        this.originalName = originalName;
+        this.name = originalName;
+        this.service = service;
+        if (withTime != null && withTime) {
+            this.url = this.createPath(filePath);
+        } else {
+            this.url = this.createPath2(filePath);
+        }
+        this.fullPath = this.url + originalName;
+    }
+
     public SystemFile rename(String newName) {
         this.setName(newName);
         this.setFullPath(this.url + newName);

@@ -3,7 +3,6 @@ package com.abt.wf.service.impl;
 import com.abt.common.model.User;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
-import com.abt.wf.entity.TripMain;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.*;
 import com.abt.wf.service.*;
@@ -15,7 +14,6 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.runtime.VariableInstance;
 import org.camunda.bpm.engine.task.Task;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -107,19 +105,70 @@ public class ActivitiServiceImpl implements ActivitiService {
         ioForm.setQuery(query);
         list.addAll(invoiceOffsetService.findMyTodoByQueryPageable(ioForm).getContent());
 
-        list.sort((o1, o2) -> {
-            if (o1.getCreateDate().isBefore(o2.getCreateDate())) {
-                return 1;
-            } else if (o1.getCreateDate().isAfter(o2.getCreateDate())) {
-                return -1;
-            } else {
-                return 0;
-            }
-        });
-
-
-
+        list.sort(this::compareWorkflowBase);
         return list;
+    }
+
+    @Override
+    public List<WorkflowBase>  findDoneByQuery(String userid, String query, int page, int limit) {
+        List<WorkflowBase> list = new ArrayList<>();
+
+        TripRequestForm tripForm = new TripRequestForm();
+        tripForm.setPage(1);
+        tripForm.setLimit(9999);
+        tripForm.setUserid(userid);
+        tripForm.setQuery(query);
+        list.addAll(tripService.findMyDoneByQueryPageable(tripForm).getContent());
+
+        InvoiceApplyRequestForm invForm = new InvoiceApplyRequestForm();
+        invForm.setPage(1);
+        invForm.setLimit(9999);
+        invForm.setUserid(userid);
+        invForm.setQuery(query);
+        list.addAll(invoiceApplyService.findMyDoneByQueryPageable(invForm).getContent());
+
+
+        PayVoucherRequestForm payForm = new PayVoucherRequestForm();
+        payForm.setPage(1);
+        payForm.setLimit(9999);
+        payForm.setUserid(userid);
+        payForm.setQuery(query);
+        list.addAll(payVoucherService.findMyDoneByQueryPageable(payForm).getContent());
+
+
+        LoanRequestForm loanForm = new LoanRequestForm();
+        loanForm.setPage(1);
+        loanForm.setLimit(9999);
+        loanForm.setUserid(userid);
+        loanForm.setQuery(query);
+        list.addAll(loanService.findMyDoneByQueryPageable(loanForm).getContent());
+
+
+        ReimburseRequestForm rbsForm = new ReimburseRequestForm();
+        rbsForm.setPage(1);
+        rbsForm.setLimit(9999);
+        rbsForm.setUserid(userid);
+        rbsForm.setQuery(query);
+        list.addAll(reimburseService.findMyDoneByQueryPageable(rbsForm).getContent());
+
+        InvoiceOffsetRequestForm ioForm = new InvoiceOffsetRequestForm();
+        ioForm.setPage(1);
+        ioForm.setLimit(9999);
+        ioForm.setUserid(userid);
+        ioForm.setQuery(query);
+        list.addAll(invoiceOffsetService.findMyDoneByQueryPageable(ioForm).getContent());
+
+        list.sort(this::compareWorkflowBase);
+        return list;
+    }
+    private int compareWorkflowBase(WorkflowBase o1, WorkflowBase o2) {
+        if (o1.getCreateDate().isBefore(o2.getCreateDate())) {
+            return 1;
+        } else if (o1.getCreateDate().isAfter(o2.getCreateDate())) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 
     @Override

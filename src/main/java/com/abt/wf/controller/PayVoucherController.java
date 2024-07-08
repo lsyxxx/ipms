@@ -30,6 +30,18 @@ public class PayVoucherController {
     private final PayVoucherService payVoucherService;
 
 
+
+    /**
+     * 撤销一个流程
+     * @param id: 撤销的流程的id
+     */
+    @GetMapping("/revoke")
+    public R<Object> revoke(String id) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        payVoucherService.revoke(id, user.getId(), user.getName());
+        return R.success("撤销成功");
+    }
+
     @GetMapping("/restart")
     public R<PayVoucher> copyEntity(String id) {
         final PayVoucher copyEntity = payVoucherService.getCopyEntity(id);

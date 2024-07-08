@@ -29,7 +29,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/sys/file")
+@RequestMapping("/test/sys/file")
 public class FileController {
 
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
