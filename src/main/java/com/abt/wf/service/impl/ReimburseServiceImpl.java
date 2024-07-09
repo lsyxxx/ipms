@@ -43,8 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.common.util.QueryUtil.like;
-import static com.abt.wf.config.Constants.SERVICE_RBS;
-import static com.abt.wf.config.Constants.SETTING_TYPE_RBS_COPY;
+import static com.abt.wf.config.Constants.*;
 
 /**
  *
@@ -126,21 +125,26 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         entity.setId(null);
     }
 
-    //    @Override
-    void copyFile(Reimburse entity) throws JsonProcessingException {
-        String rawFile = entity.getOtherFileList();
-        if (StringUtils.isBlank(rawFile)) {
-            return;
+//    @Override
+    void copyFile(Reimburse entity) {
+        try {
+            String rawFile = entity.getOtherFileList();
+            if (StringUtils.isBlank(rawFile)) {
+                return;
+            }
+            entity.setOtherFileList(null);
+            List<SystemFile> list = JsonUtil.toObject(rawFile, new TypeReference<List<SystemFile>>() {});
+            List<SystemFile> newList = new ArrayList<>();
+            list.forEach(i -> {
+                File file = new File(i.getFullPath());
+                final SystemFile newFile = fileService.copyFile(file, i.getOriginalName(), SAVE_SERVICE_RBS, true, true);
+                newList.add(newFile);
+            });
+            entity.setOtherFileList(JsonUtil.toJson(newList));
+        } catch (Exception e) {
+            log.error("copy file error", e);
+            entity.setOtherFileList(null);
         }
-        entity.setOtherFileList(null);
-        List<SystemFile> list = JsonUtil.toObject(rawFile, new TypeReference<List<SystemFile>>() {});
-        List<SystemFile> newList = new ArrayList<>();
-        list.forEach(i -> {
-            File file = new File(i.getFullPath());
-            final SystemFile newFile = fileService.copyFile(file, i.getOriginalName(), SERVICE_RBS, true, true);
-            newList.add(newFile);
-        });
-        entity.setOtherFileList(JsonUtil.toJson(newList));
     }
 
     @Override

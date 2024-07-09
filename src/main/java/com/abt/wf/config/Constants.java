@@ -1,8 +1,10 @@
 package com.abt.wf.config;
 
+import com.abt.sys.exception.BusinessException;
+
 import java.util.List;
 
-import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_RBS;
+import static com.abt.wf.config.WorkFlowConfig.*;
 
 /**
  * chang
@@ -131,5 +133,30 @@ public class Constants {
     //--- setting
     public static final String SETTING_TYPE_RBS_COPY = "rbsDefaultCopy";
 
+    public static final String  SAVE_SERVICE_RBS = "reimburse";
+    public static final String  SAVE_SERVICE_TRIP = "trip";
+    public static final String  SAVE_SERVICE_PAY = "pay";
+    public static final String  SAVE_SERVICE_LOAN = "loan";
+    public static final String  SAVE_SERVICE_INV = "inv";
+    public static final String  SAVE_SERVICE_INVOFFSET = "invoffset";
+
+    public static String getSaveServiceBy(String processDefinitionKey) {
+        switch(processDefinitionKey) {
+            case DEF_KEY_RBS:
+                return SAVE_SERVICE_RBS;
+            case DEF_KEY_TRIP:
+                return SAVE_SERVICE_TRIP;
+            case DEF_KEY_INV:
+                return SAVE_SERVICE_INV;
+            case DEF_KEY_INVOFFSET:
+                return SAVE_SERVICE_INVOFFSET;
+            case DEF_KEY_PAY_VOUCHER:
+                return SAVE_SERVICE_PAY;
+            case DEF_KEY_LOAN:
+                return SAVE_SERVICE_LOAN;
+            default:
+                throw new BusinessException("流程定义不存在(" + processDefinitionKey + ")");
+        }
+    }
 
 }

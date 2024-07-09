@@ -45,10 +45,12 @@ public class FileServiceImpl implements IFileService {
     @Override
     public SystemFile copyFile(File file, String originalName, String service, boolean isRename, Boolean withTime) {
         SystemFile systemFile = new SystemFile(originalName,  service, savedRoot, withTime);
-        final String newName = FileUtil.copyFile(file, systemFile.getUrl(), systemFile.getFullPath(), isRename);
+        final String newName = FileUtil.copyFile(file, systemFile.getOriginalName(), systemFile.getUrl(), isRename);
         systemFile.rename(newName);
         return systemFile;
     }
+
+
 
 
     @Override

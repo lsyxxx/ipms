@@ -3,11 +3,14 @@ package com.abt.wf.service.impl;
 import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.model.RequestForm;
 import com.abt.common.model.User;
+import com.abt.common.util.FileUtil;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.FlowSetting;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
@@ -22,6 +25,7 @@ import com.abt.wf.service.BusinessService;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.WorkFlowService;
 import com.abt.wf.util.WorkFlowUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -42,8 +46,10 @@ import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,6 +69,9 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     private UserService userService;
     private RepositoryService repositoryService;
     private RuntimeService runtimeService;
+
+//    @Value("${com.abt.file.upload.save}")
+//    private String savedRoot;
 
     @Override
     public void setAuthUser(String userid) {
@@ -509,6 +518,27 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     abstract void setApprovalResult(T form, T entity);
 
     abstract void clearEntityId(T entity);
-//    abstract void copyFile(T entity);
+//    abstract void copyFile(T entity, String service) ;
+//    void copyFile(Reimburse entity, String def) {
+//        final String service = getSaveServiceBy(def);
+//        try {
+//            String rawFile = entity.getOtherFileList();
+//            if (StringUtils.isBlank(rawFile)) {
+//                return;
+//            }
+//            entity.setOtherFileList(null);
+//            List<SystemFile> list = JsonUtil.toObject(rawFile, new TypeReference<List<SystemFile>>() {});
+//            List<SystemFile> newList = new ArrayList<>();
+//            list.forEach(i -> {
+//                File file = new File(i.getFullPath());
+//                final SystemFile newFile = FileUtil.copyFile(file, i.getOriginalName(), service, true, true, savedRoot);
+//                newList.add(newFile);
+//            });
+//            entity.setOtherFileList(JsonUtil.toJson(newList));
+//        } catch (Exception e) {
+//            log.error("copy file error", e);
+//            entity.setOtherFileList(null);
+//        }
+//    }
 
 }

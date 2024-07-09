@@ -1,6 +1,7 @@
 package com.abt.common.util;
 
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.SystemFile;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -45,6 +46,14 @@ public class FileUtil {
      */
     public static String rename(String originalFileName) {
         return TimeUtil.idGenerator() + originalFileName;
+    }
+
+
+    public static SystemFile copyFile(File file, String originalName, String service, boolean isRename, Boolean withTime, String savedRoot) {
+        SystemFile systemFile = new SystemFile(originalName,  service, savedRoot, withTime);
+        final String newName = FileUtil.copyFile(file, systemFile.getOriginalName(), systemFile.getUrl(), isRename);
+        systemFile.rename(newName);
+        return systemFile;
     }
 
     public static String copyFile(File file, String originalName, String path, boolean isRename) {
