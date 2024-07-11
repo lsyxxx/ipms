@@ -18,7 +18,6 @@ import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +72,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
                                 @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
@@ -121,9 +120,24 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     }
 
     @Override
+    void setFileListJson(Reimburse entity, String json) {
+        entity.setOtherFileList(json);
+    }
+
+    @Override
     void clearEntityId(Reimburse entity) {
         entity.setId(null);
     }
+
+
+    public List<SystemFile> getFileAttachments(Reimburse form) {
+        return JsonUtil.toObject(form.getOtherFileList(), new TypeReference<List<SystemFile>>() {});
+    }
+
+    public String getAttachmentJson(Reimburse form) {
+        return form.getOtherFileList();
+    }
+
 
 //    @Override
     void copyFile(Reimburse entity) {
@@ -147,47 +161,28 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         }
     }
 
-    @Override
-    public Reimburse getRbsCopyEntity(String copyId) throws Exception{
-        if (StringUtils.isBlank(copyId)) {
-            throw new BusinessException("请选择一个流程提交");
-        }
-
-        //1. 获取copyId对应的实体
-        Reimburse copyEntity = load(copyId);
-
-        //清空其他数据
-        clearEntityId(copyEntity);
-        copyEntity.setProcessInstanceId(null);
-        copyEntity.setProcessDefinitionKey(null);
-        copyEntity.setBusinessState(null);
-        copyEntity.setProcessState(null);
-        copyEntity.setFinished(false);
-        copyEntity.setEndTime(null);
-        copyEntity.setDelete(false);
-        copyEntity.setDeleteReason(null);
-        copyFile(copyEntity);
-        return copyEntity;
-    }
-
-
-    @Override
-    public Page<Reimburse> findAllByCriteria(ReimburseRequestForm requestForm) {
-        requestForm.forcePaged();
-        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
-                Sort.by(Sort.Order.desc("createDate")));
-        ReimburseSpecification spec = new ReimburseSpecification();
-        Specification<Reimburse> criteria = Specification.where(spec.beforeEndDate(requestForm))
-                .and(spec.afterStartDate(requestForm))
-                .and(spec.projectNameLike(requestForm))
-                .and(spec.createUsernameLike(requestForm))
-                .and(spec.stateEqual(requestForm))
-                .and(spec.entityIdLike(requestForm))
-                .and(spec.createUseridEqual(requestForm));
-        final Page<Reimburse> all = reimburseRepository.findAll(criteria, pageable);
-        all.getContent().forEach(this::buildActiveTask);
-        return all;
-    }
+//    @Override
+//    public Reimburse getRbsCopyEntity(String copyId) throws Exception{
+//        if (StringUtils.isBlank(copyId)) {
+//            throw new BusinessException("请选择一个流程提交");
+//        }
+//
+//        //1. 获取copyId对应的实体
+//        Reimburse copyEntity = load(copyId);
+//
+//        //清空其他数据
+//        clearEntityId(copyEntity);
+//        copyEntity.setProcessInstanceId(null);
+//        copyEntity.setProcessDefinitionKey(null);
+//        copyEntity.setBusinessState(null);
+//        copyEntity.setProcessState(null);
+//        copyEntity.setFinished(false);
+//        copyEntity.setEndTime(null);
+//        copyEntity.setDelete(false);
+//        copyEntity.setDeleteReason(null);
+//        copyFile(copyEntity);
+//        return copyEntity;
+//    }
 
     @Override
     public Page<Reimburse> findAllByQueryPageable(ReimburseRequestForm requestForm) {

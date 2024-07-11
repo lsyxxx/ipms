@@ -6,6 +6,7 @@ import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.InvoiceOffset;
@@ -58,11 +59,13 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     private final BpmnModelInstance invoiceOffsetBpmnModelInstance;
 
+    private final IFileService fileService;
+
     public InvoiceOffsetServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                     @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService,
                                     InvoiceOffsetRepository invoiceOffsetRepository,
-                                    @Qualifier("invoiceOffsetBpmnModelInstance") BpmnModelInstance invoiceOffsetBpmnModelInstance) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
+                                    @Qualifier("invoiceOffsetBpmnModelInstance") BpmnModelInstance invoiceOffsetBpmnModelInstance, IFileService fileService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
@@ -71,6 +74,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         this.userService = userService;
         this.invoiceOffsetRepository = invoiceOffsetRepository;
         this.invoiceOffsetBpmnModelInstance = invoiceOffsetBpmnModelInstance;
+        this.fileService = fileService;
     }
 
     @Override
@@ -104,6 +108,16 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         entity.setComment(form.getComment());
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
+    void setFileListJson(InvoiceOffset entity, String json) {
+        entity.setFileList(json);
+    }
+
+    @Override
+    String getAttachmentJson(InvoiceOffset form) {
+        return form.getFileList();
     }
 
     @Override

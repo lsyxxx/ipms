@@ -3,6 +3,7 @@ package com.abt.wf.service.impl;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.InvoiceApply;
@@ -47,6 +48,8 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     private final InvoiceApplyRepository invoiceApplyRepository;
     private final BpmnModelInstance invoiceApplyBpmnModelInstance;
 
+    private final IFileService fileService;
+
     @Value("${wf.inv.url.pre}")
     private String urlPrefix;
 
@@ -54,8 +57,8 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
                                    TaskService taskService, FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
                                    RuntimeService runtimeService,
                                    InvoiceApplyRepository invoiceApplyRepository,
-                                   BpmnModelInstance invoiceApplyBpmnModelInstance) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
+                                   BpmnModelInstance invoiceApplyBpmnModelInstance, IFileService fileService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
         this.identityService = identityService;
         this.userService = userService;
         this.taskService = taskService;
@@ -64,6 +67,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
         this.runtimeService = runtimeService;
         this.invoiceApplyRepository = invoiceApplyRepository;
         this.invoiceApplyBpmnModelInstance = invoiceApplyBpmnModelInstance;
+        this.fileService = fileService;
     }
 
 
@@ -97,6 +101,16 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
         entity.setComment(form.getComment());
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
+    void setFileListJson(InvoiceApply entity, String json) {
+        entity.setFileList(json);
+    }
+
+    @Override
+    String getAttachmentJson(InvoiceApply form) {
+        return form.getFileList();
     }
 
     @Override

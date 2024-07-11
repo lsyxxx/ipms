@@ -6,6 +6,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
@@ -56,14 +57,15 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
     private final TripMainRepository tripMainRepository;
     private final TripDetailRepository tripDetailRepository;
     private final TripOtherItemRepository tripOtherItemRepository;
+    private final IFileService fileService;
 
     @Value("${wf.trip.url.pre}")
     private String urlPrefix;
 
     public TripServiceImpl(IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService, RuntimeService runtimeService,
-                           BpmnModelInstance rbsTripBpmnModelInstance, TripMainRepository tripMainRepository, TripDetailRepository tripDetailRepository, TripOtherItemRepository tripOtherItemRepository) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
+                           BpmnModelInstance rbsTripBpmnModelInstance, TripMainRepository tripMainRepository, TripDetailRepository tripDetailRepository, TripOtherItemRepository tripOtherItemRepository, IFileService fileService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
         this.identityService = identityService;
         this.userService = userService;
         this.taskService = taskService;
@@ -74,6 +76,7 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         this.tripMainRepository = tripMainRepository;
         this.tripDetailRepository = tripDetailRepository;
         this.tripOtherItemRepository = tripOtherItemRepository;
+        this.fileService = fileService;
     }
 
 
@@ -108,6 +111,16 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         entity.setComment(form.getComment());
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
+    void setFileListJson(TripMain entity, String json) {
+        setFileListJson(entity, json);
+    }
+
+    @Override
+    String getAttachmentJson(TripMain form) {
+        return form.getFileList();
     }
 
     @Override

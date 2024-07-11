@@ -86,7 +86,7 @@ public class FileController {
      * @param fullUrl 文件完整地址
      */
     @GetMapping("/del")
-    public R delete(@RequestParam String fullUrl) {
+    public R<Object> delete(@RequestParam String fullUrl) {
         final boolean delete = fileService.delete(fullUrl);
         if (delete) {
             return R.success();

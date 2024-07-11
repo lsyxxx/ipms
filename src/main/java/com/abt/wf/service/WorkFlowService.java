@@ -97,4 +97,6 @@ public interface WorkFlowService<T> {
     T getCopyEntity(String copyId);
 
     List<String> createBriefDesc(T entity);
+
+    void validateAttachment(T form);
 }

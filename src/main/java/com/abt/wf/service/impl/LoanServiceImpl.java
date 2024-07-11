@@ -2,6 +2,7 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Loan;
 import com.abt.wf.model.LoanRequestForm;
@@ -49,10 +50,12 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     private final RuntimeService runtimeService;
     private final BpmnModelInstance loanBpmnModelInstance;
 
+    private final IFileService fileService;
+
     public LoanServiceImpl(LoanRepository loanRepository, IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
-                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
+                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, IFileService fileService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
         this.loanRepository = loanRepository;
         this.identityService = identityService;
         this.userService = userService;
@@ -61,6 +64,7 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.loanBpmnModelInstance = loanBpmnModelInstance;
+        this.fileService = fileService;
     }
 
     static class LoanSpecifications extends CommonSpecifications<LoanRequestForm, Loan> {
@@ -156,6 +160,16 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         entity.setComment(form.getComment());
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
+    void setFileListJson(Loan entity, String json) {
+        entity.setFileList(json);
+    }
+
+    @Override
+    String getAttachmentJson(Loan form) {
+        return form.getFileList();
     }
 
     @Override

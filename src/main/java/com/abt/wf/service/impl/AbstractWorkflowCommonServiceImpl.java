@@ -9,13 +9,11 @@ import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
-import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
-import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.FlowOperationLog;
-import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.model.ActionEnum;
@@ -44,9 +42,6 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
-import org.camunda.bpm.model.xml.instance.ModelElementInstance;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
@@ -69,6 +64,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     private UserService userService;
     private RepositoryService repositoryService;
     private RuntimeService runtimeService;
+
+    private IFileService fileService;
 
 //    @Value("${com.abt.file.upload.save}")
 //    private String savedRoot;
@@ -108,13 +105,15 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         clearAuthUser();
     }
 
+
     @Override
     public void apply(T form) {
         //-- validate
         WorkFlowUtil.ensureProcessDefinitionKey(form);
+        validateAttachment(form);
 
         //-- prepare
-        final Map<String, Object> variableMap =  this.createVariableMap(form);
+        final Map<String, Object> variableMap = this.createVariableMap(form);
 
         //-- start instance
         final Task applyTask = this.startProcessAndApply(form, variableMap, businessKey(form));
@@ -182,10 +181,11 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     /**
      * 预览
-     * @param form 提交表单
-     * @param vars 表单流程必须参数
+     *
+     * @param form              提交表单
+     * @param vars              表单流程必须参数
      * @param bpmnModelInstance bpmn模型
-     * @param copyList 抄送人
+     * @param copyList          抄送人
      */
     public List<UserTaskDTO> commonPreview(T form, Map<String, Object> vars, BpmnModelInstance bpmnModelInstance, List<String> copyList) {
         //验证必要参数
@@ -335,6 +335,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     /**
      * 删除校验
+     *
      * @param entityId 业务实体id
      */
     public ValidationResult deleteValidate(String entityId, String userId) {
@@ -350,6 +351,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
         return ValidationResult.pass();
     }
+
     public void commonRejectHandler(T form, Task task, String comment, String id) {
         taskService.claim(task.getId(), form.getSubmitUserid());
 //        taskService.complete(task.getId());
@@ -476,6 +478,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     /**
      * 复制业务
+     *
      * @param copyId 复制对象id
      */
     public T getCopyEntity(String copyId) {
@@ -489,19 +492,44 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         //清空其他数据
         clearEntityId(copyEntity);
         copyEntity.setProcessInstanceId(null);
-        copyEntity.setProcessDefinitionKey(null);
+//        copyEntity.setProcessDefinitionKey(null);
         copyEntity.setBusinessState(null);
         copyEntity.setProcessState(null);
         copyEntity.setFinished(false);
         copyEntity.setEndTime(null);
         copyEntity.setDelete(false);
         copyEntity.setDeleteReason(null);
+        copyFile(copyEntity, copyEntity.getProcessDefinitionKey());
         return copyEntity;
     }
 
+    @Override
+    public void validateAttachment(T form) {
+        try {
+            final List<SystemFile> attachments = getFileAttachments(form);
+            attachments.forEach(i -> {
+                final String fullPath = i.getFullPath();
+                final boolean exists = FileUtil.fileExists(fullPath);
+                if (!exists) {
+                    throw new BusinessException("附件上传失败(" + i.getOriginalName() + "), 请重新上传!");
+                }
+            });
+        } catch (Exception e) {
+            log.error("JSON转换失败！", e);
+            throw new BusinessException("上传文件失败，请重新上传!");
+        }
+    }
+
+    public List<SystemFile> getFileAttachments(T form) {
+        if (StringUtils.isNotBlank(getAttachmentJson(form))) {
+            return JsonUtil.toObject(getAttachmentJson(form), new TypeReference<List<SystemFile>>() {});
+        }
+        return new ArrayList<>();
+    }
 
     /**
      * 预览前验证
+     *
      * @param form 表单
      */
     abstract ValidationResult beforePreview(T form);
@@ -513,32 +541,43 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
      * 审批通过后操作
      */
     abstract void passHandler(T form, Task task);
+
     abstract void rejectHandler(T form, Task task);
+
     abstract void afterApprove(T form);
+
     abstract void setApprovalResult(T form, T entity);
+
+    abstract void setFileListJson(T entity, String json);
+
+    /**
+     * 获取附件json
+     *
+     * @param form 提交的表单
+     */
+    abstract String getAttachmentJson(T form);
+
 
     abstract void clearEntityId(T entity);
 //    abstract void copyFile(T entity, String service) ;
-//    void copyFile(Reimburse entity, String def) {
-//        final String service = getSaveServiceBy(def);
-//        try {
-//            String rawFile = entity.getOtherFileList();
-//            if (StringUtils.isBlank(rawFile)) {
-//                return;
-//            }
-//            entity.setOtherFileList(null);
-//            List<SystemFile> list = JsonUtil.toObject(rawFile, new TypeReference<List<SystemFile>>() {});
-//            List<SystemFile> newList = new ArrayList<>();
-//            list.forEach(i -> {
-//                File file = new File(i.getFullPath());
-//                final SystemFile newFile = FileUtil.copyFile(file, i.getOriginalName(), service, true, true, savedRoot);
-//                newList.add(newFile);
-//            });
+
+    void copyFile(T entity, String def) {
+        final String service = getSaveServiceBy(def);
+        try {
+            final List<SystemFile> list = getFileAttachments(entity);
+            List<SystemFile> newList = new ArrayList<>();
+            list.forEach(i -> {
+                File file = new File(i.getFullPath());
+                final SystemFile newFile = fileService.copyFile(file, i.getOriginalName(), service, true, true);
+                newList.add(newFile);
+            });
 //            entity.setOtherFileList(JsonUtil.toJson(newList));
-//        } catch (Exception e) {
-//            log.error("copy file error", e);
+            setFileListJson(entity, JsonUtil.toJson(newList));
+        } catch (Exception e) {
+            log.error("copy file error", e);
 //            entity.setOtherFileList(null);
-//        }
-//    }
+            setFileListJson(entity, null);
+        }
+    }
 
 }

@@ -2,6 +2,7 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.PayVoucher;
@@ -48,10 +49,12 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
 
     private final BpmnModelInstance payVoucherModelInstance;
 
+    private final IFileService fileService;
+
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                  @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository,
-                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService);
+                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, IFileService fileService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
         this.identityService = identityService;
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
@@ -60,6 +63,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.runtimeService = runtimeService;
         this.payVoucherRepository = payVoucherRepository;
         this.payVoucherModelInstance = payVoucherModelInstance;
+        this.fileService = fileService;
     }
 
     @Override
@@ -133,6 +137,16 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         entity.setComment(form.getComment());
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
+    }
+
+    @Override
+    void setFileListJson(PayVoucher entity, String json) {
+        entity.setOtherFileList(json);
+    }
+
+    @Override
+    String getAttachmentJson(PayVoucher form) {
+        return form.getOtherFileList();
     }
 
     @Override

@@ -5,7 +5,5 @@ import com.abt.wf.model.ReimburseRequestForm;
 import org.springframework.data.domain.Page;
 
 public interface ReimburseService extends WorkFlowService<Reimburse>, BusinessService<ReimburseRequestForm, Reimburse>{
-    Reimburse getRbsCopyEntity(String copyId) throws Exception;
-
-    Page<Reimburse> findAllByCriteria(ReimburseRequestForm requestForm);
+//    Reimburse getRbsCopyEntity(String copyId) throws Exception;
 }

@@ -14,15 +14,8 @@ import com.abt.oa.reposity.AnnouncementAttachmentRepository;
 import com.abt.oa.reposity.AnnouncementRepository;
 import com.abt.oa.service.AnnouncementService;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.dto.UserView;
-import com.abt.sys.model.entity.EmployeeInfo;
-import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.service.EmployeeService;
-import com.abt.sys.service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -52,6 +45,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final AnnouncementRepository announcementRepository;
     private final AnnouncementAttachmentRepository announcementAttachmentRepository;
     private final EmployeeService employeeService;
+
+
 
     public AnnouncementServiceImpl(AnnouncementRepository announcementRepository, AnnouncementAttachmentRepository announcementAttachmentRepository, EmployeeService employeeService) {
         this.announcementRepository = announcementRepository;
@@ -99,6 +94,36 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         announcementAttachmentRepository.deleteByAnnouncementId(id);
     }
 
+    //通知所有用户
+    //所有用户用applyUserName: all, applyUserid: all
+    public AnnouncementAttachment publishToAll(Announcement announcement) {
+        return toAllAnnouncementAttachment(announcement);
+    }
+
+    public AnnouncementAttachment toAllAnnouncementAttachment(Announcement announcement) {
+        return AnnouncementAttachment.createToAll(announcement);
+    }
+
+    //指定用户
+    public List<AnnouncementAttachment> publishToSpecific(Announcement announcement) {
+        List<AnnouncementAttachment> list = new ArrayList<>();
+        String toUsers = announcement.getNodeDesignates();
+        final String[] toUsernames = announcement.getNodeDesignateTxts().split(",");
+        List<String> userIdList = new ArrayList<>();
+        if (StringUtils.isNotBlank(toUsers)) {
+            try {
+                userIdList = JsonUtil.ObjectMapper().readValue(toUsers, new TypeReference<List<String>>() {});
+            } catch (Exception e) {
+                throw new BusinessException("行政通知:JSON转换失败!");
+            }
+            for (int i = 0; i < userIdList.size(); i++) {
+                AnnouncementAttachment attachment = AnnouncementAttachment.create(announcement, userIdList.get(i), toUsernames[i]);
+                list.add(attachment);
+            }
+        }
+        return list;
+    }
+
     @Transactional
     @Override
     public void publish(String id, String publisher) {
@@ -107,40 +132,17 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         entity.doPublish(publisher);
         final Announcement announcement = announcementRepository.save(entity);
         announcementAttachmentRepository.deleteByAnnouncementId(announcement.getId());
-        List<AnnouncementAttachment> list = new ArrayList<>();
         if (OAConstants.ANNOUNCEMENT_ZDTYPE_ALL.equals(announcement.getZdType())) {
-            //所有用户(可用)
-            List<EmployeeInfo> employed = employeeService.findAllByExit(false);
-            employed.forEach(i -> {
-                if (StringUtils.isNotBlank(i.getUserid())) {
-                    //可能存在以前离职的员工没有录入系统User表中
-                    AnnouncementAttachment attachment = AnnouncementAttachment.create(entity, i.getUserid(), i.getName());
-                    list.add(attachment);
-                }
-            });
+            AnnouncementAttachment attachment = publishToAll(announcement);
+            announcementAttachmentRepository.save(attachment);
         } else if (OAConstants.ANNOUNCEMENT_ZDTYPE_SPEC.equals(announcement.getZdType())) {
-            //指定用户
-            String toUsers = announcement.getNodeDesignates();
-            final String[] toUsernames = announcement.getNodeDesignateTxts().split(",");
-            List<String> userIdList = new ArrayList<>();
-            if (StringUtils.isNotBlank(toUsers)) {
-                try {
-                    userIdList = JsonUtil.ObjectMapper().readValue(toUsers, new TypeReference<List<String>>() {});
-                } catch (Exception e) {
-                    throw new BusinessException("行政通知:JSON转换失败!");
-                }
-                for (int i = 0; i < userIdList.size(); i++) {
-                    AnnouncementAttachment attachment = AnnouncementAttachment.create(entity, userIdList.get(i), toUsernames[i]);
-                    list.add(attachment);
-                }
-
-            }
+            final List<AnnouncementAttachment> list = publishToSpecific(announcement);
+            announcementAttachmentRepository.saveAllAndFlush(list);
         } else {
             log.error("未知的类型:zdType: {}", announcement.getZdType());
             throw new BusinessException("未知的指定方式: zdType" + announcement.getZdType());
         }
 
-        announcementAttachmentRepository.saveAllAndFlush(list);
     }
 
     //撤回
@@ -233,7 +235,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize(),
                 Sort.by(Sort.Order.desc("isSer"), Sort.Order.desc("isHf"), Sort.Order.desc("createDate")));
         AnnouncementAttachmentSpecification spec = new AnnouncementAttachmentSpecification();
-        Specification<AnnouncementAttachment> cr = Specification.where(spec.useridEqual(requestForm))
+        Specification<AnnouncementAttachment> cr = Specification.where(spec.useridEqualAndHasAll(requestForm))
                 .and(spec.titleLike(requestForm))
                 .and(spec.isReply(requestForm))
                 .and(spec.isRead(requestForm));
@@ -256,6 +258,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 }
                 return null;
             };
+        }
+        public Specification<AnnouncementAttachment> useridEqualAndHasAll(AnnouncementAttachmentRequestForm form) {
+            return (root, query, builder) ->
+                    builder.or(builder.equal(root.get("applyUserID"), form.getUserid()),
+                            builder.equal(root.get("applyUserID"), "all"));
+        }
+
+        public Specification<AnnouncementAttachment> useridIsAll() {
+            return (root, query, builder) -> builder.equal(root.get("applyUserID"), AnnouncementAttachment.TO_ALL_ID);
         }
 
         //搜索:  title模糊搜索

@@ -18,7 +18,6 @@ import java.io.IOException;
 @Slf4j
 public class FileUtil {
 
-
     public static String uploadPath(String root, @NotNull String fileName) {
         return root + File.separator + fileName;
     }
@@ -37,7 +36,7 @@ public class FileUtil {
         if (file.exists()) {
             return file.delete();
         }
-        return false;
+        return true;
     }
 
     /**
@@ -45,7 +44,7 @@ public class FileUtil {
      * @param originalFileName 原文件名，带后缀
      */
     public static String rename(String originalFileName) {
-        return TimeUtil.idGenerator() + originalFileName;
+        return TimeUtil.idGenerator() + "." + getFileExtension(originalFileName);
     }
 
 
@@ -54,6 +53,14 @@ public class FileUtil {
         final String newName = FileUtil.copyFile(file, systemFile.getOriginalName(), systemFile.getUrl(), isRename);
         systemFile.rename(newName);
         return systemFile;
+    }
+
+    /**
+     * 附件是否存在
+     */
+    public static boolean fileExists(String path) {
+        File file = new File(path);
+        return file.exists();
     }
 
     public static String copyFile(File file, String originalName, String path, boolean isRename) {

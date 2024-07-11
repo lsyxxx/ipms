@@ -28,7 +28,7 @@ import static com.abt.oa.OAConstants.*;
 @Entity
 @Table(name = "T_announcement_attachment", indexes = {
         @Index(name = "idx_announcementId", columnList = "announcementId"),
-        @Index(name = "idx_apply_user_id", columnList = "ApplyUserID")
+        @Index(name = "idx_apply_user_id", columnList = "ApplyUserID, announcementId")
 })
 @DynamicUpdate
 @DynamicInsert
@@ -131,6 +131,15 @@ public class AnnouncementAttachment implements CommonJpaAudit {
     @Column(name = "Hfcontent", length = 2000)
     private String hfContent;
 
+    public static final String TO_ALL_NAME = "all";
+    public static final String TO_ALL_ID = "all";
+
+
+    @ManyToOne
+    @JoinColumn(name = "announcementId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable = false, updatable = false)
+    private Announcement announcement;
+
+
     @Override
     public String getCreateUserid() {
         return this.createUserId;
@@ -173,5 +182,9 @@ public class AnnouncementAttachment implements CommonJpaAudit {
         attachment.applyUserName = replyUsername;
         attachment.setFileType(announcement.getFileType());
         return attachment;
+    }
+
+    public static AnnouncementAttachment createToAll(Announcement announcement) {
+        return AnnouncementAttachment.create(announcement, TO_ALL_ID, TO_ALL_NAME);
     }
 }
