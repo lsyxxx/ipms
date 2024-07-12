@@ -183,8 +183,4 @@ public class AnnouncementAttachment implements CommonJpaAudit {
         attachment.setFileType(announcement.getFileType());
         return attachment;
     }
-
-    public static AnnouncementAttachment createToAll(Announcement announcement) {
-        return AnnouncementAttachment.create(announcement, TO_ALL_ID, TO_ALL_NAME);
-    }
 }

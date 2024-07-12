@@ -96,3 +96,8 @@ INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERAT
 alter table wf_trip_main alter COLUMN proc_inst_id nvarchar(64);
 alter table wf_trip_main alter COLUMN proc_def_id nvarchar(64);
 alter table wf_trip_main alter COLUMN proc_def_key nvarchar(64);
+
+
+-- 行政通知添加 文件类型
+INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (NEWID(), '4', N'EnumFileType', N'会议纪要', N'文件类型', NULL, NULL, NULL, NULL);
+INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (NEWID(), '5', N'EnumFileType', N'规章制度', N'文件类型', NULL, NULL, NULL, NULL);

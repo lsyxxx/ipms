@@ -26,5 +26,6 @@ public class OAConstants {
     public static final String ANNOUNCEMENT_REQUIRE_HF = "1";
     public static final String ANNOUNCEMENT_UNREQUIRE_HF = "2";
 
+    public static final String ANNOUNCEMENT_FILETYPE_RULES = "5";
 
 }

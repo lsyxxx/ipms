@@ -93,8 +93,8 @@ public class TripMain extends WorkflowBase {
     /**
      * 出差天数
      */
-    @Column(name="day_sum")
-    private int daySum;
+    @Column(name="day_sum", columnDefinition = "DECIMAL(6,2)")
+    private double daySum;
 
     @NotNull(message = "业务归属不能为空", groups = {ValidateGroup.Apply.class})
     @Column(name = "company_")

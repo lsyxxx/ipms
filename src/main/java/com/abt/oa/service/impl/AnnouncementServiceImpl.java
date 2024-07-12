@@ -1,7 +1,6 @@
 package com.abt.oa.service.impl;
 
 import com.abt.common.model.Pair;
-import com.abt.common.model.User;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.oa.OAConstants;
@@ -14,6 +13,9 @@ import com.abt.oa.reposity.AnnouncementAttachmentRepository;
 import com.abt.oa.reposity.AnnouncementRepository;
 import com.abt.oa.service.AnnouncementService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.model.entity.TUser;
+import com.abt.sys.repository.TUserRepository;
 import com.abt.sys.service.EmployeeService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +43,7 @@ import static com.abt.oa.OAConstants.*;
 @Service
 @Slf4j
 public class AnnouncementServiceImpl implements AnnouncementService {
+    private final TUserRepository tUserRepository;
 
     private final AnnouncementRepository announcementRepository;
     private final AnnouncementAttachmentRepository announcementAttachmentRepository;
@@ -48,10 +51,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 
 
-    public AnnouncementServiceImpl(AnnouncementRepository announcementRepository, AnnouncementAttachmentRepository announcementAttachmentRepository, EmployeeService employeeService) {
+    public AnnouncementServiceImpl(AnnouncementRepository announcementRepository, AnnouncementAttachmentRepository announcementAttachmentRepository, EmployeeService employeeService,
+                                   TUserRepository tUserRepository) {
         this.announcementRepository = announcementRepository;
         this.announcementAttachmentRepository = announcementAttachmentRepository;
         this.employeeService = employeeService;
+        this.tUserRepository = tUserRepository;
     }
 
     @Override
@@ -94,14 +99,17 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         announcementAttachmentRepository.deleteByAnnouncementId(id);
     }
 
-    //通知所有用户
-    //所有用户用applyUserName: all, applyUserid: all
-    public AnnouncementAttachment publishToAll(Announcement announcement) {
-        return toAllAnnouncementAttachment(announcement);
-    }
-
-    public AnnouncementAttachment toAllAnnouncementAttachment(Announcement announcement) {
-        return AnnouncementAttachment.createToAll(announcement);
+    public List<AnnouncementAttachment> publishToAll(Announcement announcement) {
+        List<AnnouncementAttachment> list = new ArrayList<>();
+        List<EmployeeInfo> employed = employeeService.findAllByExit(false);
+        employed.forEach(i -> {
+            if (StringUtils.isNotBlank(i.getUserid())) {
+                //可能存在以前离职的员工没有录入系统User表中
+                AnnouncementAttachment attachment = AnnouncementAttachment.create(announcement, i.getUserid(), i.getName());
+                list.add(attachment);
+            }
+        });
+        return list;
     }
 
     //指定用户
@@ -133,8 +141,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         final Announcement announcement = announcementRepository.save(entity);
         announcementAttachmentRepository.deleteByAnnouncementId(announcement.getId());
         if (OAConstants.ANNOUNCEMENT_ZDTYPE_ALL.equals(announcement.getZdType())) {
-            AnnouncementAttachment attachment = publishToAll(announcement);
-            announcementAttachmentRepository.save(attachment);
+            List<AnnouncementAttachment> list = publishToAll(announcement);
+            announcementAttachmentRepository.saveAllAndFlush(list);
         } else if (OAConstants.ANNOUNCEMENT_ZDTYPE_SPEC.equals(announcement.getZdType())) {
             final List<AnnouncementAttachment> list = publishToSpecific(announcement);
             announcementAttachmentRepository.saveAllAndFlush(list);
@@ -235,10 +243,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize(),
                 Sort.by(Sort.Order.desc("isSer"), Sort.Order.desc("isHf"), Sort.Order.desc("createDate")));
         AnnouncementAttachmentSpecification spec = new AnnouncementAttachmentSpecification();
-        Specification<AnnouncementAttachment> cr = Specification.where(spec.useridEqualAndHasAll(requestForm))
+        Specification<AnnouncementAttachment> cr = Specification.where(spec.useridEqual(requestForm))
                 .and(spec.titleLike(requestForm))
                 .and(spec.isReply(requestForm))
-                .and(spec.isRead(requestForm));
+                .and(spec.isRead(requestForm))
+                .and(spec.fileTypeEquals(requestForm))
+                ;
         return announcementAttachmentRepository.findAll(cr, pageable);
     }
 
@@ -248,6 +258,33 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         list.forEach(this::read);
         announcementAttachmentRepository.saveAllAndFlush(list);
         return list.size();
+    }
+
+    //查询发送给所有人的
+    @Override
+    public List<Announcement> findAnnouncementsToAll() {
+        return announcementRepository.findByZdTypeAndFileTypeOrderByCreateDateDesc(ANNOUNCEMENT_ZDTYPE_ALL, ANNOUNCEMENT_FILETYPE_RULES);
+    }
+
+    @Override
+    public int sendAnnouncementsToUser(String jobNumber) {
+        final List<Announcement> list = findAnnouncementsToAll();
+        final TUser user = tUserRepository.findByEmpnum(jobNumber);
+        addAttachments(user.getId(), user.getName(), list);
+        return list.size();
+    }
+
+
+    public void addAttachments(String userid, String username, List<Announcement> announcements) {
+        if (announcements == null || announcements.isEmpty()) {
+            throw new BusinessException("请选择要发送的通知!");
+        }
+        List<AnnouncementAttachment> list = new ArrayList<>();
+        announcements.forEach(a -> {
+            AnnouncementAttachment attachment = AnnouncementAttachment.create(a, userid, username);
+            list.add(attachment);
+        });
+        announcementAttachmentRepository.saveAll(list);
     }
 
     class AnnouncementAttachmentSpecification {
@@ -294,6 +331,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return (root, query, builder) -> {
                 if (StringUtils.isNotBlank(form.getIsHf())) {
                     return builder.like(root.get("isHf"), form.getIsHf());
+                }
+                return null;
+            };
+        }
+
+        //文件类型
+        public Specification<AnnouncementAttachment> fileTypeEquals(AnnouncementAttachmentRequestForm form) {
+            return (root, query, builder) -> {
+                if (StringUtils.isNotBlank(form.getFileType())) {
+                    return builder.like(root.get("fileType"), form.getFileType());
                 }
                 return null;
             };

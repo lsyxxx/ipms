@@ -12,4 +12,5 @@ import lombok.EqualsAndHashCode;
 public class AnnouncementAttachmentRequestForm extends RequestForm {
     private String isHf;
     private String isSer;
+    private String fileType;
 }

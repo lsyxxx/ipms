@@ -114,7 +114,9 @@ public class AnnouncementController {
         return R.success(list);
     }
 
-
-
-
+    @GetMapping("/attachment/send")
+    public R<Object> sendAnnouncementToUser(@RequestParam String jobNumber) {
+        final int size = announcementService.sendAnnouncementsToUser(jobNumber);
+        return R.success("已向用户[工号:" + jobNumber + "]发送" + size + "条规章制度");
+    }
 }

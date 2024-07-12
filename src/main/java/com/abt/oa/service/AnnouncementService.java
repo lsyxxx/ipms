@@ -58,4 +58,12 @@ public interface AnnouncementService {
     Page<AnnouncementAttachment> findAttachmentBy(AnnouncementAttachmentRequestForm requestForm);
 
     int setReadAll(String userid);
+
+    //查询发送给所有人的
+    List<Announcement> findAnnouncementsToAll();
+
+    /**
+     * 将announcements通知发送给user
+     */
+    int sendAnnouncementsToUser(String jobNumber);
 }
