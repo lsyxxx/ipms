@@ -265,7 +265,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     public List<Announcement> findAnnouncementsToAll() {
         return announcementRepository.findByZdTypeAndFileTypeOrderByCreateDateDesc(ANNOUNCEMENT_ZDTYPE_ALL, ANNOUNCEMENT_FILETYPE_RULES);
     }
-
     @Override
     public int sendAnnouncementsToUser(String jobNumber) {
         final List<Announcement> list = findAnnouncementsToAll();
@@ -276,8 +275,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
 
     public void addAttachments(String userid, String username, List<Announcement> announcements) {
+//        if (announcements == null || announcements.isEmpty()) {
+//            throw new BusinessException("请选择要发送的通知!");
+//        }
         if (announcements == null || announcements.isEmpty()) {
-            throw new BusinessException("请选择要发送的通知!");
+            log.warn("没有要发送的消息!");
+            return;
         }
         List<AnnouncementAttachment> list = new ArrayList<>();
         announcements.forEach(a -> {
