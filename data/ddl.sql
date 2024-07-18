@@ -101,3 +101,8 @@ alter table wf_trip_main alter COLUMN proc_def_key nvarchar(64);
 -- 行政通知添加 文件类型
 INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (NEWID(), '4', N'EnumFileType', N'会议纪要', N'文件类型', NULL, NULL, NULL, NULL);
 INSERT INTO [dbo].[T_ENUMLIB] ([ID], [FID], [FTYPEID], [FNAME], [FDESC], [OPERATOR], [OPERATEDATE], [OPERATEDEPT], [EXTEND]) VALUES (NEWID(), '5', N'EnumFileType', N'规章制度', N'文件类型', NULL, NULL, NULL, NULL);
+
+-- 考勤设置
+INSERT INTO [dbo].[T_SystemSetting] ([Id], [ftypeid], [Fvalue]) VALUES ('wot_deadline', '加班提交截止日期', '5');
+INSERT INTO [dbo].[T_SystemSetting] ([Id], [ftypeid], [Fvalue]) VALUES ('attendance_start', '月考勤开始日期(包含)', '26');
+INSERT INTO [dbo].[T_SystemSetting] ([Id], [ftypeid], [Fvalue]) VALUES ('attendance_end', '月考勤结束日期(包含)', '25');

@@ -43,7 +43,6 @@ public class FileController {
         this.fileService = fileService;
     }
 
-
     /**
      * 上传文件，但不保存文件信息到数据库。仅上传目录
      * @param files 上传的文件
@@ -77,7 +76,6 @@ public class FileController {
                 msg = MessageUtil.format("com.abt.sys.FileController.save.error", failed);
             }
         }
-
         return R.success(saved, saved.size(), msg);
     }
 
