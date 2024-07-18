@@ -39,6 +39,7 @@ public class FileServiceImpl implements IFileService {
         SystemFile systemFile = new SystemFile(file, service, filePath, withTime);
         final String newName = FileUtil.saveFile(file, systemFile.getUrl(), isRename);
         systemFile.rename(newName);
+        log.info("已保存文件：{}, {}", systemFile.getOriginalName(), systemFile.getFullPath());
         return systemFile;
     }
 

@@ -3,6 +3,7 @@ package com.abt.sys.controller;
 import com.abt.common.model.R;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
@@ -85,11 +86,14 @@ public class FileController {
      */
     @GetMapping("/del")
     public R<Object> delete(@RequestParam String fullUrl) {
+        log.info("=== 删除文件！fullUrl: {}", fullUrl);
         final boolean delete = fileService.delete(fullUrl);
         if (delete) {
             return R.success();
         } else {
-            return R.fail("删除文件失败 - " + fullUrl);
+            log.error("删除文件失败! {}", fullUrl);
+            throw new BusinessException("删除文件失败!");
+//            return R.fail("删除文件失败 - " + fullUrl);
         }
     }
 
