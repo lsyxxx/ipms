@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -32,6 +33,7 @@ import java.util.List;
  */
 
 @Slf4j
+@Order(100)
 public class ABTWebApiTokenAuthenticationFilter extends OncePerRequestFilter {
     protected MessageSourceAccessor messages = MessageUtil.getAccessor();
 

@@ -1,6 +1,8 @@
 package com.abt.security;
 
 import com.abt.http.dto.WebApiToken;
+import com.abt.sys.model.entity.SysLog;
+import com.abt.sys.service.SysLogService;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,7 @@ public class SecurityConfig {
     private final ABTWebApiTokenAuthenticationProvider abtWebApiTokenAuthenticationProvider;
     private final TokenAuthenticationHandler tokenAuthenticationHandler;
     private final ABTAuthorizationManager abtAuthorizationManager;
+    private final SysLogFilter sysLogFilter;
 
     /**
      * 白名单
@@ -72,6 +75,7 @@ public class SecurityConfig {
                 .anonymous(AbstractHttpConfigurer::disable)
 
                 .addFilterBefore(this.abtWebApiTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(sysLogFilter, ABTWebApiTokenAuthenticationFilter.class)
                 .authenticationProvider(abtWebApiTokenAuthenticationProvider)
                 .exceptionHandling(config -> config
                         .accessDeniedHandler(tokenAuthenticationHandler)
