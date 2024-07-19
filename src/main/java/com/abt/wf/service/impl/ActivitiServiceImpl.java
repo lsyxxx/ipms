@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.Page;
 import com.abt.common.model.User;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
@@ -8,10 +9,14 @@ import com.abt.wf.model.*;
 import com.abt.wf.service.*;
 import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
+import org.camunda.bpm.engine.history.HistoricProcessInstanceQuery;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.runtime.ProcessInstanceQuery;
 import org.camunda.bpm.engine.runtime.VariableInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.springframework.stereotype.Service;
@@ -243,6 +248,39 @@ public class ActivitiServiceImpl implements ActivitiService {
         WorkFlowUtil.ensureProcessId(processInstanceId);
         WorkFlowUtil.ensureProperty(deleteReason, "deleteReason(流程删除原因)");
         runtimeService.deleteProcessInstance(processInstanceId, deleteReason);
+    }
+
+
+    //待处理任务
+    @Override
+    public Page<Task> runningTasks(ActivitiRequestForm form) {
+        final List<Task> tasks = taskService.createTaskQuery().active().orderByTaskCreateTime().desc().listPage(form.getPage(), form.getLimit());
+        final long count = taskService.createTaskQuery().active().count();
+        return new Page<Task>(tasks, (int)count);
+    }
+
+
+    @Override
+    public Page<HistoricProcessInstance> finishedProcess(ActivitiRequestForm form) {
+        HistoricProcessInstanceQuery query = historyService.createHistoricProcessInstanceQuery();
+        if (form.getIsFinished() != null && form.getIsFinished()) {
+            query = query.finished();
+        }
+        final List<HistoricProcessInstance> list = query.orderByProcessInstanceStartTime().desc().listPage(form.getPage(), form.getLimit());
+        final long count = query.count();
+        return new Page<>(list, (int)count);
+    }
+
+
+    @Override
+    public Page<ProcessInstance> runtimeProcess(ActivitiRequestForm form) {
+        final ProcessInstanceQuery query = runtimeService.createProcessInstanceQuery().active();
+        if (StringUtils.isNotBlank(form.getProcessInstanceId())) {
+            query.processInstanceId(form.getProcessInstanceId());
+        }
+        final List<ProcessInstance> list = query.listPage(form.getPage(), form.getLimit());
+        final long count = query.count();
+        return new Page<ProcessInstance>(list, (int)count);
     }
 
 }

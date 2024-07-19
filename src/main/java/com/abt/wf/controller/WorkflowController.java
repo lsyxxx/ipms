@@ -1,16 +1,17 @@
 package com.abt.wf.controller;
 
+import com.abt.common.model.Page;
 import com.abt.common.model.R;
 import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
-import com.abt.wf.config.WorkFlowConfig;
-import com.abt.wf.entity.Loan;
 import com.abt.wf.entity.WorkflowBase;
-import com.abt.wf.model.TaskWrapper;
+import com.abt.wf.model.ActivitiRequestForm;
 import com.abt.wf.service.ActivitiService;
-import com.abt.wf.service.WorkFlowService;
 import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.engine.history.HistoricProcessInstance;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.task.Task;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/wf")
+@RequestMapping("/test/wf")
 public class WorkflowController {
     private final ActivitiService activitiService;;
 
@@ -75,5 +76,31 @@ public class WorkflowController {
     @GetMapping("/processinstance/del")
     public void deleteProcessInstance(String procId, String deleteReason) {
         activitiService.deleteProcessInstance(procId, deleteReason);
+    }
+
+    /**
+     * 待处理节点
+     */
+    @GetMapping("/task/run/all")
+    public R<List<Task>> runningTasks(@ModelAttribute ActivitiRequestForm requestForm) {
+        final Page<Task> taskPage = activitiService.runningTasks(requestForm);
+        return R.success(taskPage.getContent(), taskPage.getTotal());
+    }
+
+
+    /**
+     * 待处理节点
+     */
+    @GetMapping("/proc/hi")
+    public R<List<HistoricProcessInstance>> findProcess(@ModelAttribute ActivitiRequestForm requestForm) {
+        final Page<HistoricProcessInstance> list = activitiService.finishedProcess(requestForm);
+        return R.success(list.getContent(), list.getTotal());
+    }
+
+
+    @GetMapping("/proc/rt")
+    public R<List<ProcessInstance>> runtimeProcess(@ModelAttribute ActivitiRequestForm requestForm) {
+        final Page<ProcessInstance> processInstancePage = activitiService.runtimeProcess(requestForm);
+        return R.success(processInstancePage.getContent(), processInstancePage.getTotal());
     }
 }

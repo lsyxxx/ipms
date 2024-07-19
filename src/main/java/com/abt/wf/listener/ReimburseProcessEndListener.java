@@ -2,6 +2,7 @@ package com.abt.wf.listener;
 
 import com.abt.common.model.User;
 import com.abt.sys.config.SystemConstants;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.service.SystemMessageService;
 import com.abt.sys.service.UserService;
@@ -42,34 +43,21 @@ public class ReimburseProcessEndListener implements ExecutionListener {
             log.error("流程参数中未保存业务实体id! 流程实例id: {}", execution.getProcessInstanceId());
         } else {
             entityId = obj.toString();
-            Reimburse rbs = reimburseService.load(entityId);
-            //判断流程状态
-            if (Constants.STATE_DETAIL_ACTIVE.equals(rbs.getBusinessState())) {
-                //表示之前一直正常通过，特殊状态在业务中已更改状态
-                rbs.setBusinessState(Constants.STATE_DETAIL_PASS);
-                rbs.setProcessState("COMPLETED");
+            try {
+                Reimburse rbs = reimburseService.load(entityId);
+                //判断流程状态
+                if (Constants.STATE_DETAIL_ACTIVE.equals(rbs.getBusinessState())) {
+                    //表示之前一直正常通过，特殊状态在业务中已更改状态
+                    rbs.setBusinessState(Constants.STATE_DETAIL_PASS);
+                    rbs.setProcessState("COMPLETED");
+                }
+                rbs.setFinished(true);
+                reimburseService.saveEntity(rbs);
+                //抄送:
+            } catch (BusinessException e) {
+                log.error(e.getMessage(), e);
             }
-            rbs.setFinished(true);
-            reimburseService.saveEntity(rbs);
-            //抄送:
-//            String copyStr = rbs.getCopy();
-//            if (copyStr != null) {
-//                System.out.println("==== copy: " + copyStr);
-//                String[] ids = copyStr.split(",");
-//                for(String userid : ids) {
-//                    String content = rbs.getCreateUsername() + " 提交的" + rbs.getCost() + "费用报销申请";
-////                systemMessageService.sendMessage(NotifyMessage.systemMessage(userid, reimburseService.notifyLink(entityId), msg ));
-//                    //TODO
-//                    String name = "";
-//                    if (userid != null) {
-//                        final User user = userService.getSimpleUserInfo(userid);
-//                        name = user.getUsername();
-//                    }
-//                    SystemMessage msg = systemMessageService.createDefaultCopyMessage(userid, name, reimburseService.notifyLink(entityId), content, WorkFlowConfig.SERVICE_RBS);
-//                    systemMessageService.sendMessage(msg);
-//                    System.out.println("===== SysMsg: " + msg.toString());
-//                }
-//            }
+
         }
 
 

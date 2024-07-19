@@ -51,7 +51,7 @@ public class SecurityConfig {
                 //测试使用
 //                "/test/**",
 //                "/static/**", //静态资源
-//                "/camunda/**",
+                "/camunda/**",
 //                "/favicon.ico",
                 //TEST
                 "/test/**",
@@ -89,10 +89,7 @@ public class SecurityConfig {
 //                             session.maximumSessions(1);
 //                             session.invalidSessionUrl("/test/sl/session/invalid");
                         }
-
                 )
-
-
         ;
         return http.build();
     }
