@@ -78,10 +78,11 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
 
     //包含当前任务
     @Query("select e from TripMain e " +
-            "left join fetch e.details  " +
+            "left join fetch e.details d " +
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu " +
-            "where e.id = :id")
+            "where e.id = :id " +
+            "order by d.sort asc")
     TripMain findWithCurrentTaskById(String id);
 
 

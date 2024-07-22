@@ -111,9 +111,15 @@ public class TripMainRepositoryTest {
                 i.getId(), i.getStaff(), i.getTripStartDate(), i.getTripEndDate(), i.getSum(), i.getCurrentTask().getAssignee());
         if (i.getDetails() != null) {
             i.getDetails().forEach(d -> {
-                System.out.printf("--行程:日期:%s|天数:%d|起讫地址:%s-%s|小计:%s%n",
+                System.out.printf("--行程%d:日期:%s|天数:%f|起讫地址:%s-%s|小计:%s%n", d.getSort(),
                         d.getStartDate(), d.getDaySum(), d.getTripOrigin(), d.getTripArrival(), d.getSum());
             });
         }
+    }
+
+    @Test
+    void findWithCurrentTaskById() {
+        final TripMain main = tripMainRepository.findWithCurrentTaskById("202407221721613253204");
+        printTrip(main);
     }
 }

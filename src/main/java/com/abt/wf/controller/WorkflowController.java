@@ -21,7 +21,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/test/wf")
+@RequestMapping("/wf")
 public class WorkflowController {
     private final ActivitiService activitiService;;
 
@@ -74,12 +74,13 @@ public class WorkflowController {
      * @param deleteReason 删除原因
      */
     @GetMapping("/processinstance/del")
-    public void deleteProcessInstance(String procId, String deleteReason) {
+    public R<Object> deleteProcessInstance(String procId, String deleteReason) {
         activitiService.deleteProcessInstance(procId, deleteReason);
+        return R.success("删除流程(" + procId + ")成功");
     }
 
     /**
-     * 待处理节点
+     * 所有正在运行的流程节点
      */
     @GetMapping("/task/run/all")
     public R<List<Task>> runningTasks(@ModelAttribute ActivitiRequestForm requestForm) {
@@ -89,7 +90,7 @@ public class WorkflowController {
 
 
     /**
-     * 待处理节点
+     * 已完成的流程
      */
     @GetMapping("/proc/hi")
     public R<List<HistoricProcessInstance>> findProcess(@ModelAttribute ActivitiRequestForm requestForm) {
