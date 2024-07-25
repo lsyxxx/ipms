@@ -1,7 +1,11 @@
 package com.abt.wf.repository;
 
+import com.abt.common.util.JsonUtil;
+import com.abt.common.util.TimeUtil;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.wf.entity.TripDetail;
 import com.abt.wf.entity.TripMain;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -121,5 +126,13 @@ public class TripMainRepositoryTest {
     void findWithCurrentTaskById() {
         final TripMain main = tripMainRepository.findWithCurrentTaskById("202407221721613253204");
         printTrip(main);
+    }
+
+    void addFile() {
+        SystemFile f1 = new SystemFile();
+        f1.setService("trip");
+        f1.createPath("E:\\upload\\");
+        f1.setOriginalName("7月20日呼和浩特一西安支付截图4040.jpg");
+        System.out.println(f1);
     }
 }

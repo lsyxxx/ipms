@@ -121,14 +121,14 @@ public class PayVoucher extends WorkflowBase{
      * 电子发票附件
      * json
      */
-    @Column(name="pdf_file", columnDefinition="VARCHAR(1000)")
+    @Column(name="pdf_file", columnDefinition="TEXT")
     private String pdfFileList;
 
     /**
      * 其他附件
      * json
      */
-    @Column(name="other_file", columnDefinition="VARCHAR(MAX)")
+    @Column(name="other_file", columnDefinition="TEXT")
     private String otherFileList;
 
     @Column(name="managers", columnDefinition="VARCHAR(1600)")

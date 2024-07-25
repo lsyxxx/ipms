@@ -149,7 +149,7 @@ public class InvoiceApply extends WorkflowBase {
     /**
      * 附件json
      */
-    @Column(name="file_list", columnDefinition="VARCHAR(MAX)")
+    @Column(name="file_list", columnDefinition="TEXT")
     private String fileList;
 
 

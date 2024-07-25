@@ -99,7 +99,7 @@ public class Loan extends WorkflowBase{
     @Column(columnDefinition="VARCHAR(1600)")
     private String managers;
 
-    @Column(name="file_list", columnDefinition="VARCHAR(MAX)")
+    @Column(name="file_list", columnDefinition="TEXT")
     private String fileList;
 
     @Column(name = "company_", length = 32)

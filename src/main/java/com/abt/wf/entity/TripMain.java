@@ -103,7 +103,7 @@ public class TripMain extends WorkflowBase {
     @Column(name="managers", columnDefinition = "VARCHAR(1600)")
     private String managers;
 
-    @Column(name = "file_list", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "file_list", columnDefinition = "TEXT")
     private String fileList;
 
     /**

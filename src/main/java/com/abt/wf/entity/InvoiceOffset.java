@@ -111,7 +111,7 @@ public class InvoiceOffset extends WorkflowBase {
     /**
      * 附件
      */
-    @Column(name="file_list", columnDefinition = "VARCHAR(MAX)")
+    @Column(name="file_list", columnDefinition = "TEXT")
     private String fileList;
 
     /**

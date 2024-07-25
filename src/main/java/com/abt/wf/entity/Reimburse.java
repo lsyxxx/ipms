@@ -116,10 +116,10 @@ public class Reimburse extends WorkflowBase {
     /**
      * 附件信息，json格式保存
      */
-    @Column(name = "pdf_file", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "pdf_file", columnDefinition = "TEXT")
     private String pdfFileList;
 
-    @Column(name = "other_file", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "other_file", columnDefinition = "TEXT")
     private String otherFileList;
 
     @Column(name="rec_user")
