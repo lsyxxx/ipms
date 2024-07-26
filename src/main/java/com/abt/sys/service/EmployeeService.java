@@ -11,4 +11,6 @@ public interface EmployeeService {
      * 查询在职/离职员工
      */
     List<EmployeeInfo> findAllByExit(boolean exit);
+
+    List<EmployeeInfo> getByExample(EmployeeInfo condition);
 }

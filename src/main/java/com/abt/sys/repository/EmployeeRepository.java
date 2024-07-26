@@ -34,4 +34,5 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
 
     @Query("SELECT e FROM EmployeeInfo e JOIN FETCH e.department order by e.jobNumber")
     List<EmployeeInfo> findAllWithDept();
+
 }

@@ -1,5 +1,6 @@
 package com.abt.sys.model.entity;
 
+import com.abt.sys.model.WithQuery;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,8 +22,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 //只读，不能修改
 @Immutable
-@NamedEntityGraph(name = "Employee.withDepartment", attributeNodes = @NamedAttributeNode("department"))
-public class EmployeeInfo {
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "Employee.withDepartment",
+                attributeNodes = @NamedAttributeNode("department")
+        ),
+        @NamedEntityGraph(
+                name = "Employee.withTUser",
+                attributeNodes = @NamedAttributeNode("tUser")
+        )
+})
+public class EmployeeInfo implements WithQuery<EmployeeInfo> {
     @Id
     @Size(max = 50)
     @Column(name = "Id", nullable = false, length = 50)
@@ -288,6 +298,12 @@ public class EmployeeInfo {
     @NotFound(action= NotFoundAction.IGNORE)
     private Org department;
 
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "jobNumber", referencedColumnName = "empnum", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private TUser tUser;
+
     public EmployeeInfo(EmployeeInfo e, String userid) {
         this.id = e.id;
         this.userid = userid;
@@ -318,5 +334,17 @@ public class EmployeeInfo {
                 ", sex='" + sex + '\'' +
                 ", userid='" + userid + '\'' +
                 '}';
+    }
+    @Override
+    public EmployeeInfo afterQuery() {
+        if (this.tUser != null) {
+            this.userid = tUser.getId();
+            this.tUser= null;
+        }
+        if (this.department != null) {
+            this.deptName = this.department.getName();
+            this.department = null;
+        }
+        return this;
     }
 }

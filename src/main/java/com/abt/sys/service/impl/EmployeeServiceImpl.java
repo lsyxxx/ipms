@@ -4,7 +4,11 @@ import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.service.EmployeeService;
+import com.abt.sys.util.WithQueryUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,13 +32,21 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (StringUtils.isBlank(jobNumber)) {
             throw new MissingRequiredParameterException("员工工号");
         }
-        return employeeRepository.findByJobNumber(jobNumber);
+        return WithQueryUtil.build(employeeRepository.findByJobNumber(jobNumber));
     }
 
 
     @Override
     public List<EmployeeInfo> findAllByExit(boolean exit) {
-        return employeeRepository.findByIsExit(exit);
+        return WithQueryUtil.build(employeeRepository.findByIsExit(exit));
     }
 
+    @Override
+    public List<EmployeeInfo> getByExample(EmployeeInfo condition) {
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("name", ExampleMatcher.GenericPropertyMatcher::contains)
+                .withIgnorePaths("enable", "sort");
+        Example<EmployeeInfo> example = Example.of(condition, matcher);
+        return WithQueryUtil.build(employeeRepository.findAll(example, Sort.by("jobNumber").ascending()));
+    }
 }

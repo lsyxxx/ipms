@@ -1,8 +1,10 @@
 package com.abt.oa.controller;
 
 import com.abt.common.model.R;
+import com.abt.common.model.User;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.service.FieldWorkService;
+import com.abt.sys.model.entity.EmployeeInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +37,6 @@ public class FieldController {
         return R.success(allSettings);
     }
 
-
     @GetMapping("/setting/all/enabled")
     public R<List<FieldWorkAttendanceSetting>> findAllEnabledAllowance() {
         final List<FieldWorkAttendanceSetting> allSettings = fieldWorkService.findAllEnabledAllowance();
@@ -48,6 +49,14 @@ public class FieldController {
         return R.success("更新成功!");
     }
 
+    /**
+     * 获取默认审批人
+     */
+    @GetMapping("/find/rvw")
+    public R<User> getDefaultRzeviewer(String dept) {
+        final User userReviewer = fieldWorkService.findUserReviewer(dept);
+        return R.success(userReviewer);
 
+    }
 
 }

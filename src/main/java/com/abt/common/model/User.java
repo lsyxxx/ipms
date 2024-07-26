@@ -1,6 +1,7 @@
 package com.abt.common.model;
 
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.EmployeeInfo;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -54,6 +55,18 @@ public class User implements Serializable {
         this.id = user.getId();
         this.username = user.getUsername();
         this.code = user.getAccount();
+    }
+
+    public User(EmployeeInfo user) {
+        this.username = user.getName();
+        this.id = user.getUserid();
+        this.code = user.getJobNumber();
+        this.deptId = user.getDept();
+        if (user.getDepartment() != null) {
+            this.deptName = user.getDepartment().getName();
+        }
+        this.position = user.getPosition();
+        this.employeeId = user.getId();
     }
 
     public User(String id) {

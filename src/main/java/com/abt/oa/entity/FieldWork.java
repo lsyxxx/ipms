@@ -80,6 +80,9 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
     @Column(name="project", columnDefinition="VARCHAR(500)")
     private String project;
 
+    @Column(name="work_desc", columnDefinition="VARCHAR(500)")
+    private String workDescription;
+
     @Column(name="rvw_id", columnDefinition="VARCHAR(128)")
     private String reviewerId;
 
