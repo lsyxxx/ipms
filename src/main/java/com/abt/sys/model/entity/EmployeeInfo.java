@@ -1,6 +1,7 @@
 package com.abt.sys.model.entity;
 
 import com.abt.sys.model.WithQuery;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,6 +33,7 @@ import java.time.LocalDateTime;
                 attributeNodes = @NamedAttributeNode("tUser")
         )
 })
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class EmployeeInfo implements WithQuery<EmployeeInfo> {
     @Id
     @Size(max = 50)
