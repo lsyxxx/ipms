@@ -154,8 +154,8 @@ public class SalaryController {
 
     @GetMapping("/my/find/slip/u")
     public R<List<UserSlip>> findUserSalaryDetailsYear(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        salaryService.verifySessionTimeout(session);
+//        HttpSession session = request.getSession(false);
+//        salaryService.verifySessionTimeout(session);
         String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
         final List<UserSlip> list = salaryService.findUserSlipListByCurrentYear(jobNumber);
         return R.success(list);

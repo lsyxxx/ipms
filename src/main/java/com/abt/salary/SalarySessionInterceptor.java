@@ -17,8 +17,8 @@ public class SalarySessionInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("========== SalarySessionInterceptor =================== ");
         final String requestURI = request.getRequestURI();
-        System.out.println("==== 拦截的url: " + requestURI);
-        final HttpSession session = request.getSession(false);
+//        System.out.println("==== 拦截的url: " + requestURI);
+//        final HttpSession session = request.getSession(false);
 
 
         return true; // 返回true表示放行请求
