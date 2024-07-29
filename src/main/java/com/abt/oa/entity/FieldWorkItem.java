@@ -1,10 +1,16 @@
 package com.abt.oa.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+import lombok.NoArgsConstructor;
+import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
 
@@ -12,6 +18,10 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "fw_item")
+@NoArgsConstructor
+@DynamicUpdate
+@DynamicInsert
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FieldWorkItem {
 
   @Id
@@ -37,6 +47,7 @@ public class FieldWorkItem {
   @Column(name="a_sum", columnDefinition="DECIMAL(10,2)")
   private double sum;
 
+  @JsonIgnore
   @ManyToOne
   @JoinColumn(name = "f_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
   @NotFound(action= NotFoundAction.IGNORE)
@@ -49,6 +60,18 @@ public class FieldWorkItem {
   public double sum() {
     this.sum = BigDecimal.valueOf(allowanceProdAmount).add(BigDecimal.valueOf(allowanceMealAmount)).doubleValue();
     return this.sum;
+  }
+
+  public static FieldWorkItem create(FieldWorkAttendanceSetting setting, String fid){
+    Assert.notNull(fid, "fid must not be null");
+    FieldWorkItem item = new FieldWorkItem();
+    item.setFid(fid);
+    item.setAllowanceId(setting.getId());
+    item.setAllowanceName(setting.getName());
+    item.setAllowanceProdAmount(setting.getProductionAllowance());
+    item.setAllowanceMealAmount(setting.getMealAllowance());
+    item.setSum(setting.getSumAllowance());
+    return item;
   }
 
 }

@@ -1,7 +1,5 @@
 package com.abt.wf.entity;
 
-import com.abt.common.model.AuditInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

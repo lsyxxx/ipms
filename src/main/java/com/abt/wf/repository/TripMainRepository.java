@@ -33,7 +33,7 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
     Page<TripMain> findUserApplyByQueryPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     @Query("select e from TripMain e " +
-            "left join fetch e.details  " +
+//            "left join fetch e.details  " +
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu  " +
             "where (:userid is null or :userid = '' or rt.assignee = :userid) " +
@@ -49,7 +49,7 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
 
 
     @Query("select e from TripMain e " +
-            "left join fetch e.details  " +
+//            "left join fetch e.details  " +
             "left join fetch ActHiTaskInst ht on ht.procInstId = e.processInstanceId " +
             "where lower(ht.taskDefKey) not like '%apply%' " +
             "and (:userid is null or :userid = ''or e.createUserid = :userid or ht.assignee = :userid) " +
@@ -63,7 +63,7 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
     Page<TripMain> findUserDoneByQueryPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     @Query("select e from TripMain e " +
-            "left join fetch e.details  " +
+//            "left join fetch e.details  " +
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu " +
             "where (:state is null or :state = '' or e.businessState = :state) " +

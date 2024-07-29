@@ -64,6 +64,8 @@ public class User implements Serializable {
         this.deptId = user.getDept();
         if (user.getDepartment() != null) {
             this.deptName = user.getDepartment().getName();
+        } else {
+            this.deptName = user.getDeptName();
         }
         this.position = user.getPosition();
         this.employeeId = user.getId();

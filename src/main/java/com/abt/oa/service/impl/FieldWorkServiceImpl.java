@@ -4,10 +4,13 @@ import com.abt.common.model.User;
 import com.abt.oa.OAConstants;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
+import com.abt.oa.entity.FieldWorkItem;
 import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.reposity.FieldAttendanceSettingRepository;
+import com.abt.oa.reposity.FieldWorkItemRepository;
 import com.abt.oa.reposity.FieldWorkRepository;
 import com.abt.oa.service.FieldWorkService;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +18,8 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 /**
@@ -27,11 +32,13 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final FieldAttendanceSettingRepository fieldAttendanceSettingRepository;
     private final FieldWorkRepository fieldWorkRepository;
     private final EmployeeService employeeService;
+    private final FieldWorkItemRepository fieldWorkItemRepository;
 
-    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService) {
+    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository) {
         this.fieldAttendanceSettingRepository = fieldAttendanceSettingRepository;
         this.fieldWorkRepository = fieldWorkRepository;
         this.employeeService = employeeService;
+        this.fieldWorkItemRepository = fieldWorkItemRepository;
     }
 
     @Override
@@ -54,12 +61,12 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("username", ExampleMatcher.GenericPropertyMatcher::contains)
                 .withMatcher("attendanceDate", ExampleMatcher.GenericPropertyMatcher::exact)
-                .withMatcher("userid", ExampleMatcher.GenericPropertyMatcher::exact)
+                .withMatcher("createUserid", ExampleMatcher.GenericPropertyMatcher::exact)
                 ;
 //                .withIgnorePaths("enable", "sort");
         Example<FieldWork> example = Example.of(query, matcher);
         fieldWorkRepository.findAll(example,
-                Sort.by(Sort.Order.asc("userid"),  Sort.Order.desc("attendanceDate"), Sort.Order.asc("reviewTime")));
+                Sort.by(Sort.Order.asc("createUserid"),  Sort.Order.desc("attendanceDate"), Sort.Order.asc("reviewTime")));
         return null;
     }
 
@@ -85,9 +92,15 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
 
+    @Transactional
     @Override
     public void saveFieldWork(FieldWork fw) {
-        fieldWorkRepository.save(fw);
+        fw = fieldWorkRepository.save(fw);
+        String id = fw.getId();
+        fw.getItemIds().forEach(i -> {
+            final FieldWorkAttendanceSetting fwa = fieldAttendanceSettingRepository.findById(i).orElseThrow(() -> new BusinessException("保存失败!。原因：未查询到野外补助配置项(id=" + i + ")"));
+            fieldWorkItemRepository.save(FieldWorkItem.create(fwa, id));
+        });
     }
 
 

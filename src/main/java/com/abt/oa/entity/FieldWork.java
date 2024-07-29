@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -22,9 +23,10 @@ import java.util.List;
  * 野外工作记录
  * 如果被拒绝，那么此次记录的审批结果是拒绝。
  */
+@NamedEntityGraph(name = "all", attributeNodes = {@NamedAttributeNode("items")})
 @Table(name = "fw_record", indexes = {
-        @Index(name = "idx_user_id", columnList = "user_id"),
-        @Index(name="idx_user_id_date", columnList = "user_id, atd_date"),
+        @Index(name = "idx_user_id", columnList = "create_userid"),
+        @Index(name="idx_user_id_date", columnList = "create_userid, atd_date"),
         @Index(name = "idx_atd_date", columnList = "atd_date")
 })
 @Entity
@@ -37,18 +39,14 @@ import java.util.List;
 @EntityListeners(CommonJpaAuditListener.class)
 public class FieldWork extends AuditInfo implements CommonJpaAudit {
     @Id
-    @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, unique = true)
+    @GeneratedValue(generator  = "timestampIdGenerator")
+    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
 
-    @NotNull
-    @Column(name="user_id", columnDefinition="VARCHAR(128)", nullable = false)
-    private String userid;
-
-    @NotNull
-    @Column(name="user_name", columnDefinition="VARCHAR(32)", nullable = false)
-    private String username;
-
+    /**
+     * 申请人部门
+     */
     @Column(name="dept_id", columnDefinition="VARCHAR(128)")
     private String departmentId;
 
@@ -62,11 +60,6 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate attendanceDate;
 
-    /**
-     * 补助项目名称，多个用逗号分隔
-     */
-    @Column(name="item_ids", columnDefinition="VARCHAR(1000)")
-    private String itemIds;
     /**
      * 补助合计
      */
@@ -94,6 +87,15 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
     private String reviewerName;
 
     /**
+     * 审批部门
+     */
+    @Column(name="rvw_dept_id", columnDefinition="VARCHAR(128)")
+    private String reviewDeptId;
+
+    @Column(name="rvw_dept_name", columnDefinition="VARCHAR(128)")
+    private String reviewDeptName;
+
+    /**
      * 审批结果：通过/拒绝
      */
     @Column(name="rvw_result", columnDefinition="VARCHAR(16)")
@@ -113,9 +115,11 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
     @Column(name="rvw_reason", columnDefinition="VARCHAR(128)")
     private String reviewReason;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "f_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    List<FieldWorkItem> items;
+    @OneToMany(mappedBy = "fieldWork")
+    private List<FieldWorkItem> items;
+
+    @Transient
+    private List<String> itemIds;
 
 
 
