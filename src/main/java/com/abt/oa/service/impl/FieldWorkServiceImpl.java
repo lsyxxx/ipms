@@ -1,24 +1,26 @@
 package com.abt.oa.service.impl;
 
 import com.abt.common.model.User;
+import com.abt.oa.OAConstants;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
+import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.reposity.FieldAttendanceSettingRepository;
 import com.abt.oa.reposity.FieldWorkRepository;
 import com.abt.oa.service.FieldWorkService;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
  *
  */
+@Slf4j
 @Service
 public class FieldWorkServiceImpl implements FieldWorkService {
 
@@ -47,14 +49,18 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return fieldAttendanceSettingRepository.findByEnabledOrderBySortAsc(true);
     }
 
-    //查询野外考勤记录
-    public List<FieldWork> findRecordBy() {
-        return null;
-    }
-
     @Override
-    public void saveAttendance(FieldWork fw) {
-        fieldWorkRepository.save(fw);
+    public List<FieldWork> findUserRecord(FieldWork query) {
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("username", ExampleMatcher.GenericPropertyMatcher::contains)
+                .withMatcher("attendanceDate", ExampleMatcher.GenericPropertyMatcher::exact)
+                .withMatcher("userid", ExampleMatcher.GenericPropertyMatcher::exact)
+                ;
+//                .withIgnorePaths("enable", "sort");
+        Example<FieldWork> example = Example.of(query, matcher);
+        fieldWorkRepository.findAll(example,
+                Sort.by(Sort.Order.asc("userid"),  Sort.Order.desc("attendanceDate"), Sort.Order.asc("reviewTime")));
+        return null;
     }
 
     //员工表中部门经理
@@ -79,8 +85,22 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
 
-    public void addFieldWork(FieldWork fw) {
+    @Override
+    public void saveFieldWork(FieldWork fw) {
+        fieldWorkRepository.save(fw);
+    }
 
+
+    public void findRecordListBy(FieldWorkRequestForm form) {
+        if (OAConstants.QUERY_MODE_DONE.equals(form.getMode())) {
+
+        } else if (OAConstants.QUERY_MODE_MY.equals(form.getMode())) {
+
+        } else if (OAConstants.QUERY_MODE_TODO.equals(form.getMode())) {
+
+        } else {
+            log.warn("野外考勤-无效的查询模式: {}", form.getMode() );
+        }
     }
 
 }

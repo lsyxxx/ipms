@@ -198,11 +198,3 @@ INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [creat
 GO
 
 
--- ----------------------------
--- Primary Key structure for table fw_atd_setting
--- ----------------------------
-ALTER TABLE [dbo].[fw_atd_setting] ADD CONSTRAINT [PK__fw_atd_s__3213E83F47D0003C] PRIMARY KEY CLUSTERED ([id])
-    WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
-    ON [PRIMARY]
-GO
-

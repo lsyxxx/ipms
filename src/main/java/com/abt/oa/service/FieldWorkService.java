@@ -17,8 +17,18 @@ public interface FieldWorkService {
      */
     List<FieldWorkAttendanceSetting> findAllEnabledAllowance();
 
-    void saveAttendance(FieldWork fwa);
+    /**
+     * 查询野外考勤记录
+     */
+    List<FieldWork> findUserRecord(FieldWork query);
 
-    //查询用户野外考勤审批人
+    /**
+     * 查询用户野外考勤审批人
+     */
     User findUserReviewer(String userDept);
+
+    /**
+     * 考勤记录
+     */
+    void saveFieldWork(FieldWork fw);
 }

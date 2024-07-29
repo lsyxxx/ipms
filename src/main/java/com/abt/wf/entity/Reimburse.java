@@ -60,7 +60,7 @@ public class Reimburse extends WorkflowBase {
     private Double reserveRefund;
 
     @NotBlank
-    @Column(name="reason_", columnDefinition="VARCHAR(500)")
+    @Column(name="reason_", columnDefinition="VARCHAR(1000)")
     private String reason;
 
     /**

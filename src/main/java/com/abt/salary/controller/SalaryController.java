@@ -199,8 +199,8 @@ public class SalaryController {
 
     @PostMapping("/my/pwd/verify")
     public R<Object> verifyPwd(@RequestBody PwdForm form, HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        salaryService.verifySessionTimeout(session);
+//        HttpSession session = request.getSession(false);
+//        salaryService.verifySessionTimeout(session);
         String jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
         salaryService.verifyPwd(form.getPwd1(), jobNumber);
         return R.success("验证成功");

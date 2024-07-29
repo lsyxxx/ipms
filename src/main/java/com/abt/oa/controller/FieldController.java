@@ -2,12 +2,16 @@ package com.abt.oa.controller;
 
 import com.abt.common.model.R;
 import com.abt.common.model.User;
+import com.abt.common.util.TokenUtil;
+import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
+import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.service.FieldWorkService;
-import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -57,6 +61,50 @@ public class FieldController {
         final User userReviewer = fieldWorkService.findUserReviewer(dept);
         return R.success(userReviewer);
 
+    }
+
+    /**
+     * 查询审批记录
+     * @param query 查询条件
+     */
+    @PostMapping("/find/record")
+    public R<List<FieldWork>> findUserRecord(@RequestBody FieldWork query) {
+        final List<FieldWork> userRecord = fieldWorkService.findUserRecord(query);
+        return R.success(userRecord);
+    }
+
+    /**
+     * 查询审批记录列表
+     */
+    @PostMapping("/find/list")
+    public R<List<FieldWork>> findRecordBy(@RequestBody FieldWorkRequestForm form) {
+        return null;
+    }
+
+    /**
+     * 提交考勤记录
+     */
+    @PostMapping("/add")
+    public R<Object> add(@RequestBody FieldWork work) {
+        fieldWorkService.saveFieldWork(work);
+        return R.success("提交成功");
+    }
+
+    /**
+     * 审批
+     */
+    @GetMapping("/rvw")
+    public R<Object> review(String result, @RequestParam(required = false) String reason, String id) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        FieldWork fw = new FieldWork();
+        fw.setId(id);
+        fw.setReviewResult(result);
+        fw.setReviewReason(reason);
+        fw.setReviewerId(user.getId());
+        fw.setReviewerName(user.getName());
+        fw.setReviewTime(LocalDateTime.now());
+        fieldWorkService.saveFieldWork(fw);
+        return R.success("审批成功");
     }
 
 }

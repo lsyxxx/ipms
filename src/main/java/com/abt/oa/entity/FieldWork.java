@@ -16,13 +16,16 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 野外工作记录
+ * 如果被拒绝，那么此次记录的审批结果是拒绝。
  */
 @Table(name = "fw_record", indexes = {
         @Index(name = "idx_user_id", columnList = "user_id"),
-        @Index(name="idx_user_id_date", columnList = "user_id, atd_date")
+        @Index(name="idx_user_id_date", columnList = "user_id, atd_date"),
+        @Index(name = "idx_atd_date", columnList = "atd_date")
 })
 @Entity
 @Getter
@@ -83,16 +86,17 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
     @Column(name="work_desc", columnDefinition="VARCHAR(500)")
     private String workDescription;
 
-    @Column(name="rvw_id", columnDefinition="VARCHAR(128)")
+    @NotNull
+    @Column(name="rvw_id", columnDefinition="VARCHAR(128)", nullable = false)
     private String reviewerId;
 
-    @Column(name="rvw_name", columnDefinition="VARCHAR(128)")
+    @Column(name="rvw_name", columnDefinition="VARCHAR(32)")
     private String reviewerName;
 
     /**
      * 审批结果：通过/拒绝
      */
-    @Column(name="rvw_result", columnDefinition="VARCHAR(128)")
+    @Column(name="rvw_result", columnDefinition="VARCHAR(16)")
     private String reviewResult;
 
     /**
@@ -108,6 +112,10 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
      */
     @Column(name="rvw_reason", columnDefinition="VARCHAR(128)")
     private String reviewReason;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "f_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    List<FieldWorkItem> items;
 
 
 

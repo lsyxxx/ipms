@@ -28,4 +28,17 @@ public class OAConstants {
 
     public static final String ANNOUNCEMENT_FILETYPE_RULES = "5";
 
+    /**
+     * 待我审批
+     */
+    public static final String QUERY_MODE_TODO = "todo";
+    /**
+     * 我已审批
+     */
+    public static final String QUERY_MODE_DONE = "done";
+    /**
+     * 我提交的
+     */
+    public static final String QUERY_MODE_MY = "my";
+
 }
