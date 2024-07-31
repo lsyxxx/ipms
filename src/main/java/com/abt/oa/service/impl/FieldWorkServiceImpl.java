@@ -1,26 +1,31 @@
 package com.abt.oa.service.impl;
 
 import com.abt.common.model.User;
+import com.abt.common.util.TimeUtil;
 import com.abt.oa.OAConstants;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.entity.FieldWorkItem;
+import com.abt.oa.model.CalendarEvent;
 import com.abt.oa.model.FieldWorkRequestForm;
+import com.abt.oa.model.FieldWorkUserBoard;
 import com.abt.oa.reposity.FieldAttendanceSettingRepository;
 import com.abt.oa.reposity.FieldWorkItemRepository;
 import com.abt.oa.reposity.FieldWorkRepository;
 import com.abt.oa.service.FieldWorkService;
+import com.abt.oa.service.PaiBanService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
+import com.abt.sys.util.WithQueryUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  *
@@ -33,12 +38,14 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final FieldWorkRepository fieldWorkRepository;
     private final EmployeeService employeeService;
     private final FieldWorkItemRepository fieldWorkItemRepository;
+    private final PaiBanService paiBanService;
 
-    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository) {
+    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, PaiBanService paiBanService) {
         this.fieldAttendanceSettingRepository = fieldAttendanceSettingRepository;
         this.fieldWorkRepository = fieldWorkRepository;
         this.employeeService = employeeService;
         this.fieldWorkItemRepository = fieldWorkItemRepository;
+        this.paiBanService = paiBanService;
     }
 
     @Override
@@ -103,17 +110,122 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         });
     }
 
+    @Override
+    public Page<FieldWork> findTodoRecords(FieldWorkRequestForm form) {
+        final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
+        final Page<FieldWork> page = fieldWorkRepository.findTodoFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
+                TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
+        WithQueryUtil.build(page.getContent());
+        return page;
+    }
 
-    public void findRecordListBy(FieldWorkRequestForm form) {
-        if (OAConstants.QUERY_MODE_DONE.equals(form.getMode())) {
+    @Override
+    public Page<FieldWork> findDoneRecords(FieldWorkRequestForm form) {
+        final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
+        final Page<FieldWork> page = fieldWorkRepository.findDoneFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
+                TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
+        WithQueryUtil.build(page.getContent());
+        return page;
+    }
 
-        } else if (OAConstants.QUERY_MODE_MY.equals(form.getMode())) {
+    @Override
+    public Page<FieldWork> findApplyRecords(FieldWorkRequestForm form) {
+        final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
+        final Page<FieldWork> page = fieldWorkRepository.findApplyFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
+                TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
+        WithQueryUtil.build(page.getContent());
+        return page;
+    }
 
-        } else if (OAConstants.QUERY_MODE_TODO.equals(form.getMode())) {
 
-        } else {
-            log.warn("野外考勤-无效的查询模式: {}", form.getMode() );
+    @Override
+    public Page<FieldWork> findAllRecords(FieldWorkRequestForm form) {
+        final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
+        final Page<FieldWork> page = fieldWorkRepository.findAllFetchedByQuery(form.getQuery(), form.getState(),
+                TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
+        WithQueryUtil.build(page.getContent());
+        return page;
+    }
+
+    @Override
+    public void reject(String id, String userid, String reason) {
+        final FieldWork fw = this.findFieldWorkEntity(id);
+        validateReviewer(userid, fw);
+        reject(fw, reason);
+    }
+
+    @Override
+    public void pass(String id, String userid) {
+        final FieldWork fw = this.findFieldWorkEntity(id);
+        validateReviewer(userid, fw);
+        pass(fw);
+    }
+
+    public void pass(FieldWork fw) {
+        fw.setReviewResult(OAConstants.FW_PASS);
+        fw.setReviewTime(LocalDateTime.now());
+        fieldWorkRepository.save(fw);
+    }
+
+    private void reject(FieldWork fw, String reason) {
+        fw.setReviewTime(LocalDateTime.now());
+        fw.setReviewResult(OAConstants.FW_REJECT);
+        fw.setReviewReason(reason);
+        fieldWorkRepository.save(fw);
+    }
+
+    private void validateReviewer(String userid, FieldWork fw) {
+        if (!userid.equals(fw.getReviewerId())) {
+            log.error("用户{}不是当前考勤记录审批人", userid);
+            throw new BusinessException("用户(id=" + userid + ")不是当前考勤记录审批人，无法审批！");
         }
     }
+
+    public FieldWork findFieldWorkEntity(String id) {
+        return fieldWorkRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到考勤记录(id=" + id + ")"));
+    }
+
+    //用户看板数据
+    public FieldWorkUserBoard userBoard(String jobNumber, String startDate, String endDate) {
+
+        FieldWorkUserBoard board = new FieldWorkUserBoard();
+
+        List<FieldWorkAttendanceSetting> settings = this.findAllSettings();
+
+        //查询所有记录
+        final List<FieldWork> record = fieldWorkRepository.findByJobNumberAndReviewResultAndAttendanceDateBetweenOrderByAttendanceDate(jobNumber, OAConstants.FW_PASS, TimeUtil.toLocalDate(startDate), TimeUtil.toLocalDate(endDate));
+        //出勤天数: 不包含《不计算考勤》项目
+        List<CalendarEvent> events = new ArrayList<>();
+        //出勤
+        Set<LocalDate> workDaySet = new HashSet<>();
+        Set<LocalDate> resetDaySet = new HashSet<>();
+        record.forEach(fw -> {
+           fw.getItems().forEach(i -> {
+               events.add(CalendarEvent.create(i, fw.getAttendanceDate().atStartOfDay()));
+               if (isWorkDay(settings, i)) {
+                   workDaySet.add(fw.getAttendanceDate());
+               } else if (isRestDay(settings, i)) {
+                   resetDaySet.add(fw.getAttendanceDate());
+               }
+           });
+        });
+        board.setWorkDay(workDaySet.size());
+        board.setRestDay(resetDaySet.size());
+        board.setEvents(events);
+
+        return board;
+    }
+
+    private boolean isWorkDay(List<FieldWorkAttendanceSetting> settings, FieldWorkItem item) {
+        final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> item.getAllowanceId().equals(s.getId()) && s.isWork()).findFirst();
+        return setting.isPresent();
+    }
+
+    private boolean isRestDay(List<FieldWorkAttendanceSetting> settings, FieldWorkItem item) {
+        final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> item.getAllowanceId().equals(s.getId()) && !s.isWork()).findFirst();
+        return setting.isPresent();
+    }
+
+
 
 }

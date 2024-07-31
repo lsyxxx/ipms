@@ -39,6 +39,13 @@ public class OAConstants {
     /**
      * 我提交的
      */
-    public static final String QUERY_MODE_MY = "my";
+    public static final String QUERY_MODE_APPLY = "apply";
+    /**
+     * 所有
+     */
+    public static final String QUERY_MODE_ALL = "all";
+
+    public static final String FW_REJECT = "拒绝";
+    public static final String FW_PASS = "通过";
 
 }

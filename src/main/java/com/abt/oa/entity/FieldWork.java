@@ -1,8 +1,10 @@
 package com.abt.oa.entity;
 
 import com.abt.common.config.CommonJpaAuditListener;
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.impl.CommonJpaAudit;
+import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -37,12 +39,32 @@ import java.util.List;
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners(CommonJpaAuditListener.class)
-public class FieldWork extends AuditInfo implements CommonJpaAudit {
+public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<FieldWork> {
     @Id
     @Column(name = "id", nullable = false, unique = true)
     @GeneratedValue(generator  = "timestampIdGenerator")
     @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
+
+    /**
+     * 考勤人工号
+     */
+    @NotNull(groups = {ValidateGroup.Save.class})
+    @Column(name="job_number", nullable = false)
+    private String jobNumber;
+
+    /**
+     * 考勤人userid
+     */
+    @Column(name="user_id", nullable = false)
+    private String userid;
+
+    /**
+     * 考勤人姓名
+     */
+    @NotNull(groups = {ValidateGroup.Save.class})
+    @Column(name="user_name", columnDefinition="VARCHAR(32)")
+    private String username;
 
     /**
      * 申请人部门
@@ -54,7 +76,7 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
     private String departmentName;
 
 
-    @NotNull
+    @NotNull(groups = {ValidateGroup.Save.class})
     @Column(name="atd_date")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -87,15 +109,6 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
     private String reviewerName;
 
     /**
-     * 审批部门
-     */
-    @Column(name="rvw_dept_id", columnDefinition="VARCHAR(128)")
-    private String reviewDeptId;
-
-    @Column(name="rvw_dept_name", columnDefinition="VARCHAR(128)")
-    private String reviewDeptName;
-
-    /**
      * 审批结果：通过/拒绝
      */
     @Column(name="rvw_result", columnDefinition="VARCHAR(16)")
@@ -116,11 +129,26 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit {
     private String reviewReason;
 
     @OneToMany(mappedBy = "fieldWork")
+    @OrderBy("sort ASC")
     private List<FieldWorkItem> items;
 
     @Transient
     private List<String> itemIds;
 
+    @Transient
+    private List<String> itemNames;
 
 
+    @Override
+    public FieldWork afterQuery() {
+        //1.itemIds/itemNames
+        if (this.items == null) {
+            return this;
+        }
+
+        this.itemIds = this.items.stream().map(FieldWorkItem::getId).toList();
+        this.itemNames = this.items.stream().map(FieldWorkItem::getAllowanceName).toList();
+
+        return this;
+    }
 }

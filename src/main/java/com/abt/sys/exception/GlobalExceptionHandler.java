@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -107,5 +108,15 @@ public class GlobalExceptionHandler {
     public R<Exception> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.error("上传文件大小超出范围: ", e);
         return R.fail("上传文件大小超出范围!(单个文件大小不能超过50MB,一次上传所有文件大小不能超过200MB");
+    }
+
+
+    /**
+     * controller没有接收到必填参数
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public void handleMissingParams(MissingServletRequestParameterException ex) {
+        String name = ex.getParameterName();
+        throw new BusinessException("缺少参数: " + name);
     }
 }

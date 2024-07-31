@@ -1,17 +1,23 @@
 package com.abt.oa.controller;
 
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
+import com.abt.common.util.ValidateUtil;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.service.FieldWorkService;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -74,18 +80,10 @@ public class FieldController {
     }
 
     /**
-     * 查询审批记录列表
-     */
-    @PostMapping("/find/list")
-    public R<List<FieldWork>> findRecordBy(@RequestBody FieldWorkRequestForm form) {
-        return null;
-    }
-
-    /**
      * 提交考勤记录
      */
     @PostMapping("/add")
-    public R<Object> add(@RequestBody FieldWork work) {
+    public R<Object> add(@Validated(value = {ValidateGroup.Save.class})  @RequestBody FieldWork work) {
         fieldWorkService.saveFieldWork(work);
         return R.success("提交成功");
     }
@@ -106,5 +104,70 @@ public class FieldController {
         fieldWorkService.saveFieldWork(fw);
         return R.success("审批成功");
     }
+
+    @GetMapping("/find/todo")
+    public R<List<FieldWork>> findTodoRecords(@ModelAttribute FieldWorkRequestForm form) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        form.setUserid(user.getId());
+        final Page<FieldWork> page = fieldWorkService.findTodoRecords(form);
+        return R.success(page.getContent(), (int)page.getTotalElements());
+    }
+
+    @GetMapping("/find/done")
+    public R<List<FieldWork>> findDoneRecords(@ModelAttribute FieldWorkRequestForm form) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        form.setUserid(user.getId());
+        final Page<FieldWork> page = fieldWorkService.findDoneRecords(form);
+        return R.success(page.getContent(), (int)page.getTotalElements());
+    }
+
+    @GetMapping("/find/apply")
+    public R<List<FieldWork>> findApplyRecords(@ModelAttribute FieldWorkRequestForm form) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        form.setUserid(user.getId());
+        final Page<FieldWork> page = fieldWorkService.findApplyRecords(form);
+        return R.success(page.getContent(), (int)page.getTotalElements());
+    }
+
+    @GetMapping("/find/all")
+    public R<List<FieldWork>> findAllRecords(@ModelAttribute FieldWorkRequestForm form) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        form.setUserid(user.getId());
+        final Page<FieldWork> page = fieldWorkService.findAllRecords(form);
+        return R.success(page.getContent(), (int)page.getTotalElements());
+    }
+
+
+    @GetMapping("/rvw/reject")
+    public R<Object> reject(@RequestParam(required = false) String id, @RequestParam(required = false) String reason) {
+        ValidateUtil.ensurePropertyNotnull(id, "考勤记录id");
+        ValidateUtil.ensurePropertyNotnull(reason, "审批拒绝原因");
+        fieldWorkService.reject(id, TokenUtil.getUseridFromAuthToken(), reason);
+        return R.success("已拒绝");
+    }
+
+    @GetMapping("/rvw/pass")
+    public R<Object> pass(@RequestParam(required = false) String ids) {
+        ValidateUtil.ensurePropertyNotnull(ids, "至少选择一条考勤记录");
+        String[] list = ids.split(",");
+        int count = 0;
+        for (String id : list) {
+            fieldWorkService.pass(id, TokenUtil.getUseridFromAuthToken());
+            count++;
+        }
+
+        return R.success("已审批" + count + "条考勤记录");
+    }
+
+    /**
+     * 用户看板数据
+     */
+    @GetMapping("/board/user")
+    public void userBoard() {
+
+    }
+
+
+
 
 }

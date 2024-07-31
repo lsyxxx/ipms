@@ -8,6 +8,7 @@ import com.abt.sys.repository.CustomerInfoRepository;
 import com.abt.sys.repository.SupplyInfoRepository;
 import com.abt.sys.service.CompanyService;
 import com.abt.testing.model.CustomerRequestForm;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.List;
  *
  */
 @Service
+@Slf4j
 public class CompanyServiceImpl implements CompanyService {
 
     public static final String ABT_CODE = "ABT";
@@ -93,6 +95,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public CustomerInfo addCustomer(CustomerInfo customer) {
+        log.info("add customer : {}", customer);
         return customerInfoRepository.save(customer);
     }
 

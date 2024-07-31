@@ -110,4 +110,12 @@ public class TimeUtil {
     }
 
 
+    public static LocalDate toLocalDate(String yyyy_MM_dd) {
+        if (StringUtils.isBlank(yyyy_MM_dd)) {
+            return null;
+        }
+        return LocalDate.parse(yyyy_MM_dd, dateFormatter);
+    }
+
+
 }

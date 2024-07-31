@@ -46,6 +46,9 @@ public class FieldWorkItem {
 
   @Column(name="a_sum", columnDefinition="DECIMAL(10,2)")
   private double sum;
+  
+  @Column(name="sort_", columnDefinition = "TINYINT")
+  private int sort;
 
   @JsonIgnore
   @ManyToOne
@@ -71,6 +74,7 @@ public class FieldWorkItem {
     item.setAllowanceProdAmount(setting.getProductionAllowance());
     item.setAllowanceMealAmount(setting.getMealAllowance());
     item.setSum(setting.getSumAllowance());
+    item.setSort(setting.getSort());
     return item;
   }
 

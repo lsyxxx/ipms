@@ -3,7 +3,9 @@ package com.abt.oa.service;
 import com.abt.common.model.User;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
+import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.sys.model.entity.EmployeeInfo;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -31,4 +33,16 @@ public interface FieldWorkService {
      * 考勤记录
      */
     void saveFieldWork(FieldWork fw);
+
+    Page<FieldWork> findTodoRecords(FieldWorkRequestForm form);
+
+    Page<FieldWork> findDoneRecords(FieldWorkRequestForm form);
+
+    Page<FieldWork> findApplyRecords(FieldWorkRequestForm form);
+
+    Page<FieldWork> findAllRecords(FieldWorkRequestForm form);
+
+    void reject(String id, String userid, String reason);
+
+    void pass(String id, String userid);
 }

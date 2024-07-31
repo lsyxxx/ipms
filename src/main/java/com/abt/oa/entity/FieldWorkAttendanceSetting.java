@@ -73,7 +73,6 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
     @Column(name="style_", columnDefinition="VARCHAR(1000)")
     private String style;
 
-
     /**
      * 组件类型
      * 1. 单选
@@ -81,6 +80,13 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
      */
     @Column(name="com_type", columnDefinition="TINYINT")
     private int componentType = COMPONENT_TYPE_RADIO;
+
+    /**
+     * 是否算作出勤
+     * 用于计算出勤天数
+     */
+    @Column(name="is_work", columnDefinition = "BIT")
+    private boolean isWork = true;
 
     public static final int COMPONENT_TYPE_RADIO = 1;
     public static final int COMPONENT_TYPE_CHECKBOX = 2;
