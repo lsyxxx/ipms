@@ -7,9 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
 
@@ -92,5 +91,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
     )
     Page<FieldWork> findAllFetchedByQuery(String query, String state, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
-    List<FieldWork> findByJobNumberAndReviewResultAndAttendanceDateBetweenOrderByAttendanceDate(String jobNumber, String result, LocalDate startDate, LocalDate endDate);
+    List<FieldWork> findByJobNumberAndAttendanceDateBetween(String jobNumber, LocalDate startDate, LocalDate endDate);
+
+    List<FieldWork> findByReviewerIdAndAttendanceDateBetween(String reviewerId, LocalDate startDate, LocalDate endDate);
 }

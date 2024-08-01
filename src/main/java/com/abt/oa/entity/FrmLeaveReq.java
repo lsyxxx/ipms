@@ -1,5 +1,7 @@
 package com.abt.oa.entity;
 
+import com.abt.common.util.TimeUtil;
+import com.abt.sys.model.WithQuery;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,10 +10,13 @@ import lombok.Setter;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Nationalized;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 请假
@@ -22,7 +27,7 @@ import java.time.LocalDateTime;
 @Entity
 @Immutable
 @Table(name = "T_FrmLeaveReq")
-public class FrmLeaveReq {
+public class FrmLeaveReq implements WithQuery<FrmLeaveReq> {
     @Id
     @Size(max = 50)
     @NotNull
@@ -115,4 +120,16 @@ public class FrmLeaveReq {
 
     @Column(name = "FlowInstanceId")
     private String flowInstanceId;
+
+    @Transient
+    private LocalDateTime startDateTime;
+    @Transient
+    private LocalDateTime endDateTime;
+
+    @Override
+    public FrmLeaveReq afterQuery() {
+        this.startDateTime = TimeUtil.toLocalDateTime(this.startDate, this.startTime);
+        this.endDateTime = TimeUtil.toLocalDateTime(this.endDate, this.endTime);
+        return this;
+    }
 }

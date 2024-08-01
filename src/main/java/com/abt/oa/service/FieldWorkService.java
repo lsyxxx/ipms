@@ -4,6 +4,7 @@ import com.abt.common.model.User;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.model.FieldWorkRequestForm;
+import com.abt.oa.model.FieldWorkUserBoard;
 import com.abt.sys.model.entity.EmployeeInfo;
 import org.springframework.data.domain.Page;
 
@@ -45,4 +46,7 @@ public interface FieldWorkService {
     void reject(String id, String userid, String reason);
 
     void pass(String id, String userid);
+
+    //用户看板数据
+    FieldWorkUserBoard userBoard(String jobNumber, String userid, String startDateStr, String endDateStr);
 }

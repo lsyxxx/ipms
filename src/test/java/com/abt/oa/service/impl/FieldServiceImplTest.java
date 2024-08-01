@@ -28,4 +28,8 @@ class FieldServiceImplTest {
 
         fieldWorkService.saveSetting(fwas);
     }
+
+    @Test
+    void find() {
+    }
 }

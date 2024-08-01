@@ -4,6 +4,7 @@ import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.impl.CommonJpaAudit;
+import com.abt.oa.OAConstants;
 import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
@@ -138,6 +140,24 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
     @Transient
     private List<String> itemNames;
 
+
+    /**
+     * 是否通过
+     */
+    public boolean isPass() {
+        return OAConstants.FW_PASS.equals(this.getReviewResult());
+    }
+
+    public boolean isReject() {
+        return OAConstants.FW_REJECT.equals(this.getReviewResult());
+    }
+
+    /**
+     * 是否等待审批
+     */
+    public boolean isWaiting() {
+        return StringUtils.isBlank(this.reviewResult);
+    }
 
     @Override
     public FieldWork afterQuery() {

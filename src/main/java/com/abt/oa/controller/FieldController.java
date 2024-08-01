@@ -9,9 +9,11 @@ import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.service.FieldWorkService;
+import com.abt.oa.service.SettingService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +30,11 @@ import java.util.List;
 @RequestMapping("/field")
 public class FieldController {
     private final FieldWorkService fieldWorkService;
+    private final SettingService settingService;
 
-    public FieldController(FieldWorkService fieldWorkService) {
+    public FieldController(FieldWorkService fieldWorkService, SettingService settingService) {
         this.fieldWorkService = fieldWorkService;
+        this.settingService = settingService;
     }
 
     /**
@@ -163,8 +167,27 @@ public class FieldController {
      * 用户看板数据
      */
     @GetMapping("/board/user")
-    public void userBoard() {
+    public void userBoard(@RequestParam(required = false) String jobNumber,
+                          @RequestParam(required = false) String userid,
+                          @RequestParam(required = false) String startDate,
+                          @RequestParam(required = false) String endDate) {
+        if (StringUtils.isBlank(jobNumber)) {
+            jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
+        }
+        if (StringUtils.isBlank(userid)) {
+            userid = TokenUtil.getUseridFromAuthToken();
+        }
+        if (StringUtils.isBlank(startDate)) {
+            //当前时间的考勤月起始
+            String startDay = settingService.getAttendanceStartDay().getFvalue();
+        }
 
+        if (StringUtils.isBlank(endDate)) {
+            //当前时间的考勤月结束
+            String endDay = settingService.getAttendanceEndDay().getFvalue();
+        }
+
+        fieldWorkService.userBoard(jobNumber, userid, startDate, endDate);
     }
 
 

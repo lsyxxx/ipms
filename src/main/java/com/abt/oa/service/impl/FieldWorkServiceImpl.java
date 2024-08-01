@@ -6,6 +6,7 @@ import com.abt.oa.OAConstants;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.entity.FieldWorkItem;
+import com.abt.oa.entity.FrmLeaveReq;
 import com.abt.oa.model.CalendarEvent;
 import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.model.FieldWorkUserBoard;
@@ -13,6 +14,7 @@ import com.abt.oa.reposity.FieldAttendanceSettingRepository;
 import com.abt.oa.reposity.FieldWorkItemRepository;
 import com.abt.oa.reposity.FieldWorkRepository;
 import com.abt.oa.service.FieldWorkService;
+import com.abt.oa.service.LeaveService;
 import com.abt.oa.service.PaiBanService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
@@ -26,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -39,13 +43,15 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final EmployeeService employeeService;
     private final FieldWorkItemRepository fieldWorkItemRepository;
     private final PaiBanService paiBanService;
+    private final LeaveService leaveService;
 
-    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, PaiBanService paiBanService) {
+    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, PaiBanService paiBanService, LeaveService leaveService) {
         this.fieldAttendanceSettingRepository = fieldAttendanceSettingRepository;
         this.fieldWorkRepository = fieldWorkRepository;
         this.employeeService = employeeService;
         this.fieldWorkItemRepository = fieldWorkItemRepository;
         this.paiBanService = paiBanService;
+        this.leaveService = leaveService;
     }
 
     @Override
@@ -185,23 +191,30 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return fieldWorkRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到考勤记录(id=" + id + ")"));
     }
 
-    //用户看板数据
-    public FieldWorkUserBoard userBoard(String jobNumber, String startDate, String endDate) {
-
+    @Override
+    public FieldWorkUserBoard userBoard(String jobNumber, String userid, String startDateStr, String endDateStr) {
+        final LocalDate startDate = TimeUtil.toLocalDate(startDateStr);
+        final LocalDate endDate = TimeUtil.toLocalDate(endDateStr);
         FieldWorkUserBoard board = new FieldWorkUserBoard();
-
+        List<CalendarEvent> events = new ArrayList<>();
         List<FieldWorkAttendanceSetting> settings = this.findAllSettings();
 
         //查询所有记录
-        final List<FieldWork> record = fieldWorkRepository.findByJobNumberAndReviewResultAndAttendanceDateBetweenOrderByAttendanceDate(jobNumber, OAConstants.FW_PASS, TimeUtil.toLocalDate(startDate), TimeUtil.toLocalDate(endDate));
-        //出勤天数: 不包含《不计算考勤》项目
-        List<CalendarEvent> events = new ArrayList<>();
+        final List<FieldWork> allRecords = fieldWorkRepository.findByJobNumberAndAttendanceDateBetween(jobNumber, startDate, endDate);
+        final List<FieldWork> passRecords = allRecords.stream().filter(FieldWork::isPass).toList();
+        board.setPassCount(passRecords.size());
+        board.setApplyCount(allRecords.size());
+        final List<FieldWork> reviewRecords = fieldWorkRepository.findByReviewerIdAndAttendanceDateBetween(userid, startDate, endDate);
+        final int todoCount = (int)reviewRecords.stream().filter(FieldWork::isWaiting).count();
+        board.setTodoCount(todoCount);
+        board.setDoneCount(reviewRecords.size() - todoCount);
+
         //出勤
         Set<LocalDate> workDaySet = new HashSet<>();
         Set<LocalDate> resetDaySet = new HashSet<>();
-        record.forEach(fw -> {
+        //出勤天数: 不包含《不计算考勤》项目
+        passRecords.forEach(fw -> {
            fw.getItems().forEach(i -> {
-               events.add(CalendarEvent.create(i, fw.getAttendanceDate().atStartOfDay()));
                if (isWorkDay(settings, i)) {
                    workDaySet.add(fw.getAttendanceDate());
                } else if (isRestDay(settings, i)) {
@@ -211,9 +224,120 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         });
         board.setWorkDay(workDaySet.size());
         board.setRestDay(resetDaySet.size());
-        board.setEvents(events);
+        //补贴event
+        events.addAll(createFieldWorkCalendarEvents(passRecords));
+        //请假event
+        final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, startDate, endDate);
+        final List<CalendarEvent> leaveEvents = createLeaveCalendarEvents(leaveRecords);
+        //请假天数
+        events.addAll(leaveEvents);
 
+
+        board.setEvents(events);
         return board;
+    }
+
+
+    /**
+     * 野外考勤的日历显示规则：
+     * 1. 日历中仅显示审批通过的考勤的补贴项目，审批被拒绝或审批中的不显示
+     * 2. 审批中以event形式展示
+     * 3. 当天的所有审批都被拒绝，则显示被拒绝
+     */
+    private List<CalendarEvent> createFieldWorkCalendarEvents(List<FieldWork> record) {
+        List<CalendarEvent> events = new ArrayList<>();
+        final Map<LocalDate, Set<FieldWork>> groupByDate = record.stream().collect(Collectors.groupingBy(FieldWork::getAttendanceDate, Collectors.toSet()));
+
+        for (Map.Entry<LocalDate, Set<FieldWork>> entry : groupByDate.entrySet()) {
+            Boolean pass = null, reject = null;
+            for (FieldWork fw : entry.getValue()) {
+                //有一个pass就算pass
+                pass = pass == null ? fw.isPass() : (pass || fw.isPass());
+                reject = reject == null ? fw.isReject() : (reject && fw.isReject());
+                if (fw.isPass()) {
+                    //审批通过的event
+                    fw.getItems().forEach(i -> {
+                        events.add(create(i, fw.getAttendanceDate().atStartOfDay(), CAL_EVENT_TYPE_PASS));
+                    });
+                } else if (fw.isWaiting()) {
+                    //待审批的event
+                    events.add(createWaitingEvent(fw));
+                }
+            }
+            System.out.printf("fw date: %s , pass %b, reject: %b \n", entry.getKey().toString(), pass, reject);
+            if (reject != null && reject) {
+                events.add(createRejectEvent(entry.getKey()));
+            }
+        }
+
+        return events;
+    }
+
+    public static final String CAL_EVENT_TYPE_PASS = "pass";
+    public static final String CAL_EVENT_TYPE_REJECT = "reject";
+    public static final String CAL_EVENT_TYPE_WAITING = "waiting";
+    public static final String CAL_EVENT_TYPE_LEAVE = "leave";
+
+    public CalendarEvent create(FieldWorkItem item, LocalDateTime startTime, String type) {
+        CalendarEvent event = new CalendarEvent();
+        if (item == null) {
+            return event;
+        }
+
+        event.setId(item.getId());
+        event.setTitle(item.getAllowanceName());
+        event.setOrder(item.getSort());
+        event.setStartTime(startTime);
+        event.setType(type);
+        event.build();
+
+        return event;
+    }
+
+    //默认绿色
+    public static final String BG_PASS = "";
+    public static final String BG_REJECT = "red";
+    public static final String BG_WAITING = "yellow";
+
+
+
+    private CalendarEvent createRejectEvent(LocalDate date) {
+        CalendarEvent event = new CalendarEvent();
+        event.setTitle("考勤已拒绝");
+        event.setStartTime(date.atStartOfDay());
+        event.setOrder(0);
+        event.setType(CAL_EVENT_TYPE_REJECT);
+        event.build();
+        return event;
+    }
+
+    private CalendarEvent createWaitingEvent(FieldWork fw) {
+        CalendarEvent event = new CalendarEvent();
+        event.setTitle("考勤审批中");
+        event.setStartTime(fw.getAttendanceDate().atStartOfDay());
+        event.build();
+        event.setOrder(0);
+        event.setType(CAL_EVENT_TYPE_WAITING);
+        return event;
+    }
+
+
+
+    //计算请假events
+    private List<CalendarEvent> createLeaveCalendarEvents(List<FrmLeaveReq> leaveRecords) {
+        List<CalendarEvent> events = new ArrayList<>();
+        for (FrmLeaveReq frmLeaveReq : leaveRecords) {
+            CalendarEvent event = new CalendarEvent();
+            event.setStartTime(frmLeaveReq.getStartDateTime());
+            event.setEndTime(frmLeaveReq.getEndDateTime());
+            event.setId(frmLeaveReq.getId());
+            //请假放后面
+            event.setOrder(99);
+            events.add(event);
+            event.setType(CAL_EVENT_TYPE_LEAVE);
+        }
+        return events;
+
     }
 
     private boolean isWorkDay(List<FieldWorkAttendanceSetting> settings, FieldWorkItem item) {

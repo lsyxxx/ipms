@@ -32,6 +32,22 @@ public class FieldWorkUserBoard {
      */
     private int totalDay;
 
+    /**
+     * 请假天数，包含所有请假类型
+     */
+    private int leaveDay;
+
+    private int todoCount;
+    private int doneCount;
+    /**
+     * 已提交的
+     */
+    private int applyCount;
+    /**
+     * 已通过的
+     */
+    private int passCount;
+
 
     private List<CalendarEvent> events = new ArrayList<>();
 

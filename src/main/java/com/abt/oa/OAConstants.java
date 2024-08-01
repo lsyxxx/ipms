@@ -48,4 +48,13 @@ public class OAConstants {
     public static final String FW_REJECT = "拒绝";
     public static final String FW_PASS = "通过";
 
+    /**
+     * 考勤月起始时间id
+     */
+    public static String attendanceStartDayId = "attendance_start";
+    /**
+     * 考勤月结束时间id
+     */
+    public static String attendanceEndDayId = "attendance_end";
+
 }

@@ -3,10 +3,8 @@ package com.abt.oa.service.impl;
 import com.abt.oa.entity.FrmLeaveReq;
 import com.abt.oa.reposity.FrmLeaveReqRepository;
 import com.abt.oa.service.LeaveService;
+import com.abt.sys.util.WithQueryUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,8 +23,13 @@ public class LeaveServiceImpl implements LeaveService {
         this.frmLeaveReqRepository = frmLeaveReqRepository;
     }
 
+    @Override
     public List<FrmLeaveReq> findByUser(String userid, LocalDate startDate, LocalDate endDate) {
+        return WithQueryUtil.build(frmLeaveReqRepository.findByApplyUserIDAndDateBetween(userid, startDate, endDate));
+    }
 
-
+    @Override
+    public int countLeaveRecordByUser(String userid, LocalDate startDate, LocalDate endDate) {
+        return frmLeaveReqRepository.countByApplyUserIDAndDateBetween(userid, startDate, endDate);
     }
 }

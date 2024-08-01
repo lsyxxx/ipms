@@ -1,10 +1,13 @@
 package com.abt.common.util;
 
+import com.abt.sys.exception.BusinessException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
@@ -12,9 +15,11 @@ import java.util.Date;
 /**
  *
  */
+@Slf4j
 public class TimeUtil {
 
     public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final DateTimeFormatter yyyy_MM_dd_HH_mm_ss_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * 根据当前时间生成ID
@@ -54,6 +59,13 @@ public class TimeUtil {
             return null;
         }
         return localDate.format(dateFormatter);
+    }
+
+    public static String yyyy_MM_dd_HH_mm_ssString(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        return localDateTime.format(yyyy_MM_dd_HH_mm_ss_formatter);
     }
 
     /**
@@ -115,6 +127,43 @@ public class TimeUtil {
             return null;
         }
         return LocalDate.parse(yyyy_MM_dd, dateFormatter);
+    }
+
+    /**
+     * 将日期和时间合并
+     * @param date 日期
+     * @param time hh:mm:ss
+     */
+    public static LocalDateTime toLocalDateTime(LocalDate date, String time) {
+        final boolean isValid = isValidateDefaultTimeFormat(time);
+        if (!isValid) {
+            throw new BusinessException("时间格式不符合要求(要求格式: " + DEFAULT_TIME_FORMAT + ")");
+        }
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(DEFAULT_TIME_FORMAT);
+        LocalTime localTime = LocalTime.parse(time, timeFormatter);
+        return LocalDateTime.of(date, localTime);
+    }
+
+
+    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
+    public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
+
+    /**
+     * 默认时间格式(HH:mm:ss)
+     */
+    public static boolean isValidateDefaultTimeFormat(String time) {
+        return isValidTimeFormat(time, DEFAULT_TIME_FORMAT);
+    }
+
+    public static boolean isValidTimeFormat(String time, String format) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(format);
+        try {
+            LocalTime.parse(time, timeFormatter);
+            return true;
+        } catch (DateTimeParseException e) {
+            log.error("时间格式转换错误!", e);
+            return false;
+        }
     }
 
 
