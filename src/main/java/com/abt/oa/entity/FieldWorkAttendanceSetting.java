@@ -91,6 +91,18 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
     @Column(name="is_work", columnDefinition = "BIT")
     private boolean isWork = true;
 
+    /**
+     * 简写
+     */
+    @Column(name="short_name", columnDefinition = "VARCHAR(16)")
+    private String shortName;
+
+    /**
+     * 表示符号
+     */
+    @Column(name="symbol_", columnDefinition = "VARCHAR(64)")
+    private String symbol;
+
     public static final int COMPONENT_TYPE_RADIO = 1;
     public static final int COMPONENT_TYPE_CHECKBOX = 2;
 
