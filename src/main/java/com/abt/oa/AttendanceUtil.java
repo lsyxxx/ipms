@@ -24,23 +24,6 @@ public class AttendanceUtil {
         return now.getMonth().plus(1);
     }
 
-    /**
-     * 获取当前时间考勤周期
-     * @param startDay 开始日
-     * @param endDay 结束日
-     * @return [开始日期，结束日期]
-     */
-    public static LocalDate[] currentAttendanceRange(int startDay, int endDay) {
-        final LocalDate now = LocalDate.now();
-        LocalDate startDate = LocalDate.of(now.getYear(), now.getMonth(), startDay);
-        LocalDate endDate = LocalDate.of(now.getYear(), now.getMonth(), endDay);
-        if (now.isBefore(startDate)) {
-            return new LocalDate[]{startDate.minusMonths(1), endDate};
-        } else {
-            return new LocalDate[]{startDate, endDate.plusMonths(1)};
-        }
-    }
-
     public static LocalDate currentStartDate(int startDay) {
         final LocalDate now = LocalDate.now();
         LocalDate startDate = LocalDate.of(now.getYear(), now.getMonth(), startDay);
@@ -60,12 +43,6 @@ public class AttendanceUtil {
         }
         return endDate.plusMonths(1);
     }
-
-
-    public static void main(String[] args) {
-        System.out.println(currentStartDate(26));
-    }
-
 
 
 }

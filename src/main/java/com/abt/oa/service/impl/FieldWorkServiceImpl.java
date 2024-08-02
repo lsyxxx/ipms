@@ -27,9 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -74,12 +74,11 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("username", ExampleMatcher.GenericPropertyMatcher::contains)
                 .withMatcher("attendanceDate", ExampleMatcher.GenericPropertyMatcher::exact)
-                .withMatcher("createUserid", ExampleMatcher.GenericPropertyMatcher::exact)
-                ;
+                .withMatcher("createUserid", ExampleMatcher.GenericPropertyMatcher::exact);
 //                .withIgnorePaths("enable", "sort");
         Example<FieldWork> example = Example.of(query, matcher);
         fieldWorkRepository.findAll(example,
-                Sort.by(Sort.Order.asc("createUserid"),  Sort.Order.desc("attendanceDate"), Sort.Order.asc("reviewTime")));
+                Sort.by(Sort.Order.asc("createUserid"), Sort.Order.desc("attendanceDate"), Sort.Order.asc("reviewTime")));
         return null;
     }
 
@@ -108,6 +107,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Transactional
     @Override
     public void saveFieldWork(FieldWork fw) {
+        fw.setReviewResult(OAConstants.FW_WAITING);
         fw = fieldWorkRepository.save(fw);
         String id = fw.getId();
         fw.getItemIds().forEach(i -> {
@@ -196,6 +196,10 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         final LocalDate startDate = TimeUtil.toLocalDate(startDateStr);
         final LocalDate endDate = TimeUtil.toLocalDate(endDateStr);
         FieldWorkUserBoard board = new FieldWorkUserBoard();
+        board.setPeriodEnd(endDate);
+        board.setPeriodStart(startDate);
+        assert startDate != null;
+        board.setDayCount((int) ChronoUnit.DAYS.between(startDate, endDate) + 1);
         List<CalendarEvent> events = new ArrayList<>();
         List<FieldWorkAttendanceSetting> settings = this.findAllSettings();
 
@@ -205,7 +209,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         board.setPassCount(passRecords.size());
         board.setApplyCount(allRecords.size());
         final List<FieldWork> reviewRecords = fieldWorkRepository.findByReviewerIdAndAttendanceDateBetween(userid, startDate, endDate);
-        final int todoCount = (int)reviewRecords.stream().filter(FieldWork::isWaiting).count();
+        final int todoCount = (int) reviewRecords.stream().filter(FieldWork::isWaiting).count();
         board.setTodoCount(todoCount);
         board.setDoneCount(reviewRecords.size() - todoCount);
 
@@ -214,18 +218,18 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         Set<LocalDate> resetDaySet = new HashSet<>();
         //出勤天数: 不包含《不计算考勤》项目
         passRecords.forEach(fw -> {
-           fw.getItems().forEach(i -> {
-               if (isWorkDay(settings, i)) {
-                   workDaySet.add(fw.getAttendanceDate());
-               } else if (isRestDay(settings, i)) {
-                   resetDaySet.add(fw.getAttendanceDate());
-               }
-           });
+            fw.getItems().forEach(i -> {
+                if (isWorkDay(settings, i)) {
+                    workDaySet.add(fw.getAttendanceDate());
+                } else if (isRestDay(settings, i)) {
+                    resetDaySet.add(fw.getAttendanceDate());
+                }
+            });
         });
         board.setWorkDay(workDaySet.size());
         board.setRestDay(resetDaySet.size());
         //补贴event
-        events.addAll(createFieldWorkCalendarEvents(passRecords));
+        events.addAll(createFieldWorkCalendarEvents(allRecords));
         //请假event
         final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, startDate, endDate);
         final List<CalendarEvent> leaveEvents = createLeaveCalendarEvents(leaveRecords);
@@ -247,7 +251,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private List<CalendarEvent> createFieldWorkCalendarEvents(List<FieldWork> record) {
         List<CalendarEvent> events = new ArrayList<>();
         final Map<LocalDate, Set<FieldWork>> groupByDate = record.stream().collect(Collectors.groupingBy(FieldWork::getAttendanceDate, Collectors.toSet()));
-
+        final List<FieldWorkAttendanceSetting> all = fieldAttendanceSettingRepository.findAll();
         for (Map.Entry<LocalDate, Set<FieldWork>> entry : groupByDate.entrySet()) {
             Boolean pass = null, reject = null;
             for (FieldWork fw : entry.getValue()) {
@@ -257,28 +261,36 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 if (fw.isPass()) {
                     //审批通过的event
                     fw.getItems().forEach(i -> {
-                        events.add(create(i, fw.getAttendanceDate().atStartOfDay(), CAL_EVENT_TYPE_PASS));
+                        final CalendarEvent ae = create(i, TimeUtil.yyyy_MM_ddString(fw.getAttendanceDate()), CAL_EVENT_TYPE_ALLOWANCE);
+                        findSettingById(all, i.getAllowanceId()).ifPresent(a -> {
+                            ae.setBackgroundColor(a.getBackgroundColor());
+                        });
+                        events.add(ae);
                     });
                 } else if (fw.isWaiting()) {
                     //待审批的event
                     events.add(createWaitingEvent(fw));
                 }
             }
-            System.out.printf("fw date: %s , pass %b, reject: %b \n", entry.getKey().toString(), pass, reject);
-            if (reject != null && reject) {
-                events.add(createRejectEvent(entry.getKey()));
-            }
+//            if (reject != null && reject) {
+//                events.add(createRejectEvent(entry.getKey()));
+//            }
         }
 
         return events;
+    }
+
+    private Optional<FieldWorkAttendanceSetting> findSettingById(List<FieldWorkAttendanceSetting> list, String id) {
+        return list.stream().filter(i -> i.getId().equals(id)).findFirst();
     }
 
     public static final String CAL_EVENT_TYPE_PASS = "pass";
     public static final String CAL_EVENT_TYPE_REJECT = "reject";
     public static final String CAL_EVENT_TYPE_WAITING = "waiting";
     public static final String CAL_EVENT_TYPE_LEAVE = "leave";
+    public static final String CAL_EVENT_TYPE_ALLOWANCE = "allowance";
 
-    public CalendarEvent create(FieldWorkItem item, LocalDateTime startTime, String type) {
+    public CalendarEvent create(FieldWorkItem item, String start, String type) {
         CalendarEvent event = new CalendarEvent();
         if (item == null) {
             return event;
@@ -287,7 +299,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         event.setId(item.getId());
         event.setTitle(item.getAllowanceName());
         event.setOrder(item.getSort());
-        event.setStartTime(startTime);
+        event.setStart(start);
         event.setType(type);
         event.build();
 
@@ -300,27 +312,25 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     public static final String BG_WAITING = "yellow";
 
 
-
     private CalendarEvent createRejectEvent(LocalDate date) {
         CalendarEvent event = new CalendarEvent();
         event.setTitle("考勤已拒绝");
-        event.setStartTime(date.atStartOfDay());
+        event.setStart(TimeUtil.yyyy_MM_ddString(date));
         event.setOrder(0);
         event.setType(CAL_EVENT_TYPE_REJECT);
-        event.build();
+//        event.build();
         return event;
     }
 
     private CalendarEvent createWaitingEvent(FieldWork fw) {
         CalendarEvent event = new CalendarEvent();
         event.setTitle("考勤审批中");
-        event.setStartTime(fw.getAttendanceDate().atStartOfDay());
-        event.build();
+        event.setStart(TimeUtil.yyyy_MM_ddString(fw.getAttendanceDate()));
         event.setOrder(0);
         event.setType(CAL_EVENT_TYPE_WAITING);
+//        event.build();
         return event;
     }
-
 
 
     //计算请假events
@@ -328,8 +338,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         List<CalendarEvent> events = new ArrayList<>();
         for (FrmLeaveReq frmLeaveReq : leaveRecords) {
             CalendarEvent event = new CalendarEvent();
-            event.setStartTime(frmLeaveReq.getStartDateTime());
-            event.setEndTime(frmLeaveReq.getEndDateTime());
+            event.setStart(frmLeaveReq.getStartTime());
+            event.setEnd(frmLeaveReq.getEndTime());
+
             event.setId(frmLeaveReq.getId());
             //请假放后面
             event.setOrder(99);
@@ -349,7 +360,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> item.getAllowanceId().equals(s.getId()) && !s.isWork()).findFirst();
         return setting.isPresent();
     }
-
 
 
 }

@@ -15,6 +15,11 @@ public class FieldWorkUserBoard {
     private LocalDate periodEnd;
 
     /**
+     * [periodStart,  periodEnd] 天数，包含
+     */
+    private int dayCount;
+
+    /**
      * 出勤天数
      */
     private int workDay;

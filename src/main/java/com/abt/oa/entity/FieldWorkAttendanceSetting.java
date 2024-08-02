@@ -67,6 +67,9 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
     @Column(name="enabled_", columnDefinition="BIT")
     private boolean enabled = true;
 
+    @Column(name="bg_color")
+    private String backgroundColor;
+
     /**
      * 配置样式(css)
      */

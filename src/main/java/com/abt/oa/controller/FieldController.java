@@ -3,14 +3,16 @@ package com.abt.oa.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.model.User;
+import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
+import com.abt.oa.AttendanceUtil;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.model.FieldWorkRequestForm;
+import com.abt.oa.model.FieldWorkUserBoard;
 import com.abt.oa.service.FieldWorkService;
 import com.abt.oa.service.SettingService;
-import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,8 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -167,27 +169,31 @@ public class FieldController {
      * 用户看板数据
      */
     @GetMapping("/board/user")
-    public void userBoard(@RequestParam(required = false) String jobNumber,
-                          @RequestParam(required = false) String userid,
-                          @RequestParam(required = false) String startDate,
-                          @RequestParam(required = false) String endDate) {
+    public R<FieldWorkUserBoard> userBoard(@RequestParam(required = false) String jobNumber,
+                                           @RequestParam(required = false) String userid,
+                                           @RequestParam(required = false) String startDate,
+                                           @RequestParam(required = false) String endDate) {
         if (StringUtils.isBlank(jobNumber)) {
             jobNumber = TokenUtil.getUserJobNumberFromAuthToken();
         }
         if (StringUtils.isBlank(userid)) {
             userid = TokenUtil.getUseridFromAuthToken();
         }
+        LocalDate start = null, end = null;
         if (StringUtils.isBlank(startDate)) {
             //当前时间的考勤月起始
             String startDay = settingService.getAttendanceStartDay().getFvalue();
+            start = AttendanceUtil.currentStartDate(Integer.parseInt(startDay));
         }
 
         if (StringUtils.isBlank(endDate)) {
             //当前时间的考勤月结束
             String endDay = settingService.getAttendanceEndDay().getFvalue();
+            end = AttendanceUtil.currentEndDate(Integer.parseInt(endDay));
         }
 
-        fieldWorkService.userBoard(jobNumber, userid, startDate, endDate);
+        final FieldWorkUserBoard board = fieldWorkService.userBoard(jobNumber, userid, TimeUtil.yyyy_MM_ddString(start), TimeUtil.yyyy_MM_ddString(end));
+        return R.success(board);
     }
 
 

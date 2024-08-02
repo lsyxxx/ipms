@@ -47,6 +47,7 @@ public class OAConstants {
 
     public static final String FW_REJECT = "拒绝";
     public static final String FW_PASS = "通过";
+    public static final String FW_WAITING = "待审批";
 
     /**
      * 考勤月起始时间id

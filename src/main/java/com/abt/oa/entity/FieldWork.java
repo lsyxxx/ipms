@@ -156,7 +156,7 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
      * 是否等待审批
      */
     public boolean isWaiting() {
-        return StringUtils.isBlank(this.reviewResult);
+        return OAConstants.FW_WAITING.equals(this.getReviewResult());
     }
 
     @Override
