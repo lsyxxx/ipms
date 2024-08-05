@@ -47,7 +47,6 @@ public class ReimburseController {
     @GetMapping("/restart")
     public R<Reimburse> copyEntity(String id) throws Exception {
         final Reimburse copyEntity = reimburseService.getCopyEntity(id);
-        System.out.println(copyEntity.getOtherFileList());
         return R.success(copyEntity);
     }
 

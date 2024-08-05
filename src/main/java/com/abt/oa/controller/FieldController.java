@@ -184,18 +184,21 @@ public class FieldController {
             //当前时间的考勤月起始
             String startDay = settingService.getAttendanceStartDay().getFvalue();
             start = AttendanceUtil.currentStartDate(Integer.parseInt(startDay));
+        } else {
+            start = TimeUtil.toLocalDate(startDate);
         }
 
         if (StringUtils.isBlank(endDate)) {
             //当前时间的考勤月结束
             String endDay = settingService.getAttendanceEndDay().getFvalue();
             end = AttendanceUtil.currentEndDate(Integer.parseInt(endDay));
+        } else {
+            end = TimeUtil.toLocalDate(endDate);
         }
 
         final FieldWorkUserBoard board = fieldWorkService.userBoard(jobNumber, userid, TimeUtil.yyyy_MM_ddString(start), TimeUtil.yyyy_MM_ddString(end));
         return R.success(board);
     }
-
 
 
 

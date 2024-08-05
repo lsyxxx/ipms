@@ -97,6 +97,21 @@ public class LoanController {
         return R.success(processRecord, processRecord.size());
     }
 
+    @GetMapping("/revoke")
+    public R<List<Object>> revoke(String id) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        loanService.revoke(id, user.getId(), user.getName());
+        return R.success("撤销成功");
+    }
+
+    @GetMapping("/restart")
+    public R<Loan> restart(String id) {
+        final Loan copyEntity = loanService.getCopyEntity(id);
+        return R.success(copyEntity);
+    }
+
+
+
     public void setTokenUser(LoanRequestForm requestForm) {
         final UserView user = TokenUtil.getUserFromAuthToken();
         requestForm.setUserid(user.getId());
