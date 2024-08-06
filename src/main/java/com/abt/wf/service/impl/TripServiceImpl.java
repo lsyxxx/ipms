@@ -22,6 +22,7 @@ import com.abt.wf.repository.TripMainRepository;
 import com.abt.wf.repository.TripOtherItemRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.TripService;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
@@ -115,7 +116,7 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
 
     @Override
     void setFileListJson(TripMain entity, String json) {
-        setFileListJson(entity, json);
+        entity.setFileList(json);
     }
 
     @Override
