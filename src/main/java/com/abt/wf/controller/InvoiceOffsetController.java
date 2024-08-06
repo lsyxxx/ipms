@@ -43,6 +43,16 @@ public class InvoiceOffsetController {
         return R.success("撤销成功");
     }
 
+    /**
+     * 重新提交
+     */
+    @GetMapping("/restart")
+    public R<InvoiceOffset> restart(String id) {
+        final InvoiceOffset copyEntity = invoiceOffsetService.getCopyEntity(id);
+        return R.success(copyEntity);
+    }
+
+
     @PostMapping("/apply")
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody InvoiceOffset form) {
         invoiceOffsetService.apply(form);
