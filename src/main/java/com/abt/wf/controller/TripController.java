@@ -48,6 +48,18 @@ public class TripController {
     @GetMapping("/restart")
     public R<TripMain> copyEntity(String id) {
         final TripMain copyEntity = tripService.getCopyEntity(id);
+        if (copyEntity.getDetails() != null) {
+            copyEntity.getDetails().forEach(d -> {
+                d.setId(null);
+                d.setMid(null);
+                if (d.getItems() != null) {
+                    d.getItems().forEach(i -> {
+                        i.setId(null);
+                        i.setDid(null);
+                    });
+                }
+            });
+        }
         return R.success(copyEntity);
     }
 

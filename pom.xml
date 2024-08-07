@@ -15,6 +15,8 @@
     <description>阿伯塔数字化平台</description>
     <properties>
         <java.version>20</java.version>
+        <!-- 设置时间戳格式 -->
+        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
     </properties>
     <dependencies>
         <dependency>
@@ -143,6 +145,14 @@
     </dependencies>
 
     <build>
+<!--        <resources>-->
+<!--            <resource>-->
+<!--                <directory>src/main/resources</directory>-->
+<!--                <excludes>-->
+<!--                    <exclude>application-*.properties</exclude>-->
+<!--                </excludes>-->
+<!--            </resource>-->
+<!--        </resources>-->
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -170,6 +180,68 @@
                     </nonFilteredFileExtensions>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+               </plugin>
+
+            <!-- Maven Antrun Plugin to copy JAR files -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- Ensure the destination directory exists -->
+                                <mkdir dir="E:\jar_bak"/>
+                                <!-- 将target中打包文件复制到E:\jar_bak，并重命名为abt-当前日期.jar -->
+                                <copy file="${project.build.directory}\${project.build.finalName}.jar"
+                                      tofile="E:\jar_bak\abt-${maven.build.timestamp}.jar"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
+
+
+<!--    <profiles>-->
+<!--        <profile>-->
+<!--            <id>prod</id>-->
+<!--            <build>-->
+<!--                <resources>-->
+<!--                    <resource>-->
+<!--                        <directory>src/main/resources</directory>-->
+<!--                        <includes>-->
+<!--                            <include>application-prod.properties</include>-->
+<!--                        </includes>-->
+<!--                        <filtering>false</filtering>-->
+<!--                    </resource>-->
+<!--                </resources>-->
+<!--            </build>-->
+<!--        </profile>-->
+<!--        <profile>-->
+<!--            <id>dev</id>-->
+<!--            <build>-->
+<!--                <resources>-->
+<!--                    <resource>-->
+<!--                        <directory>src/main/resources</directory>-->
+<!--                        <includes>-->
+<!--                            <include>application-dev.properties</include>-->
+<!--                        </includes>-->
+<!--                        <filtering>false</filtering>-->
+<!--                    </resource>-->
+<!--                </resources>-->
+<!--            </build>-->
+<!--        </profile>-->
+<!--    </profiles>-->
 </project>

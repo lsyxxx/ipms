@@ -255,4 +255,6 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         main.setApproveUser(user.getId().equals(main.getCurrentTaskAssigneeId()));
         return main;
     }
+
+
 }
