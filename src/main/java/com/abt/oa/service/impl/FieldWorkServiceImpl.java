@@ -117,6 +117,25 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
     @Override
+    public void saveFieldWorkList(List<FieldWork> list, String reviewerId, String reviewerName) {
+        List<FieldWork> fwBatch = new ArrayList<>();
+        List<FieldWorkItem> fwiBatch = new ArrayList<>();
+
+        final Map<LocalDate, List<FieldWork>> groupByDate = list.stream().collect(Collectors.groupingBy(FieldWork::getAttendanceDate, Collectors.toList()));
+        for (Map.Entry<LocalDate, List<FieldWork>> entry : groupByDate.entrySet()) {
+            List<FieldWork> value = entry.getValue();
+            if (value != null && !value.isEmpty()) {
+                FieldWork fw = value.get(0);
+                fw.setReviewResult(OAConstants.FW_PASS);
+                fw.setReviewerId(reviewerId);
+                fw.setReviewerName(reviewerName);
+                fw.setReviewTime(LocalDateTime.now());
+                fwBatch.add(fw);
+            }
+        }
+    }
+
+    @Override
     public Page<FieldWork> findTodoRecords(FieldWorkRequestForm form) {
         final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
         final Page<FieldWork> page = fieldWorkRepository.findTodoFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
@@ -235,12 +254,21 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         final List<CalendarEvent> leaveEvents = createLeaveCalendarEvents(leaveRecords);
         //请假天数
         events.addAll(leaveEvents);
+        board.setLeaveDay(leaveEvents.size());
+
 
 
         board.setEvents(events);
         return board;
     }
 
+    /**
+     * 调休
+     * @param record: 所有记录
+     * @param leaveType: 调休类型，null包含所有。传入调休配置id
+     */
+    private void createLeaveEvents(List<FieldWork> record, String leaveType) {
+    }
 
     /**
      * 野外考勤的日历显示规则：

@@ -24,7 +24,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
             "and (:query is null or :query = '' " +
             "    or fw.project like %:query% " +
             "    or fw.well like %:query% " +
-            "    or fw.departmentName like %:query% " +
+//            "    or fw.departmentName like %:query% " +
             "    or fw.username like %:query% " +
             "    or fi.allowanceName like %:query%) " +
             "and (:state is null or  :state = '' or fw.reviewResult = :state) " +
@@ -43,7 +43,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
             "and (:query is null or :query = '' " +
             "    or fw.project like %:query% " +
             "    or fw.well like %:query% " +
-            "    or fw.departmentName like %:query% " +
+//            "    or fw.departmentName like %:query% " +
             "    or fw.username like %:query% " +
             "    or fi.allowanceName like %:query%) " +
             "and (:state is null or  :state = '' or fw.reviewResult = :state) " +
@@ -61,7 +61,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
             "and (:query is null or :query = '' " +
             "    or fw.project like %:query% " +
             "    or fw.well like %:query% " +
-            "    or fw.departmentName like %:query% " +
+//            "    or fw.departmentName like %:query% " +
             "    or fw.username like %:query%" +
             "    or fi.allowanceName like %:query%) " +
             "and (:state is null or  :state = '' or fw.reviewResult = :state) " +
@@ -81,7 +81,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
             "    or fw.reviewerName like %:query% " +
             "    or fw.project like %:query% " +
             "    or fw.well like %:query% " +
-            "    or fw.departmentName like %:query% " +
+//            "    or fw.departmentName like %:query% " +
             "    or fw.username like %:query%" +
             "    or fi.allowanceName like %:query%) " +
             "and (:state is null or  :state = '' or fw.reviewResult = :state) " +

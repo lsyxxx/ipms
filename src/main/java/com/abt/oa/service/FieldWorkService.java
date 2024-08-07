@@ -35,6 +35,8 @@ public interface FieldWorkService {
      */
     void saveFieldWork(FieldWork fw);
 
+    void saveFieldWorkList(List<FieldWork> list, String reviewerId, String reviewerName);
+
     Page<FieldWork> findTodoRecords(FieldWorkRequestForm form);
 
     Page<FieldWork> findDoneRecords(FieldWorkRequestForm form);

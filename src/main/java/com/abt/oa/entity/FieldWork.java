@@ -71,11 +71,11 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
     /**
      * 申请人部门
      */
-    @Column(name="dept_id", columnDefinition="VARCHAR(128)")
-    private String departmentId;
-
-    @Column(name="dept_name", columnDefinition="VARCHAR(128)")
-    private String departmentName;
+//    @Column(name="dept_id", columnDefinition="VARCHAR(128)")
+//    private String departmentId;
+//
+//    @Column(name="dept_name", columnDefinition="VARCHAR(128)")
+//    private String departmentName;
 
 
     @NotNull(groups = {ValidateGroup.Save.class})

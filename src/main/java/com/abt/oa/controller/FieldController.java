@@ -94,6 +94,13 @@ public class FieldController {
         return R.success("提交成功");
     }
 
+    @PostMapping("/add/list")
+    public R<Object> submitList(@RequestBody List<FieldWork> list) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        fieldWorkService.saveFieldWorkList(list, user.getId(), user.getName());
+        return R.success("保存成功!");
+    }
+
     /**
      * 审批
      */
