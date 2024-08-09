@@ -58,6 +58,24 @@ public class CalendarEvent {
 
     private String shortName;
 
+    /**
+     * 日期的天(1-31)
+     */
+    private int day;
+
+    /**
+     * 时长/天数
+     */
+    private double duration;
+
+    /**
+     * 时长单位，小时(hour)/天(day)
+     */
+    private String durationUnit;
+
+    public static final String DUR_UNIT_HOUR = "hour";
+    public static final String DUR_UNIT_DAY = "day";
+
 
     public static CalendarEvent createDayBackgroundColor(String start, String backgroundColor) {
         CalendarEvent event = new CalendarEvent();

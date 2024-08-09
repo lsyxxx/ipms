@@ -1,5 +1,6 @@
 package com.abt.oa.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -10,9 +11,13 @@ import java.util.List;
  * 野外工作用户看板
  */
 @Data
-public class FieldWorkUserBoard {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class FieldWorkBoard {
     private LocalDate periodStart;
     private LocalDate periodEnd;
+
+    private String userid;
+    private String username;
 
     /**
      * [periodStart,  periodEnd] 天数，包含
@@ -52,6 +57,11 @@ public class FieldWorkUserBoard {
      * 已通过的
      */
     private int passCount;
+
+    /**
+     * 作业人数
+     */
+    private int workerCount;
 
 
     private List<CalendarEvent> events = new ArrayList<>();

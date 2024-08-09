@@ -8,8 +8,8 @@ import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.entity.FieldWorkItem;
 import com.abt.oa.entity.FrmLeaveReq;
 import com.abt.oa.model.CalendarEvent;
+import com.abt.oa.model.FieldWorkBoard;
 import com.abt.oa.model.FieldWorkRequestForm;
-import com.abt.oa.model.FieldWorkUserBoard;
 import com.abt.oa.reposity.FieldAttendanceSettingRepository;
 import com.abt.oa.reposity.FieldWorkItemRepository;
 import com.abt.oa.reposity.FieldWorkRepository;
@@ -20,17 +20,25 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.abt.common.config.Const.SYSTEM_ID;
+import static com.abt.oa.OAConstants.FW_WITHDRAW;
 
 /**
  *
@@ -249,10 +257,10 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
     @Override
-    public FieldWorkUserBoard userBoard(String jobNumber, String userid, String startDateStr, String endDateStr) {
+    public FieldWorkBoard userBoard(String jobNumber, String userid, String startDateStr, String endDateStr) {
         final LocalDate startDate = TimeUtil.toLocalDate(startDateStr);
         final LocalDate endDate = TimeUtil.toLocalDate(endDateStr);
-        FieldWorkUserBoard board = new FieldWorkUserBoard();
+        FieldWorkBoard board = new FieldWorkBoard();
         board.setPeriodEnd(endDate);
         board.setPeriodStart(startDate);
         assert startDate != null;
@@ -294,7 +302,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         events.addAll(leaveEvents);
         board.setLeaveDay(leaveEvents.size());
 
-
         board.setEvents(events);
         return board;
     }
@@ -323,6 +330,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                             ae.setBackgroundColor(a.getBackgroundColor());
                             ae.setShortName(a.getShortName());
                             ae.setType(fw.getReviewResult());
+                            ae.setDay(fw.getAttendanceDate().getDayOfMonth());
                         });
                         events.add(ae);
                     });
@@ -359,12 +367,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return event;
     }
 
-    //默认绿色
-    public static final String BG_PASS = "";
-    public static final String BG_REJECT = "red";
-    public static final String BG_WAITING = "yellow";
-
-
     private CalendarEvent createRejectEvent(LocalDate date) {
         CalendarEvent event = new CalendarEvent();
         event.setTitle("考勤已拒绝");
@@ -390,20 +392,32 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private List<CalendarEvent> createLeaveCalendarEvents(List<FrmLeaveReq> leaveRecords) {
         List<CalendarEvent> events = new ArrayList<>();
         for (FrmLeaveReq frmLeaveReq : leaveRecords) {
-            CalendarEvent event = new CalendarEvent();
-            event.setStart(frmLeaveReq.getStartTime());
-            event.setEnd(frmLeaveReq.getEndTime());
-            event.setTitle(frmLeaveReq.getRequestTypeName());
-            event.setId(frmLeaveReq.getId());
-            //请假放后面
-            event.setOrder(99);
-            events.add(event);
-            event.setType(frmLeaveReq.getIsFinish());
-            event.setShortName(frmLeaveReq.getRequestTypeName());
+            events.add(doCreateLeaveEvent(frmLeaveReq));
         }
         return events;
-
     }
+
+    private CalendarEvent doCreateLeaveEvent(FrmLeaveReq frmLeaveReq) {
+        CalendarEvent event = new CalendarEvent();
+        event.setStart(frmLeaveReq.getStartTime());
+        event.setEnd(frmLeaveReq.getEndTime());
+        event.setTitle(frmLeaveReq.getRequestTypeName());
+        event.setId(frmLeaveReq.getId());
+        //请假放后面
+        event.setOrder(99);
+        event.setType(frmLeaveReq.getIsFinish());
+        event.setShortName(frmLeaveReq.getRequestTypeName());
+        event.setDuration(frmLeaveReq.getDayTime().doubleValue());
+        if (frmLeaveReq.getRequestType().equals("2")) {
+            //调休
+            event.setDurationUnit(CalendarEvent.DUR_UNIT_HOUR);
+        } else {
+            event.setDurationUnit(CalendarEvent.DUR_UNIT_DAY);
+        }
+
+        return event;
+    }
+
 
     private boolean isWorkDay(List<FieldWorkAttendanceSetting> settings, FieldWorkItem item) {
         final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> item.getAllowanceId().equals(s.getId()) && s.isWork()).findFirst();
@@ -415,5 +429,199 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return setting.isPresent();
     }
 
+    @Transactional
+    @Override
+    public void deleteFieldWork(String id, String userid) {
+        final FieldWork entity = this.findFieldWorkEntity(id);
+        if (!entity.getCreateUserid().equals(userid) && !SYSTEM_ID.equals(userid)) {
+            throw new BusinessException("无法删除!原因:只有记录的创建人(" + entity.getCreateUsername() + ")或管理员可以删除");
+        }
+
+        fieldWorkItemRepository.deleteByFid(entity.getId());
+        fieldWorkRepository.deleteById(id);
+    }
+
+    @Override
+    public void withdraw(String id, String userid) {
+        final FieldWork entity = this.findFieldWorkEntity(id);
+        if (!entity.getCreateUserid().equals(userid) && !SYSTEM_ID.equals(userid)) {
+            throw new BusinessException("无法撤销!原因:只有记录的创建人(" + entity.getCreateUsername() + ")或管理员可以撤销");
+        }
+        entity.setReviewResult(FW_WITHDRAW);
+        fieldWorkRepository.save(entity);
+    }
+
+    public FieldWorkBoard managerBoard(String startDateStr, String endDateStr) {
+        final LocalDate startDate = TimeUtil.toLocalDate(startDateStr);
+        final LocalDate endDate = TimeUtil.toLocalDate(endDateStr);
+        FieldWorkBoard board = new FieldWorkBoard();
+        board.setPeriodEnd(endDate);
+        board.setPeriodStart(startDate);
+        assert startDate != null;
+        board.setDayCount((int) ChronoUnit.DAYS.between(startDate, endDate) + 1);
+        List<FieldWorkAttendanceSetting> settings = this.findAllSettings();
+
+
+
+        return board;
+    }
+
+    /**
+     * 考勤统计表
+     */
+    public void createStatData(String startDateStr, String endDateStr, String reviewerId) {
+        Assert.hasText(startDateStr, "开始日期不能为空!");
+        Assert.hasText(endDateStr, "结束日期不能为空!");
+        final LocalDate startDate = TimeUtil.toLocalDate(startDateStr);
+        final LocalDate endDate = TimeUtil.toLocalDate(endDateStr);
+        assert startDate != null;
+        //查询记录（已审批通过的）
+        final List<FieldWork> all = fieldWorkRepository.findByReviewerIdAndAttendanceDateBetween(reviewerId, startDate, endDate);
+        final List<FieldWork> records = all.stream().filter(FieldWork::isPass).toList();
+        final List<CalendarEvent> events = createFieldWorkCalendarEvents(records);
+
+        List<String> header = createStatHeader(startDate, endDate, events);
+        //生成表
+        //根据用户
+        final Map<String, List<FieldWork>> groupByUser = records.stream().collect(Collectors.groupingBy(FieldWork::getJobNumber, Collectors.toList()));
+        //最终表, user, row(columnName, 数据)
+        Map<User, Map<String, List<CalendarEvent>>> table = new HashMap<>();
+        for (Map.Entry<String, List<FieldWork>> entry : groupByUser.entrySet()) {
+            //用户信息
+            String userid, username, jobNumber;
+            List<FieldWork> userFws = entry.getValue();
+            if (CollectionUtils.isEmpty(userFws)) {
+                continue;
+            }
+            userid = userFws.get(0).getUserid();
+            username = userFws.get(0).getUsername();
+            jobNumber = userFws.get(0).getJobNumber();
+            //生成每个人的考勤
+            List<CalendarEvent> userEvents = createFieldWorkCalendarEvents(userFws);
+            //请假
+            final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, OAConstants.OPENAUTH_FLOW_STATE_FINISH, startDate, endDate);
+            //处理数据
+            //补贴数据, 生成row，根据日期(start)
+            User user = new User(userid, username, jobNumber);
+            //请假数据
+
+
+        }
+    }
+
+    /**
+     * 生成请假事件，多天的请假，每天生成一个事件， start=end
+     */
+    private List<CalendarEvent> splitLeaveCalendarEventsByDay(List<FrmLeaveReq> records) {
+        List<CalendarEvent> list = new ArrayList<>();
+        for (FrmLeaveReq frmLeaveReq : records) {
+            if (frmLeaveReq.getStartDate().equals(frmLeaveReq.getEndDate())) {
+                //一天
+                final CalendarEvent event = doCreateLeaveEvent(frmLeaveReq);
+                list.add(event);
+            } else {
+                //多天
+
+            }
+
+        }
+
+        return list;
+    }
+
+    private List<CalendarEvent> doSplitLeaveReq(FrmLeaveReq req) {
+        List<CalendarEvent> events = new ArrayList<>();
+        LocalDate startDate = req.getStartDate();
+        LocalDate endDate = req.getEndDate();
+        Stream.iterate(startDate, date -> date.plusDays(1))
+                .limit(startDate.until(endDate).getDays() + 1)
+                .forEach(date -> {
+                    if (date.isEqual(startDate)) {
+                        //时间，从上午开始算1天
+                        //TODO: 不算调休调休按小时
+                        if (isMorning(TimeUtil.toLocalTime(req.getStartTime()))) {
+                            final CalendarEvent event = doCreateLeaveEvent(req);
+                            event.setDay(1);
+                        }
+                    }
+
+                });
+
+        return events;
+    }
+
+    /**
+     * 是否是上午
+     * @param time 时间
+     */
+    private boolean isMorning(LocalTime time) {
+        return !time.isAfter(LocalTime.of(12, 0, 0));
+    }
+
+    private boolean isAfternoon(LocalTime time) {
+        return time.isAfter(LocalTime.of(12, 0, 0));
+    }
+
+    public List<String> createStatHeader(LocalDate startDate, LocalDate endDate, List<CalendarEvent> events) {
+        int dayCount = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        //生成表头: 序号,姓名，工号，日期，统计列
+        List<String> header = new ArrayList<>();
+        header.add("序号");
+        header.add("姓名");
+        header.add("工号");
+        for (int i = 0; i < dayCount ; i++) {
+            header.add(startDate.plusDays(i).toString());
+            System.out.printf("day: %s", startDate.plusDays(i).toString());
+        }
+        //统计列
+        //出勤天数
+        header.add("出勤天数");
+        //其他统计-补贴项目(仅显示已有的)
+        final List<String> allowances = events.stream().sorted(Comparator.comparingInt(CalendarEvent::getOrder))
+                .map(CalendarEvent::getTitle).distinct().toList();
+        header.addAll(allowances);
+        //其他统计-请假
+        header.add("公休");
+        header.add("请假");
+        header.add("病假");
+
+        return header;
+    }
+
+
+    //导出excel
+    public void exportExcel() {
+
+    }
+
+    @Data
+    static class HeaderCell {
+        private String title;
+        //列号，0开始
+        private int columnNum;
+
+    }
+
+    @Data
+    static class Cell {
+        //key: 列, value: 数据
+        private Map<String, List<CalendarEvent>> map;
+    }
+
+    @Data
+    static class Row {
+        private List<Cell> row;
+        private String username;
+        private String jobNumber;
+        private int month;
+        private String company;
+    }
+
+    @Data
+    static class Table {
+        private List<Row> rows;
+        private int month;
+        private String company;
+    }
 
 }

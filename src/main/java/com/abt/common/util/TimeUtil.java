@@ -20,6 +20,7 @@ public class TimeUtil {
 
     public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static final DateTimeFormatter yyyy_MM_dd_HH_mm_ss_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter HH_mm_ss_formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     /**
      * 根据当前时间生成ID
@@ -165,6 +166,16 @@ public class TimeUtil {
             return false;
         }
     }
+
+    /**
+     * 将HH:mm:ss字符串类型的时间转为LocalTime
+     * @param hhmmssStr 时间，必须是HH:mm:ss
+     */
+    public static LocalTime toLocalTime(String hhmmssStr) {
+        return LocalTime.parse(hhmmssStr, HH_mm_ss_formatter);
+    }
+
+
 
 
 }

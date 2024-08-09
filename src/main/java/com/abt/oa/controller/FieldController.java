@@ -39,14 +39,6 @@ public class FieldController {
         this.settingService = settingService;
     }
 
-    /**
-     * 删除一个野外补助选项
-     */
-    @GetMapping("/del")
-    public R<Object> deleteFieldOption(String id) {
-        return R.success("删除成功");
-    }
-
     @GetMapping("/setting/all")
     public R<List<FieldWorkAttendanceSetting>> findAllSettings() {
         final List<FieldWorkAttendanceSetting> allSettings = fieldWorkService.findAllSettings();
@@ -224,6 +216,20 @@ public class FieldController {
         return R.success(board);
     }
 
+    @GetMapping("/del")
+    public R<Object> deleteFieldWork(String id) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        fieldWorkService.deleteFieldWork(id, TokenUtil.getUseridFromAuthToken());
+        return R.success("删除成功!");
+    }
+
+
+    @GetMapping("/withdraw")
+    public R<Object> withdrawRecord(String id) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        fieldWorkService.withdraw(id, TokenUtil.getUseridFromAuthToken());
+        return R.success("撤销成功!");
+    }
 
 
 }
