@@ -97,7 +97,16 @@ public class FieldController {
     @PostMapping("/add/list")
     public R<Object> submitList(@RequestBody List<FieldWork> list) {
         final UserView user = TokenUtil.getUserFromAuthToken();
-        fieldWorkService.saveFieldWorkList(list, user.getId(), user.getName());
+        final List<FieldWork> error = fieldWorkService.saveFieldWorkList(list, user.getId(), user.getName());
+        if (error != null && !error.isEmpty()) {
+            StringBuilder msg = new StringBuilder();
+            for (FieldWork e : error) {
+                msg.append(String.format("%s的补贴项目(%s)保存失败!\n", TimeUtil.yyyy_MM_ddString(e.getAttendanceDate()), e.getSingleId()));
+            }
+            msg.append("2024-08-09的补贴项目(123)保存失败!\n");
+            msg.append("2024-08-10的补贴项目(111)保存失败!\n");
+            return R.warn(null, msg);
+        }
         return R.success("保存成功!");
     }
 
@@ -147,6 +156,14 @@ public class FieldController {
         final UserView user = TokenUtil.getUserFromAuthToken();
         form.setUserid(user.getId());
         final Page<FieldWork> page = fieldWorkService.findAllRecords(form);
+        return R.success(page.getContent(), (int)page.getTotalElements());
+    }
+
+    @GetMapping("/find/atd")
+    public R<List<FieldWork>> findAtdRecord(@ModelAttribute FieldWorkRequestForm form) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        form.setUserid(user.getId());
+        final Page<FieldWork> page = fieldWorkService.findAtdRecord(form);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
 

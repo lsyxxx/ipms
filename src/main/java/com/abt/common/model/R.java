@@ -193,6 +193,10 @@ public class R<T> {
         return new R<>(null, ResCode.BAD_REQUEST.getCode(), message);
     }
 
+    public static<T> R<T> warn(String message, T data) {
+        return new R<>(null, ResCode.WARN.getCode(), message);
+    }
+
 
 
 

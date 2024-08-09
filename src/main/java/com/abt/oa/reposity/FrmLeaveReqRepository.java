@@ -17,12 +17,15 @@ public interface FrmLeaveReqRepository extends JpaRepository<FrmLeaveReq, String
      */
     @Query("select e from FrmLeaveReq e " +
             "where e.applyUserID = :applyUserID " +
-            "and e.startDate <= :endDate and e.endDate >= :startDate")
-    List<FrmLeaveReq> findByApplyUserIDAndDateBetween(String applyUserID, LocalDate startDate, LocalDate endDate);
+            "and (:isFinishIn is null or :isFinishIn = '' or e.isFinish in (:isFinishIn) ) " +
+            "and e.startDate <= :endDate and e.endDate >= :startDate " +
+            "order by e.startDate asc")
+    List<FrmLeaveReq> findByApplyUserIDAndDateBetween(String applyUserID, String isFinishIn, LocalDate startDate, LocalDate endDate);
 
 
     @Query("select count(1) from FrmLeaveReq e " +
             "where e.applyUserID = :applyUserID " +
+            "and (:isFinishIn is null or :isFinishIn = '' or e.isFinish in (:isFinishIn) ) " +
             "and e.startDate <= :endDate and e.endDate >= :startDate")
-    int countByApplyUserIDAndDateBetween(String applyUserID, LocalDate startDate, LocalDate endDate);
+    int countByApplyUserIDAndDateBetween(String applyUserID, String isFinishIn, LocalDate startDate, LocalDate endDate);
 }

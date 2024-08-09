@@ -132,4 +132,5 @@ public class FrmLeaveReq implements WithQuery<FrmLeaveReq> {
         this.endDateTime = TimeUtil.toLocalDateTime(this.endDate, this.endTime);
         return this;
     }
+
 }

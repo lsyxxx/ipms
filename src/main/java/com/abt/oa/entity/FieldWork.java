@@ -21,6 +21,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -134,6 +135,10 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
     @OrderBy("sort ASC")
     private List<FieldWorkItem> items;
 
+    //单个补贴项目id
+    @Transient
+    private String singleId;
+
     @Transient
     private List<String> itemIds;
 
@@ -170,5 +175,10 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
         this.itemNames = this.items.stream().map(FieldWorkItem::getAllowanceName).toList();
 
         return this;
+    }
+
+    public void addItem(FieldWorkItem fieldWorkItem) {
+        this.items = this.getItems() == null ? new ArrayList<FieldWorkItem>() : this.getItems();
+        this.items.add(fieldWorkItem);
     }
 }

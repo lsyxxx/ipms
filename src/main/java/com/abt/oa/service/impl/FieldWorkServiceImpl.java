@@ -25,6 +25,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -111,16 +112,20 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         fw = fieldWorkRepository.save(fw);
         String id = fw.getId();
         fw.getItemIds().forEach(i -> {
-            final FieldWorkAttendanceSetting fwa = fieldAttendanceSettingRepository.findById(i).orElseThrow(() -> new BusinessException("保存失败!。原因：未查询到野外补助配置项(id=" + i + ")"));
-            fieldWorkItemRepository.save(FieldWorkItem.create(fwa, id));
+            final FieldWorkAttendanceSetting fwa = findSettingById(i);
+            final FieldWorkItem fi = FieldWorkItem.create(fwa, id);
+            fieldWorkItemRepository.save(fi);
         });
     }
 
-    @Override
-    public void saveFieldWorkList(List<FieldWork> list, String reviewerId, String reviewerName) {
-        List<FieldWork> fwBatch = new ArrayList<>();
-        List<FieldWorkItem> fwiBatch = new ArrayList<>();
+    public FieldWorkAttendanceSetting findSettingById(String id) {
+        return fieldAttendanceSettingRepository.findById(id).orElseThrow(() -> new BusinessException("保存失败!。原因：未查询到野外补助配置项(id=" + id + ")"));
+    }
 
+    @Override
+    public List<FieldWork> saveFieldWorkList(List<FieldWork> list, String reviewerId, String reviewerName) {
+        List<FieldWorkItem> fwiBatch = new ArrayList<>();
+        List<FieldWork> errList = new ArrayList<>();
         final Map<LocalDate, List<FieldWork>> groupByDate = list.stream().collect(Collectors.groupingBy(FieldWork::getAttendanceDate, Collectors.toList()));
         for (Map.Entry<LocalDate, List<FieldWork>> entry : groupByDate.entrySet()) {
             List<FieldWork> value = entry.getValue();
@@ -130,9 +135,33 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 fw.setReviewerId(reviewerId);
                 fw.setReviewerName(reviewerName);
                 fw.setReviewTime(LocalDateTime.now());
-                fwBatch.add(fw);
+                for (FieldWork v : value) {
+                    String aid = v.getSingleId();
+                    try {
+                        final FieldWorkAttendanceSetting setting = findSettingById(aid);
+                        final FieldWorkItem fi = FieldWorkItem.create(setting, null);
+                        fwiBatch.add(fi);
+                        fw.addItem(fi);
+                        final BigDecimal sum = BigDecimal.valueOf(fi.getSum()).add(BigDecimal.valueOf(fw.getSum()));
+                        fw.setSum(sum.doubleValue());
+                    } catch (BusinessException e) {
+                        log.error("未查询到野外补贴配置项， 错误信息", e);
+                        errList.add(v);
+                    } catch (Exception e) {
+                        log.error("系统错误: ", e);
+                        errList.add(v);
+                    }
+                }
+
+                fw = fieldWorkRepository.save(fw);
+                final FieldWork finalFw = fw;
+                fw.getItems().forEach(i -> i.setFid(finalFw.getId()));
+
             }
         }
+        fieldWorkItemRepository.saveAllAndFlush(fwiBatch);
+
+        return errList;
     }
 
     @Override
@@ -167,6 +196,15 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     public Page<FieldWork> findAllRecords(FieldWorkRequestForm form) {
         final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
         final Page<FieldWork> page = fieldWorkRepository.findAllFetchedByQuery(form.getQuery(), form.getState(),
+                TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
+        WithQueryUtil.build(page.getContent());
+        return page;
+    }
+
+    @Override
+    public Page<FieldWork> findAtdRecord(FieldWorkRequestForm form) {
+        final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
+        final Page<FieldWork> page = fieldWorkRepository.findAtdFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
         WithQueryUtil.build(page.getContent());
         return page;
@@ -249,25 +287,16 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         board.setRestDay(resetDaySet.size());
         //补贴event
         events.addAll(createFieldWorkCalendarEvents(allRecords));
-        //请假event
-        final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, startDate, endDate);
+        //请假event(仅通过的)
+        final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, OAConstants.OPENAUTH_FLOW_STATE_FINISH, startDate, endDate);
         final List<CalendarEvent> leaveEvents = createLeaveCalendarEvents(leaveRecords);
         //请假天数
         events.addAll(leaveEvents);
         board.setLeaveDay(leaveEvents.size());
 
 
-
         board.setEvents(events);
         return board;
-    }
-
-    /**
-     * 调休
-     * @param record: 所有记录
-     * @param leaveType: 调休类型，null包含所有。传入调休配置id
-     */
-    private void createLeaveEvents(List<FieldWork> record, String leaveType) {
     }
 
     /**
@@ -286,23 +315,19 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 //有一个pass就算pass
                 pass = pass == null ? fw.isPass() : (pass || fw.isPass());
                 reject = reject == null ? fw.isReject() : (reject && fw.isReject());
-                if (fw.isPass()) {
+                if (fw.isPass() || fw.isWaiting()) {
                     //审批通过的event
                     fw.getItems().forEach(i -> {
                         final CalendarEvent ae = create(i, TimeUtil.yyyy_MM_ddString(fw.getAttendanceDate()), CAL_EVENT_TYPE_ALLOWANCE);
                         findSettingById(all, i.getAllowanceId()).ifPresent(a -> {
                             ae.setBackgroundColor(a.getBackgroundColor());
+                            ae.setShortName(a.getShortName());
+                            ae.setType(fw.getReviewResult());
                         });
                         events.add(ae);
                     });
-                } else if (fw.isWaiting()) {
-                    //待审批的event
-                    events.add(createWaitingEvent(fw));
                 }
             }
-//            if (reject != null && reject) {
-//                events.add(createRejectEvent(entry.getKey()));
-//            }
         }
 
         return events;
@@ -368,12 +393,13 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             CalendarEvent event = new CalendarEvent();
             event.setStart(frmLeaveReq.getStartTime());
             event.setEnd(frmLeaveReq.getEndTime());
-
+            event.setTitle(frmLeaveReq.getRequestTypeName());
             event.setId(frmLeaveReq.getId());
             //请假放后面
             event.setOrder(99);
             events.add(event);
-            event.setType(CAL_EVENT_TYPE_LEAVE);
+            event.setType(frmLeaveReq.getIsFinish());
+            event.setShortName(frmLeaveReq.getRequestTypeName());
         }
         return events;
 

@@ -5,7 +5,6 @@ import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.model.FieldWorkUserBoard;
-import com.abt.sys.model.entity.EmployeeInfo;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -35,7 +34,14 @@ public interface FieldWorkService {
      */
     void saveFieldWork(FieldWork fw);
 
-    void saveFieldWorkList(List<FieldWork> list, String reviewerId, String reviewerName);
+    /**
+     *
+     * @param list 提交的考勤列表数据
+     * @param reviewerId 审批人
+     * @param reviewerName 审批人姓名
+     * @return 错误的考勤数据列表
+     */
+    List<FieldWork> saveFieldWorkList(List<FieldWork> list, String reviewerId, String reviewerName);
 
     Page<FieldWork> findTodoRecords(FieldWorkRequestForm form);
 
@@ -44,6 +50,11 @@ public interface FieldWorkService {
     Page<FieldWork> findApplyRecords(FieldWorkRequestForm form);
 
     Page<FieldWork> findAllRecords(FieldWorkRequestForm form);
+
+    /**
+     * 查询用户的考勤是数据
+     */
+    Page<FieldWork> findAtdRecord(FieldWorkRequestForm form);
 
     void reject(String id, String userid, String reason);
 

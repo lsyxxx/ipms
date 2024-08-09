@@ -72,6 +72,22 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
     Page<FieldWork> findApplyFetchedByQuery(String query, String userid, String state, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
 
+    @Query("select DISTINCT fw from FieldWork fw " +
+            "left join fetch fw.items fi " +
+            "where fw.userid = :userid " +
+            "and (:query is null or :query = '' " +
+            "    or fw.project like %:query% " +
+            "    or fw.well like %:query% " +
+            "    or fw.username like %:query%" +
+            "    or fi.allowanceName like %:query%) " +
+            "and (:state is null or  :state = '' or fw.reviewResult = :state) " +
+            "and (:startDate IS NULL or   fw.attendanceDate >= :startDate) " +
+            "and (:endDate IS NULL or  fw.attendanceDate <= :endDate) " +
+            "order by fw.attendanceDate asc "
+    )
+    Page<FieldWork> findAtdFetchedByQuery(String query, String userid, String state, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+
     //项目/井号/考勤人/补助名称/考勤人部门/审批人
     @Query("select DISTINCT fw from FieldWork fw " +
             "left join fetch fw.items fi " +

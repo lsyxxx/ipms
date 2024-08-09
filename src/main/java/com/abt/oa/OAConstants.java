@@ -58,4 +58,24 @@ public class OAConstants {
      */
     public static String attendanceEndDayId = "attendance_end";
 
+    /**
+     * open auth 流程状态。草稿: -1
+     */
+    public static final String OPENAUTH_FLOW_STATE_DRAFT = "-1";
+    /**
+     * open auth 流程状态。完成(通过): 1
+     */
+    public static final String OPENAUTH_FLOW_STATE_FINISH = "1";
+    /**
+     * open auth 流程状态。正在运行: 0
+     */
+    public static final String OPENAUTH_FLOW_STATE_RUN = "0";
+    /**
+     * open auth 流程状态。没有通过: 3
+     */
+    public static final String OPENAUTH_FLOW_STATE_UNPASS = "3";
+    /**
+     * open auth 流程状态。驳回: 4
+     */
+    public static final String OPENAUTH_FLOW_STATE_REJECT = "4";
 }

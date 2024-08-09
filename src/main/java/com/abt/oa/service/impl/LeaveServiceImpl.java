@@ -24,12 +24,12 @@ public class LeaveServiceImpl implements LeaveService {
     }
 
     @Override
-    public List<FrmLeaveReq> findByUser(String userid, LocalDate startDate, LocalDate endDate) {
-        return WithQueryUtil.build(frmLeaveReqRepository.findByApplyUserIDAndDateBetween(userid, startDate, endDate));
+    public List<FrmLeaveReq> findByUser(String userid, String isFinishIn, LocalDate startDate, LocalDate endDate) {
+        return WithQueryUtil.build(frmLeaveReqRepository.findByApplyUserIDAndDateBetween(userid, isFinishIn, startDate, endDate));
     }
 
     @Override
-    public int countLeaveRecordByUser(String userid, LocalDate startDate, LocalDate endDate) {
-        return frmLeaveReqRepository.countByApplyUserIDAndDateBetween(userid, startDate, endDate);
+    public int countLeaveRecordByUser(String userid, String isFinishIn, LocalDate startDate, LocalDate endDate) {
+        return frmLeaveReqRepository.countByApplyUserIDAndDateBetween(userid, isFinishIn, startDate, endDate);
     }
 }

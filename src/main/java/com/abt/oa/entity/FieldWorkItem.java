@@ -66,7 +66,6 @@ public class FieldWorkItem {
   }
 
   public static FieldWorkItem create(FieldWorkAttendanceSetting setting, String fid){
-    Assert.notNull(fid, "fid must not be null");
     FieldWorkItem item = new FieldWorkItem();
     item.setFid(fid);
     item.setAllowanceId(setting.getId());

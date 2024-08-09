@@ -56,6 +56,8 @@ public class CalendarEvent {
      */
     private String type;
 
+    private String shortName;
+
 
     public static CalendarEvent createDayBackgroundColor(String start, String backgroundColor) {
         CalendarEvent event = new CalendarEvent();
