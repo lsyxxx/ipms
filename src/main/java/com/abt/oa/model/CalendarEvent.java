@@ -39,7 +39,7 @@ public class CalendarEvent {
     /**
      * 配置项Id
      */
-    private String sid;
+    private String sid = "";
 
     /**
      * 事件背景颜色

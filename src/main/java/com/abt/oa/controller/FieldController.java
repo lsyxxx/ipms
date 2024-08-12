@@ -231,4 +231,14 @@ public class FieldController {
     }
 
 
+    @GetMapping("/stat")
+    public R<Object> statisticTable(String start, String end, String reviewerId) {
+        start = "2024-07-26";
+        end = "2024-08-25";
+        reviewerId = "621faa40-f45c-4da8-9a8f-65b0c5353f40";
+        fieldWorkService.createStatData(start, end, reviewerId);
+        return R.success("撤销成功!");
+    }
+
+
 }

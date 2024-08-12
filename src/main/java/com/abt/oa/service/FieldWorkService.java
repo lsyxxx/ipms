@@ -68,4 +68,6 @@ public interface FieldWorkService {
     void deleteFieldWork(String id, String userid);
 
     void withdraw(String id, String userid);
+
+    void createStatData(String startDateStr, String endDateStr, String reviewerId);
 }
