@@ -30,6 +30,11 @@ public class User implements Serializable {
     private String code;
 
     /**
+     * 归属
+     */
+    private String company;
+
+    /**
      * 是否是管理人员
      */
     private boolean isManager = false;

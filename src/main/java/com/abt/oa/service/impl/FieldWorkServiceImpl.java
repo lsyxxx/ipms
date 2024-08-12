@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.abt.common.config.Const.SYSTEM_ID;
+import static com.abt.common.CommonConstants.SYSTEM_ID;
 import static com.abt.oa.OAConstants.FW_WITHDRAW;
 
 /**
@@ -331,6 +331,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                             ae.setShortName(a.getShortName());
                             ae.setType(fw.getReviewResult());
                             ae.setDay(fw.getAttendanceDate().getDayOfMonth());
+                            ae.setSid(a.getId());
                         });
                         events.add(ae);
                     });
@@ -429,6 +430,17 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return setting.isPresent();
     }
 
+
+    private boolean isWorkDay(List<FieldWorkAttendanceSetting> settings, CalendarEvent event) {
+        final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> event.getSid().equals(s.getId()) && s.isWork()).findFirst();
+        return setting.isPresent();
+    }
+
+    private boolean isRestDay(List<FieldWorkAttendanceSetting> settings, CalendarEvent item) {
+        final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> item.getSid().equals(s.getId()) && !s.isWork()).findFirst();
+        return setting.isPresent();
+    }
+
     @Transactional
     @Override
     public void deleteFieldWork(String id, String userid) {
@@ -470,22 +482,25 @@ public class FieldWorkServiceImpl implements FieldWorkService {
      * 考勤统计表
      */
     public void createStatData(String startDateStr, String endDateStr, String reviewerId) {
+        long t1 = System.currentTimeMillis();
         Assert.hasText(startDateStr, "开始日期不能为空!");
         Assert.hasText(endDateStr, "结束日期不能为空!");
         final LocalDate startDate = TimeUtil.toLocalDate(startDateStr);
         final LocalDate endDate = TimeUtil.toLocalDate(endDateStr);
         assert startDate != null;
         //查询记录（已审批通过的）
+        //TODO: 如果其他人查看则不是审批人了
         final List<FieldWork> all = fieldWorkRepository.findByReviewerIdAndAttendanceDateBetween(reviewerId, startDate, endDate);
         final List<FieldWork> records = all.stream().filter(FieldWork::isPass).toList();
         final List<CalendarEvent> events = createFieldWorkCalendarEvents(records);
-
+        final List<FieldWorkAttendanceSetting> settings = findAllSettings();
         List<String> header = createStatHeader(startDate, endDate, events);
         //生成表
         //根据用户
         final Map<String, List<FieldWork>> groupByUser = records.stream().collect(Collectors.groupingBy(FieldWork::getJobNumber, Collectors.toList()));
         //最终表, user, row(columnName, 数据)
-        Map<User, Map<String, List<CalendarEvent>>> table = new HashMap<>();
+//        Map<User, Map<String, Object>> table = new HashMap<>();
+        Map<User, Row> table = new LinkedHashMap<>();
         for (Map.Entry<String, List<FieldWork>> entry : groupByUser.entrySet()) {
             //用户信息
             String userid, username, jobNumber;
@@ -496,17 +511,47 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             userid = userFws.get(0).getUserid();
             username = userFws.get(0).getUsername();
             jobNumber = userFws.get(0).getJobNumber();
+            String company = employeeService.getUserCompanyByJobNumber(jobNumber);
+
             //生成每个人的考勤
             List<CalendarEvent> userEvents = createFieldWorkCalendarEvents(userFws);
             //请假
             final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, OAConstants.OPENAUTH_FLOW_STATE_FINISH, startDate, endDate);
-            //处理数据
+            //请假数据
+            final List<CalendarEvent> leaveEvents = splitLeaveCalendarEventsByDay(leaveRecords);
+            userEvents.addAll(leaveEvents);
+
+            //处理数据,生成表格
             //补贴数据, 生成row，根据日期(start)
             User user = new User(userid, username, jobNumber);
-            //请假数据
+            user.setCompany(company);
+//            final Map<String, List<CalendarEvent>> groupByDate = userEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getStart, Collectors.toList()));
+            Row row = Row.create(username, jobNumber, company);
+            userEvents.forEach(i -> {
+                Cell cell = new Cell();
+                cell.setColumnName(i.getStart());
+                cell.setValue(i);
+                row.addCell(cell);
+            });
+
+            //---- 统计数据 -------
+            //1. 出勤
+            Set<String> workDaySet = new HashSet<>();
+            Set<String> resetDaySet = new HashSet<>();
+            for (CalendarEvent event : userEvents) {
+                if (isWorkDay(settings, event)) {
+                    workDaySet.add(event.getStart());
+                } else if (isRestDay(settings, event)) {
+                    resetDaySet.add(event.getStart());
+                }
+            }
+            //2. 作业项目
 
 
         }
+
+        long t2 = System.currentTimeMillis();
+        System.out.printf("createStatData耗时:%d (ms)", (t2-t1));
     }
 
     /**
@@ -521,9 +566,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 list.add(event);
             } else {
                 //多天
-
+                final List<CalendarEvent> events = doSplitLeaveReq(frmLeaveReq);
+                list.addAll(events);
             }
-
         }
 
         return list;
@@ -536,17 +581,25 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         Stream.iterate(startDate, date -> date.plusDays(1))
                 .limit(startDate.until(endDate).getDays() + 1)
                 .forEach(date -> {
+                    CalendarEvent event = doCreateLeaveEvent(req);
                     if (date.isEqual(startDate)) {
                         //时间，从上午开始算1天
-                        //TODO: 不算调休调休按小时
                         if (isMorning(TimeUtil.toLocalTime(req.getStartTime()))) {
-                            final CalendarEvent event = doCreateLeaveEvent(req);
-                            event.setDay(1);
+                            event.setDuration(1);
+                        } else {
+                            event.setDuration(0.5);
                         }
+                    } else if (date.isEqual(endDate)) {
+                        if (isMorning(TimeUtil.toLocalTime(req.getEndTime()))) {
+                            event.setDuration(0.5);
+                        } else {
+                            event.setDuration(1);
+                        }
+                    } else {
+                        event.setDuration(1);
                     }
-
+                    events.add(event);
                 });
-
         return events;
     }
 
@@ -571,7 +624,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         header.add("工号");
         for (int i = 0; i < dayCount ; i++) {
             header.add(startDate.plusDays(i).toString());
-            System.out.printf("day: %s", startDate.plusDays(i).toString());
         }
         //统计列
         //出勤天数
@@ -605,16 +657,31 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Data
     static class Cell {
         //key: 列, value: 数据
-        private Map<String, List<CalendarEvent>> map;
+        private Object value;
+        private String columnName;
+        private int columnIndex;
     }
 
     @Data
     static class Row {
-        private List<Cell> row;
+        private List<Cell> row = new ArrayList<>();
         private String username;
         private String jobNumber;
         private int month;
         private String company;
+
+
+        public void addCell(Cell cell) {
+            row.add(cell);
+        }
+
+        public static Row create(String username, String jobNumber, String company) {
+            Row row = new Row();
+            row.setUsername(username);
+            row.setJobNumber(jobNumber);
+            row.setCompany(company);
+            return row;
+        }
     }
 
     @Data

@@ -49,4 +49,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         Example<EmployeeInfo> example = Example.of(condition, matcher);
         return WithQueryUtil.build(employeeRepository.findAll(example, Sort.by("jobNumber").ascending()));
     }
+
+    @Override
+    public String getUserCompanyByJobNumber(String jobNumber) {
+        final EmployeeInfo emp = this.findByJobNumber(jobNumber);
+        return emp.getCompany();
+    }
 }

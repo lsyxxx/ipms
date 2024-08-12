@@ -9,8 +9,8 @@ import com.abt.common.util.ValidateUtil;
 import com.abt.oa.AttendanceUtil;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
+import com.abt.oa.model.FieldWorkBoard;
 import com.abt.oa.model.FieldWorkRequestForm;
-import com.abt.oa.model.FieldWorkUserBoard;
 import com.abt.oa.service.FieldWorkService;
 import com.abt.oa.service.SettingService;
 import com.abt.sys.model.dto.UserView;
@@ -185,7 +185,7 @@ public class FieldController {
      * 用户看板数据
      */
     @GetMapping("/board/user")
-    public R<FieldWorkUserBoard> userBoard(@RequestParam(required = false) String jobNumber,
+    public R<FieldWorkBoard> userBoard(@RequestParam(required = false) String jobNumber,
                                            @RequestParam(required = false) String userid,
                                            @RequestParam(required = false) String startDate,
                                            @RequestParam(required = false) String endDate) {
@@ -212,7 +212,7 @@ public class FieldController {
             end = TimeUtil.toLocalDate(endDate);
         }
 
-        final FieldWorkUserBoard board = fieldWorkService.userBoard(jobNumber, userid, TimeUtil.yyyy_MM_ddString(start), TimeUtil.yyyy_MM_ddString(end));
+        final FieldWorkBoard board = fieldWorkService.userBoard(jobNumber, userid, TimeUtil.yyyy_MM_ddString(start), TimeUtil.yyyy_MM_ddString(end));
         return R.success(board);
     }
 
@@ -226,7 +226,6 @@ public class FieldController {
 
     @GetMapping("/withdraw")
     public R<Object> withdrawRecord(String id) {
-        final UserView user = TokenUtil.getUserFromAuthToken();
         fieldWorkService.withdraw(id, TokenUtil.getUseridFromAuthToken());
         return R.success("撤销成功!");
     }

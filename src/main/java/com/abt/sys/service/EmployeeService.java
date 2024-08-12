@@ -13,4 +13,6 @@ public interface EmployeeService {
     List<EmployeeInfo> findAllByExit(boolean exit);
 
     List<EmployeeInfo> getByExample(EmployeeInfo condition);
+
+    String getUserCompanyByJobNumber(String jobNumber);
 }

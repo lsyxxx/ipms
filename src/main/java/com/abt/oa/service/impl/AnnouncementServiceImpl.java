@@ -265,10 +265,17 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     public List<Announcement> findAnnouncementsToAll() {
         return announcementRepository.findByZdTypeAndFileTypeOrderByCreateDateDesc(ANNOUNCEMENT_ZDTYPE_ALL, ANNOUNCEMENT_FILETYPE_RULES);
     }
+
+    @Transactional
     @Override
     public int sendAnnouncementsToUser(String jobNumber) {
         final List<Announcement> list = findAnnouncementsToAll();
+        AnnouncementAttachmentRequestForm form = new AnnouncementAttachmentRequestForm();
         final TUser user = tUserRepository.findByEmpnum(jobNumber);
+        form.setUserid(user.getId());
+        form.setLimit(999);
+        final List<String> ids = list.stream().map(Announcement::getId).toList();
+        announcementAttachmentRepository.deleteAllByAnnouncementIds(ids);
         addAttachments(user.getId(), user.getName(), list);
         return list.size();
     }
