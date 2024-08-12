@@ -200,10 +200,10 @@
                         <configuration>
                             <target>
                                 <!-- Ensure the destination directory exists -->
-                                <mkdir dir="E:\jar_bak"/>
+                                <mkdir dir="E:\001_jar_bak"/>
                                 <!-- 将target中打包文件复制到E:\jar_bak，并重命名为abt-当前日期.jar -->
                                 <copy file="${project.build.directory}\${project.build.finalName}.jar"
-                                      tofile="E:\jar_bak\abt-${maven.build.timestamp}.jar"/>
+                                      tofile="E:\001_jar_bak\abt-${maven.build.timestamp}.jar"/>
                             </target>
                         </configuration>
                     </execution>
