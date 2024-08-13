@@ -74,9 +74,10 @@ public class CalendarEvent {
     private double duration;
 
     /**
-     * 时长单位，小时(hour)/天(day)
+     * 时长/天数单位，小时(hour)/天(day)
+     * 默认天数
      */
-    private String durationUnit;
+    private String durationUnit = DUR_UNIT_DAY;
 
     public static final String DUR_UNIT_HOUR = "hour";
     public static final String DUR_UNIT_DAY = "day";

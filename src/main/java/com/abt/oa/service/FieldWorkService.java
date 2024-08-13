@@ -1,5 +1,6 @@
 package com.abt.oa.service;
 
+import com.abt.common.model.Table;
 import com.abt.common.model.User;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
@@ -69,5 +70,5 @@ public interface FieldWorkService {
 
     void withdraw(String id, String userid);
 
-    void createStatData(String startDateStr, String endDateStr, String reviewerId);
+    Table createStatData(String startDateStr, String endDateStr, String reviewerId);
 }

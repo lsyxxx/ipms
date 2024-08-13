@@ -8,4 +8,8 @@ import java.util.List;
 public interface FieldAttendanceSettingRepository extends JpaRepository<FieldWorkAttendanceSetting, String> {
 
     List<FieldWorkAttendanceSetting> findByEnabledOrderBySortAsc(boolean enabled);
+
+    List<FieldWorkAttendanceSetting> findByName(String name);
+
+    List<FieldWorkAttendanceSetting> findByShortName(String shortName);
 }

@@ -1,5 +1,8 @@
 package com.abt.oa.service.impl;
 
+import com.abt.common.model.Cell;
+import com.abt.common.model.Row;
+import com.abt.common.model.Table;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.oa.OAConstants;
@@ -22,6 +25,7 @@ import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,8 +72,27 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return fieldAttendanceSettingRepository.findAll(Sort.by("sort").ascending());
     }
 
+    private void validateFieldSetting(FieldWorkAttendanceSetting fieldAttendanceSetting) {
+        //校验重名
+        if (StringUtils.isBlank(fieldAttendanceSetting.getId())) {
+            //insert
+            final List<FieldWorkAttendanceSetting> list = fieldAttendanceSettingRepository.findByName(fieldAttendanceSetting.getName());
+            if (list != null && !list.isEmpty()) {
+                throw new BusinessException("补贴名称:" + fieldAttendanceSetting.getName() + " 已存在。补贴名称不能重复");
+            }
+        }
+        //简称重名
+        if (StringUtils.isNotBlank(fieldAttendanceSetting.getShortName())) {
+            final List<FieldWorkAttendanceSetting> list = fieldAttendanceSettingRepository.findByShortName(fieldAttendanceSetting.getShortName());
+            if (list != null && !list.isEmpty()) {
+                throw new BusinessException("补贴简称:" + fieldAttendanceSetting.getShortName() + " 已存在。简称不能重复");
+            }
+        }
+    }
+
     @Override
     public void saveSetting(FieldWorkAttendanceSetting fieldAttendanceSetting) {
+        validateFieldSetting(fieldAttendanceSetting);
         fieldAttendanceSettingRepository.save(fieldAttendanceSetting);
     }
 
@@ -326,13 +349,15 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                     //审批通过的event
                     fw.getItems().forEach(i -> {
                         final CalendarEvent ae = create(i, TimeUtil.yyyy_MM_ddString(fw.getAttendanceDate()), CAL_EVENT_TYPE_ALLOWANCE);
-                        findSettingById(all, i.getAllowanceId()).ifPresent(a -> {
-                            ae.setBackgroundColor(a.getBackgroundColor());
-                            ae.setShortName(a.getShortName());
-                            ae.setType(fw.getReviewResult());
-                            ae.setDay(fw.getAttendanceDate().getDayOfMonth());
-                            ae.setSid(a.getId());
-                        });
+                        findSettingById(all, i.getAllowanceId())
+                                .ifPresent(a -> {
+                                    ae.setBackgroundColor(a.getBackgroundColor());
+                                    ae.setShortName(a.getShortName());
+                                    ae.setType(fw.getReviewResult());
+                                    ae.setDay(fw.getAttendanceDate().getDayOfMonth());
+                                    ae.setSid(a.getId());
+                                    ae.setDuration(1);
+                                });
                         events.add(ae);
                     });
                 }
@@ -481,9 +506,11 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
     /**
      * 考勤统计表
+     *
+     * @return
      */
     @Override
-    public void createStatData(String startDateStr, String endDateStr, String reviewerId) {
+    public Table createStatData(String startDateStr, String endDateStr, String reviewerId) {
         long t1 = System.currentTimeMillis();
         Assert.hasText(startDateStr, "开始日期不能为空!");
         Assert.hasText(endDateStr, "结束日期不能为空!");
@@ -499,9 +526,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         //生成表
         //根据用户
         final Map<String, List<FieldWork>> groupByUser = records.stream().collect(Collectors.groupingBy(FieldWork::getJobNumber, Collectors.toList()));
-        //最终表, user, row(columnName, 数据)
-//        Map<User, Map<String, Object>> table = new HashMap<>();
-        Map<User, Row> table = new LinkedHashMap<>();
+        Table table = new Table();
         for (Map.Entry<String, List<FieldWork>> entry : groupByUser.entrySet()) {
             //用户信息
             String userid, username, jobNumber;
@@ -531,14 +556,14 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 Cell cell = new Cell();
                 cell.setColumnName(i.getStart());
                 cell.setValue(i);
-                cell.setValueStr(String.valueOf(i.getDuration()));
+                cell.setValueStr(i.getShortName());
                 row.addCell(cell);
             });
 
             //---- 统计数据 -------
             //0. 基础信息
             row.addCell(new Cell(user.getUsername(), "姓名"));
-            row.addCell(new Cell(user.getCode(), "工号"));
+//            row.addCell(new Cell(user.getCode(), "工号"));
 
             //1. 出勤
             Set<String> workDaySet = new HashSet<>();
@@ -547,38 +572,25 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                     workDaySet.add(event.getStart());
                 }
             }
-            row.addCell(new Cell(String.valueOf(workDaySet.size()), "出勤"));
+            row.addCell(new Cell(String.valueOf(workDaySet.size()), "出勤天数"));
 
             //2. 作业项目统计(包含基地调休/家调休/各种请假)
             final Map<String, Double> sumByAllowance = userEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
             sumByAllowance.forEach((k, v) -> {
-                row.addCell(new Cell(String.valueOf(v), k));
+                final FieldWorkAttendanceSetting setting = findSettingById(k);
+                row.addCell(new Cell(String.valueOf(v), setting.getName()));
             });
             //6. 公休 TODO
 
-            table.put(user, row);
+//            table.put(user, row);
+            table.addRow(row);
         }
 
         long t2 = System.currentTimeMillis();
         List<String> header = this.createStatHeader(startDate, endDate, events);
-        //TODO: print
-        System.out.println("--- 统计表 --------------");
-        header.forEach(s -> {
-            System.out.printf("|%s", s);
-        });
-        System.out.println();
-        table.forEach((user, row) -> {
-            header.forEach(h -> {
-                List<Cell> cells = row.getCellsByColumnName(h);
-                StringBuilder vstr = new StringBuilder();
-                for (Cell cell : cells) {
-                    vstr.append(cell.getValueStr()).append(",");
-                }
-                System.out.printf("|%s", vstr);
-            });
-            System.out.println();
-        });
+        table.setHeaders(header);
         System.out.printf("createStatData耗时:%d (ms), 统计%d人数据\n", (t2-t1), groupByUser.size());
+        return table;
     }
 
     /**
@@ -646,9 +658,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         int dayCount = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
         //生成表头: 序号,姓名，工号，日期，统计列
         List<String> header = new ArrayList<>();
-        header.add("序号");
-        header.add("姓名");
-        header.add("工号");
+//        header.add("序号");
+//        header.add("姓名");
+//        header.add("工号");
         for (int i = 0; i < dayCount ; i++) {
             header.add(startDate.plusDays(i).toString());
         }
@@ -672,63 +684,4 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     public void exportExcel() {
 
     }
-
-    @Data
-    static class HeaderCell {
-        private String title;
-        //列号，0开始
-        private int columnNum;
-    }
-
-    @Data
-    static class Cell {
-        //key: 列, value: 数据
-        private Object value;
-        private String columnName;
-        private int columnIndex;
-        private String valueStr;
-
-        public Cell() {
-
-        }
-
-        public Cell(String valueStr, String columnName) {
-            this.valueStr = valueStr;
-            this.columnName = columnName;
-        }
-    }
-
-    @Data
-    static class Row {
-        private List<Cell> row = new ArrayList<>();
-        private String username;
-        private String jobNumber;
-        private int month;
-        private String company;
-
-
-        public void addCell(Cell cell) {
-            row.add(cell);
-        }
-
-        public static Row create(String username, String jobNumber, String company) {
-            Row row = new Row();
-            row.setUsername(username);
-            row.setJobNumber(jobNumber);
-            row.setCompany(company);
-            return row;
-        }
-
-        public List<Cell> getCellsByColumnName(String columnName) {
-            return row.stream().filter(cell -> cell.getColumnName().equals(columnName)).collect(Collectors.toList());
-        }
-    }
-
-    @Data
-    static class Table {
-        private List<Row> rows;
-        private int month;
-        private String company;
-    }
-
 }

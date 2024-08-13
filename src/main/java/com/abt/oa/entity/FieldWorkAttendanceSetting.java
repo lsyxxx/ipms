@@ -1,6 +1,7 @@
 package com.abt.oa.entity;
 
 import com.abt.common.config.CommonJpaAuditListener;
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.impl.CommonJpaAudit;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,6 +34,7 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
     @Column(name="sort", columnDefinition="TINYINT")
     private int sort;
 
+    @NotNull(groups = {ValidateGroup.Insert.class}, message = "补贴名称不能为空")
     @Column(name="name", columnDefinition="VARCHAR(128)", nullable = false)
     private String name;
 

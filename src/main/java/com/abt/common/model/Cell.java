@@ -1,0 +1,25 @@
+package com.abt.common.model;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ *
+ */
+@Data
+@NoArgsConstructor
+public class Cell {
+
+    //key: 列, value: 数据
+    private Object value;
+    private String columnName;
+    private int columnIndex;
+    private String valueStr;
+    private String styleStr;
+
+    public Cell(String valueStr, String columnName) {
+        this.valueStr = valueStr;
+        this.columnName = columnName;
+    }
+
+}

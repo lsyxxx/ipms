@@ -2,6 +2,7 @@ package com.abt.oa.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
+import com.abt.common.model.Table;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
@@ -14,6 +15,7 @@ import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.service.FieldWorkService;
 import com.abt.oa.service.SettingService;
 import com.abt.sys.model.dto.UserView;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -52,7 +54,7 @@ public class FieldController {
     }
 
     @PostMapping("/update")
-    public R<Object> update(@RequestBody FieldWorkAttendanceSetting setting) {
+    public R<Object> update(@Validated(ValidateGroup.Save.class) @RequestBody FieldWorkAttendanceSetting setting) {
         fieldWorkService.saveSetting(setting);
         return R.success("更新成功!");
     }
@@ -232,12 +234,12 @@ public class FieldController {
 
 
     @GetMapping("/stat")
-    public R<Object> statisticTable(String start, String end, String reviewerId) {
+    public R<Table> statisticTable(String start, String end, String reviewerId) {
         start = "2024-07-26";
         end = "2024-08-25";
         reviewerId = "621faa40-f45c-4da8-9a8f-65b0c5353f40";
-        fieldWorkService.createStatData(start, end, reviewerId);
-        return R.success("撤销成功!");
+        final Table table = fieldWorkService.createStatData(start, end, reviewerId);
+        return R.success(table, "生成数据成功!");
     }
 
 
