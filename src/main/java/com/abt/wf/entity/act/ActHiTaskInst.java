@@ -111,8 +111,8 @@ public class ActHiTaskInst {
     @Column(name = "END_TIME_")
     private LocalDateTime endTime;
 
-    @Column(name = "DURATION_", precision = 19)
-    private Integer duration;
+    @Column(name = "DURATION_", precision = 19, columnDefinition = "numeric(19,0)")
+    private Long duration;
 
     @Size(max = 4000)
     @Nationalized

@@ -55,8 +55,8 @@ public class ActHiProcInst {
     @Column(name = "REMOVAL_TIME_")
     private LocalDateTime removalTime;
 
-    @Column(name = "DURATION_", precision = 19)
-    private Integer duration;
+    @Column(name = "DURATION_", precision = 19, columnDefinition = "numeric(19,0)")
+    private Long duration;
 
     @Size(max = 255)
     @Nationalized
