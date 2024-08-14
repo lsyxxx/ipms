@@ -18,12 +18,10 @@ import com.abt.oa.reposity.FieldWorkItemRepository;
 import com.abt.oa.reposity.FieldWorkRepository;
 import com.abt.oa.service.FieldWorkService;
 import com.abt.oa.service.LeaveService;
-import com.abt.oa.service.PaiBanService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
@@ -55,21 +53,35 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final FieldWorkRepository fieldWorkRepository;
     private final EmployeeService employeeService;
     private final FieldWorkItemRepository fieldWorkItemRepository;
-    private final PaiBanService paiBanService;
     private final LeaveService leaveService;
 
-    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, PaiBanService paiBanService, LeaveService leaveService) {
+    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository,LeaveService leaveService) {
         this.fieldAttendanceSettingRepository = fieldAttendanceSettingRepository;
         this.fieldWorkRepository = fieldWorkRepository;
         this.employeeService = employeeService;
         this.fieldWorkItemRepository = fieldWorkItemRepository;
-        this.paiBanService = paiBanService;
         this.leaveService = leaveService;
     }
 
     @Override
     public List<FieldWorkAttendanceSetting> findAllSettings() {
         return fieldAttendanceSettingRepository.findAll(Sort.by("sort").ascending());
+    }
+
+    @Override
+    public List<FieldWorkAttendanceSetting> findLatestSettings() {
+        final List<FieldWorkAttendanceSetting> all = findAllSettings();
+        final Map<String, FieldWorkAttendanceSetting> map = all.stream().collect(
+                Collectors.toMap(
+                        FieldWorkAttendanceSetting::getVid,
+                        setting -> setting,
+                        (existing, replacement) -> existing.getVersion() > replacement.getVersion() ? existing : replacement
+                )
+        );
+        //版本数量
+        final Map<String, Long> countMap = all.stream().collect(Collectors.groupingBy(FieldWorkAttendanceSetting::getVid, Collectors.counting()));
+        map.values().forEach(i -> i.setVersionCount(countMap.get(i.getVid())));
+        return new ArrayList<>(map.values());
     }
 
     private void validateFieldSetting(FieldWorkAttendanceSetting fieldAttendanceSetting) {
@@ -81,19 +93,21 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 throw new BusinessException("补贴名称:" + fieldAttendanceSetting.getName() + " 已存在。补贴名称不能重复");
             }
         }
-        //简称重名
-        if (StringUtils.isNotBlank(fieldAttendanceSetting.getShortName())) {
-            final List<FieldWorkAttendanceSetting> list = fieldAttendanceSettingRepository.findByShortName(fieldAttendanceSetting.getShortName());
-            if (list != null && !list.isEmpty()) {
-                throw new BusinessException("补贴简称:" + fieldAttendanceSetting.getShortName() + " 已存在。简称不能重复");
-            }
-        }
     }
 
     @Override
     public void saveSetting(FieldWorkAttendanceSetting fieldAttendanceSetting) {
         validateFieldSetting(fieldAttendanceSetting);
+        if (StringUtils.isEmpty(fieldAttendanceSetting.getVid())) {
+            fieldAttendanceSetting.setVid(UUID.randomUUID().toString());
+        }
+        fieldAttendanceSetting = fieldAttendanceSetting.newVersion(fieldAttendanceSetting);
         fieldAttendanceSettingRepository.save(fieldAttendanceSetting);
+    }
+
+    @Override
+    public List<FieldWorkAttendanceSetting> findHistorySettings(String vid) {
+        return fieldAttendanceSettingRepository.findByVidOrderByVersionDesc(vid);
     }
 
     @Override
@@ -425,8 +439,8 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
     private CalendarEvent doCreateLeaveEvent(FrmLeaveReq frmLeaveReq) {
         CalendarEvent event = new CalendarEvent();
-        event.setStart(frmLeaveReq.getStartTime());
-        event.setEnd(frmLeaveReq.getEndTime());
+        event.setStart(TimeUtil.yyyy_MM_ddString(frmLeaveReq.getStartDate()));
+        event.setEnd(TimeUtil.yyyy_MM_ddString(frmLeaveReq.getEndDate()));
         event.setTitle(frmLeaveReq.getRequestTypeName());
         event.setId(frmLeaveReq.getId());
         //请假放后面
@@ -506,8 +520,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
     /**
      * 考勤统计表
-     *
-     * @return
      */
     @Override
     public Table createStatData(String startDateStr, String endDateStr, String reviewerId) {
@@ -521,7 +533,8 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         //TODO: 如果其他人查看则不是审批人了。按部门查看，或者选人查看
         final List<FieldWork> all = fieldWorkRepository.findByReviewerIdAndAttendanceDateBetween(reviewerId, startDate, endDate);
         final List<FieldWork> records = all.stream().filter(FieldWork::isPass).toList();
-        final List<CalendarEvent> events = createFieldWorkCalendarEvents(records);
+//        final List<CalendarEvent> events = createFieldWorkCalendarEvents(records);
+        List<CalendarEvent> allEvents = new ArrayList<>();
         final List<FieldWorkAttendanceSetting> settings = findAllSettings();
         //生成表
         //根据用户
@@ -563,7 +576,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             //---- 统计数据 -------
             //0. 基础信息
             row.addCell(new Cell(user.getUsername(), "姓名"));
-//            row.addCell(new Cell(user.getCode(), "工号"));
 
             //1. 出勤
             Set<String> workDaySet = new HashSet<>();
@@ -580,14 +592,21 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 final FieldWorkAttendanceSetting setting = findSettingById(k);
                 row.addCell(new Cell(String.valueOf(v), setting.getName()));
             });
-            //6. 公休 TODO
-
-//            table.put(user, row);
+            allEvents.addAll(userEvents);
+            allEvents.addAll(leaveEvents);
             table.addRow(row);
-        }
+        }  //end for
+
+        //3. 公休 TODO
+        CalendarEvent restEvent = new CalendarEvent();
+        restEvent.setTitle("公休");
+        restEvent.setDurationUnit("天");
+        restEvent.setOrder(100);
+        allEvents.add(restEvent);
+
 
         long t2 = System.currentTimeMillis();
-        List<String> header = this.createStatHeader(startDate, endDate, events);
+        List<String> header = this.createStatHeader(startDate, endDate, allEvents);
         table.setHeaders(header);
         System.out.printf("createStatData耗时:%d (ms), 统计%d人数据\n", (t2-t1), groupByUser.size());
         return table;
@@ -621,6 +640,8 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 .limit(startDate.until(endDate).getDays() + 1)
                 .forEach(date -> {
                     CalendarEvent event = doCreateLeaveEvent(req);
+                    event.setStart(TimeUtil.yyyy_MM_ddString(date));
+                    event.setEnd(TimeUtil.yyyy_MM_ddString(date));
                     if (date.isEqual(startDate)) {
                         //时间，从上午开始算1天
                         if (isMorning(TimeUtil.toLocalTime(req.getStartTime()))) {
@@ -665,17 +686,13 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             header.add(startDate.plusDays(i).toString());
         }
         //统计列
-        //出勤天数
-        header.add("出勤天数");
+//        //固定列-出勤天数
+//        header.add("出勤天数");
+//        header.add("公休");
         //其他统计-补贴项目(仅显示已有的)
         final List<String> allowances = events.stream().sorted(Comparator.comparingInt(CalendarEvent::getOrder))
                 .map(CalendarEvent::getTitle).distinct().toList();
         header.addAll(allowances);
-        //其他统计-请假
-        header.add("公休");
-        header.add("请假");
-        header.add("病假");
-
         return header;
     }
 

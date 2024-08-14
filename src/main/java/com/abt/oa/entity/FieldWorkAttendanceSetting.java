@@ -6,6 +6,7 @@ import com.abt.common.model.AuditInfo;
 import com.abt.common.service.impl.CommonJpaAudit;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * 野外考勤设置
+ * 每次修改都是添加一条，同时新增版本号
  */
 @Table(name = "fw_atd_setting")
 @Entity
@@ -30,6 +32,13 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    /**
+     * 同一个项目的标识
+     */
+    @NotBlank(groups = {ValidateGroup.Insert.class}, message = "标识id不能为空!")
+    @Column(name="vid", length = 128)
+    private String vid;
 
     @Column(name="sort", columnDefinition="TINYINT")
     private int sort;
@@ -105,8 +114,35 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
     @Column(name="symbol_", columnDefinition = "VARCHAR(64)")
     private String symbol;
 
+    /**
+     * 版本号
+     * 正式版本从1开始
+     */
+    @Column(name="version_", columnDefinition = "INT")
+    private int version = 0;
+
+    /**
+     * 版本数量
+     */
+    @Transient
+    private long versionCount = 0;
+
     public static final int COMPONENT_TYPE_RADIO = 1;
     public static final int COMPONENT_TYPE_CHECKBOX = 2;
+
+
+
+    public FieldWorkAttendanceSetting newVersion(FieldWorkAttendanceSetting setting) {
+        setting.setId(null);
+        setting.setVersion(setting.increaseVersion());
+        return setting;
+    }
+
+
+    private int increaseVersion() {
+        return ++version;
+    }
+
 
 
 }

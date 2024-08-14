@@ -69,16 +69,6 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
     @Column(name="user_name", columnDefinition="VARCHAR(32)")
     private String username;
 
-    /**
-     * 申请人部门
-     */
-//    @Column(name="dept_id", columnDefinition="VARCHAR(128)")
-//    private String departmentId;
-//
-//    @Column(name="dept_name", columnDefinition="VARCHAR(128)")
-//    private String departmentName;
-
-
     @NotNull(groups = {ValidateGroup.Save.class})
     @Column(name="atd_date")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")

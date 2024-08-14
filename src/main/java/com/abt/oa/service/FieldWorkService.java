@@ -14,7 +14,18 @@ import java.util.List;
 public interface FieldWorkService {
     List<FieldWorkAttendanceSetting> findAllSettings();
 
+    /**
+     * 所有最新的配置，不显示历史记录
+     */
+    List<FieldWorkAttendanceSetting> findLatestSettings();
+
     void saveSetting(FieldWorkAttendanceSetting fieldAttendanceSetting);
+
+    /**
+     * 查询修改历史记录
+     * @param vid 项目公共Id
+     */
+    List<FieldWorkAttendanceSetting> findHistorySettings(String vid);
 
     /**
      * 查询所有可用的补助项目
