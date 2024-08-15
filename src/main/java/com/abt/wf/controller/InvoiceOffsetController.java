@@ -104,8 +104,8 @@ public class InvoiceOffsetController {
     }
 
     @GetMapping("/del/{id}")
-    public R<Object> delete(@PathVariable String id) {
-        invoiceOffsetService.delete(id);
+    public R<Object> delete(@PathVariable String id, @RequestParam(required = false) String reason) {
+        invoiceOffsetService.delete(id, reason);
         return R.success("删除成功");
     }
 

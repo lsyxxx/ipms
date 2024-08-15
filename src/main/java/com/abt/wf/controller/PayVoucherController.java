@@ -97,8 +97,8 @@ public class PayVoucherController {
     }
 
     @GetMapping("/del/{id}")
-    public R<Object> delete(@PathVariable String id) {
-        payVoucherService.delete(id);
+    public R<Object> delete(@PathVariable String id, @RequestParam(required = false) String reason) {
+        payVoucherService.delete(id, reason);
         return R.success("删除成功");
     }
 

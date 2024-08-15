@@ -43,7 +43,7 @@ public class FieldController {
 
     @GetMapping("/setting/all")
     public R<List<FieldWorkAttendanceSetting>> findAllSettings() {
-        final List<FieldWorkAttendanceSetting> allSettings = fieldWorkService.findAllSettings();
+        final List<FieldWorkAttendanceSetting> allSettings = fieldWorkService.findLatestSettings();
         return R.success(allSettings);
     }
 
@@ -51,6 +51,13 @@ public class FieldController {
     public R<List<FieldWorkAttendanceSetting>> findAllEnabledAllowance() {
         final List<FieldWorkAttendanceSetting> allSettings = fieldWorkService.findAllEnabledAllowance();
         return R.success(allSettings);
+    }
+
+
+    @GetMapping("/setting/his")
+    public R<Object> findHistorySettingsByVid(String vid) {
+        final List<FieldWorkAttendanceSetting> list = fieldWorkService.findHistorySettings(vid);
+        return R.success(list);
     }
 
     @PostMapping("/update")
@@ -241,6 +248,7 @@ public class FieldController {
         final Table table = fieldWorkService.createStatData(start, end, reviewerId);
         return R.success(table, "生成数据成功!");
     }
+
 
 
 }

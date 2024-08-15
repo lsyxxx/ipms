@@ -119,21 +119,4 @@ public class WebApiHttpConnectServiceImpl implements HttpConnectService<WebApiDt
     }
 
 
-
-
-
-
-    private UserView testAccount() {
-        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_FI"));
-        return new UserView().setAccount("abtadmin")
-                .setName("abtname")
-                .setMobile("17391120673")
-                .setPassword("abtpwd")
-                .setSex(0)
-                .setId("ddc056b0e7b1")
-                .setAuthorities(authorities);
-    }
-
-
 }

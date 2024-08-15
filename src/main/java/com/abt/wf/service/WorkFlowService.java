@@ -58,8 +58,9 @@ public interface WorkFlowService<T> {
     /**
      * 删除流程
      * @param entityId 业务实体id
+     * @param reason 删除原因
      */
-    void delete(String entityId);
+    void delete(String entityId, String reason);
 
     /**
      * 预览流程

@@ -1,8 +1,6 @@
 package com.abt.security;
 
 import com.abt.http.dto.WebApiToken;
-import com.abt.sys.model.entity.SysLog;
-import com.abt.sys.service.SysLogService;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +18,8 @@ import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
 
 /**
  * spring security config
@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
     private final ABTWebApiTokenAuthenticationProvider abtWebApiTokenAuthenticationProvider;

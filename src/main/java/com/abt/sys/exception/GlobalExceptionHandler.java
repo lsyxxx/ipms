@@ -2,8 +2,6 @@ package com.abt.sys.exception;
 
 import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.stream.Collectors;
 
@@ -118,5 +117,16 @@ public class GlobalExceptionHandler {
     public void handleMissingParams(MissingServletRequestParameterException ex) {
         String name = ex.getParameterName();
         throw new BusinessException("缺少参数: " + name);
+    }
+
+
+    /**
+     * 访问拒绝（无授权）
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public void handleAccessDeniedException(AccessDeniedException ex) {
+        log.error(ex.getMessage(), ex);
+        throw new BusinessException("无权访问或操作");
     }
 }

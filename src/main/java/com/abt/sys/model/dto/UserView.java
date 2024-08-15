@@ -1,7 +1,9 @@
 package com.abt.sys.model.dto;
 
+import com.abt.sys.model.entity.Role;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -25,6 +27,7 @@ import java.util.Set;
 
 @Data
 @Accessors(chain = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserView implements UserDetails{
     @JsonProperty("emailaddress")
     private String emailAddress;
@@ -88,8 +91,7 @@ public class UserView implements UserDetails{
     /**
      * TODO: 授权信息
      */
-    @JsonIgnore
-    private Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+    private Set<Role> authorities = new HashSet<>();
     /**
      * 用户过期true：没有过期  false：过期
      */

@@ -79,8 +79,8 @@ public class LoanController {
     }
 
     @GetMapping("/del/{id}")
-    public R<Object> delete(@PathVariable String id) {
-        loanService.delete(id);
+    public R<Object> delete(@PathVariable String id, @RequestParam(required = false) String reason) {
+        loanService.delete(id, reason);
         return R.success("删除成功");
     }
 

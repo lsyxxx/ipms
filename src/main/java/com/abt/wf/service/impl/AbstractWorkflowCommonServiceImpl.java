@@ -344,10 +344,10 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         //2. 查询当前用户是否有删除权限
         //角色包含《流程管理》权限，查询Relevance表:SELECT * FROM [dbo].[Relevance] where  1=1 and SecondId = 'JS002' and [Key] = 'UserRole'
         //key是角色模块，SecondId是角色id, FirstId是对应用户
-        if (!"System".equals(userId)) {
-            //超级管理员
-            ValidationResult.fail("只有管理员可以删除! 请联系管理员");
-        }
+//        if (!"System".equals(userId)) {
+//            //超级管理员
+//            ValidationResult.fail("只有管理员可以删除! 请联系管理员");
+//        }
 
         return ValidationResult.pass();
     }
@@ -386,21 +386,22 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     }
 
     @Override
-    public void delete(String entityId) {
+    public void delete(String entityId, String reason) {
         UserView user = TokenUtil.getUserFromAuthToken();
         ValidationResult validate = deleteValidate(entityId, user.getId());
         if (validate.isPass()) {
             T entity = load(entityId);
-            runtimeService.deleteProcessInstance(entity.getProcessInstanceId(), Constants.DELETE_REASON_DELETE + "_" + user.getId() + "_" + user.getName());
+            if (StringUtils.isBlank(reason)) {
+                reason = String.format("系统: 用户%s[%s]手动删除。", user.getUsername(), user.getEmpnum());
+            }
+            runtimeService.deleteProcessInstance(entity.getProcessInstanceId(), reason);
             entity.setBusinessState(Constants.STATE_DETAIL_DELETE);
             entity.setFinished(true);
             entity.setDelete(true);
+            entity.setEndTime(LocalDateTime.now());
             saveEntity(entity);
 
-            FlowOperationLog optLog = FlowOperationLog.create(user.getId(), user.getName(), entity.getProcessInstanceId(), entity.getProcessDefinitionId(),
-                    entity.getProcessDefinitionKey(), getServiceName());
-            optLog.setAction(ActionEnum.DELETE.name());
-            optLog.setEntityId(getEntityId(entity));
+            FlowOperationLog optLog = FlowOperationLog.deleteLog(user.getId(), user.getName(), entity, entityId, reason);
             flowOperationLogService.saveLog(optLog);
         } else {
             throw new BusinessException(validate.getDescription());

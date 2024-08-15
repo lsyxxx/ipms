@@ -1,18 +1,15 @@
 package com.abt.sys.service;
 
-import java.util.List;
+import com.abt.sys.model.entity.Role;
+
+import java.util.HashSet;
 
 /**
  * 权限
  */
-public interface PermissionService<T> {
+public interface PermissionService {
 
-    /**
-     * 获取用户权限
-     * @param token
-     * @return
-     */
-    List<T> getPermissionsBy(String token);
+    HashSet<Role> getRolesByUserid(String userid);
 
-
+    HashSet<Role> getAllRoles();
 }

@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 
 /**
  * 授权组件
- * TODO
  */
 
 @Slf4j
@@ -63,23 +62,20 @@ public class ABTAuthorizationManager implements AuthorizationManager<RequestAuth
 
         //TODO: Get userinfo/permissions
         WebApiToken token = userService.getToken(request);
-        List permissions = permissionService.getPermissionsBy(token.getTokenValue());
-        Optional user = userService.userInfoBy(token);
-        if (!user.isPresent()) {
-            //TODO: 用户不存在, 提示认证失败
-            isGranted = false;
-            throw new InvalidTokenException(messages.getMessage("ex.token.invalid.common"));
-        }
-        if (isAuthorizationUri(requestUri, permissions)) {
-            isGranted = true;
-        }
-
-        //spring security authorization
-        Collection<? extends GrantedAuthority> authorities = convert(permissions);
-
-
-
-        //未授权
+//        List permissions = permissionService.getPermissionsBy(token.getTokenValue());
+//        Optional user = userService.userInfoBy(token);
+//        if (user.isEmpty()) {
+//            //TODO: 用户不存在, 提示认证失败
+//            isGranted = false;
+//            throw new InvalidTokenException(messages.getMessage("ex.token.invalid.common"));
+//        }
+//        if (isAuthorizationUri(requestUri, permissions)) {
+//            isGranted = true;
+//        }
+//
+//        //spring security authorization
+//        Collection<? extends GrantedAuthority> authorities = convert(permissions);
+        //授权
         isGranted = true;
         return new AuthorizationDecision(isGranted);
     }

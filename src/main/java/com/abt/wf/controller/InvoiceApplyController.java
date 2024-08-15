@@ -97,8 +97,8 @@ public class InvoiceApplyController {
     }
 
     @GetMapping("/del/{id}")
-    public R<Object> delete(@PathVariable String id) {
-        invoiceApplyService.delete(id);
+    public R<Object> delete(@PathVariable String id, @RequestParam(required = false) String reason) {
+        invoiceApplyService.delete(id, reason);
         return R.success("删除成功");
     }
 

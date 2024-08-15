@@ -15,6 +15,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -103,9 +105,12 @@ public class ReimburseController {
         return R.success(invoiceApply);
     }
 
+
+    //删除权限：财务流程-删除
+    @Secured("849b61e0-6f97-454c-b729-f3ebc821953e")
     @GetMapping("/del/{id}")
-    public R<Object> delete(@PathVariable String id) {
-        reimburseService.delete(id);
+    public R<Object> delete(@PathVariable String id, @RequestParam(required = false) String reason) {
+        reimburseService.delete(id, reason);
         return R.success("删除成功");
     }
 

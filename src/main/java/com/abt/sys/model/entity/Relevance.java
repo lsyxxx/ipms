@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,10 +17,13 @@ import java.time.LocalDateTime;
 /**
  * 关联表
  */
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "Relevance")
-@Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners(AuditingEntityListener.class)
+@Entity
 public class Relevance {
 
     @Id
@@ -27,11 +33,11 @@ public class Relevance {
     @Column(name="Description", columnDefinition="VARCAHR(100)")
     private String description;
 
-    @Column(name="Key", columnDefinition="VARCHAR(100)")
-    private String Key;
+    @Column(name="`Key`", columnDefinition="VARCHAR(100)")
+    private String key;
 
     @Column(name="Status", columnDefinition="TINYINT")
-    private int Status;
+    private int status;
 
     @LastModifiedDate
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

@@ -39,8 +39,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.abt.common.CommonConstants.SYSTEM_ID;
 import static com.abt.oa.OAConstants.FW_WITHDRAW;
+import static com.abt.sys.config.Constant.SYSTEM_ID;
 
 /**
  *
@@ -81,7 +81,8 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         //版本数量
         final Map<String, Long> countMap = all.stream().collect(Collectors.groupingBy(FieldWorkAttendanceSetting::getVid, Collectors.counting()));
         map.values().forEach(i -> i.setVersionCount(countMap.get(i.getVid())));
-        return new ArrayList<>(map.values());
+        final List<FieldWorkAttendanceSetting> list = map.values().stream().sorted(Comparator.comparingInt(FieldWorkAttendanceSetting::getSort)).toList();
+        return new ArrayList<>(list);
     }
 
     private void validateFieldSetting(FieldWorkAttendanceSetting fieldAttendanceSetting) {

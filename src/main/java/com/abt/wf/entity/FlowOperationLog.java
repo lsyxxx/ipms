@@ -168,15 +168,6 @@ public class FlowOperationLog {
         return optLog;
     }
 
-    public static FlowOperationLog deleteLog(String operatorId, String operatorName, String processInstanceId,
-                                             String processDefinitionId, String processDefinitionKey,
-                                             String serviceName, String entityId) {
-        FlowOperationLog optLog = create(operatorId, operatorName, processInstanceId, processDefinitionId, processDefinitionKey, serviceName);
-        optLog.setEntityId(entityId);
-        optLog.setAction(ActionEnum.DELETE.name());
-        return optLog;
-    }
-
     public static FlowOperationLog revokeLog(String operatorId, String operatorName, WorkflowBase form, String entityId) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName,
                 form.getProcessInstanceId(), form.getProcessDefinitionId(), form.getProcessDefinitionKey(),
@@ -188,6 +179,21 @@ public class FlowOperationLog {
         optLog.setAction(ActionEnum.REVOKE.name());
         optLog.setComment("系统：用户主动撤销");
         optLog.setTaskResult(STATE_DETAIL_REVOKE);
+        return optLog;
+    }
+
+
+    public static FlowOperationLog deleteLog(String operatorId, String operatorName, WorkflowBase form, String entityId, String reason) {
+        FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName,
+                form.getProcessInstanceId(), form.getProcessDefinitionId(), form.getProcessDefinitionKey(),
+                form.getServiceName());
+        optLog.setEntityId(entityId);
+        optLog.setTaskName("用户删除");
+        optLog.setTaskStartTime(LocalDateTime.now());
+        optLog.setTaskEndTime(LocalDateTime.now());
+        optLog.setAction(ActionEnum.DELETE.name());
+        optLog.setComment(reason);
+        optLog.setTaskResult(STATE_DETAIL_DELETE);
         return optLog;
     }
 
