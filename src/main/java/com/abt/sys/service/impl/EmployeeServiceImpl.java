@@ -37,6 +37,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
     @Override
+    public EmployeeInfo findUserByUserid(String userid) {
+        if (StringUtils.isBlank(userid)) {
+            throw new MissingRequiredParameterException("员工id");
+        }
+        return WithQueryUtil.build(employeeRepository.findOneByUserid(userid));
+    }
+
+
+    @Override
     public List<EmployeeInfo> findAllByExit(boolean exit) {
         return WithQueryUtil.build(employeeRepository.findByIsExit(exit));
     }

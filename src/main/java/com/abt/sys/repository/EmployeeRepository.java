@@ -36,6 +36,12 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
     List<EmployeeInfo> findAllWithDept();
 
 
+    @Query("select e from EmployeeInfo e " +
+            "inner join fetch TUser u on e.jobNumber = u.empnum " +
+            "where u.id = :userid")
+    EmployeeInfo findOneByUserid(String userid);
+
+
 
 
 }

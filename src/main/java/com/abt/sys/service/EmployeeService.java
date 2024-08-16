@@ -7,6 +7,8 @@ import java.util.List;
 public interface EmployeeService {
     EmployeeInfo findByJobNumber(String jobNumber);
 
+    EmployeeInfo findUserByUserid(String userid);
+
     /**
      * 查询在职/离职员工
      */
