@@ -14,10 +14,7 @@ import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.LoanService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.camunda.bpm.engine.IdentityService;
-import org.camunda.bpm.engine.RepositoryService;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,11 +48,12 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     private final BpmnModelInstance loanBpmnModelInstance;
 
     private final IFileService fileService;
+    private final HistoryService historyService;
 
     public LoanServiceImpl(LoanRepository loanRepository, IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
-                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, IFileService fileService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
+                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, IFileService fileService, HistoryService historyService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
         this.loanRepository = loanRepository;
         this.identityService = identityService;
         this.userService = userService;
@@ -65,6 +63,7 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         this.runtimeService = runtimeService;
         this.loanBpmnModelInstance = loanBpmnModelInstance;
         this.fileService = fileService;
+        this.historyService = historyService;
     }
 
     static class LoanSpecifications extends CommonSpecifications<LoanRequestForm, Loan> {

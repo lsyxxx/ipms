@@ -21,10 +21,7 @@ import com.abt.wf.service.ReimburseService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.camunda.bpm.engine.IdentityService;
-import org.camunda.bpm.engine.RepositoryService;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -64,6 +61,8 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     private final IFileService fileService;
 
+    private final HistoryService historyService;
+
     private List<User> copyList;
 
     @Value("${wf.rbs.url.pre}")
@@ -71,8 +70,8 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
-                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
+                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
@@ -83,6 +82,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.reimburseRepository = reimburseRepository;
         this.rbsBpmnModelInstance = rbsBpmnModelInstance;
         this.fileService = fileService;
+        this.historyService = historyService;
     }
 
 

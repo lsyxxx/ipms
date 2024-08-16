@@ -27,11 +27,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.camunda.bpm.engine.IdentityService;
-import org.camunda.bpm.engine.RepositoryService;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
+import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
@@ -64,8 +62,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     private UserService userService;
     private RepositoryService repositoryService;
     private RuntimeService runtimeService;
-
     private IFileService fileService;
+    private HistoryService historyService;
 
 //    @Value("${com.abt.file.upload.save}")
 //    private String savedRoot;
@@ -342,13 +340,6 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         //删除权限
         //1. 获取当前用户
         //2. 查询当前用户是否有删除权限
-        //角色包含《流程管理》权限，查询Relevance表:SELECT * FROM [dbo].[Relevance] where  1=1 and SecondId = 'JS002' and [Key] = 'UserRole'
-        //key是角色模块，SecondId是角色id, FirstId是对应用户
-//        if (!"System".equals(userId)) {
-//            //超级管理员
-//            ValidationResult.fail("只有管理员可以删除! 请联系管理员");
-//        }
-
         return ValidationResult.pass();
     }
 
@@ -391,10 +382,19 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         ValidationResult validate = deleteValidate(entityId, user.getId());
         if (validate.isPass()) {
             T entity = load(entityId);
-            if (StringUtils.isBlank(reason)) {
-                reason = String.format("系统: 用户%s[%s]手动删除。", user.getUsername(), user.getEmpnum());
+            //TODO: 删除正在进行的流程
+            String procInstId = entity.getProcessInstanceId();
+            final ProcessInstance runningProcInst = runtimeService.createProcessInstanceQuery().processInstanceId(procInstId).active().singleResult();
+            if (runningProcInst != null) {
+                final HistoricTaskInstance runningTask = historyService.createHistoricTaskInstanceQuery().processInstanceId(procInstId).unfinished().singleResult();
+                if (runningTask != null) {
+                    historyService.deleteHistoricTaskInstance(runningTask.getId());
+                }
+                runtimeService.deleteProcessInstance(entity.getProcessInstanceId(), DELETE_REASON_DELETE + "_" + user.getId());
+            } else {
+                //已结束的流程，不能使用deleteProcessInstance
+                historyService.deleteHistoricProcessInstanceIfExists(procInstId);
             }
-            runtimeService.deleteProcessInstance(entity.getProcessInstanceId(), reason);
             entity.setBusinessState(Constants.STATE_DETAIL_DELETE);
             entity.setFinished(true);
             entity.setDelete(true);

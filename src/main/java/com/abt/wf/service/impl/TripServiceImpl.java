@@ -23,10 +23,7 @@ import com.abt.wf.repository.TripOtherItemRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.TripService;
 import org.apache.commons.lang3.StringUtils;
-import org.camunda.bpm.engine.IdentityService;
-import org.camunda.bpm.engine.RepositoryService;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -59,14 +56,15 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
     private final TripDetailRepository tripDetailRepository;
     private final TripOtherItemRepository tripOtherItemRepository;
     private final IFileService fileService;
+    private final HistoryService historyService;
 
     @Value("${wf.trip.url.pre}")
     private String urlPrefix;
 
     public TripServiceImpl(IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService, RuntimeService runtimeService,
-                           BpmnModelInstance rbsTripBpmnModelInstance, TripMainRepository tripMainRepository, TripDetailRepository tripDetailRepository, TripOtherItemRepository tripOtherItemRepository, IFileService fileService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
+                           BpmnModelInstance rbsTripBpmnModelInstance, TripMainRepository tripMainRepository, TripDetailRepository tripDetailRepository, TripOtherItemRepository tripOtherItemRepository, IFileService fileService, HistoryService historyService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
         this.identityService = identityService;
         this.userService = userService;
         this.taskService = taskService;
@@ -78,6 +76,7 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         this.tripDetailRepository = tripDetailRepository;
         this.tripOtherItemRepository = tripOtherItemRepository;
         this.fileService = fileService;
+        this.historyService = historyService;
     }
 
 

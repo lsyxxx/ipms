@@ -13,10 +13,7 @@ import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.InvoiceApplyService;
 import org.apache.commons.lang3.StringUtils;
-import org.camunda.bpm.engine.IdentityService;
-import org.camunda.bpm.engine.RepositoryService;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,6 +46,8 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     private final BpmnModelInstance invoiceApplyBpmnModelInstance;
 
     private final IFileService fileService;
+    private final HistoryService historyService;
+
 
     @Value("${wf.inv.url.pre}")
     private String urlPrefix;
@@ -57,8 +56,8 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
                                    TaskService taskService, FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
                                    RuntimeService runtimeService,
                                    InvoiceApplyRepository invoiceApplyRepository,
-                                   BpmnModelInstance invoiceApplyBpmnModelInstance, IFileService fileService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
+                                   BpmnModelInstance invoiceApplyBpmnModelInstance, IFileService fileService, HistoryService historyService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
         this.identityService = identityService;
         this.userService = userService;
         this.taskService = taskService;
@@ -68,6 +67,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
         this.invoiceApplyRepository = invoiceApplyRepository;
         this.invoiceApplyBpmnModelInstance = invoiceApplyBpmnModelInstance;
         this.fileService = fileService;
+        this.historyService = historyService;
     }
 
 

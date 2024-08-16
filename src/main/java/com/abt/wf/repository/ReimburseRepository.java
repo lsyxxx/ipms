@@ -51,6 +51,7 @@ public interface ReimburseRepository extends JpaRepository<Reimburse, String>, J
 
     /**
      * 我已处理
+     * 删除正在进行的流程时，会完成当前正在进行的节点。实际该节点并未完成。
      */
     @Query("select r from Reimburse r " +
             "left join fetch r.currentTask rt " +

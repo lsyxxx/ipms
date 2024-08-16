@@ -22,7 +22,7 @@ public class Constants {
     public static final String DELETE_REASON_REJECT = "用户审批拒绝";
     public static final String DELETE_REASON_REVOKE = "用户撤销流程";
     public static final String DELETE_REASON_AUTO = "流程正常结束";
-    public static final String DELETE_REASON_DELETE = "系统：用户手动删除";
+    public static final String DELETE_REASON_DELETE = "deleteByUser";
 
     /**
      * 流程结束者-系统

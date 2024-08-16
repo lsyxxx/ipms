@@ -50,11 +50,12 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     private final BpmnModelInstance payVoucherModelInstance;
 
     private final IFileService fileService;
+    private final HistoryService historyService;
 
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                  @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository,
-                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, IFileService fileService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
+                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, IFileService fileService, HistoryService historyService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
         this.identityService = identityService;
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
@@ -64,6 +65,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.payVoucherRepository = payVoucherRepository;
         this.payVoucherModelInstance = payVoucherModelInstance;
         this.fileService = fileService;
+        this.historyService = historyService;
     }
 
     @Override

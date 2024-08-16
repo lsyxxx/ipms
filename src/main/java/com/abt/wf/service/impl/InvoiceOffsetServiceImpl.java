@@ -19,10 +19,7 @@ import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.InvoiceOffsetService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.camunda.bpm.engine.IdentityService;
-import org.camunda.bpm.engine.RepositoryService;
-import org.camunda.bpm.engine.RuntimeService;
-import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -60,12 +57,13 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     private final BpmnModelInstance invoiceOffsetBpmnModelInstance;
 
     private final IFileService fileService;
+    private final HistoryService historyService;
 
     public InvoiceOffsetServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                     @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService,
                                     InvoiceOffsetRepository invoiceOffsetRepository,
-                                    @Qualifier("invoiceOffsetBpmnModelInstance") BpmnModelInstance invoiceOffsetBpmnModelInstance, IFileService fileService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService);
+                                    @Qualifier("invoiceOffsetBpmnModelInstance") BpmnModelInstance invoiceOffsetBpmnModelInstance, IFileService fileService, HistoryService historyService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
@@ -75,6 +73,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
         this.invoiceOffsetRepository = invoiceOffsetRepository;
         this.invoiceOffsetBpmnModelInstance = invoiceOffsetBpmnModelInstance;
         this.fileService = fileService;
+        this.historyService = historyService;
     }
 
     @Override

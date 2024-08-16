@@ -31,6 +31,8 @@ class ActivitiServiceImplTest {
     @Autowired
     private RepositoryService repositoryService;
 
+
+
     void testCompleted() {
         final ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().active().processInstanceId("").singleResult();
 
@@ -54,6 +56,7 @@ class ActivitiServiceImplTest {
 
     @Test
     void testDelete() {
+        taskService.deleteTask("");
 
         final List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().taskAssignee("b6883628-ab11-4ad8-a533-11632fcdb4f3").finished().list();
         assertNotNull(list);
@@ -63,5 +66,15 @@ class ActivitiServiceImplTest {
             }
             System.out.printf("procInst: %s, endTime: %s \n", i.getProcessInstanceId(), i.getEndTime().toString());
         });
+    }
+
+
+    @Test
+    void deleteTask() {
+//        final HistoricTaskInstance runningTask = historyService.createHistoricTaskInstanceQuery().processInstanceId("a108002e-5b72-11ef-af73-522f9b379759").unfinished().singleResult();
+//        System.out.println(runningTask.getId());
+//        historyService.deleteHistoricTaskInstance(runningTask.getId());
+
+        runtimeService.deleteProcessInstance("a108002e-5b72-11ef-af73-522f9b379759", "先删除historyTask");
     }
 }

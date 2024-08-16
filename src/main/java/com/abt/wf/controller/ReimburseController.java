@@ -109,7 +109,7 @@ public class ReimburseController {
     //删除权限：财务流程-删除
     @Secured("849b61e0-6f97-454c-b729-f3ebc821953e")
     @GetMapping("/del/{id}")
-    public R<Object> delete(@PathVariable String id, @RequestParam(required = false) String reason) {
+    public R<Object> delete(@PathVariable String id, String reason) {
         reimburseService.delete(id, reason);
         return R.success("删除成功");
     }
