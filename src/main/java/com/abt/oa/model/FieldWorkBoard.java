@@ -45,7 +45,7 @@ public class FieldWorkBoard {
     /**
      * 请假天数，包含所有请假类型
      */
-    private int leaveDay;
+    private double leaveDay;
 
     private int todoCount;
     private int doneCount;

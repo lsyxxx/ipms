@@ -304,7 +304,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         assert startDate != null;
         board.setDayCount((int) ChronoUnit.DAYS.between(startDate, endDate) + 1);
         List<CalendarEvent> events = new ArrayList<>();
-        List<FieldWorkAttendanceSetting> settings = this.findAllSettings();
+        List<FieldWorkAttendanceSetting> settings = this.findLatestSettings();
 
         //查询所有记录
         final List<FieldWork> allRecords = fieldWorkRepository.findByJobNumberAndAttendanceDateBetween(jobNumber, startDate, endDate);
@@ -335,10 +335,11 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         events.addAll(createFieldWorkCalendarEvents(allRecords));
         //请假event(仅通过的)
         final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, OAConstants.OPENAUTH_FLOW_STATE_FINISH, startDate, endDate);
-        final List<CalendarEvent> leaveEvents = createLeaveCalendarEvents(leaveRecords);
-        //请假天数
+        final List<CalendarEvent> leaveEvents = splitLeaveCalendarEventsByDay(leaveRecords);
         events.addAll(leaveEvents);
-        board.setLeaveDay(leaveEvents.size());
+        //请假天数
+        final double leaveDay = leaveEvents.stream().mapToDouble(CalendarEvent::getDuration).sum();
+        board.setLeaveDay(leaveDay);
 
         board.setEvents(events);
         return board;
@@ -536,7 +537,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         final List<FieldWork> records = all.stream().filter(FieldWork::isPass).toList();
 //        final List<CalendarEvent> events = createFieldWorkCalendarEvents(records);
         List<CalendarEvent> allEvents = new ArrayList<>();
-        final List<FieldWorkAttendanceSetting> settings = findAllSettings();
+        final List<FieldWorkAttendanceSetting> settings = findLatestSettings();
         //生成表
         //根据用户
         final Map<String, List<FieldWork>> groupByUser = records.stream().collect(Collectors.groupingBy(FieldWork::getJobNumber, Collectors.toList()));
@@ -591,7 +592,12 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             final Map<String, Double> sumByAllowance = userEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
             sumByAllowance.forEach((k, v) -> {
                 final FieldWorkAttendanceSetting setting = findSettingById(k);
-                row.addCell(new Cell(String.valueOf(v), setting.getName()));
+                Cell cell = new Cell(String.valueOf(v), setting.getName());
+                CalendarEvent event = new CalendarEvent();
+                event.setOrder(1000 + setting.getSort());
+                event.setTitle(setting.getName());
+                cell.setValue(event);
+                row.addCell(cell);
             });
             allEvents.addAll(userEvents);
             allEvents.addAll(leaveEvents);
@@ -641,6 +647,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 .limit(startDate.until(endDate).getDays() + 1)
                 .forEach(date -> {
                     CalendarEvent event = doCreateLeaveEvent(req);
+                    event.setId(UUID.randomUUID().toString());
                     event.setStart(TimeUtil.yyyy_MM_ddString(date));
                     event.setEnd(TimeUtil.yyyy_MM_ddString(date));
                     if (date.isEqual(startDate)) {
