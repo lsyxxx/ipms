@@ -21,6 +21,7 @@ public class TimeUtil {
     public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static final DateTimeFormatter yyyy_MM_dd_HH_mm_ss_formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter HH_mm_ss_formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    public static final DateTimeFormatter yyyy_MM_formatter = DateTimeFormatter.ofPattern("yyyy-MM");
 
     /**
      * 根据当前时间生成ID
@@ -175,6 +176,9 @@ public class TimeUtil {
         return LocalTime.parse(hhmmssStr, HH_mm_ss_formatter);
     }
 
+    public static YearMonth toYearMonth(String yyyy_MM) {
+        return YearMonth.parse(yyyy_MM, dateFormatter);
+    }
 
 
 

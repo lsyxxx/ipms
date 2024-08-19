@@ -9,6 +9,7 @@ import com.abt.oa.model.FieldWorkRequestForm;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface FieldWorkService {
@@ -81,5 +82,13 @@ public interface FieldWorkService {
 
     void withdraw(String id, String userid);
 
-    Table createStatData(String startDateStr, String endDateStr, String reviewerId);
+    /**
+     * 生成考勤统计数据表
+     * @param start 开始日期
+     * @param end 结束日期
+     * @param all 所有野外考勤记录
+     */
+    Table createStatData(LocalDate start, LocalDate end, List<FieldWork> all);
+
+    List<FieldWork> findAtdByUserInfo(String jobNumber, String dept, List<String> company, LocalDate start, LocalDate end);
 }

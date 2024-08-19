@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
@@ -165,7 +164,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
     public FieldWorkAttendanceSetting findSettingById(String id) {
-        return fieldAttendanceSettingRepository.findById(id).orElseThrow(() -> new BusinessException("保存失败!。原因：未查询到野外补助配置项(id=" + id + ")"));
+        return fieldAttendanceSettingRepository.findById(id).orElseThrow(() -> new BusinessException("失败!。原因：未查询到野外补助配置项(id=" + id + ")"));
     }
 
     @Override
@@ -450,7 +449,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         event.setType(frmLeaveReq.getIsFinish());
         event.setShortName(frmLeaveReq.getRequestTypeName());
         event.setDuration(frmLeaveReq.getDayTime().doubleValue());
-        event.setSid(frmLeaveReq.getRequestType());
+        event.setSid(frmLeaveReq.getRequestTypeName());
         if (frmLeaveReq.getRequestType().equals("2")) {
             //调休
             event.setDurationUnit(CalendarEvent.DUR_UNIT_HOUR);
@@ -505,37 +504,15 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         fieldWorkRepository.save(entity);
     }
 
-    public FieldWorkBoard managerBoard(String startDateStr, String endDateStr) {
-        final LocalDate startDate = TimeUtil.toLocalDate(startDateStr);
-        final LocalDate endDate = TimeUtil.toLocalDate(endDateStr);
-        FieldWorkBoard board = new FieldWorkBoard();
-        board.setPeriodEnd(endDate);
-        board.setPeriodStart(startDate);
-        assert startDate != null;
-        board.setDayCount((int) ChronoUnit.DAYS.between(startDate, endDate) + 1);
-        List<FieldWorkAttendanceSetting> settings = this.findAllSettings();
-
-
-
-        return board;
-    }
-
     /**
      * 考勤统计表
      */
     @Override
-    public Table createStatData(String startDateStr, String endDateStr, String reviewerId) {
+    public Table createStatData(LocalDate start, LocalDate end, List<FieldWork> all) {
         long t1 = System.currentTimeMillis();
-        Assert.hasText(startDateStr, "开始日期不能为空!");
-        Assert.hasText(endDateStr, "结束日期不能为空!");
-        final LocalDate startDate = TimeUtil.toLocalDate(startDateStr);
-        final LocalDate endDate = TimeUtil.toLocalDate(endDateStr);
-        assert startDate != null;
         //查询记录（已审批通过的）
-        //TODO: 如果其他人查看则不是审批人了。按部门查看，或者选人查看
-        final List<FieldWork> all = fieldWorkRepository.findByReviewerIdAndAttendanceDateBetween(reviewerId, startDate, endDate);
+
         final List<FieldWork> records = all.stream().filter(FieldWork::isPass).toList();
-//        final List<CalendarEvent> events = createFieldWorkCalendarEvents(records);
         List<CalendarEvent> allEvents = new ArrayList<>();
         final List<FieldWorkAttendanceSetting> settings = findLatestSettings();
         //生成表
@@ -556,11 +533,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
             //生成每个人的考勤
             List<CalendarEvent> userEvents = createFieldWorkCalendarEvents(userFws);
-            //请假
-            final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, OAConstants.OPENAUTH_FLOW_STATE_FINISH, startDate, endDate);
-            //请假数据
-            final List<CalendarEvent> leaveEvents = splitLeaveCalendarEventsByDay(leaveRecords);
-            userEvents.addAll(leaveEvents);
 
             //处理数据,生成表格
             //补贴数据, 生成row，根据日期(start)
@@ -588,7 +560,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             }
             row.addCell(new Cell(String.valueOf(workDaySet.size()), "出勤天数"));
 
-            //2. 作业项目统计(包含基地调休/家调休/各种请假)
+            //2. 作业项目统计(包含基地调休/家调休)
             final Map<String, Double> sumByAllowance = userEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
             sumByAllowance.forEach((k, v) -> {
                 final FieldWorkAttendanceSetting setting = findSettingById(k);
@@ -599,6 +571,23 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 cell.setValue(event);
                 row.addCell(cell);
             });
+
+            //请假
+            final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, OAConstants.OPENAUTH_FLOW_STATE_FINISH, start, end);
+            //请假数据
+            final List<CalendarEvent> leaveEvents = splitLeaveCalendarEventsByDay(leaveRecords);
+            final Map<String, Double> sumByLeave = leaveEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
+            sumByLeave.forEach((k, v) -> {
+                Cell cell = new Cell(String.valueOf(v), k);
+                CalendarEvent event = new CalendarEvent();
+                final CalendarEvent e = leaveEvents.stream().filter(i -> i.getSid().equals(k)).findFirst().get();
+                event.setOrder(2000);
+                event.setTitle(e.getTitle());
+                cell.setValue(event);
+                cell.setValueStr(String.valueOf(v));
+                row.addCell(cell);
+            });
+
             allEvents.addAll(userEvents);
             allEvents.addAll(leaveEvents);
             table.addRow(row);
@@ -613,7 +602,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
 
         long t2 = System.currentTimeMillis();
-        List<String> header = this.createStatHeader(startDate, endDate, allEvents);
+        List<String> header = this.createStatHeader(start, end, allEvents);
         table.setHeaders(header);
         System.out.printf("createStatData耗时:%d (ms), 统计%d人数据\n", (t2-t1), groupByUser.size());
         return table;
@@ -683,25 +672,25 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return time.isAfter(LocalTime.of(12, 0, 0));
     }
 
+    //根据event生成表头
     public List<String> createStatHeader(LocalDate startDate, LocalDate endDate, List<CalendarEvent> events) {
         int dayCount = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
         //生成表头: 序号,姓名，工号，日期，统计列
         List<String> header = new ArrayList<>();
-//        header.add("序号");
-//        header.add("姓名");
-//        header.add("工号");
         for (int i = 0; i < dayCount ; i++) {
             header.add(startDate.plusDays(i).toString());
         }
         //统计列
-//        //固定列-出勤天数
-//        header.add("出勤天数");
-//        header.add("公休");
         //其他统计-补贴项目(仅显示已有的)
         final List<String> allowances = events.stream().sorted(Comparator.comparingInt(CalendarEvent::getOrder))
                 .map(CalendarEvent::getTitle).distinct().toList();
         header.addAll(allowances);
         return header;
+    }
+
+    @Override
+    public List<FieldWork> findAtdByUserInfo(String jobNumber, String dept, List<String> company, LocalDate start, LocalDate end) {
+        return fieldWorkRepository.findRecordsByUserInfo(jobNumber, dept, company, start, end);
     }
 
 

@@ -110,4 +110,24 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
     List<FieldWork> findByJobNumberAndAttendanceDateBetween(String jobNumber, LocalDate startDate, LocalDate endDate);
 
     List<FieldWork> findByReviewerIdAndAttendanceDateBetween(String reviewerId, LocalDate startDate, LocalDate endDate);
+
+
+    /**
+     * 根据用户信息查询野外考勤
+     * @param jobNumber - 查询该工号用户的考勤
+     * @param userDept - 查询该部门的所有用户的考勤
+     * @param company - 查询公司列表中所有的用户考勤
+     * @param startDate - 考勤开始日期（包含）
+     * @param endDate - 考勤结束日期（包含）
+     */
+    @Query("select fw from FieldWork fw " +
+            "left join EmployeeInfo e on fw.jobNumber = e.jobNumber" +
+            " join fetch fw.items fi " +
+            "where 1=1 " +
+            "and (:jobNumber is null or :jobNumber = '' or fw.jobNumber = :jobNumber)" +
+            "and (:userDept is null or :userDept = '' or e.dept = :userDept) " +
+            "and (:company is null or e.company in :company) " +
+            "and fw.attendanceDate >= :startDate " +
+            "and fw.attendanceDate <= :endDate")
+    List<FieldWork> findRecordsByUserInfo(String jobNumber, String userDept, List<String> company, LocalDate startDate, LocalDate endDate);
 }

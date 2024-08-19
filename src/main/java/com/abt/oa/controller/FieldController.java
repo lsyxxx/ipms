@@ -15,7 +15,9 @@ import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.service.FieldWorkService;
 import com.abt.oa.service.SettingService;
 import com.abt.sys.model.dto.UserView;
-import jakarta.validation.Valid;
+import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.service.EmployeeService;
+import com.abt.sys.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 
 /**
@@ -35,10 +38,12 @@ import java.util.List;
 public class FieldController {
     private final FieldWorkService fieldWorkService;
     private final SettingService settingService;
+    private final EmployeeService employeeService;
 
-    public FieldController(FieldWorkService fieldWorkService, SettingService settingService) {
+    public FieldController(FieldWorkService fieldWorkService, SettingService settingService, EmployeeService employeeService) {
         this.fieldWorkService = fieldWorkService;
         this.settingService = settingService;
+        this.employeeService = employeeService;
     }
 
     @GetMapping("/setting/all")
@@ -241,13 +246,27 @@ public class FieldController {
 
 
     @GetMapping("/stat")
-    public R<Table> statisticTable(String start, String end, String reviewerId) {
-        start = "2024-07-26";
-        end = "2024-08-25";
-        reviewerId = "621faa40-f45c-4da8-9a8f-65b0c5353f40";
-        final Table table = fieldWorkService.createStatData(start, end, reviewerId);
-        return R.success(table, "生成数据成功!");
+    public R<Table> statisticTable(String yearMonth, List<String> company) {
+        YearMonth ym = TimeUtil.toYearMonth(yearMonth);
+        final int year = ym.getYear();
+        final int monthValue = ym.getMonthValue();
+        String startDay = settingService.getAttendanceStartDay().getFvalue();
+        String endDay = settingService.getAttendanceEndDay().getFvalue();
+        final LocalDate start = LocalDate.of(year, monthValue, Integer.parseInt(startDay)).minusMonths(1);
+        final LocalDate end = LocalDate.of(year, monthValue, Integer.parseInt(endDay));
+
+        //TODO: 获取用户权限
+        UserView user = TokenUtil.getUserFromAuthToken();
+        final EmployeeInfo emp = employeeService.findByJobNumber(user.getEmpnum());
+
+
+        final List<FieldWork> records = fieldWorkService.findAtdByUserInfo(null, null, company, start, end);
+
+        final Table table = fieldWorkService.createStatData(start, end, records);
+//        return R.success(table, "生成数据成功!");
+        return null;
     }
+
 
 
 
