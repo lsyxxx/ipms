@@ -15,9 +15,11 @@ import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.service.FieldWorkService;
 import com.abt.oa.service.SettingService;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.DataPrivilegeRule;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.model.entity.Role;
 import com.abt.sys.service.EmployeeService;
-import com.abt.sys.service.UserService;
+import com.abt.sys.service.PermissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -28,6 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 野外相关
@@ -39,11 +42,13 @@ public class FieldController {
     private final FieldWorkService fieldWorkService;
     private final SettingService settingService;
     private final EmployeeService employeeService;
+    private final PermissionService permissionService;
 
-    public FieldController(FieldWorkService fieldWorkService, SettingService settingService, EmployeeService employeeService) {
+    public FieldController(FieldWorkService fieldWorkService, SettingService settingService, EmployeeService employeeService, PermissionService permissionService) {
         this.fieldWorkService = fieldWorkService;
         this.settingService = settingService;
         this.employeeService = employeeService;
+        this.permissionService = permissionService;
     }
 
     @GetMapping("/setting/all")
@@ -246,7 +251,7 @@ public class FieldController {
 
 
     @GetMapping("/stat")
-    public R<Table> statisticTable(String yearMonth, List<String> company) {
+    public R<Table> statisticTable(String yearMonth, List<String> company, String sourceCode) {
         YearMonth ym = TimeUtil.toYearMonth(yearMonth);
         final int year = ym.getYear();
         final int monthValue = ym.getMonthValue();
@@ -259,12 +264,24 @@ public class FieldController {
         UserView user = TokenUtil.getUserFromAuthToken();
         final EmployeeInfo emp = employeeService.findByJobNumber(user.getEmpnum());
 
+        //判断用户数据权限
+        //1. 如果系统中权限配置了，那么可以看到所有
+        Set<Role> roles = user.getAuthorities();
+
+        //2. 当前登录用户没有配置权限，那么当前登录用户是野外作业部门且是部门经理才可以看到数据
+        final DataPrivilegeRule rules = permissionService.getDataPrivilegeRuleBySourceCode(sourceCode);
+
+
 
         final List<FieldWork> records = fieldWorkService.findAtdByUserInfo(null, null, company, start, end);
 
         final Table table = fieldWorkService.createStatData(start, end, records);
 //        return R.success(table, "生成数据成功!");
         return null;
+    }
+
+    public void getFieldWorkDepts() {
+
     }
 
 

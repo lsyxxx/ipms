@@ -107,7 +107,7 @@ public class UserView implements UserDetails{
     private Boolean userIsEnabled;
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Set<Role> getAuthorities() {
         return authorities;
     }
 

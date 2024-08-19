@@ -1,5 +1,6 @@
 package com.abt.sys.service;
 
+import com.abt.sys.model.entity.DataPrivilegeRule;
 import com.abt.sys.model.entity.Role;
 
 import java.util.HashSet;
@@ -12,4 +13,7 @@ public interface PermissionService {
     HashSet<Role> getRolesByUserid(String userid);
 
     HashSet<Role> getAllRoles();
+
+
+    DataPrivilegeRule getDataPrivilegeRuleBySourceCode(String sourceCode);
 }

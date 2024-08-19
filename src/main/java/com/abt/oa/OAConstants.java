@@ -79,4 +79,14 @@ public class OAConstants {
      * open auth 流程状态。驳回: 4
      */
     public static final String OPENAUTH_FLOW_STATE_REJECT = "4";
+
+
+    /**
+     * 野外作业部门-工程技术部(延安)
+     */
+    public static final String FIELD_DEPT_Y = "c3626282-a499-4354-8330-b49fff6887b9";
+    /**
+     * 野外作业部门-西南项目部(成都  )
+     */
+    public static final String FIELD_DEPT_C = "e5b9f524-485b-496f-9786-8a92a1a9ad2c";
 }
