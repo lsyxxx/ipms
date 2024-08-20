@@ -10,6 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -53,5 +56,12 @@ class FieldWorkRepositoryTest {
             });
 
         });
+    }
+
+    @Test
+    void findRecordsByUserInfo() {
+        final List<FieldWork> records = fieldWorkRepository.findRecordsByUserInfo(null, null, "'A','G'", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 9, 9));
+        assertNotNull(records);
+        System.out.println("size: " + records.size());
     }
 }

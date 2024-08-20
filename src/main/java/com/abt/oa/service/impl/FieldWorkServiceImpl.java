@@ -22,13 +22,25 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.enums.WriteDirectionEnum;
+import com.alibaba.excel.util.ListUtils;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillConfig;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,6 +65,17 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final EmployeeService employeeService;
     private final FieldWorkItemRepository fieldWorkItemRepository;
     private final LeaveService leaveService;
+
+
+    @Setter
+    @Getter
+    @Value("${abt.fw.excel.model}")
+    private String fieldWorkExcelTemplate;
+
+    @Setter
+    @Getter
+    @Value("${abt.fw.excel.create.path}")
+    private String filedWorkExcelCreatePath;
 
     public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository,LeaveService leaveService) {
         this.fieldAttendanceSettingRepository = fieldAttendanceSettingRepository;
@@ -489,9 +512,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         if (!entity.getCreateUserid().equals(userid) && !SYSTEM_ID.equals(userid)) {
             throw new BusinessException("无法删除!原因:只有记录的创建人(" + entity.getCreateUsername() + ")或管理员可以删除");
         }
-
-        fieldWorkItemRepository.deleteByFid(entity.getId());
-        fieldWorkRepository.deleteById(id);
+        fieldWorkRepository.softDeleteById(entity.getId());
     }
 
     @Override
@@ -565,6 +586,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             sumByAllowance.forEach((k, v) -> {
                 final FieldWorkAttendanceSetting setting = findSettingById(k);
                 Cell cell = new Cell(String.valueOf(v), setting.getName());
+                cell.setSummaryColumn(true);
                 CalendarEvent event = new CalendarEvent();
                 event.setOrder(1000 + setting.getSort());
                 event.setTitle(setting.getName());
@@ -597,7 +619,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         CalendarEvent restEvent = new CalendarEvent();
         restEvent.setTitle("公休");
         restEvent.setDurationUnit("天");
-        restEvent.setOrder(100);
+        restEvent.setOrder(5000);
         allEvents.add(restEvent);
 
 
@@ -680,6 +702,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         for (int i = 0; i < dayCount ; i++) {
             header.add(startDate.plusDays(i).toString());
         }
+        header.add("出勤天数");
         //统计列
         //其他统计-补贴项目(仅显示已有的)
         final List<String> allowances = events.stream().sorted(Comparator.comparingInt(CalendarEvent::getOrder))
@@ -689,13 +712,50 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
     @Override
-    public List<FieldWork> findAtdByUserInfo(String jobNumber, String dept, List<String> company, LocalDate start, LocalDate end) {
+    public List<FieldWork> findAtdByUserInfo(String jobNumber, String dept, String company, LocalDate start, LocalDate end) {
         return fieldWorkRepository.findRecordsByUserInfo(jobNumber, dept, company, start, end);
     }
 
 
+
     //导出excel
-    public void exportExcel() {
+    public static void writeExcel(Table table, String yearMonth, String deptName, String template) {
+        //生成excel文件名:
+        String fileName = String.format("%s考勤表", yearMonth);
+//        String createFile = this.getFiledWorkExcelCreatePath() + fileName;
+
+//        ExcelWriter builder = EasyExcel.write(fileName).withTemplate(this.getFieldWorkExcelTemplate()).build();
+//        Map<String, String> fillMap = new HashMap<>();
+//        fillMap.put("yearMonth", yearMonth);
+//        EasyExcel.write(createFile).withTemplate(this.getFieldWorkExcelTemplate()).sheet(1).doFill(fillMap);
 
     }
+
+    public static void main(String[] args) throws IOException {
+
+        String yearMonth = "2024-08";
+        String fileName = String.format("%s考勤表.xlsx", yearMonth);
+        String template = "E:\\fieldwork_atd_model.xlsx";
+        String createFile = "E:\\fw_atd\\" + fileName;
+        FileUtils.copyFile(new File(template), new File(createFile));
+        Map<String, String> fillMap = new HashMap<>();
+        fillMap.put("yearMonth", yearMonth);
+
+        //head
+        Map<String, List<String>> summaryHeader = new HashMap<>();
+        summaryHeader.put("summaryHeaders", List.of("流体2人作业负责人", "流体2人作业组员", "兼职司机人员接送或物资现场配合", "其他野外工作", "请假", "室内"));
+
+
+        try (ExcelWriter excelWriter = EasyExcel.write(fileName).withTemplate(template).build()) {
+            WriteSheet writeSheet = EasyExcel.writerSheet(0).build();
+            FillConfig fillConfig = FillConfig.builder().direction(WriteDirectionEnum.HORIZONTAL).build();
+            excelWriter.fill(summaryHeader, fillConfig, writeSheet);
+
+            excelWriter.fill(fillMap, writeSheet);
+        }
+
+
+        System.out.println("----- 写入excel完成");
+    }
+
 }

@@ -17,6 +17,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.naming.AuthenticationNotSupportedException;
 import java.time.Instant;
 
 @Getter
@@ -103,11 +104,11 @@ public class DataPrivilegeRule implements WithQuery<DataPrivilegeRule> {
         }
     }
 
-//    public String checkRule(UserView userView) {
-//        if (rule == null) {
-//            //没有权限控制
-//            return "";
-//        }
-//
-//    }
+    public boolean checkRule(UserView userView) {
+        if (rule == null) {
+            //没有权限控制
+            return true;
+        }
+        return this.rule.doFilterChain(userView);
+    }
 }

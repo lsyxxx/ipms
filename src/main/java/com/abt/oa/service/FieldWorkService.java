@@ -90,5 +90,5 @@ public interface FieldWorkService {
      */
     Table createStatData(LocalDate start, LocalDate end, List<FieldWork> all);
 
-    List<FieldWork> findAtdByUserInfo(String jobNumber, String dept, List<String> company, LocalDate start, LocalDate end);
+    List<FieldWork> findAtdByUserInfo(String jobNumber, String dept, String company, LocalDate start, LocalDate end);
 }

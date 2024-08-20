@@ -177,9 +177,8 @@ public class TimeUtil {
     }
 
     public static YearMonth toYearMonth(String yyyy_MM) {
-        return YearMonth.parse(yyyy_MM, dateFormatter);
+        return YearMonth.parse(yyyy_MM, yyyy_MM_formatter);
     }
-
 
 
 }

@@ -4,21 +4,18 @@ import com.abt.oa.entity.FieldWork;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
-
-    Page<FieldWork> findByCreateUseridAndAttendanceDate(String userid, LocalDate attendanceDate, Pageable pageable);
-
 
     //项目/井号/考勤人/补助名称/考勤人部门
     @Query("select DISTINCT fw from FieldWork fw " +
             "left join fetch fw.items fi " +
-            "where 1=1 " +
+            "where fw.isDeleted = false " +
             "and fw.reviewerId = :userid " +
             "and fw.reviewTime is null " +
             "and (:query is null or :query = '' " +
@@ -37,7 +34,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
     //项目/井号/考勤人/补助名称/考勤人部门
     @Query("select DISTINCT fw from FieldWork fw " +
             "left join fetch fw.items fi " +
-            "where 1=1 " +
+            "where fw.isDeleted = false " +
             "and fw.reviewerId = :userid " +
             "and fw.reviewTime is not null " +
             "and (:query is null or :query = '' " +
@@ -56,7 +53,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
 
     @Query("select DISTINCT fw from FieldWork fw " +
             "left join fetch fw.items fi " +
-            "where 1=1 " +
+            "where fw.isDeleted = false " +
             "and fw.createUserid = :userid " +
             "and (:query is null or :query = '' " +
             "    or fw.project like %:query% " +
@@ -75,6 +72,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
     @Query("select DISTINCT fw from FieldWork fw " +
             "left join fetch fw.items fi " +
             "where fw.userid = :userid " +
+            "and fw.isDeleted = false " +
             "and (:query is null or :query = '' " +
             "    or fw.project like %:query% " +
             "    or fw.well like %:query% " +
@@ -126,8 +124,12 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
             "where 1=1 " +
             "and (:jobNumber is null or :jobNumber = '' or fw.jobNumber = :jobNumber)" +
             "and (:userDept is null or :userDept = '' or e.dept = :userDept) " +
-            "and (:company is null or e.company in :company) " +
+            "and (:company is null or :company = '' or e.company = :company) " +
             "and fw.attendanceDate >= :startDate " +
             "and fw.attendanceDate <= :endDate")
-    List<FieldWork> findRecordsByUserInfo(String jobNumber, String userDept, List<String> company, LocalDate startDate, LocalDate endDate);
+    List<FieldWork> findRecordsByUserInfo(String jobNumber, String userDept, String company, LocalDate startDate, LocalDate endDate);
+
+    @Modifying
+    @Query("update FieldWork fw set fw.isDeleted = true where fw.id = :id")
+    void softDeleteById(String id);
 }

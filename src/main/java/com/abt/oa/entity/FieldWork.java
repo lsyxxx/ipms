@@ -32,7 +32,8 @@ import java.util.List;
 @Table(name = "fw_record", indexes = {
         @Index(name = "idx_user_id", columnList = "create_userid"),
         @Index(name="idx_user_id_date", columnList = "create_userid, atd_date"),
-        @Index(name = "idx_atd_date", columnList = "atd_date")
+        @Index(name = "idx_atd_date", columnList = "atd_date"),
+        @Index(name = "idx_is_del", columnList = "is_del")
 })
 @Entity
 @Getter
@@ -120,6 +121,12 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
      */
     @Column(name="rvw_reason", columnDefinition="VARCHAR(128)")
     private String reviewReason;
+
+    /**
+     * 是否被删除
+     */
+    @Column(name="is_del", columnDefinition = "BIT")
+    private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "fieldWork")
     @OrderBy("sort ASC")

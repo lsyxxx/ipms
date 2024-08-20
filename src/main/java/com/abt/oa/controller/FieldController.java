@@ -20,8 +20,10 @@ import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.model.entity.Role;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.PermissionService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -249,12 +252,25 @@ public class FieldController {
         return R.success("撤销成功!");
     }
 
+    public static final String MGR_BOARD_SOURCE_CODE = "mgrBoard";
 
-    @GetMapping("/stat")
-    public R<Table> statisticTable(String yearMonth, List<String> company, String sourceCode) {
-        YearMonth ym = TimeUtil.toYearMonth(yearMonth);
+    public static final String SESSION_FW_MGR_TABLE = "session_fw_mgr_table";
+
+    /**
+     * 查看统计数据
+     */
+    @PostMapping("/stat")
+    public R<Table> statisticTable(HttpServletRequest request,
+                                   @RequestBody FieldWorkRequestForm form) {
+        String yearMonth = form.getYearMonth();
+        if (StringUtils.isBlank(yearMonth)) {
+            return R.fail("请选择考勤年月");
+        }
+        YearMonth ym = TimeUtil.toYearMonth(form.getYearMonth());
         final int year = ym.getYear();
         final int monthValue = ym.getMonthValue();
+        String dept = form.getDept();
+        String company = form.getCompany();
         String startDay = settingService.getAttendanceStartDay().getFvalue();
         String endDay = settingService.getAttendanceEndDay().getFvalue();
         final LocalDate start = LocalDate.of(year, monthValue, Integer.parseInt(startDay)).minusMonths(1);
@@ -266,18 +282,21 @@ public class FieldController {
 
         //判断用户数据权限
         //1. 如果系统中权限配置了，那么可以看到所有
-        Set<Role> roles = user.getAuthorities();
+        //2. 当前登录用户没有配置权限，那么当前登录用户只能查看本部门的考勤
 
-        //2. 当前登录用户没有配置权限，那么当前登录用户是野外作业部门且是部门经理才可以看到数据
-        final DataPrivilegeRule rules = permissionService.getDataPrivilegeRuleBySourceCode(sourceCode);
-
-
-
-        final List<FieldWork> records = fieldWorkService.findAtdByUserInfo(null, null, company, start, end);
-
+        final DataPrivilegeRule rules = permissionService.getDataPrivilegeRuleBySourceCode(MGR_BOARD_SOURCE_CODE);
+        final boolean hasAuth = rules.checkRule(user);
+        List<FieldWork> records = new ArrayList<>();
+        if (!hasAuth) {
+            //查看本部门
+            if (StringUtils.isBlank(dept)) {
+                dept = emp.getDept();
+            }
+        }
+        records = fieldWorkService.findAtdByUserInfo(null, dept, company, start, end);
         final Table table = fieldWorkService.createStatData(start, end, records);
-//        return R.success(table, "生成数据成功!");
-        return null;
+        request.getSession().setAttribute(SESSION_FW_MGR_TABLE, table);
+        return R.success(table, "生成数据成功!");
     }
 
     public void getFieldWorkDepts() {

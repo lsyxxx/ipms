@@ -17,6 +17,10 @@ public class Cell {
     private int columnIndex;
     private String valueStr;
     private String styleStr;
+    /**
+     * 是否是统计列
+     */
+    private boolean summaryColumn = false;
 
     public Cell(String valueStr, String columnName) {
         this.valueStr = valueStr;
