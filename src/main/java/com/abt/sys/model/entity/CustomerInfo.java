@@ -1,7 +1,7 @@
 package com.abt.sys.model.entity;
 
 import com.abt.common.config.CommonJpaAuditListener;
-import com.abt.common.service.impl.CommonJpaAudit;
+import com.abt.common.service.CommonJpaAudit;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;

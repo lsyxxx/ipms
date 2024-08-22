@@ -2,7 +2,7 @@ package com.abt.testing.entity;
 
 import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
-import com.abt.common.service.impl.CommonJpaAudit;
+import com.abt.common.service.CommonJpaAudit;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;

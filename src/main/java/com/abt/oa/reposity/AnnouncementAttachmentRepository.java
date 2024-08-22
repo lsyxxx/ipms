@@ -21,6 +21,6 @@ public interface AnnouncementAttachmentRepository extends JpaRepository<Announce
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM AnnouncementAttachment e WHERE e.announcementId IN :aids")
-    int deleteAllByAnnouncementIds(List<String> aids);
+    @Query("DELETE FROM AnnouncementAttachment e WHERE e.announcementId IN :aids and e.applyUserID = :userid")
+    int deleteAllByAnnouncementIdsAndApplyUserId(List<String> aids, String userid);
 }

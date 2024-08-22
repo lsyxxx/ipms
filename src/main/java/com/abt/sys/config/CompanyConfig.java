@@ -1,5 +1,6 @@
 package com.abt.sys.config;
 
+import com.abt.common.entity.Company;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.sys.repository.CustomerInfoRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +24,10 @@ public class CompanyConfig {
     @Value("${abt.company.grd.id}")
     private String grdCompanyId;
 
+    @Value("${abt.company.dc.id}")
+    private String dcCompanyId;
+
     private Map<String, CustomerInfo> companyMap = new HashMap<>();
-
-
 
     public CompanyConfig(CustomerInfoRepository customerInfoRepository) {
         this.customerInfoRepository = customerInfoRepository;
@@ -54,8 +56,18 @@ public class CompanyConfig {
     }
 
     @Bean
+    @Order(2)
+    public CustomerInfo dcCompany() {
+        final CustomerInfo grd = customerInfoRepository.findById(dcCompanyId).orElse(new CustomerInfo().setCustomerName("陕西道常能源技术有限公司"));
+        companyMap.put(grdCompanyId, grd);
+        return grd;
+    }
+
+    @Bean
     @Order(100)
     public Map<String, CustomerInfo> companyMap() {
         return this.companyMap;
     }
+
+
 }

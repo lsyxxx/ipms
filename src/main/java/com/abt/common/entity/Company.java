@@ -10,13 +10,25 @@ import lombok.ToString;
  * 三级公司：一级->二级->三级
  */
 @Data
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-public class Company extends AuditInfo {
+public class Company {
 
     private String id;
+    /**
+     * 常用名称，如阿伯塔
+     */
     private String name;
+    /**
+     * 代码，如ABT
+     */
     private String code;
+    /**
+     * 简写代码，如A
+     */
+    private String shortCode;
+    /**
+     * 全称
+     */
+    private String fullName;
     /**
      * 上级公司id
      */

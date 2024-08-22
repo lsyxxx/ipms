@@ -89,4 +89,9 @@ public class OAConstants {
      * 野外作业部门-西南项目部(成都  )
      */
     public static final String FIELD_DEPT_C = "e5b9f524-485b-496f-9786-8a92a1a9ad2c";
+
+
+    public static final String COMPANY_A = "A";
+    public static final String COMPANY_G = "G";
+    public static final String COMPANY_D = "D";
 }

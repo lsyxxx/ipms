@@ -1,4 +1,4 @@
-package com.abt.common.service.impl;
+package com.abt.common.service;
 
 public interface CommonJpaAudit {
 

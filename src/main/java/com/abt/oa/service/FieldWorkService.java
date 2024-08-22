@@ -88,7 +88,12 @@ public interface FieldWorkService {
      * @param end 结束日期
      * @param all 所有野外考勤记录
      */
-    Table createStatData(LocalDate start, LocalDate end, List<FieldWork> all);
+    Table createStatData(String yearMonth, LocalDate start, LocalDate end, List<FieldWork> all);
 
     List<FieldWork> findAtdByUserInfo(String jobNumber, String dept, String company, LocalDate start, LocalDate end);
+
+    /**
+     * 导出excel
+     */
+    void writeExcel(Table table);
 }

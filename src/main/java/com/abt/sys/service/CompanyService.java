@@ -9,9 +9,6 @@ import org.springframework.data.domain.Page;
 
 public interface CompanyService {
 
-    List<Company> userCompany();
-
-
     /**
      * 查询所有客户
      * @param form

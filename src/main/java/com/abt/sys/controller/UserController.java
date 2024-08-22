@@ -25,13 +25,19 @@ import java.util.List;
 @Slf4j
 public class UserController{
     private final UserService<UserView, User> sqlServerUserService;
-    private final CompanyService companyService;
     private final EmployeeService employeeService;
+    private final Company ABT;
+    private final Company GRD;
+    private final Company DC;
 
-    public UserController(@Qualifier("sqlServerUserService") UserService<UserView, User> sqlServerUserService, CompanyService companyService, EmployeeService employeeService) {
+    public UserController(@Qualifier("sqlServerUserService") UserService<UserView, User> sqlServerUserService,
+                          EmployeeService employeeService,
+                          Company ABT, Company GRD, Company DC) {
         this.sqlServerUserService = sqlServerUserService;
-        this.companyService = companyService;
         this.employeeService = employeeService;
+        this.ABT = ABT;
+        this.GRD = GRD;
+        this.DC = DC;
     }
 
     @GetMapping("/all/simple")
@@ -48,7 +54,7 @@ public class UserController{
 
     @GetMapping("/com")
     public R<List<Company>> getAllCompany() {
-        final List<Company> allCompany = companyService.userCompany();
+        final List<Company> allCompany = List.of(ABT, GRD, DC);
         return R.success(allCompany, allCompany.size());
     }
 

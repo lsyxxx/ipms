@@ -21,7 +21,6 @@ class FieldWorkRepositoryTest {
     @Autowired
     private FieldWorkRepository fieldWorkRepository;
 
-
     @Test
     void find() {
     }

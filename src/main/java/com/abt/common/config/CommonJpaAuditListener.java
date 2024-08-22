@@ -1,7 +1,7 @@
 package com.abt.common.config;
 
 import com.abt.common.model.User;
-import com.abt.common.service.impl.CommonJpaAudit;
+import com.abt.common.service.CommonJpaAudit;
 import com.abt.sys.repository.UserRepository;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;

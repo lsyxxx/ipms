@@ -275,7 +275,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         form.setUserid(user.getId());
         form.setLimit(999);
         final List<String> ids = list.stream().map(Announcement::getId).toList();
-        announcementAttachmentRepository.deleteAllByAnnouncementIds(ids);
+        announcementAttachmentRepository.deleteAllByAnnouncementIdsAndApplyUserId(ids, user.getId());
         addAttachments(user.getId(), user.getName(), list);
         return list.size();
     }

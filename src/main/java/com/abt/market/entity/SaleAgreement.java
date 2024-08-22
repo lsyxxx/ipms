@@ -3,7 +3,7 @@ package com.abt.market.entity;
 import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
-import com.abt.common.service.impl.CommonJpaAudit;
+import com.abt.common.service.CommonJpaAudit;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 
 import static com.abt.market.Constant.DEFAULT_TAX;

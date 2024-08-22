@@ -17,6 +17,10 @@ public class Table {
     private List<Row> rows = new ArrayList<>();
     private int month;
     private String company;
+    /**
+     * yyy-MM格式
+     */
+    private String yearMonth;
 
     private List<String> headers;
 

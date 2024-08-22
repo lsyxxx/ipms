@@ -14,16 +14,16 @@ import com.abt.oa.model.FieldWorkBoard;
 import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.service.FieldWorkService;
 import com.abt.oa.service.SettingService;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.DataPrivilegeRule;
 import com.abt.sys.model.entity.EmployeeInfo;
-import com.abt.sys.model.entity.Role;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.PermissionService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +33,6 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 野外相关
@@ -276,7 +275,6 @@ public class FieldController {
         final LocalDate start = LocalDate.of(year, monthValue, Integer.parseInt(startDay)).minusMonths(1);
         final LocalDate end = LocalDate.of(year, monthValue, Integer.parseInt(endDay));
 
-        //TODO: 获取用户权限
         UserView user = TokenUtil.getUserFromAuthToken();
         final EmployeeInfo emp = employeeService.findByJobNumber(user.getEmpnum());
 
@@ -294,13 +292,23 @@ public class FieldController {
             }
         }
         records = fieldWorkService.findAtdByUserInfo(null, dept, company, start, end);
-        final Table table = fieldWorkService.createStatData(start, end, records);
+        final Table table = fieldWorkService.createStatData(yearMonth, start, end, records);
         request.getSession().setAttribute(SESSION_FW_MGR_TABLE, table);
         return R.success(table, "生成数据成功!");
     }
 
-    public void getFieldWorkDepts() {
-
+    @GetMapping("/stat/export")
+    public void exportExcel(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        if (session == null) {
+            throw new BusinessException("Session超时，请重新生成数据");
+        }
+        Object attribute = session.getAttribute(SESSION_FW_MGR_TABLE);
+        if (attribute == null) {
+            throw new BusinessException("请先生成考勤数据再导出");
+        }
+        Table table = (Table) attribute;
+        fieldWorkService.writeExcel(table);
     }
 
 
