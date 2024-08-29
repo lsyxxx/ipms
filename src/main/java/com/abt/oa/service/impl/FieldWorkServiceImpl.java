@@ -23,14 +23,6 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.enums.WriteDirectionEnum;
-import com.alibaba.excel.write.metadata.WriteSheet;
-import com.alibaba.excel.write.metadata.fill.FillConfig;
-import com.alibaba.excel.write.metadata.style.WriteCellStyle;
-import com.alibaba.excel.write.metadata.style.WriteFont;
-import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -71,11 +60,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final Company ABT;
     private final Company GRD;
     private final Company DC;
-
-    @Setter
-    @Getter
-    @Value("${abt.fw.excel.model}")
-    private String fieldWorkExcelTemplate;
 
     @Setter
     @Getter
@@ -541,7 +525,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     public Table createStatData(String yearMonth, LocalDate start, LocalDate end, List<FieldWork> all) {
         long t1 = System.currentTimeMillis();
         //查询记录（已审批通过的）
-
         final List<FieldWork> records = all.stream().filter(FieldWork::isPass).toList();
         List<CalendarEvent> allEvents = new ArrayList<>();
         final List<FieldWorkAttendanceSetting> settings = findLatestSettings();
@@ -638,7 +621,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         long t2 = System.currentTimeMillis();
         List<String> header = this.createStatHeader(start, end, allEvents);
         table.setHeaders(header);
-        System.out.printf("createStatData耗时:%d (ms), 统计%d人数据\n", (t2-t1), groupByUser.size());
+        log.info("createStatData耗时:{} (ms), 统计{}人数据\n", (t2-t1), groupByUser.size());
         table.setYearMonth(yearMonth);
         return table;
     }
@@ -734,59 +717,53 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         //生成excel文件名:
         String fileName = String.format("%s考勤表", table.getYearMonth());
         String createFile = this.getFiledWorkExcelCreatePath() + fileName;
-        String template = this.getFieldWorkExcelTemplate();
 
-        Map<String, String> fillMap = new HashMap<>();
-        fillMap.put("yearMonth", table.getYearMonth());
-        //设置内容样式
-        WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
-        WriteFont contentWriteFont = new WriteFont();
-        contentWriteFont.setFontHeightInPoints((short)9);
-        contentWriteCellStyle.setWriteFont(contentWriteFont);
-        HorizontalCellStyleStrategy horizontalCellStyleStrategy = new HorizontalCellStyleStrategy(new WriteCellStyle(), contentWriteCellStyle);
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("yearMonth", table.getYearMonth());
+        String companyCode = convertCompany(table.getCompany());
+        if (StringUtils.isBlank(table.getCompany())) {
+            //查询的是全部
 
-        final Map<String, List<Row>> groupByCompany = table.getRows().stream().collect(Collectors.groupingBy(Row::getCompany));
-        for (Map.Entry<String, List<Row>> entry : groupByCompany.entrySet()) {
-            String company = entry.getKey();
-            FillConfig fillConfig = FillConfig.builder().direction(WriteDirectionEnum.HORIZONTAL).build();
-            try (ExcelWriter excelWriter = EasyExcel.write(createFile)
-                    .withTemplate(template)
-                    .registerWriteHandler(horizontalCellStyleStrategy)
-                    .needHead(false).build()){
-                int sheetNo = 0;
-                String sheetName;
-                if (ABT.getShortCode().equals(company)) {
-                    sheetName = ABT.getCode();
-                } else if (GRD.getShortCode().equals(company)) {
-                    sheetNo = 1;
-                    sheetName = GRD.getCode();
-                } else if (DC.getShortCode().equals(company)) {
-                    sheetNo = 2;
-                    sheetName = DC.getCode();
-                } else {
-                    log.error("未知的员工归属: {}", company);
-                    throw new BusinessException("导出Excel失败!原因: 未知的员工归属: " + company +", 请配置正确的归属后再次尝试导出");
-                }
+        } else {
+            //header
+//            dataModel.put(companyCode + "SummaryHeader", table.getHeaders());
+//            //short header
+//            dataModel.put(companyCode + "SummaryHeaderShort", shortHeaders);
+//            //数据
+//            dataModel.put(companyCode + "List", table.getRows());
 
-                //获取统计列表头
-                List<Row> data = entry.getValue();
-                System.out.printf("公司%s有%d行数据%n", company, data.size());
-                List<Cell> all = new ArrayList<>();
-                data.forEach(r -> all.addAll(r.getCells()));
-                final List<String> summaryHeader = all.stream().filter(Cell::isSummaryColumn).distinct().map(Cell::getColumnName).toList();
-                System.out.println(sheetName + "表头: " + summaryHeader);
-                //转换数据格式
-                final List<Map<String, String>> mapRows = data.stream().flatMap(row -> row.getCells().stream()).map(this::convertExcelData).toList();
-                mapRows.forEach(m -> {
-                    m.values().forEach(v -> System.out.printf("%s, ", v));
-                });
-                WriteSheet writeSheet = EasyExcel.writerSheet(sheetNo, sheetName).build();
-                excelWriter.fill(summaryHeader, fillConfig, writeSheet);
-                excelWriter.fill(fillMap, writeSheet);
-                excelWriter.write(mapRows, writeSheet);
-
-            }
         }
+
+
+        //--- 生成excel
+        dataModel.put("ABTSummaryHeader", table.getHeaders());
+        final List<FieldWorkAttendanceSetting> settings = this.findLatestSettings();
+        List<String> shortHeaders = table.getHeaders().stream()
+                .map(header -> settings.stream()
+                        .filter(setting -> setting.getName().equals(header))
+                        .map(FieldWorkAttendanceSetting::getShortName)
+                        .findFirst()
+                        .orElse(header))
+                .toList();
+        dataModel.put("ABTSummaryHeaderShort", shortHeaders);
+
+
+
+    }
+
+    private String convertCompany(String shortCompany) {
+        if (StringUtils.isBlank(shortCompany)) {
+            return shortCompany;
+        }
+        List<Company> companies = List.of(ABT, GRD, DC);
+        if (shortCompany.equals(ABT.getShortCode())) {
+            return ABT.getCode();
+        } else if (shortCompany.equals(GRD.getShortCode())) {
+            return GRD.getCode();
+        } else if (shortCompany.equals(DC.getShortCode())) {
+            return DC.getCode();
+        }
+        return shortCompany;
     }
 
     /**

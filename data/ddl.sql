@@ -107,94 +107,10 @@ INSERT INTO [dbo].[T_SystemSetting] ([Id], [ftypeid], [Fvalue]) VALUES ('wot_dea
 INSERT INTO [dbo].[T_SystemSetting] ([Id], [ftypeid], [Fvalue]) VALUES ('attendance_start', '月考勤开始日期(包含)', '26');
 INSERT INTO [dbo].[T_SystemSetting] ([Id], [ftypeid], [Fvalue]) VALUES ('attendance_end', '月考勤结束日期(包含)', '25');
 
+-- 添加野外考勤-组件类型
+INSERT INTO [dbo].[CategoryType] ([Id], [Name], [CreateTime]) VALUES ('FieldWork_ComponentType', N'野外考勤-组件类型', '2024-07-26 11:50:17.030');
 
--- 野外考勤补贴项目
-
--- ----------------------------
--- Records of fw_atd_setting
--- ----------------------------
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'1', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'流体', N'30.00', N'流体2人作业负责人', N'180.00', N'1', N'background-color:#C5D9F1;', N'210.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'10', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'科研项目', N'30.00', N'科研项目2人作业负责人', N'170.00', N'10', N'background-color:#E6B8B7;', N'200.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'11', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'科研项目', N'30.00', N'科研项目2人作业组员', N'140.00', N'11', N'background-color:#E6B8B7;', N'170.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'12', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'科研项目', N'30.00', N'科研项目1人作业', N'180.00', N'12', N'background-color:#E6B8B7;', N'210.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'13', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'解析', N'30.00', N'解吸2人作业负责人', N'170.00', N'13', N'background-color:#B7DEE8;', N'200.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'14', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'解析', N'30.00', N'解吸2人作业组员', N'140.00', N'14', N'background-color:#B7DEE8;', N'170.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'15', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'解析', N'30.00', N'解吸1人作业', N'180.00', N'15', N'background-color:#B7DEE8;', N'210.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'16', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心扫描(小于40米)', N'30.00', N'岩心扫描负责人(小于40米)', N'120.00', N'16', N'background-color:#CCC0DA;', N'150.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'17', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心扫描(小于40米)', N'30.00', N'岩心扫描组员(小于40米)', N'90.00', N'17', N'background-color:#CCC0DA;', N'120.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'18', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心扫描(40-50米)', N'30.00', N'岩心扫描负责人(40-50米)', N'180.00', N'18', N'background-color:#FCD5B4;', N'210.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'19', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心扫描(40-50米)', N'30.00', N'岩心扫描组员(40-50米)', N'150.00', N'19', N'background-color:#FCD5B4;', N'180.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'2', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'流体', N'30.00', N'流体2人作业组员', N'150.00', N'2', N'background-color:#C5D9F1;', N'180.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'20', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心扫描(51-60米)', N'30.00', N'岩心扫描负责人(51-60米)', N'200.00', N'20', N'background-color:#EBF1DE;', N'230.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'21', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心扫描(51-60米)', N'30.00', N'岩心扫描组员(51-60米)', N'170.00', N'21', N'background-color:#EBF1DE;', N'200.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'22', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'其他', N'30.00', N'其他野外工作', N'170.00', N'22', N'background-color:#F79646;', N'200.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'23', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'其他', N'30.00', N'办理业务或室内工作', N'70.00', N'23', N'background-color:#FCD5B4;', N'100.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'24', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'其他', N'30.00', N'兼职司机人员接送或物资现场配合', N'170.00', N'24', N'background-color:#C5D9F1;', N'200.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'25', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'其他', N'0.00', N'兼职司机出勤', N'15.00', N'25', N'background-color:#92D050;', N'15.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'26', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'其他', N'30.00', N'基地调休', N'0.00', N'26', N'background-color:#00B050;', N'30.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'27', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', N'首创食堂就餐无餐补', N'0', N'西安', N'0.00', N'西安（首创）', N'5.00', N'27', NULL, N'5.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'28', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'西安', N'30.00', N'西安（草滩）', N'5.00', N'28', NULL, N'35.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'3', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'流体', N'30.00', N'流体1人作业', N'180.00', N'3', N'background-color:#C5D9F1;', N'210.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'4', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心', N'30.00', N'岩心2人作业负责人', N'180.00', N'4', N'background-color:#FCD5B4;', N'210.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'5', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心', N'30.00', N'岩心2人作业组员', N'150.00', N'5', N'background-color:#FCD5B4;', N'180.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'6', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'岩心', N'30.00', N'岩心1人作业', N'180.00', N'6', N'background-color:#FCD5B4;', N'210.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'7', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'压裂', N'30.00', N'压裂2人作业负责人', N'170.00', N'7', N'background-color:#F2DCDB;', N'200.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'8', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'压裂', N'30.00', N'压裂2人作业组员', N'150.00', N'8', N'background-color:#F2DCDB;', N'180.00', N'元/天/人')
-GO
-
-INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_]) VALUES (N'9', N'2024-07-26 11:25:59.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'2024-07-26 11:26:23.000000', N'621faa40-f45c-4da8-9a8f-65b0c5353f40', N'刘宋菀', N'1', NULL, N'0', N'压裂', N'30.00', N'压裂1人作业', N'150.00', N'9', N'background-color:#F2DCDB;', N'180.00', N'元/天/人')
-GO
-
+-- 野外考勤-组件类型-单选/多选
+INSERT INTO [ZJData].[dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [SortNo], [Description], [TypeId], [CreateTime], [CreateUserId], [CreateUserName], [UpdateTime], [UpdateUserId], [UpdateUserName]) VALUES ('c8c86cf5-45e4-4296-93cb-0aa81d08191b', '单选', 'fw_radio', '1', '1', 0, '单选', 'FieldWork_ComponentType', '2024-07-26 11:50:40.0517350', '00000000-0000-0000-0000-000000000000', '超级管理员', '2024-07-26 11:50:40.0514570', '', '');
+INSERT INTO [ZJData].[dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [SortNo], [Description], [TypeId], [CreateTime], [CreateUserId], [CreateUserName], [UpdateTime], [UpdateUserId], [UpdateUserName]) VALUES ('e840ac08-ec25-42de-9f7f-1c287768248b', '多选', 'fw_checkbox', '2', '1', 1, '多选', 'FieldWork_ComponentType', '2024-07-26 11:50:55.0797642', '00000000-0000-0000-0000-000000000000', '超级管理员', '2024-07-26 11:50:55.0797627', '', '');
 

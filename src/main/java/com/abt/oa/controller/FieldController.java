@@ -116,8 +116,6 @@ public class FieldController {
             for (FieldWork e : error) {
                 msg.append(String.format("%s的补贴项目(%s)保存失败!\n", TimeUtil.yyyy_MM_ddString(e.getAttendanceDate()), e.getSingleId()));
             }
-            msg.append("2024-08-09的补贴项目(123)保存失败!\n");
-            msg.append("2024-08-10的补贴项目(111)保存失败!\n");
             return R.warn(null, msg);
         }
         return R.success("保存成功!");
@@ -281,18 +279,17 @@ public class FieldController {
         //判断用户数据权限
         //1. 如果系统中权限配置了，那么可以看到所有
         //2. 当前登录用户没有配置权限，那么当前登录用户只能查看本部门的考勤
-
         final DataPrivilegeRule rules = permissionService.getDataPrivilegeRuleBySourceCode(MGR_BOARD_SOURCE_CODE);
         final boolean hasAuth = rules.checkRule(user);
-        List<FieldWork> records = new ArrayList<>();
         if (!hasAuth) {
             //查看本部门
             if (StringUtils.isBlank(dept)) {
                 dept = emp.getDept();
             }
         }
-        records = fieldWorkService.findAtdByUserInfo(null, dept, company, start, end);
+        List<FieldWork> records = fieldWorkService.findAtdByUserInfo(null, dept, company, start, end);
         final Table table = fieldWorkService.createStatData(yearMonth, start, end, records);
+        table.setCompany(company);
         request.getSession().setAttribute(SESSION_FW_MGR_TABLE, table);
         return R.success(table, "生成数据成功!");
     }

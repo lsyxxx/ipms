@@ -192,9 +192,11 @@
    </Row>
    <Row ss:AutoFitHeight="0" ss:Height="129" ss:StyleID="s16">
     <Cell ss:MergeAcross="32" ss:StyleID="m1918219761204"><Data ss:Type="String">考勤表</Data></Cell>
-        <#list ABTSummaryHeader as header>
-		<Cell ss:StyleID="s19"><Data ss:Type="String">${header}</Data></Cell>
-	</#list>
+    <#if ABTSummaryHeader?? && ABTSummaryHeader?has_content>
+     <#list ABTSummaryHeader as header>
+         <Cell ss:StyleID="s19"><Data ss:Type="String">${header}</Data></Cell>
+     </#list>
+    </#if>
     <Cell ss:StyleID="s19"/>
     <Cell ss:StyleID="s19"/>
     <Cell ss:StyleID="s19"/>
@@ -317,256 +319,113 @@
     <Cell ss:StyleID="s18"><Data ss:Type="Number">23</Data></Cell>
     <Cell ss:StyleID="s18"><Data ss:Type="Number">24</Data></Cell>
     <Cell ss:StyleID="s18"><Data ss:Type="Number">25</Data></Cell>
-    <#list ABTSummaryHeaderShort as shortHeader>
-		<Cell ss:StyleID="s19"><Data ss:Type="String">${shortHeader}</Data></Cell>
-	</#list>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-   </Row>
-   <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s20">
-    <Cell ss:StyleID="s31"><Data ss:Type="Number">0</Data></Cell>
-    <Cell ss:StyleID="s32"><Data ss:Type="String">测试行</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">LT1</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">LT2</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">室内</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">JX1</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-   </Row>
-   <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s20">
-    <Cell ss:StyleID="s31"><Data ss:Type="Number">1</Data></Cell>
-    <Cell ss:StyleID="s32"><Data ss:Type="String">两字</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">KY1</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">KY2</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">司补</Data></Cell>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-   </Row>
-   <#list ABTList as row>
-    <Row ss:AutoFitHeight="0" ss:Height="26.5" ss:StyleID="s20">
-     <#list row as cell>
-      <#if cell_index = 1>
-       <Cell ss:StyleID="s31"><Data ss:Type="String">${cell}</Data></Cell>
-      <#elseif cell_index = 2>
-       <Cell ss:StyleID="s32"><Data ss:Type="String">${cell}</Data></Cell>
-      <#else>
-       <Cell ss:StyleID="s33"><Data ss:Type="String">${cell}</Data></Cell>
-      </#if>
+    <#if ABTSummaryHeaderShort?? && ABTSummaryHeaderShort?has_content>
+     <#list ABTSummaryHeaderShort as shortHeader>
+         <Cell ss:StyleID="s18"><Data ss:Type="String">${shortHeader}</Data></Cell>
      </#list>
-    </Row>
-   </#list>
-   
+    </#if>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+   </Row>
+   <#if ABTList?? && ABTList?has_content>
+    <#list ABTList as row>
+     <Row ss:AutoFitHeight="0" ss:Height="26.5" ss:StyleID="s20">
+      <#list row as cell>
+       <#if cell_index = 1>
+        <Cell ss:StyleID="s31"><Data ss:Type="String">${cell}</Data></Cell>
+       <#elseif cell_index = 2>
+        <Cell ss:StyleID="s32"><Data ss:Type="String">${cell}</Data></Cell>
+       <#else>
+        <Cell ss:StyleID="s33"><Data ss:Type="String">${cell}</Data></Cell>
+       </#if>
+      </#list>
+     </Row>
+    </#list>
+   </#if>
    <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s20">
     <Cell ss:StyleID="s31"/>
     <Cell ss:StyleID="s32"/>
@@ -3601,9 +3460,11 @@
    </Row>
    <Row ss:AutoFitHeight="0" ss:Height="129" ss:StyleID="s16">
     <Cell ss:MergeAcross="32" ss:StyleID="m1918219755828"><Data ss:Type="String">考勤表</Data></Cell>
-    <#list GRDSummaryHeader as header>
-     <Cell ss:StyleID="s19"><Data ss:Type="String">${header}</Data></Cell>
-    </#list>
+    <#if GRDSummaryHeader?? && GRDSummaryHeader?has_content>
+     <#list GRDSummaryHeader as header>
+      <Cell ss:StyleID="s19"><Data ss:Type="String">${header}</Data></Cell>
+     </#list>
+    </#if>
     <Cell ss:StyleID="s19"/>
     <Cell ss:StyleID="s19"/>
     <Cell ss:StyleID="s19"/>
@@ -3726,9 +3587,11 @@
     <Cell ss:StyleID="s18"><Data ss:Type="Number">23</Data></Cell>
     <Cell ss:StyleID="s18"><Data ss:Type="Number">24</Data></Cell>
     <Cell ss:StyleID="s18"><Data ss:Type="Number">25</Data></Cell>
-    <#list GRDSummaryHeaderShort as shortHeader>
-     <Cell ss:StyleID="s19"><Data ss:Type="String">${shortHeader}</Data></Cell>
-    </#list>
+    <#if GRDSummaryHeaderShort?? && GRDSummaryHeaderShort?has_content>
+     <#list GRDSummaryHeaderShort as shortHeader>
+      <Cell ss:StyleID="s19"><Data ss:Type="String">${shortHeader}</Data></Cell>
+     </#list>
+    </#if>
     <Cell ss:StyleID="s19"/>
     <Cell ss:StyleID="s19"/>
     <Cell ss:StyleID="s19"/>
@@ -3962,19 +3825,21 @@
     <Cell ss:StyleID="s34"/>
     <Cell ss:StyleID="s34"/>
    </Row>
-   <#list GRDList as row>
-    <Row ss:AutoFitHeight="0" ss:Height="26.5" ss:StyleID="s20">
-     <#list row as cell>
-      <#if cell_index = 1>
-       <Cell ss:StyleID="s31"><Data ss:Type="String">${cell}</Data></Cell>
-      <#elseif cell_index = 2>
-       <Cell ss:StyleID="s32"><Data ss:Type="String">${cell}</Data></Cell>
-      <#else>
-       <Cell ss:StyleID="s33"><Data ss:Type="String">${cell}</Data></Cell>
-      </#if>
-     </#list>
-    </Row>
-   </#list>
+   <#if GRDList?? && GRDList?has_content>
+    <#list GRDList as row>
+     <Row ss:AutoFitHeight="0" ss:Height="26.5" ss:StyleID="s20">
+      <#list row as cell>
+       <#if cell_index = 1>
+        <Cell ss:StyleID="s31"><Data ss:Type="String">${cell}</Data></Cell>
+       <#elseif cell_index = 2>
+        <Cell ss:StyleID="s32"><Data ss:Type="String">${cell}</Data></Cell>
+       <#else>
+        <Cell ss:StyleID="s33"><Data ss:Type="String">${cell}</Data></Cell>
+       </#if>
+      </#list>
+     </Row>
+    </#list>
+   </#if>
    <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s20">
     <Cell ss:StyleID="s31"/>
     <Cell ss:StyleID="s32"/>
@@ -7008,9 +6873,11 @@
    </Row>
    <Row ss:AutoFitHeight="0" ss:Height="129" ss:StyleID="s16">
     <Cell ss:MergeAcross="32" ss:StyleID="m1918219761876"><Data ss:Type="String">考勤表</Data></Cell>
-    <#list DCSummaryHeader as header>
-     <Cell ss:StyleID="s19"><Data ss:Type="String">${header}</Data></Cell>
-    </#list>
+    <#if DCSummaryHeader?? && DCSummaryHeader?has_content>
+     <#list DCSummaryHeader as header>
+      <Cell ss:StyleID="s19"><Data ss:Type="String">${header}</Data></Cell>
+     </#list>
+    </#if>
     <Cell ss:StyleID="s19"/>
     <Cell ss:StyleID="s19"/>
     <Cell ss:StyleID="s19"/>
@@ -7133,256 +7000,113 @@
     <Cell ss:StyleID="s18"><Data ss:Type="Number">23</Data></Cell>
     <Cell ss:StyleID="s18"><Data ss:Type="Number">24</Data></Cell>
     <Cell ss:StyleID="s18"><Data ss:Type="Number">25</Data></Cell>
-    <#list DCSummaryHeaderShort as shortHeader>
-     <Cell ss:StyleID="s19"><Data ss:Type="String">${shortHeader}</Data></Cell>
-    </#list>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-    <Cell ss:StyleID="s19"/>
-   </Row>
-   <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s20">
-    <Cell ss:StyleID="s31"><Data ss:Type="Number">0</Data></Cell>
-    <Cell ss:StyleID="s32"><Data ss:Type="String">测试行</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">LT1</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">LT2</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">室内</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">JX1</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-   </Row>
-   <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s20">
-    <Cell ss:StyleID="s31"><Data ss:Type="Number">1</Data></Cell>
-    <Cell ss:StyleID="s32"><Data ss:Type="String">两字</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">KY1</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">KY2</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">司补</Data></Cell>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"><Data ss:Type="String">YW</Data></Cell>
-    <Cell ss:StyleID="s33"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-    <Cell ss:StyleID="s34"/>
-   </Row>
-   <#list DCList as row>
-    <Row ss:AutoFitHeight="0" ss:Height="26.5" ss:StyleID="s20">
-     <#list row as cell>
-      <#if cell_index = 1>
-       <Cell ss:StyleID="s31"><Data ss:Type="String">${cell}</Data></Cell>
-      <#elseif cell_index = 2>
-       <Cell ss:StyleID="s32"><Data ss:Type="String">${cell}</Data></Cell>
-      <#else>
-       <Cell ss:StyleID="s33"><Data ss:Type="String">${cell}</Data></Cell>
-      </#if>
+    <#if DCSummaryHeaderShort?? && DCSummaryHeaderShort?has_content>
+     <#list DCSummaryHeaderShort as shortHeader>
+      <Cell ss:StyleID="s19"><Data ss:Type="String">${shortHeader}</Data></Cell>
      </#list>
-    </Row>
-   </#list>
-
+    </#if>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+    <Cell ss:StyleID="s19"/>
+   </Row>
+   <#if DCList?? && DCList?has_content>
+    <#list DCList as row>
+     <Row ss:AutoFitHeight="0" ss:Height="26.5" ss:StyleID="s20">
+      <#list row as cell>
+       <#if cell_index = 1>
+        <Cell ss:StyleID="s31"><Data ss:Type="String">${cell}</Data></Cell>
+       <#elseif cell_index = 2>
+        <Cell ss:StyleID="s32"><Data ss:Type="String">${cell}</Data></Cell>
+       <#else>
+        <Cell ss:StyleID="s33"><Data ss:Type="String">${cell}</Data></Cell>
+       </#if>
+      </#list>
+     </Row>
+    </#list>
+   </#if>
    <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s20">
     <Cell ss:StyleID="s31"/>
     <Cell ss:StyleID="s32"/>

@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.naming.AuthenticationNotSupportedException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -64,7 +65,7 @@ public class DataPrivilegeRule implements WithQuery<DataPrivilegeRule> {
 
     @NotNull
     @Column(name = "CreateTime", nullable = false)
-    private Instant createTime;
+    private LocalDateTime createTime;
 
     @Size(max = 50)
     @NotNull
@@ -77,7 +78,7 @@ public class DataPrivilegeRule implements WithQuery<DataPrivilegeRule> {
     private String createUserName;
 
     @Column(name = "UpdateTime")
-    private Instant updateTime;
+    private LocalDateTime updateTime;
 
     @Size(max = 50)
     @Column(name = "UpdateUserId", length = 50)
