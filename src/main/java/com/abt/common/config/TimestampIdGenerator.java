@@ -12,4 +12,5 @@ public class TimestampIdGenerator implements IdentifierGenerator {
     public Object generate(SharedSessionContractImplementor session, Object object) {
         return TimeUtil.idGenerator();
     }
+
 }

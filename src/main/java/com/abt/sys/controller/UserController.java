@@ -10,6 +10,7 @@ import com.abt.sys.service.CompanyService;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import com.abt.common.model.R;
@@ -76,4 +77,14 @@ public class UserController{
         final EmployeeInfo employee = employeeService.findUserByUserid(userid);
         return R.success(employee);
     }
+
+    @GetMapping("/basic")
+    public R<EmployeeInfo> findBasicUserInfo(@RequestParam(required = false) String userid) {
+        if (StringUtils.isBlank(userid)) {
+            userid = TokenUtil.getUseridFromAuthToken();
+        }
+        final EmployeeInfo employee = employeeService.findUserByUserid(userid);
+        return R.success(employee);
+    }
+
 }

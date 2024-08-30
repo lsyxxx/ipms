@@ -1,6 +1,7 @@
 package com.abt.sys.service.impl;
 
 import com.abt.common.exception.MissingRequiredParameterException;
+import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.service.EmployeeService;
@@ -42,6 +43,20 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new MissingRequiredParameterException("员工id");
         }
         return WithQueryUtil.build(employeeRepository.findOneByUserid(userid));
+    }
+
+
+    @Override
+    public User findBasicUserInfoByUserid(String userid) {
+        EmployeeInfo employeeInfo = findUserByUserid(userid);
+        User user = new User();
+        user.setId(employeeInfo.getUserid());
+        user.setEmployeeId(employeeInfo.getId());
+        user.setUsername(employeeInfo.getName());
+        user.setDeptId(employeeInfo.getDept());
+        user.setDeptName(employeeInfo.getDeptName());
+        user.setCode(employeeInfo.getJobNumber());
+        return user;
     }
 
 
