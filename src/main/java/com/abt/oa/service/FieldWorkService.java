@@ -96,4 +96,6 @@ public interface FieldWorkService {
      * 导出excel
      */
     void writeExcel(Table table);
+
+    FieldWork detail(String id);
 }

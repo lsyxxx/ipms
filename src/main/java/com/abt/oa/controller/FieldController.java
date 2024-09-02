@@ -308,6 +308,12 @@ public class FieldController {
         fieldWorkService.writeExcel(table);
     }
 
+    @GetMapping("/dtl")
+    public R<FieldWork> detail(String id) {
+        final FieldWork detail = fieldWorkService.detail(id);
+        return R.success(detail);
+    }
+
 
 
 

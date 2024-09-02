@@ -773,4 +773,10 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return Map.of(cell.getColumnName(), cell.getValueStr());
     }
 
+
+    @Override
+    public FieldWork detail(String id) {
+        return WithQueryUtil.build(fieldWorkRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到考勤记录(id=" + id + ")")));
+    }
+
 }
