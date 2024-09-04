@@ -8,8 +8,11 @@ import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.oa.AttendanceUtil;
+import com.abt.oa.OAConstants;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
+import com.abt.oa.model.FieldConfirmRequestForm;
+import com.abt.oa.model.FieldConfirmResult;
 import com.abt.oa.model.FieldWorkBoard;
 import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.service.FieldWorkService;
@@ -31,7 +34,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -103,6 +105,7 @@ public class FieldController {
      */
     @PostMapping("/add")
     public R<Object> add(@Validated(value = {ValidateGroup.Save.class})  @RequestBody FieldWork work) {
+        work.setConfirm(false);
         fieldWorkService.saveFieldWork(work);
         return R.success("提交成功");
     }
@@ -174,6 +177,7 @@ public class FieldController {
     public R<List<FieldWork>> findAtdRecord(@ModelAttribute FieldWorkRequestForm form) {
         final UserView user = TokenUtil.getUserFromAuthToken();
         form.setUserid(user.getId());
+
         final Page<FieldWork> page = fieldWorkService.findAtdRecord(form);
         return R.success(page.getContent(), (int)page.getTotalElements());
     }
@@ -245,6 +249,7 @@ public class FieldController {
 
     @GetMapping("/withdraw")
     public R<Object> withdrawRecord(String id) {
+        //TODO: 确认过考勤不可修改
         fieldWorkService.withdraw(id, TokenUtil.getUseridFromAuthToken());
         return R.success("撤销成功!");
     }
@@ -314,6 +319,39 @@ public class FieldController {
         return R.success(detail);
     }
 
+    /**
+     * 确认月考勤，以月为单位
+     */
+    @PostMapping("/confirm/do")
+    public R<String> confirmRecords(@RequestBody FieldConfirmRequestForm form) {
+        if (StringUtils.isBlank(form.getUserid())) {
+            form.setUserid(TokenUtil.getUseridFromAuthToken());
+        }
+        final int confirm = fieldWorkService.confirm(form.getUserid(), form.getIds());
+        return R.success(String.format("已确认%d条考勤数据", confirm));
+    }
+
+    @PostMapping("/confirm/stat")
+    public R<FieldConfirmResult> getConfirmRecords(@RequestBody FieldWorkRequestForm form) {
+        if (StringUtils.isNotBlank(form.getYearMonth())) {
+            //选择考勤月的起止日期
+            String startDay = settingService.getAttendanceStartDay().getFvalue();
+            String endDay = settingService.getAttendanceEndDay().getFvalue();
+            final YearMonth yearMonth = TimeUtil.toYearMonth(form.getYearMonth());
+            final YearMonth startMonth = yearMonth.minusMonths(1);
+            LocalDate startDate = LocalDate.of(startMonth.getYear(), startMonth.getMonth(), Integer.parseInt(startDay));
+            LocalDate endDate = LocalDate.of(yearMonth.getYear(), yearMonth.getMonth(), Integer.parseInt(endDay));
+            form.setStartDate(TimeUtil.yyyy_MM_ddString(startDate));
+            form.setEndDate(TimeUtil.yyyy_MM_ddString(endDate));
+        }
+        if (StringUtils.isBlank(form.getUserid())) {
+            form.setUserid(TokenUtil.getUseridFromAuthToken());
+        }
+        form.setLimit(9999);
+        form.setState(OAConstants.FW_PASS);
+        final FieldConfirmResult stat = fieldWorkService.getConfirmStat(form);
+        return R.success(stat);
+    }
 
 
 

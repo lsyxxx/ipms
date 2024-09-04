@@ -141,6 +141,18 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
     @Transient
     private List<String> itemNames;
 
+    /**
+     * 是否确认过考勤
+     */
+    @Column(name="is_confirm", columnDefinition = "BIT")
+    private boolean isConfirm = false;
+
+    @Column(name="confirm_date")
+    private LocalDateTime confirmDate;
+
+    @Column(name="confirm_userid", columnDefinition = "VARCHAR(128)")
+    private String confirmUserid;
+
 
 
 
@@ -178,5 +190,13 @@ public class FieldWork extends AuditInfo implements CommonJpaAudit, WithQuery<Fi
     public void addItem(FieldWorkItem fieldWorkItem) {
         this.items = this.getItems() == null ? new ArrayList<FieldWorkItem>() : this.getItems();
         this.items.add(fieldWorkItem);
+    }
+
+
+    public void confirm(String userid) {
+        this.isConfirm = true;
+        setConfirmDate(LocalDateTime.now());
+        setConfirmUserid(userid);
+
     }
 }

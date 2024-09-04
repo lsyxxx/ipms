@@ -12,6 +12,7 @@ import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.entity.FieldWorkItem;
 import com.abt.oa.entity.FrmLeaveReq;
 import com.abt.oa.model.CalendarEvent;
+import com.abt.oa.model.FieldConfirmResult;
 import com.abt.oa.model.FieldWorkBoard;
 import com.abt.oa.model.FieldWorkRequestForm;
 import com.abt.oa.reposity.FieldAttendanceSettingRepository;
@@ -755,7 +756,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         if (StringUtils.isBlank(shortCompany)) {
             return shortCompany;
         }
-        List<Company> companies = List.of(ABT, GRD, DC);
         if (shortCompany.equals(ABT.getShortCode())) {
             return ABT.getCode();
         } else if (shortCompany.equals(GRD.getShortCode())) {
@@ -777,6 +777,49 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Override
     public FieldWork detail(String id) {
         return WithQueryUtil.build(fieldWorkRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到考勤记录(id=" + id + ")")));
+    }
+
+
+    @Override
+    public int confirm(String userid, List<String> ids) {
+        //TODO: 校验userid与考勤人是否一致
+        final List<FieldWork> list = fieldWorkRepository.findAllById(ids);
+        list.forEach(i -> i.confirm(userid));
+        fieldWorkRepository.saveAllAndFlush(list);
+        return list.size();
+    }
+
+    @Override
+    public FieldConfirmResult getConfirmStat(FieldWorkRequestForm form) {
+        FieldConfirmResult result = new FieldConfirmResult();
+        final Page<FieldWork> atdRecord = findAtdRecord(form);
+        List<FieldWork> list = new ArrayList<>(atdRecord.getContent());
+        final Map<LocalDate, List<FieldWork>> map = list.stream().collect(Collectors.groupingBy(FieldWork::getAttendanceDate, Collectors.toList()));
+        LocalDate startDate = TimeUtil.toLocalDate(form.getStartDate());
+        LocalDate endDate = TimeUtil.toLocalDate(form.getEndDate());
+        assert startDate != null;
+        final List<LocalDate> dateList = Stream.iterate(startDate, date -> date.plusDays(1))
+                .limit(ChronoUnit.DAYS.between(startDate, endDate) + 1)
+                .toList();
+        dateList.forEach(d -> {
+            final List<FieldWork> fws = map.get(d);
+            if (fws == null || fws.isEmpty()) {
+                //新增一个
+                FieldWork add = new FieldWork();
+                add.setAttendanceDate(d);
+                list.add(add);
+            }
+        });
+        //重新排序
+        list.sort(Comparator.comparing(FieldWork::getAttendanceDate));
+        result.setRecords(list);
+
+        //-- 统计
+        //合并list
+//        final List<FieldWorkItem> itemList = list.stream().flatMap(fw -> fw.getItems().stream()).toList();
+
+
+        return result;
     }
 
 }

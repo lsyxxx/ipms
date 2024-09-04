@@ -31,7 +31,11 @@ public class SysLogFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("SysLogFilter: URL: {}, IP: {} ", request.getRequestURI(), request.getRemoteAddr());
         try {
-            sysLogService.saveUserRequestLog(request.getRemoteAddr(), request.getRequestURI(), TokenUtil.getUserFromAuthToken().getAccount());
+            String account = "";
+            if (TokenUtil.getUserFromAuthToken() != null) {
+                account = TokenUtil.getUserFromAuthToken().getAccount();
+            }
+            sysLogService.saveUserRequestLog(request.getRemoteAddr(), request.getRequestURI(), account);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         } finally {

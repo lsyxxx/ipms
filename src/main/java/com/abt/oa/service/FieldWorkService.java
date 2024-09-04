@@ -4,6 +4,7 @@ import com.abt.common.model.Table;
 import com.abt.common.model.User;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
+import com.abt.oa.model.FieldConfirmResult;
 import com.abt.oa.model.FieldWorkBoard;
 import com.abt.oa.model.FieldWorkRequestForm;
 import org.springframework.data.domain.Page;
@@ -98,4 +99,8 @@ public interface FieldWorkService {
     void writeExcel(Table table);
 
     FieldWork detail(String id);
+
+    int confirm(String userid, List<String> ids);
+
+    FieldConfirmResult getConfirmStat(FieldWorkRequestForm form);
 }

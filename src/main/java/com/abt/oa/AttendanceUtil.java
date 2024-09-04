@@ -24,6 +24,9 @@ public class AttendanceUtil {
         return now.getMonth().plus(1);
     }
 
+    /**
+     * 当前日期的考勤月的开始日期
+     */
     public static LocalDate currentStartDate(int startDay) {
         final LocalDate now = LocalDate.now();
         LocalDate startDate = LocalDate.of(now.getYear(), now.getMonth(), startDay);
@@ -34,6 +37,9 @@ public class AttendanceUtil {
         return startDate.minusMonths(1);
     }
 
+    /**
+     * 当前日期的考勤月的结束日期
+     */
     public static LocalDate currentEndDate(int endDay) {
         final LocalDate now = LocalDate.now();
         LocalDate endDate = LocalDate.of(now.getYear(), now.getMonth(), endDay);
