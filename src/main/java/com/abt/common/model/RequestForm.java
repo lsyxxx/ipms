@@ -71,6 +71,8 @@ public class RequestForm {
     private String endDate;
     private String createUserid;
 
+    private boolean enabled;
+
     /**
      * 是否分页
      */

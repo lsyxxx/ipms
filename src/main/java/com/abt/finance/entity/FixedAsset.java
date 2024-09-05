@@ -18,7 +18,6 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -257,30 +256,40 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset> {
   @Column(name="company_", columnDefinition = "VARCHAR(8)")
   private String company;
 
+  /**
+   * 当前月数，不计算当月
+   */
+  @Column(name="mon_val", columnDefinition = "TINYINT")
+  private int monthValue;
 
   @Override
   public FixedAsset afterQuery() {
-    //计算
-    //本年度计提折旧额=月折旧额*本年度已用月数
-    this.annualDepreciationExpense = this.monthlyDepreciationExpense.multiply(BigDecimal.valueOf(LocalDate.now().getMonthValue()));
-    //累计折旧额=(本年度计提折旧额+已计提折旧额)
-    this.accumulatedDepreciationValue = this.annualDepreciationExpense.add(this.accruedDepreciationValue);
-    //固定资产净值=入账原值-累计折旧额
-    this.netBookValue = originalBookValue.min(this.accumulatedDepreciationValue);
     return this;
   }
 
-  @PrePersist
-  public void  beforePersist() {
-    System.out.println("beforePersist....");
-    //计算
-    //发票原值=(单价*数量)
-    this.originalInvoiceValue = this.unitPrice.multiply(BigDecimal.valueOf(this.count));
-    //预计净残值=(入账原值*预计净残值率)
-    this.residualValue = this.originalBookValue.multiply(this.residualValueRate.divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
-    //折旧到期日=（入账日期+折旧期限）
-    this.depreciationExpiryDate = postingDate.plusMonths(this.depreciationPeriod);
-    //月折旧额=（入账原值*（100%-预计净残值率））/折旧期限)
-    this.monthlyDepreciationExpense = this.originalBookValue.multiply(BigDecimal.valueOf(100.00).min(this.residualValueRate).divide(BigDecimal.valueOf(this.depreciationPeriod)));
-  }
+
+//  @Override
+//  public FixedAsset afterQuery() {
+//    //计算
+//    //本年度计提折旧额=月折旧额*本年度已用月数
+//    this.annualDepreciationExpense = this.monthlyDepreciationExpense.multiply(BigDecimal.valueOf(LocalDate.now().getMonthValue()));
+//    //累计折旧额=(本年度计提折旧额+已计提折旧额)
+//    this.accumulatedDepreciationValue = this.annualDepreciationExpense.add(this.accruedDepreciationValue);
+//    //固定资产净值=入账原值-累计折旧额
+//    this.netBookValue = originalBookValue.min(this.accumulatedDepreciationValue);
+//    return this;
+//  }
+
+//  @PrePersist
+//  public void  beforePersist() {
+//    //计算
+//    //发票原值=(单价*数量)
+//    this.originalInvoiceValue = this.unitPrice.multiply(BigDecimal.valueOf(this.count));
+//    //预计净残值=(入账原值*预计净残值率)
+//    this.residualValue = this.originalBookValue.multiply(this.residualValueRate.divide(BigDecimal.valueOf(100))).setScale(2, RoundingMode.HALF_UP);
+//    //折旧到期日=（入账日期+折旧期限）
+//    this.depreciationExpiryDate = postingDate.plusMonths(this.depreciationPeriod);
+//    //月折旧额=（入账原值*（100%-预计净残值率））/折旧期限)
+//    this.monthlyDepreciationExpense = this.originalBookValue.multiply(BigDecimal.valueOf(100.00).min(this.residualValueRate).divide(BigDecimal.valueOf(this.depreciationPeriod)));
+//  }
 }
