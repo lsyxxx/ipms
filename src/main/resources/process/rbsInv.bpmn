@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_15isgch" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.23.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_15isgch" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
   <bpmn:process id="rbsInv" name="rbsInv" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:extensionElements>
       <camunda:executionListener delegateExpression="${invoiceApplyProcessEndListener}" event="end" />
@@ -34,7 +34,7 @@
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_186fvry" sourceRef="rbsInv_apply" targetRef="rbsInv_managers" />
-    <bpmn:userTask id="rbsInv_finAcct" name="财务会计" camunda:assignee="U20230406013">
+    <bpmn:userTask id="rbsInv_finAcct" name="财务会计" camunda:assignee="U20230406007">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
@@ -50,7 +50,7 @@
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0s9w2z1" sourceRef="rbsInv_finAcct" targetRef="Event_0w791c4" />
     <bpmn:userTask id="rbsInv_finManager" name="财务总监" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
-        <bpmn:extensionElements>
+      <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
           <camunda:property name="selectUserType" value="1" />
@@ -79,6 +79,10 @@
         <dc:Bounds x="490" y="57" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qs3ro3_di" bpmnElement="rbsInv_finAcct">
+        <dc:Bounds x="890" y="57" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0w791c4_di" bpmnElement="Event_0w791c4">
         <dc:Bounds x="1162" y="79" width="36" height="36" />
         <bpmndi:BPMNLabel>
@@ -87,10 +91,6 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_12jph1h_di" bpmnElement="rbsInv_finManager">
         <dc:Bounds x="680" y="57" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0qs3ro3_di" bpmnElement="rbsInv_finAcct">
-        <dc:Bounds x="890" y="57" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_09ajh3e_di" bpmnElement="Flow_09ajh3e">
