@@ -4,10 +4,15 @@ import com.abt.common.util.TimeUtil;
 import com.abt.wf.config.Constants;
 import com.abt.wf.model.ActionEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.camunda.bpm.engine.task.Task;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.lang.Nullable;
 import static com.abt.wf.config.Constants.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,10 +23,14 @@ import java.util.concurrent.Flow;
 /**
  *
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Table(name = "wf_opt_log")
 @Entity
+@DynamicInsert
+@DynamicUpdate
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FlowOperationLog {
 
 
@@ -34,6 +43,9 @@ public class FlowOperationLog {
      */
     @Column(name = "entity_id", columnDefinition="VARCHAR(128)")
     private String entityId;
+
+    @Column(name="cb_id", columnDefinition = "VARCHAR(128)")
+    private String creditBookId;
 
     /**
      * 业务名称
@@ -99,6 +111,19 @@ public class FlowOperationLog {
     @Column(name="comment", columnDefinition="VARCHAR(1000)")
     private String comment;
 
+
+    /**
+     * 确认事项，json字符串保存; 可能有多个确认事项
+     * {"事项确认": "本人确认对本事项。。。", "流程规范确认": "确认内容"}
+     */
+    @Column(name="check_items", columnDefinition = "VARCHAR(5000)")
+    private String checkItems;
+
+    /**
+     * 补充附件
+     */
+    @Column(name="file_json", columnDefinition = "VARCHAR(5000)")
+    private String fileJson;
 
     public static FlowOperationLog create(String operatorId, String operatorName, String processInstanceId,
                                           String processDefinitionId, String processDefinitionKey,

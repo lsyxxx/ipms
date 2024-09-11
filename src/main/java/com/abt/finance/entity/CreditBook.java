@@ -1,33 +1,42 @@
 package com.abt.finance.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.common.service.UserJpaAudit;
+import com.abt.wf.entity.FlowOperationLog;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+import lombok.*;
+import org.hibernate.annotations.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 贷方记账，资金流出
+ * 审核信息仍然保存在wf_opt_log中
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+@Getter
+@Setter
 @DynamicUpdate
 @DynamicInsert
 @Entity
 @Table(name = "fi_credit_book")
-public class CreditBook extends AuditInfo {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CreditBook extends AuditInfo implements UserJpaAudit {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator  = "timestampIdGenerator")
+    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
+
+    @NotNull
+    @Column(name="company_", columnDefinition = "VARCHAR(256)")
+    private String company;
 
     /**
      * 记账对应服务名称，如费用报销
@@ -35,38 +44,74 @@ public class CreditBook extends AuditInfo {
     @Column(name="srv_name", columnDefinition="VARCHAR(128)")
     private String serviceName;
 
+
+    /**
+     * 业务实体id
+     */
+    @Column(name="biz_id", columnDefinition="VARCHAR(128)")
+    private String businessId;
+
     /**
      * 金额
      */
-    @Positive(message = "金额必须大于0")
-    @Column(name="expense", columnDefinition="DECIMAL(10,2)")
-    private double expense;
+
+    @NotNull
+    @Column(name="amt", columnDefinition="DECIMAL(10,2)")
+    private Double amount;
+
+    /**
+     * 事由
+     */
+    @Column(name="reason_", columnDefinition="VARCHAR(1000)")
+    private String reason;
+
+
+    /**
+     * 关联项目id
+     */
+    @Column(name="proj_id", columnDefinition="VARCHAR(128)")
+    private String projectId;
+
+    /**
+     * 关联项目名称
+     */
+    @Column(name="proj_name", columnDefinition = "VARCHAR(1000)")
+    private String projectName;
+
+
+    /**
+     * 票据种类
+     * 白条，收据，发票
+     */
+    @Column(name="inst_type")
+    private String instrumentType;
+
+    /**
+     * 票据数量
+     */
+    @Column(name="inst_num", columnDefinition="TINYINT")
+    private Integer instrumentNum;
+
+    @Column(name="file_json", columnDefinition = "VARCHAR(MAX)")
+    private String fileJson;
+
+    /**
+     * 收款用户name
+     */
+    @Column(name="rec_username", columnDefinition = "VARCHAR(32)")
+    private String receiveUsername;
+
 
     /**
      * 关联会计科目id
      */
     @NotNull
-    @Column(name="exp_id", columnDefinition="VARCHAR(128)")
-    private String expenseId;
+    @Column(name="acc_item_id", columnDefinition="VARCHAR(128)")
+    private String accountItemId;
 
-    /**
-     * 费用类型
-     */
-    @NotNull
-    @Column(name="exp_type", columnDefinition="VARCHAR(128)")
-    private String expenseType;
-    /**
-     * 票据数量
-     */
-    @Column(name="inv_num", columnDefinition="TINYINT")
-    private int invoiceNum;
+    private String accountItemCode;
 
-    /**
-     * 票据类型
-     */
-    @NotNull
-    @Column(name="inv_type", columnDefinition="VARCHAR(128)")
-    private String invoiceType;
+    private String accountItemName;
 
     /**
      * 付款方式
@@ -82,9 +127,6 @@ public class CreditBook extends AuditInfo {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime payDate;
 
-    @Column(name = "pay_acc_id", length = 36)
-    private String payAccountId;
-
     /**
      * 付款账号
      */
@@ -98,67 +140,46 @@ public class CreditBook extends AuditInfo {
     private String payBank;
 
     /**
-     * 收款账号
+     * 付款执行时间
      */
-    @Column(name="rec_acc", columnDefinition="VARCHAR(128)")
-    private String receiveAccount;
-    /**
-     * 收款账号银行
-     */
-    @Column(name="rec_bank", columnDefinition="VARCHAR(128)")
-    private String receiveBank;
-    /**
-     * 收款人(可能是对公账户）
-     */
-    @Column(name="rec_userid", columnDefinition="VARCHAR(128)")
-    private String receiveUserid;
+    @Column(name="real_pay_date")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDate realPayDate;
+
 
     /**
-     * 业务详情url
+     * 关联审批
      */
-    @Column(name="biz_url", columnDefinition="VARCHAR(128)")
-    private String businessUrl;
-    /**
-     * 出纳id
-     */
-    @Column(name="cashier_id", columnDefinition="VARCHAR(128)")
-    private String cashier;
-    /**
-     * 出纳姓名
-     */
-    @Column(name="cashier_name", columnDefinition="VARCHAR(32)")
-    private String cashierName;
-    /**
-     * 财务主管id
-     */
-    @Column(name="fi_manager_id", columnDefinition="VARCHAR(128)")
-    private String financeManagerId;
-    /**
-     * 财务主管name
-     */
-    @Column(name="fi_manager_name", columnDefinition="VARCHAR(32)")
-    private String financeManagerName;
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", referencedColumnName = "cb_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    private List<FlowOperationLog> logs;
+
 
     /**
-     * 业务实体id
+     * 申请人部门id
      */
-    @Column(name="biz_id", columnDefinition="VARCHAR(128)")
-    private String businessId;
+    @Column(name="dept_id", columnDefinition = "VARCHAR(128)")
+    private String departmentId;
 
     /**
-     * 记账备注
+     * 申请人部门name
      */
-    @Column(name="remark_", columnDefinition="VARCHAR(1000)")
-    private String remark;
-
-    @Column(columnDefinition="VARCHAR(128)")
-    private String project;
+    @Column(name="dept_name", columnDefinition = "VARCHAR(128)")
+    private String departmentName;
 
     /**
-     * 业务简述
+     * 班组id
      */
-    @Column(name="desc_", columnDefinition="VARCHAR(512)")
-    private String desc;
+    @Column(name="dept_team_id", columnDefinition = "VARCHAR(128)")
+    private String teamId;
+
+    /**
+     * 班组name
+     */
+    @Column(name="dept_team_name", columnDefinition = "VARCHAR(128)")
+    private String teamName;
+
 
 }
 
