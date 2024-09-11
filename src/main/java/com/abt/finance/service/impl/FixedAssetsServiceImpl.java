@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -45,10 +46,19 @@ public class FixedAssetsServiceImpl implements FixedAssetsService {
     @Override
     public void save(FixedAsset fixedAsset) {
         this.validateCode(fixedAsset.getCode(), fixedAsset.getId());
+        final String deptStr = generateDeptStr(fixedAsset.getUsageDeptList());
+        fixedAsset.setUsageDept(deptStr);
         fixedAssetRepository.save(fixedAsset);
     }
 
-    private void validateCode(String code, Long id) {
+    private String generateDeptStr(List<String> deptList) {
+        if (CollectionUtils.isEmpty(deptList)) {
+            return null;
+        }
+        return String.join(",", deptList);
+    }
+
+    private void validateCode(String code, String id) {
         final FixedAsset byCode = fixedAssetRepository.findByCode(code);
         if (byCode != null && Objects.equals(byCode.getId(), id)) {
             throw new BusinessException("资产编号已存在!");
@@ -56,8 +66,8 @@ public class FixedAssetsServiceImpl implements FixedAssetsService {
     }
 
     @Override
-    public void delete(Long id) {
-        fixedAssetRepository.deleteById(String.valueOf(id));
+    public void delete(String id) {
+        fixedAssetRepository.deleteById(id);
     }
 
     /**
@@ -65,11 +75,7 @@ public class FixedAssetsServiceImpl implements FixedAssetsService {
      */
     @Override
     public String codeGenerator() {
-        final FixedAsset top1 = fixedAssetRepository.findFirstByOrderByCreateDateDesc();
-        long count = 0;
-        if (top1 != null) {
-            count = top1.getId();
-        }
+        final long count = fixedAssetRepository.count();
         return String.format("%05d", (count+1));
     }
 

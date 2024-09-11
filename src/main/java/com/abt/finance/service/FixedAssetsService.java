@@ -18,7 +18,7 @@ public interface FixedAssetsService {
 
     void save(FixedAsset fixedAsset);
 
-    void delete(Long id);
+    void delete(String id);
 
     String codeGenerator();
 }

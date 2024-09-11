@@ -1,5 +1,6 @@
 package com.abt.finance.controller;
 
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.finance.entity.FixedAsset;
 import com.abt.finance.model.FixedAssetRequestForm;
@@ -34,13 +35,13 @@ public class FixedAssetsController {
     }
 
     @PostMapping("/save")
-    public R<Object> save(@Validated FixedAsset fixedAsset) {
-        fixedAssetsService.save(fixedAsset);
+    public R<Object> save(@RequestBody @Validated({ValidateGroup.Save.class}) FixedAsset applyForm) {
+        fixedAssetsService.save(applyForm);
         return R.success("保存成功");
     }
 
     @GetMapping("/del")
-    public R<Object> delete(Long id) {
+    public R<Object> delete(String id) {
         fixedAssetsService.delete(id);
         return R.success("删除成功");
     }

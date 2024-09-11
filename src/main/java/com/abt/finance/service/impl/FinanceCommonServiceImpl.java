@@ -61,19 +61,19 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
 
     @Override
     public Page<AccountItem> findAccountItemPageByQuery(AccountItemRequestForm form) {
-//        Pageable pageable = PageRequest.of(form.jpaPage(), form.getSize());
-//
-//        final Page<AccountItem> byQuery = accountItemRepository.findByQuery(form.getQuery(), form.isEnabled(), form.getLevel(), pageable);
-//        return orderByCode(byQuery);
-        return null;
+        Pageable pageable = PageRequest.of(form.jpaPage(), form.getSize());
+
+        final Page<AccountItem> byQuery = accountItemRepository.findByQuery(form.getQuery(), form.isEnabled(), form.getLevel(), pageable);
+        return orderByCode(byQuery);
+//        return null;
     }
 
     @Override
     public List<AccountItem> findAccountItemListByQuery(AccountItemRequestForm form) {
-//        List<AccountItem> byQuery = accountItemRepository.findByQuery(form.getQuery(), form.isEnabled(), form.getLevel());
-//        Collections.sort(byQuery);
-//        return byQuery;
-        return null;
+        List<AccountItem> byQuery = accountItemRepository.findByQuery(form.getQuery(), form.isEnabled(), form.getLevel());
+        Collections.sort(byQuery);
+        return byQuery;
+//        return null;
     }
 
     /**

@@ -2,6 +2,7 @@ package com.abt.finance.entity;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
+import com.abt.common.service.CommonJpaAudit;
 import com.abt.sys.model.WithQuery;
 import com.abt.sys.model.entity.Org;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -33,14 +34,14 @@ import java.util.List;
 @DynamicInsert
 @NoArgsConstructor
 @Table(name = "fi_fixed_asset")
-public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset> {
+public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset>, CommonJpaAudit {
 
   /**
    * PK, 自增
    */
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private String id;
 
   /**
    * 资产编号
@@ -147,7 +148,7 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset> {
   /**
    * 入账原值
    */
-  @NotNull(message = "入账原值不能为空")
+  @NotNull(message = "入账原值不能为空", groups = {ValidateGroup.Save.class})
   @Column(name="org_book_val", columnDefinition="DECIMAL(10,2)")
   private BigDecimal originalBookValue;
 
@@ -261,6 +262,9 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset> {
    */
   @Column(name="mon_val", columnDefinition = "TINYINT")
   private int monthValue;
+
+  @Transient
+  private List<String> usageDeptList;
 
   @Override
   public FixedAsset afterQuery() {

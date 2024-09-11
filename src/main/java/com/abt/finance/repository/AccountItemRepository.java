@@ -13,23 +13,23 @@ public interface AccountItemRepository extends JpaRepository<AccountItem, String
     List<AccountItem> findByEnabled(boolean enabled);
     List<AccountItem> findByLevel(int level);
 
-//    @Query("select ai, cast(ai.code as INT) as sort from AccountItem ai " +
-//            "where 1=1 " +
-//            "and (:query is null or :query = '' " +
-//            "   or ai.code like %:query% " +
-//            "   or ai.name like %:query%) " +
-//            "and ai.enabled = :enabled " +
-//            "and (:level is null or ai.level = :level) " +
+    @Query("select ai from AccountItem ai " +
+            "where 1=1 " +
+            "and (:query is null or :query = '' " +
+            "   or ai.code like %:query% " +
+            "   or ai.name like %:query%) " +
+            "and ai.enabled = :enabled " +
+            "and (:level is null or ai.level = :level) ")
 //            "ORDER BY CAST(ai.code AS int)")
-//    Page<AccountItem> findByQuery(String query, boolean enabled, Integer level, Pageable pageable);
-//
-//    @Query("select ai from AccountItem ai " +
-//            "where 1=1 " +
-//            "and (:query is null or :query = '' " +
-//            "   or ai.code like %:query% " +
-//            "   or ai.name like %:query%) " +
-//            "and ai.enabled = :enabled " +
-//            "and (:level is null or ai.level = :level) " +
+    Page<AccountItem> findByQuery(String query, boolean enabled, Integer level, Pageable pageable);
+
+    @Query("select ai from AccountItem ai " +
+            "where 1=1 " +
+            "and (:query is null or :query = '' " +
+            "   or ai.code like %:query% " +
+            "   or ai.name like %:query%) " +
+            "and ai.enabled = :enabled " +
+            "and (:level is null or ai.level = :level) ")
 //            "ORDER BY CAST(ai.code AS int)")
-//    List<AccountItem> findByQuery(String query, boolean enabled,  Integer level);
+    List<AccountItem> findByQuery(String query, boolean enabled,  Integer level);
 }
