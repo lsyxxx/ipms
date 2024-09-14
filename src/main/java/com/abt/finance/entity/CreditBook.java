@@ -1,6 +1,7 @@
 package com.abt.finance.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.common.service.InsertJpaUser;
 import com.abt.common.service.UserJpaAudit;
 import com.abt.wf.entity.FlowOperationLog;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -28,6 +29,7 @@ import java.util.List;
 @Entity
 @Table(name = "fi_credit_book")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@EntityListeners({InsertJpaUser.class})
 public class CreditBook extends AuditInfo implements UserJpaAudit {
     @Id
     @GeneratedValue(generator  = "timestampIdGenerator")
@@ -151,9 +153,9 @@ public class CreditBook extends AuditInfo implements UserJpaAudit {
     /**
      * 关联审批
      */
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", referencedColumnName = "cb_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    private List<FlowOperationLog> logs;
+//    @OneToMany(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+//    private List<FlowOperationLog> logs;
 
 
     /**

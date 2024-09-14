@@ -111,13 +111,13 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
         if (CollectionUtils.isEmpty(user)) {
             return form;
         }
-        form.setFinanceManagerId(user.get(0).getId());
-        form.setFinanceManagerName(user.get(0).getUsername());
-        //bankAccount
-        bankAccountRepository.findById(form.getPayAccountId()).ifPresent(bankAccount -> {
-            form.setPayAccount(bankAccount.getAccount());
-            form.setPayBank(bankAccount.getBank());
-        });
+//        form.setFinanceManagerId(user.get(0).getId());
+//        form.setFinanceManagerName(user.get(0).getUsername());
+//        //bankAccount
+//        bankAccountRepository.findById(form.getPayAccountId()).ifPresent(bankAccount -> {
+//            form.setPayAccount(bankAccount.getAccount());
+//            form.setPayBank(bankAccount.getBank());
+//        });
         return form;
     }
 

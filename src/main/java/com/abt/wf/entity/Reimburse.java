@@ -41,7 +41,7 @@ public class Reimburse extends WorkflowBase {
     private String id;
 
     @NotNull(groups = {ValidateGroup.Preview.class, ValidateGroup.Save.class})
-    @Positive(message = "报销金额不能小于0.00")
+//    @Positive(message = "报销金额不能小于0.00")
     @Column(name="cost", columnDefinition="DECIMAL(10, 2)")
     private Double cost;
 

@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
  * jpa监听使用session中用户信息
  */
 @Slf4j
-public class insertJpaUser {
+public class InsertJpaUser {
 
     @PrePersist
     public <T extends UserJpaAudit> void insertUser(T entity) {
