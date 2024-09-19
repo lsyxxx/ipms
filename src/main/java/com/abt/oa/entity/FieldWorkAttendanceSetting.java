@@ -35,7 +35,7 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
     /**
      * 同一个项目的标识
      */
-    @NotBlank(groups = {ValidateGroup.Insert.class}, message = "标识id不能为空!")
+//    @NotBlank(groups = {ValidateGroup.Update.class}, message = "标识id不能为空!")
     @Column(name="vid", length = 128)
     private String vid;
 
