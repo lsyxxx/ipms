@@ -26,11 +26,19 @@ import com.abt.sys.service.PermissionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -300,7 +308,7 @@ public class FieldController {
     }
 
     @GetMapping("/stat/export")
-    public void exportExcel(HttpServletRequest request) {
+    public ResponseEntity<byte[]> exportExcel(HttpServletRequest request) {
         HttpSession session = request.getSession();
         if (session == null) {
             throw new BusinessException("Session超时，请重新生成数据");
@@ -310,7 +318,22 @@ public class FieldController {
             throw new BusinessException("请先生成考勤数据再导出");
         }
         Table table = (Table) attribute;
-        fieldWorkService.writeExcel(table);
+
+        try {
+            File file = fieldWorkService.writeExcel(table);
+            String name = "野外作业考勤" + table.getYearMonth();
+
+            // 设置HTTP响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode(name, StandardCharsets.UTF_8));
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+            return new ResponseEntity<>(FileUtils.readFileToByteArray(file), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("文件下载失败: ", e);
+            return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.EXPECTATION_FAILED);
+        }
+
     }
 
     @GetMapping("/dtl")

@@ -1,8 +1,11 @@
 package com.abt.common.model;
 
+import com.abt.oa.model.CalendarEvent;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -25,6 +28,12 @@ public class Table {
     private String yearMonth;
 
     private List<String> headers;
+
+    private List<CalendarEvent> events;
+
+    private LocalDate start;
+    private LocalDate end;
+
 
     public void addRow(Row row) {
         this.rows.add(row);

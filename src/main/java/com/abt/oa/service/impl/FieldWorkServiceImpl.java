@@ -7,10 +7,7 @@ import com.abt.common.model.Table;
 import com.abt.common.model.User;
 import com.abt.common.util.TimeUtil;
 import com.abt.oa.OAConstants;
-import com.abt.oa.entity.FieldWork;
-import com.abt.oa.entity.FieldWorkAttendanceSetting;
-import com.abt.oa.entity.FieldWorkItem;
-import com.abt.oa.entity.FrmLeaveReq;
+import com.abt.oa.entity.*;
 import com.abt.oa.model.CalendarEvent;
 import com.abt.oa.model.FieldConfirmResult;
 import com.abt.oa.model.FieldWorkBoard;
@@ -24,6 +21,9 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +32,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -61,6 +65,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final Company ABT;
     private final Company GRD;
     private final Company DC;
+    private final Configuration freemarkerConfig;
 
     @Setter
     @Getter
@@ -68,7 +73,18 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private String filedWorkExcelCreatePath;
 
 
-    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, LeaveService leaveService, Company ABT, Company GRD, Company DC) {
+    @Setter
+    @Getter
+    @Value("${abt.fw.excel.output}")
+    private String fieldWorkExcelOutput;
+
+
+    public static final String excelTemplate = "FW2003.ftl";
+
+    public static final String COL_ATD = "出勤天数";
+
+
+    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, LeaveService leaveService, Company ABT, Company GRD, Company DC, Configuration freemarkerConfig) {
         this.fieldAttendanceSettingRepository = fieldAttendanceSettingRepository;
         this.fieldWorkRepository = fieldWorkRepository;
         this.employeeService = employeeService;
@@ -77,6 +93,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         this.ABT = ABT;
         this.GRD = GRD;
         this.DC = DC;
+        this.freemarkerConfig = freemarkerConfig;
     }
 
     @Override
@@ -525,8 +542,8 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Override
     public Table createStatData(String yearMonth, LocalDate start, LocalDate end, List<FieldWork> all) {
         long t1 = System.currentTimeMillis();
-        //查询记录（已审批通过的）
-        final List<FieldWork> records = all.stream().filter(FieldWork::isPass).toList();
+        //查询记录(已确认的)
+        final List<FieldWork> records = all.stream().filter(i -> i.isConfirm() && i.isPass() && !i.isDeleted()).toList();
         List<CalendarEvent> allEvents = new ArrayList<>();
         final List<FieldWorkAttendanceSetting> settings = findLatestSettings();
         //生成表
@@ -545,25 +562,27 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             jobNumber = userFws.get(0).getJobNumber();
             String company = employeeService.getUserCompanyByJobNumber(jobNumber);
 
+            Row row = Row.create(username, jobNumber, company);
+            User user = new User(userid, username, jobNumber);
+            user.setCompany(company);
+            //0. 基础信息
+            row.addCell(new Cell(user.getUsername(), "姓名"));
+
             //生成每个人的考勤
             List<CalendarEvent> userEvents = createFieldWorkCalendarEvents(userFws);
 
             //处理数据,生成表格
             //补贴数据, 生成row，根据日期(start)
-            User user = new User(userid, username, jobNumber);
-            user.setCompany(company);
-            Row row = Row.create(username, jobNumber, company);
             userEvents.forEach(i -> {
                 Cell cell = new Cell();
                 cell.setColumnName(i.getStart());
                 cell.setValue(i);
                 cell.setValueStr(i.getShortName());
+                cell.setDateColumn(true);
                 row.addCell(cell);
             });
 
             //---- 统计数据 -------
-            //0. 基础信息
-            row.addCell(new Cell(user.getUsername(), "姓名"));
 
             //1. 出勤
             Set<String> workDaySet = new HashSet<>();
@@ -572,7 +591,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                     workDaySet.add(event.getStart());
                 }
             }
-            row.addCell(new Cell(String.valueOf(workDaySet.size()), "出勤天数"));
+            row.addCell(new Cell(String.valueOf(workDaySet.size()), COL_ATD));
 
             //2. 作业项目统计(包含基地调休/家调休)
             final Map<String, Double> sumByAllowance = userEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
@@ -588,35 +607,38 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             });
 
             //请假
-            final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, OAConstants.OPENAUTH_FLOW_STATE_FINISH, start, end);
+//            final List<FrmLeaveReq> leaveRecords = leaveService.findByUser(userid, OAConstants.OPENAUTH_FLOW_STATE_FINISH, start, end);
             //请假数据
-            final List<CalendarEvent> leaveEvents = splitLeaveCalendarEventsByDay(leaveRecords);
-            final Map<String, Double> sumByLeave = leaveEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
-            sumByLeave.forEach((k, v) -> {
-                Cell cell = new Cell(String.valueOf(v), k);
-                CalendarEvent event = new CalendarEvent();
-                final CalendarEvent e = leaveEvents.stream().filter(i -> i.getSid().equals(k)).findFirst().get();
-                event.setOrder(2000);
-                event.setTitle(e.getTitle());
-                cell.setValue(event);
-                cell.setValueStr(String.valueOf(v));
-                row.addCell(cell);
-            });
+//            final List<CalendarEvent> leaveEvents = splitLeaveCalendarEventsByDay(leaveRecords);
+//            final Map<String, Double> sumByLeave = leaveEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
+//            sumByLeave.forEach((k, v) -> {
+//                Cell cell = new Cell(String.valueOf(v), k);
+//                CalendarEvent event = new CalendarEvent();
+//                final CalendarEvent e = leaveEvents.stream().filter(i -> i.getSid().equals(k)).findFirst().get();
+//                event.setOrder(2000);
+//                event.setTitle(e.getTitle());
+//                cell.setValue(event);
+//                cell.setValueStr(String.valueOf(v));
+//                row.addCell(cell);
+//            });
+//            allEvents.addAll(leaveEvents);
 
-            //3. 公休，计算每个人的公休天数 TODO
+            //--- 请假end
+
+            //3. 公休，计算每个人的公休天数
 
 
             allEvents.addAll(userEvents);
-            allEvents.addAll(leaveEvents);
+
             table.addRow(row);
         }  //end for
 
         //公休
-        CalendarEvent restEvent = new CalendarEvent();
-        restEvent.setTitle("公休");
-        restEvent.setDurationUnit("天");
-        restEvent.setOrder(5000);
-        allEvents.add(restEvent);
+//        CalendarEvent restEvent = new CalendarEvent();
+//        restEvent.setTitle("公休");
+//        restEvent.setDurationUnit("天");
+//        restEvent.setOrder(5000);
+//        allEvents.add(restEvent);
 
 
         long t2 = System.currentTimeMillis();
@@ -624,6 +646,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         table.setHeaders(header);
         log.info("createStatData耗时:{} (ms), 统计{}人数据\n", (t2-t1), groupByUser.size());
         table.setYearMonth(yearMonth);
+        table.setEvents(allEvents);
+        table.setStart(start);
+        table.setEnd(end);
         return table;
     }
 
@@ -691,20 +716,44 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return time.isAfter(LocalTime.of(12, 0, 0));
     }
 
-    //根据event生成表头
-    public List<String> createStatHeader(LocalDate startDate, LocalDate endDate, List<CalendarEvent> events) {
+
+    /**
+     * 生成表头中的日期
+     */
+    private List<LocalDate> createDateHeader(LocalDate startDate, LocalDate endDate) {
         int dayCount = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
-        //生成表头: 序号,姓名，工号，日期，统计列
-        List<String> header = new ArrayList<>();
+        List<LocalDate> header = new ArrayList<>();
         for (int i = 0; i < dayCount ; i++) {
-            header.add(startDate.plusDays(i).toString());
+            header.add(startDate.plusDays(i));
         }
-        header.add("出勤天数");
+        return header;
+    }
+
+
+    private List<CalendarEvent> createHeader(List<CalendarEvent> events) {
+        return events.stream()
+                .collect(Collectors.toMap(
+                        CalendarEvent::getTitle,
+                        event -> event,
+                        (existing, replacement) -> existing
+                ))
+                .values().stream()
+                .sorted(Comparator.comparingInt(CalendarEvent::getOrder))
+                .toList();
+    }
+
+
+    /**
+     * 根据event生成表头
+     * 生成表头: 序号,姓名，工号，日期，统计列
+     */
+    public List<String> createStatHeader(LocalDate startDate, LocalDate endDate, List<CalendarEvent> events) {
+        final List<LocalDate> dateHeader = this.createDateHeader(startDate, endDate);
+        List<String> header = new ArrayList<>(dateHeader.stream().map(LocalDate::toString).toList());
+        header.add(COL_ATD);
         //统计列
         //其他统计-补贴项目(仅显示已有的)
-        final List<String> allowances = events.stream().sorted(Comparator.comparingInt(CalendarEvent::getOrder))
-                .map(CalendarEvent::getTitle).distinct().toList();
-        header.addAll(allowances);
+        createHeader(events).stream().map(CalendarEvent::getTitle).forEach(header::add);
         return header;
     }
 
@@ -713,43 +762,67 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         return fieldWorkRepository.findRecordsByUserInfo(jobNumber, dept, company, start, end);
     }
 
-    @Override
-    public void writeExcel(Table table) {
-        //生成excel文件名:
-        String fileName = String.format("%s考勤表", table.getYearMonth());
-        String createFile = this.getFiledWorkExcelCreatePath() + fileName;
 
+    public Map<String, Object> createExcelData(Table table, String shortCompany) {
+        Assert.notNull(shortCompany, "shortCompany must not be null");
+        log.info("create excel data for {}", shortCompany);
+        String code = convertCompany(shortCompany);
+        //freemarker 所需数据结构
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("yearMonth", table.getYearMonth());
-        String companyCode = convertCompany(table.getCompany());
-        if (StringUtils.isBlank(table.getCompany())) {
-            //查询的是全部
-
-        } else {
-            //header
-//            dataModel.put(companyCode + "SummaryHeader", table.getHeaders());
-//            //short header
-//            dataModel.put(companyCode + "SummaryHeaderShort", shortHeaders);
-//            //数据
-//            dataModel.put(companyCode + "List", table.getRows());
-
+        List<CalendarEvent> headers = this.createHeader(table.getEvents());
+        //表头-补贴名称
+        List<String> summaryHeader = new ArrayList<>(headers.stream().map(CalendarEvent::getTitle).toList());
+        summaryHeader.add(0, COL_ATD);
+        dataModel.put(code + "SummaryHeader", summaryHeader);
+        //表头-日期+简称
+        final List<LocalDate> dateHeader = this.createDateHeader(table.getStart(), table.getEnd());
+        List<String> shortHeader = new ArrayList<>();
+        shortHeader.add("序号");
+        shortHeader.add("姓名");
+        List<String> dateStrs = dateHeader.stream().map(TimeUtil::yyyy_MM_ddString).toList();
+        final List<String> shortStr = dateStrs.stream().map(s -> s.substring(s.length() - 2)).toList();
+        shortHeader.addAll(shortStr);
+        shortHeader.add(COL_ATD);
+        shortHeader.addAll(headers.stream().map(CalendarEvent::getShortName).toList());
+        dataModel.put(code + "SummaryHeaderShort", shortHeader);
+        //筛选数据
+        List<String> header = new ArrayList<>();
+        header.add("序号");
+        header.add("姓名");
+        header.addAll(dateStrs);
+        header.addAll(summaryHeader);
+        //data
+        final List<Row> abtEvents = table.getRows().stream().filter(r -> shortCompany.equals(r.getCompany())).toList();
+        List<List<String>> data = new ArrayList<>();
+        //获取每个人的数据，顺序必须和header一样
+        for (Row row : abtEvents) {
+            List<String> eRow = new ArrayList<>();
+            for (String h : header) {
+                final List<String> values = row.getCells().stream().filter(c -> h.equals(c.getColumnName())).map(Cell::getValueStr).toList();
+                final String join = String.join("\n", values);
+                eRow.add(join);
+            }
+            data.add(eRow);
         }
-
-
-        //--- 生成excel
-        dataModel.put("ABTSummaryHeader", table.getHeaders());
-        final List<FieldWorkAttendanceSetting> settings = this.findLatestSettings();
-        List<String> shortHeaders = table.getHeaders().stream()
-                .map(header -> settings.stream()
-                        .filter(setting -> setting.getName().equals(header))
-                        .map(FieldWorkAttendanceSetting::getShortName)
-                        .findFirst()
-                        .orElse(header))
-                .toList();
-        dataModel.put("ABTSummaryHeaderShort", shortHeaders);
+        dataModel.put(code + "List", data);
+        return dataModel;
+    }
 
 
 
+    @Override
+    public File writeExcel(Table table) throws IOException, TemplateException {
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.putAll(createExcelData(table, "A"));
+        dataModel.putAll(createExcelData(table, "G"));
+        dataModel.putAll(createExcelData(table, "D"));
+
+        Template template = freemarkerConfig.getTemplate(excelTemplate);
+        try(FileWriter fw = new FileWriter(fieldWorkExcelOutput)) {
+            template.process(dataModel, fw);
+            return new File(fieldWorkExcelOutput);
+        }
     }
 
     private String convertCompany(String shortCompany) {

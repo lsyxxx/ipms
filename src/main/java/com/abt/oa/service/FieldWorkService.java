@@ -7,9 +7,12 @@ import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.model.FieldConfirmResult;
 import com.abt.oa.model.FieldWorkBoard;
 import com.abt.oa.model.FieldWorkRequestForm;
+import freemarker.template.TemplateException;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -95,8 +98,10 @@ public interface FieldWorkService {
 
     /**
      * 导出excel
+     *
+     * @return
      */
-    void writeExcel(Table table);
+    File writeExcel(Table table) throws IOException, TemplateException;
 
     FieldWork detail(String id);
 

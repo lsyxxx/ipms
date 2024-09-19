@@ -98,18 +98,18 @@
     <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
     <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
    </Borders>
-   <Font ss:FontName="仿宋" x:Family="Modern" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="仿宋" x:Family="Modern" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s20">
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s21">
    <Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s22">
    <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s23">
    <Alignment ss:Horizontal="JustifyDistributed" ss:Vertical="Center"/>
@@ -119,12 +119,12 @@
     <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
     <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
    </Borders>
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
    <Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>
   </Style>
   <Style ss:ID="s24">
    <Alignment ss:Horizontal="JustifyDistributed" ss:Vertical="Center"/>
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s25">
    <Alignment ss:Horizontal="JustifyDistributed" ss:Vertical="Center"/>
@@ -137,7 +137,7 @@
     <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
     <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
    </Borders>
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s32">
    <Alignment ss:Horizontal="JustifyDistributed" ss:Vertical="Center"/>
@@ -147,7 +147,7 @@
     <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
     <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
    </Borders>
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s33">
    <Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>
@@ -157,7 +157,7 @@
     <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
     <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
    </Borders>
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s34">
    <Borders>
@@ -166,7 +166,7 @@
     <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
     <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
    </Borders>
-   <Font ss:FontName="等线" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="等线" ss:Size="8" ss:Color="#000000"/>
   </Style>
   <Style ss:ID="s35">
    <Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>
@@ -180,12 +180,12 @@
     <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>
     <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>
    </Borders>
-   <Font ss:FontName="仿宋" x:Family="Modern" ss:Size="9" ss:Color="#000000"/>
+   <Font ss:FontName="仿宋" x:Family="Modern" ss:Size="8" ss:Color="#000000"/>
   </Style>
  </Styles>
  <Worksheet ss:Name="ABT">
   <Table ss:ExpandedColumnCount="200" ss:ExpandedRowCount="200" x:FullColumns="1"
-   x:FullRows="1" ss:DefaultColumnWidth="20.25" ss:DefaultRowHeight="14.25">
+   x:FullRows="1" ss:DefaultColumnWidth="22" ss:DefaultRowHeight="14.25">
    <Column ss:Index="2" ss:StyleID="s25" ss:AutoFitWidth="0" ss:Width="46.5"/>
    <Row ss:AutoFitHeight="0" ss:Height="35.0625" ss:StyleID="s16">
     <Cell ss:MergeAcross="32" ss:StyleID="s35"><Data ss:Type="String">西安阿伯塔资环分析测试技术有限公司工程技术部考勤表(${yearMonth})</Data></Cell>
@@ -286,39 +286,6 @@
     <Cell ss:MergeDown="1" ss:StyleID="s39"/>
    </Row>
    <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s16">
-    <Cell ss:StyleID="s17"><Data ss:Type="String">序号</Data></Cell>
-    <Cell ss:StyleID="s23"><Data ss:Type="String">姓 名</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">26</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">27</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">28</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">29</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">30</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">31</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">1</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">2</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">3</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">4</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">5</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">6</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">7</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">8</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">9</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">10</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">11</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">12</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">13</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">14</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">15</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">16</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">17</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">18</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">19</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">20</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">21</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">22</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">23</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">24</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">25</Data></Cell>
     <#if ABTSummaryHeaderShort?? && ABTSummaryHeaderShort?has_content>
      <#list ABTSummaryHeaderShort as shortHeader>
          <Cell ss:StyleID="s18"><Data ss:Type="String">${shortHeader}</Data></Cell>
@@ -3453,7 +3420,7 @@
  </Worksheet>
  <Worksheet ss:Name="GRD">
   <Table ss:ExpandedColumnCount="200" ss:ExpandedRowCount="200" x:FullColumns="1"
-   x:FullRows="1" ss:DefaultColumnWidth="20.25" ss:DefaultRowHeight="14.25">
+   x:FullRows="1" ss:DefaultColumnWidth="22" ss:DefaultRowHeight="14.25">
    <Column ss:Index="2" ss:StyleID="s25" ss:AutoFitWidth="0" ss:Width="46.5"/>
    <Row ss:AutoFitHeight="0" ss:Height="35.0625" ss:StyleID="s16">
     <Cell ss:MergeAcross="32" ss:StyleID="s35"><Data ss:Type="String">西安吉瑞达地质科技有限公司工程技术部考勤表(${yearMonth})</Data></Cell>
@@ -3554,39 +3521,6 @@
     <Cell ss:MergeDown="1" ss:StyleID="s39"/>
    </Row>
    <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s16">
-    <Cell ss:StyleID="s17"><Data ss:Type="String">序号</Data></Cell>
-    <Cell ss:StyleID="s23"><Data ss:Type="String">姓 名</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">26</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">27</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">28</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">29</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">30</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">31</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">1</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">2</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">3</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">4</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">5</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">6</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">7</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">8</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">9</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">10</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">11</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">12</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">13</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">14</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">15</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">16</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">17</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">18</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">19</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">20</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">21</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">22</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">23</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">24</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">25</Data></Cell>
     <#if GRDSummaryHeaderShort?? && GRDSummaryHeaderShort?has_content>
      <#list GRDSummaryHeaderShort as shortHeader>
       <Cell ss:StyleID="s19"><Data ss:Type="String">${shortHeader}</Data></Cell>
@@ -6865,7 +6799,7 @@
  </Worksheet>
  <Worksheet ss:Name="DC">
   <Table ss:ExpandedColumnCount="200" ss:ExpandedRowCount="200" x:FullColumns="1"
-   x:FullRows="1" ss:DefaultColumnWidth="20.25" ss:DefaultRowHeight="14.25">
+   x:FullRows="1" ss:DefaultColumnWidth="22" ss:DefaultRowHeight="14.25">
    <Column ss:AutoFitWidth="0" ss:Width="27.75"/>
    <Column ss:StyleID="s25" ss:AutoFitWidth="0" ss:Width="46.5"/>
    <Row ss:AutoFitHeight="0" ss:Height="35.0625" ss:StyleID="s16">
@@ -6967,39 +6901,6 @@
     <Cell ss:MergeDown="1" ss:StyleID="s39"/>
    </Row>
    <Row ss:AutoFitHeight="0" ss:Height="26.4375" ss:StyleID="s16">
-    <Cell ss:StyleID="s17"><Data ss:Type="String">序号</Data></Cell>
-    <Cell ss:StyleID="s23"><Data ss:Type="String">姓 名</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">26</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">27</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">28</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">29</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">30</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">31</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">1</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">2</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">3</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">4</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">5</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">6</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">7</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">8</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">9</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">10</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">11</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">12</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">13</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">14</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">15</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">16</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">17</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">18</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">19</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">20</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">21</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">22</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">23</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">24</Data></Cell>
-    <Cell ss:StyleID="s18"><Data ss:Type="Number">25</Data></Cell>
     <#if DCSummaryHeaderShort?? && DCSummaryHeaderShort?has_content>
      <#list DCSummaryHeaderShort as shortHeader>
       <Cell ss:StyleID="s19"><Data ss:Type="String">${shortHeader}</Data></Cell>

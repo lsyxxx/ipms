@@ -22,9 +22,20 @@ public class Cell {
      */
     private boolean summaryColumn = false;
 
+    /**
+     * 是否是日期列
+     */
+    private boolean isDateColumn = false;
+
     public Cell(String valueStr, String columnName) {
         this.valueStr = valueStr;
         this.columnName = columnName;
+    }
+
+    public Cell(String valueStr, String columnName, int columnIndex) {
+        this.valueStr = valueStr;
+        this.columnName = columnName;
+        this.columnIndex = columnIndex;
     }
 
 

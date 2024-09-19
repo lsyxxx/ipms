@@ -63,6 +63,7 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset>, Comm
    * 新购入、二手购入、无票、其它
    */
   @NotNull(message = "增加方式不能为空!", groups = {ValidateGroup.Save.class})
+  @Column(name="add_type", columnDefinition = "VARCHAR(32)")
   private String addType;
   /**
    * 规格型号

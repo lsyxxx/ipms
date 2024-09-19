@@ -1,5 +1,6 @@
 package com.abt.oa.entity;
 
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Immutable;
 
 import java.time.LocalDate;
@@ -18,9 +20,14 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "T_paiban")
+@Table(name = "T_paiban", indexes = {
+        @Index(name = "idx_paibandate", columnList = "Paibandate"),
+        @Index(name = "idx_paibandate_type", columnList = "Paibandate, paibanType"),
+
+})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Immutable
+@Slf4j
 public class PaiBan implements WithQuery<PaiBan> {
     @Id
     @Size(max = 50)
@@ -73,6 +80,31 @@ public class PaiBan implements WithQuery<PaiBan> {
     @Transient
     private String typeName;
 
+    /**
+     * 工作日
+     */
+    @Transient
+    private boolean isWorkDay = false;
+
+    /**
+     * 周末(只包含周末)
+     */
+    @Transient
+    private boolean isRestDay = false;
+
+    /**
+     * 法定节假日
+     */
+    @Transient
+    private boolean isOfficial = false;
+
+    /**
+     * 公休日(周末或法定节假日)
+     */
+    @Transient
+    private boolean isHoliday = false;
+
+
     @Override
     public PaiBan afterQuery() {
         this.translateTypeName();
@@ -96,12 +128,33 @@ public class PaiBan implements WithQuery<PaiBan> {
     public static final String TYPE_OFFICIAL = "3";
     public static final String TYPE_OFFICIAL_NAME = "法定";
 
-    public String translateTypeName() {
-        return switch (this.paibanType) {
-            case TYPE_WORK -> TYPE_WORK_NAME;
-            case TYPE_REST -> TYPE_REST_NAME;
-            case TYPE_OFFICIAL -> TYPE_OFFICIAL_NAME;
-            default -> "未知的排班类型(" + this.paibanType + ")";
+    public void translateTypeName() {
+        switch (this.paibanType) {
+            case TYPE_WORK -> {
+                this.isWorkDay = true;
+                this.isRestDay = false;
+                this.isHoliday = false;
+                this.isOfficial = false;
+                this.typeName = TYPE_WORK_NAME;
+            }
+            case TYPE_REST -> {
+                this.isWorkDay = false;
+                this.isRestDay = true;
+                this.isOfficial = false;
+                this.isHoliday = true;
+                this.typeName = TYPE_REST_NAME;
+            }
+            case TYPE_OFFICIAL -> {
+                this.isWorkDay = false;
+                this.isRestDay = false;
+                this.isOfficial = true;
+                this.isHoliday = true;
+                this.typeName = TYPE_OFFICIAL_NAME;
+            }
+            default -> {
+                log.warn("未知的排班类型-{}", this.paibanType);
+                throw new BusinessException(String.format("未知的排班类型-%s", this.paibanType));
+            }
         };
     }
 
