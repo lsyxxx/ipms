@@ -116,7 +116,7 @@ public class FlowOperationLog {
      * 确认事项，json字符串保存; 可能有多个确认事项
      * {"事项确认": "本人确认对本事项。。。", "流程规范确认": "确认内容"}
      */
-    @Column(name="check_items", columnDefinition = "VARCHAR(5000)")
+    @Column(name="check_items", columnDefinition = "VARCHAR(MAX)")
     private String checkItems;
 
     /**

@@ -131,6 +131,12 @@ public class Reimburse extends WorkflowBase {
     @Column(columnDefinition="VARCHAR(1600)")
     private String managers;
 
+    /**
+     * 付款级别:正常，加急，特急
+     */
+    @Column(name="pay_lv", columnDefinition = "VARCHAR(16)")
+    private String payLevel;
+
     //-- 审批
     @Transient
     private String decision;

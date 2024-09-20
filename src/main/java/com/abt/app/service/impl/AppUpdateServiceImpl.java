@@ -88,7 +88,6 @@ public class AppUpdateServiceImpl implements AppUpdateService {
         File bak = new File(entity.getFullUrl());
         if (bak.exists()) {
             FileUtils.copyFile(bak, new File(this.runningApkUrl));
-
         } else {
             throw new BusinessException("该版本没有上传apk文件(id=" + id + ")");
         }

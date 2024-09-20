@@ -67,11 +67,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final Company DC;
     private final Configuration freemarkerConfig;
 
-    @Setter
-    @Getter
-    @Value("${abt.fw.excel.create.path}")
-    private String filedWorkExcelCreatePath;
-
 
     @Setter
     @Getter
@@ -819,9 +814,11 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         dataModel.putAll(createExcelData(table, "D"));
 
         Template template = freemarkerConfig.getTemplate(excelTemplate);
-        try(FileWriter fw = new FileWriter(fieldWorkExcelOutput)) {
+        String fileName = System.currentTimeMillis() + ".xls";
+        String path = fieldWorkExcelOutput + fileName;
+        try(FileWriter fw = new FileWriter(path)) {
             template.process(dataModel, fw);
-            return new File(fieldWorkExcelOutput);
+            return new File(path);
         }
     }
 

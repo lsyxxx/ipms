@@ -23,6 +23,7 @@ import com.abt.sys.model.entity.DataPrivilegeRule;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.PermissionService;
+import freemarker.template.TemplateException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -303,12 +305,18 @@ public class FieldController {
         List<FieldWork> records = fieldWorkService.findAtdByUserInfo(null, dept, company, start, end);
         final Table table = fieldWorkService.createStatData(yearMonth, start, end, records);
         table.setCompany(company);
+        //申请session
+        HttpSession session = request.getSession();
+        if (session == null) {
+            session = request.getSession(true);
+        }
+        session.removeAttribute(SESSION_FW_MGR_TABLE);
         request.getSession().setAttribute(SESSION_FW_MGR_TABLE, table);
         return R.success(table, "生成数据成功!");
     }
 
     @GetMapping("/stat/export")
-    public ResponseEntity<byte[]> exportExcel(HttpServletRequest request) {
+    public R<String> exportExcel(HttpServletRequest request) throws TemplateException, IOException {
         HttpSession session = request.getSession();
         if (session == null) {
             throw new BusinessException("Session超时，请重新生成数据");
@@ -318,22 +326,10 @@ public class FieldController {
             throw new BusinessException("请先生成考勤数据再导出");
         }
         Table table = (Table) attribute;
+        File file = fieldWorkService.writeExcel(table);
 
-        try {
-            File file = fieldWorkService.writeExcel(table);
-            String name = "野外作业考勤" + table.getYearMonth();
-
-            // 设置HTTP响应头
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentDispositionFormData("attachment", URLEncoder.encode(name, StandardCharsets.UTF_8));
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-
-            return new ResponseEntity<>(FileUtils.readFileToByteArray(file), headers, HttpStatus.OK);
-        } catch (Exception e) {
-            log.error("文件下载失败: ", e);
-            return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.EXPECTATION_FAILED);
-        }
-
+        System.out.println("path: " + file.getAbsolutePath());
+        return R.success(file.getAbsolutePath(), "生成excel数据成功!");
     }
 
     @GetMapping("/dtl")

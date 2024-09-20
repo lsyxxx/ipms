@@ -62,7 +62,7 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset>, Comm
    * 增加方式
    * 新购入、二手购入、无票、其它
    */
-  @NotNull(message = "增加方式不能为空!", groups = {ValidateGroup.Save.class})
+//  @NotNull(message = "增加方式不能为空!", groups = {ValidateGroup.Save.class})
   @Column(name="add_type", columnDefinition = "VARCHAR(32)")
   private String addType;
   /**
@@ -111,7 +111,7 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset>, Comm
   /**
    * 使用部门，可多个，多个用逗号分隔
    */
-  @NotNull(message = "使用部门不能为空!", groups = {ValidateGroup.Save.class})
+//  @NotNull(message = "使用部门不能为空!", groups = {ValidateGroup.Save.class})
   @Column(name="usage_dept", columnDefinition="VARCHAR(1000)")
   private String usageDept;
 
@@ -127,7 +127,7 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset>, Comm
   /**
    * 单价
    */
-  @NotNull(message = "单价不能为空", groups = {ValidateGroup.Save.class})
+//  @NotNull(message = "单价不能为空", groups = {ValidateGroup.Save.class})
   @Positive(message = "单价只能为正数", groups = {ValidateGroup.Save.class})
   @Column(name="unit_price", columnDefinition="DECIMAL(10,2)")
   private BigDecimal unitPrice;
@@ -149,7 +149,7 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset>, Comm
   /**
    * 入账原值
    */
-  @NotNull(message = "入账原值不能为空", groups = {ValidateGroup.Save.class})
+//  @NotNull(message = "入账原值不能为空", groups = {ValidateGroup.Save.class})
   @Column(name="org_book_val", columnDefinition="DECIMAL(10,2)")
   private BigDecimal originalBookValue;
 
@@ -204,13 +204,13 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset>, Comm
    * 税务科目
    * 科目编号
    */
-  @NotNull(message = "税务科目不能为空", groups = {ValidateGroup.Save.class})
+//  @NotNull(message = "税务科目不能为空", groups = {ValidateGroup.Save.class})
   @Column(name="tax_account_subject", columnDefinition="VARCHAR(16)")
   private String taxAccountSubject;
   /**
    * 核算科目
    */
-  @NotNull(message = "核算科目不能为空", groups = {ValidateGroup.Save.class})
+//  @NotNull(message = "核算科目不能为空", groups = {ValidateGroup.Save.class})
   @Column(name="accounting_subject", columnDefinition="VARCHAR(128)")
   private String accountingSubject;
 
@@ -245,12 +245,11 @@ public class FixedAsset extends AuditInfo implements WithQuery<FixedAsset>, Comm
    */
   @Column(name="remark", columnDefinition="VARCHAR(522)")
   private String remark;
+
   /**
    * 资产分类
-   * 房屋建筑物，实验设备，器具工具家具，运输工具，电子办公设备
    */
-
-  @NotNull(message = "资产分类不能为空", groups = {ValidateGroup.Save.class})
+//  @NotNull(message = "资产分类不能为空", groups = {ValidateGroup.Save.class})
   @Column(name="asset_type", columnDefinition="VARCHAR(128)")
   private String assetType;
 
