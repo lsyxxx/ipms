@@ -125,6 +125,9 @@ public class FlowOperationLog {
     @Column(name="file_json", columnDefinition = "VARCHAR(5000)")
     private String fileJson;
 
+    @Transient
+    private String signatureBase64;
+
     public static FlowOperationLog create(String operatorId, String operatorName, String processInstanceId,
                                           String processDefinitionId, String processDefinitionKey,
                                           String serviceName) {

@@ -155,3 +155,19 @@ INSERT INTO [dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [Sort
 --- 新增野外考勤配置
 INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_], [bg_color], [is_work], [short_name], [symbol_], [version_], [vid]) VALUES ('32', '1900-01-01 09:42:56.927067', '621faa40-f45c-4da8-9a8f-65b0c5353f40', '刘宋菀', '1900-01-01 09:42:56.927067', '621faa40-f45c-4da8-9a8f-65b0c5353f40', '刘宋菀', 1, '现场岩心扫描负责人', '1', '现场岩心扫描', 30.00, '现场岩心扫描负责人', 180.00, 32, 'background-color:#FABF8F;', 210.00, '元/天/人', '#FABF8F', '1', 'XY1', NULL, 1, '32');
 INSERT INTO [dbo].[fw_atd_setting] ([id], [create_date], [create_userid], [create_username], [update_date], [update_userid], [update_username], [com_type], [desc_], [enabled_], [group_], [meal_allowance], [name], [prod_allowance], [sort], [style_], [sum_allowance], [unit_], [bg_color], [is_work], [short_name], [symbol_], [version_], [vid]) VALUES ('33', '1900-01-01 09:42:56.927067', '621faa40-f45c-4da8-9a8f-65b0c5353f40', '刘宋菀', '1900-01-01 09:42:56.927067', '621faa40-f45c-4da8-9a8f-65b0c5353f40', '刘宋菀', 1, '现场岩心扫描组员', '1', '现场岩心扫描', 30.00, '现场岩心扫描组员', 150.00, 33, 'background-color:#FABF8F;', 180.00, '元/天/人', '#FABF8F', '1', 'XY2', NULL, 1, '33');
+
+
+
+
+--- 插入u_sig userid
+UPDATE u_sig
+SET user_id = (
+    SELECT u.id
+    FROM [user] u
+WHERE u.empnum = u_sig.job_number
+    )
+WHERE EXISTS (
+    SELECT 1
+    FROM [user] u
+    WHERE u.empnum = u_sig.job_number
+    );

@@ -43,6 +43,11 @@ import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -279,26 +284,58 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         if (completed.isEmpty()) {
             return completed;
         }
+        //添加签名
+        for (FlowOperationLog log : completed) {
+            //根据id获取签名图片，暂时用Name
+            String userid = log.getOperatorId();
+            String username = log.getOperatorName();
+            try {
+                final File sig = getImage(username);
+                if (sig == null) {
+                    throw new BusinessException(String.format("未查询到用户[%s]签名，请联系人事部门上传签名", username));
+                }
+                log.setSignatureBase64(Base64.getEncoder().encodeToString(Files.readAllBytes(sig.toPath())));
+            } catch (IOException e) {
+                throw new BusinessException(String.format("查询用户[%s]签名异常", username));
+            }
+
+        }
         String procId = completed.get(0).getProcessInstanceId();
         final Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
-        if (task == null) {
-            return completed;
+        if (task != null) {
+            FlowOperationLog active = new FlowOperationLog();
+            active.setEntityId(entityId);
+            active.setServiceName(serviceName);
+            active.setTaskDefinitionKey(task.getTaskDefinitionKey());
+            active.setTaskName(task.getName());
+            active.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
+            active.setOperatorId(task.getAssignee());
+            User operator = userService.getSimpleUserInfo(task.getAssignee());
+            if (operator != null) {
+                active.setOperatorName(operator.getUsername());
+            }
+            active.setTaskResult(STATE_DETAIL_ACTIVE);
+            completed.add(active);
         }
-        FlowOperationLog active = new FlowOperationLog();
-        active.setEntityId(entityId);
-        active.setServiceName(serviceName);
-        active.setTaskDefinitionKey(task.getTaskDefinitionKey());
-        active.setTaskName(task.getName());
-        active.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
-        active.setOperatorId(task.getAssignee());
-        User operator = userService.getSimpleUserInfo(task.getAssignee());
-        if (operator != null) {
-            active.setOperatorName(operator.getUsername());
-        }
-        active.setTaskResult(STATE_DETAIL_ACTIVE);
-        completed.add(active);
 
         return completed;
+    }
+
+    private File getImage(String name) throws IOException {
+        String sigPath = "F:\\sig\\";
+        Path dir = Paths.get(sigPath);
+        if (!Files.isDirectory(dir)) {
+            throw new IllegalArgumentException("提供的路径不是一个有效的目录");
+        }
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path entry : stream) {
+                if (Files.isRegularFile(entry) && entry.getFileName().toString().contains(name)) {
+                    return entry.toFile();
+                }
+            }
+        }
+        return null;
+
     }
 
     public List<String> getCandidateUserStringList(BpmnModelInstance bpmnModelInstance, String taskDefId) {
