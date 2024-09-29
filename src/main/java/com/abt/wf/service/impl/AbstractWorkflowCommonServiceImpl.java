@@ -285,21 +285,21 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             return completed;
         }
         //添加签名
-        for (FlowOperationLog log : completed) {
-            //根据id获取签名图片，暂时用Name
-            String userid = log.getOperatorId();
-            String username = log.getOperatorName();
-            try {
-                final File sig = getImage(username);
-                if (sig == null) {
-                    throw new BusinessException(String.format("未查询到用户[%s]签名，请联系人事部门上传签名", username));
-                }
-                log.setSignatureBase64(Base64.getEncoder().encodeToString(Files.readAllBytes(sig.toPath())));
-            } catch (IOException e) {
-                throw new BusinessException(String.format("查询用户[%s]签名异常", username));
-            }
-
-        }
+//        for (FlowOperationLog log : completed) {
+//            //根据id获取签名图片，暂时用Name
+//            String userid = log.getOperatorId();
+//            String username = log.getOperatorName();
+//            try {
+//                final File sig = getImage(username);
+//                if (sig == null) {
+//                    throw new BusinessException(String.format("未查询到用户[%s]签名，请联系人事部门上传签名", username));
+//                }
+//                log.setSignatureBase64(Base64.getEncoder().encodeToString(Files.readAllBytes(sig.toPath())));
+//            } catch (IOException e) {
+//                throw new BusinessException(String.format("查询用户[%s]签名异常", username));
+//            }
+//
+//        }
         String procId = completed.get(0).getProcessInstanceId();
         final Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
         if (task != null) {
