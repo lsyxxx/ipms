@@ -58,7 +58,7 @@ public class InsertSig {
                     String username = name.substring(3);
                     username = username.split("-")[0];
                     System.out.printf("username: %s\n", username);
-                    String base64 = "data:image/png;base64" + Base64.getEncoder().encodeToString(Files.readAllBytes(entry));
+                    String base64 = "data:image/png;base64," + Base64.getEncoder().encodeToString(Files.readAllBytes(entry));
                     insertImage(jobNumber, username, entry.toFile(), base64);
                 }
             }
