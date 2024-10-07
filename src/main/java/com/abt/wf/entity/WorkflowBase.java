@@ -158,6 +158,9 @@ public class WorkflowBase extends AuditInfo {
     @Transient
     private List<String> briefDesc;
 
+    @Transient
+    private String checkItemJson;
+
     public List<String> copyList() {
         if (this.getCopy() == null) {
             return List.of();

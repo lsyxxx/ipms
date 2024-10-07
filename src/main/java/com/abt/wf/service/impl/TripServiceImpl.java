@@ -10,19 +10,17 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
-import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.TripDetail;
 import com.abt.wf.entity.TripMain;
 import com.abt.wf.entity.TripOtherItem;
-import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.TripRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.TripDetailRepository;
 import com.abt.wf.repository.TripMainRepository;
 import com.abt.wf.repository.TripOtherItemRepository;
 import com.abt.wf.service.FlowOperationLogService;
+import com.abt.wf.service.SignatureService;
 import com.abt.wf.service.TripService;
-import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
@@ -35,7 +33,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,14 +54,15 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
     private final TripOtherItemRepository tripOtherItemRepository;
     private final IFileService fileService;
     private final HistoryService historyService;
+    private final SignatureService signatureService;
 
     @Value("${wf.trip.url.pre}")
     private String urlPrefix;
 
     public TripServiceImpl(IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService, RuntimeService runtimeService,
-                           BpmnModelInstance rbsTripBpmnModelInstance, TripMainRepository tripMainRepository, TripDetailRepository tripDetailRepository, TripOtherItemRepository tripOtherItemRepository, IFileService fileService, HistoryService historyService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
+                           BpmnModelInstance rbsTripBpmnModelInstance, TripMainRepository tripMainRepository, TripDetailRepository tripDetailRepository, TripOtherItemRepository tripOtherItemRepository, IFileService fileService, HistoryService historyService, SignatureService signatureService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
         this.userService = userService;
         this.taskService = taskService;
@@ -77,6 +75,7 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         this.tripOtherItemRepository = tripOtherItemRepository;
         this.fileService = fileService;
         this.historyService = historyService;
+        this.signatureService = signatureService;
     }
 
 

@@ -13,6 +13,7 @@ import com.abt.wf.repository.PayVoucherRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.PayVoucherService;
+import com.abt.wf.service.SignatureService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -46,16 +47,16 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     private final RepositoryService repositoryService;
     private final RuntimeService runtimeService;
     private final PayVoucherRepository payVoucherRepository;
-
+    private final SignatureService signatureService;
     private final BpmnModelInstance payVoucherModelInstance;
 
     private final IFileService fileService;
     private final HistoryService historyService;
 
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
-                                 @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository,
+                                 @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository, SignatureService signatureService,
                                  @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, IFileService fileService, HistoryService historyService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
@@ -63,6 +64,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.payVoucherRepository = payVoucherRepository;
+        this.signatureService = signatureService;
         this.payVoucherModelInstance = payVoucherModelInstance;
         this.fileService = fileService;
         this.historyService = historyService;

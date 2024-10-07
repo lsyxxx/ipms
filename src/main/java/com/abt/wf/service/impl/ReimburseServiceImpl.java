@@ -18,6 +18,7 @@ import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
+import com.abt.wf.service.SignatureService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -62,6 +63,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final IFileService fileService;
 
     private final HistoryService historyService;
+    private final SignatureService signatureService;
 
     private List<User> copyList;
 
@@ -70,8 +72,8 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
-                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
+                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService,signatureService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
@@ -83,6 +85,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.rbsBpmnModelInstance = rbsBpmnModelInstance;
         this.fileService = fileService;
         this.historyService = historyService;
+        this.signatureService = signatureService;
     }
 
 
@@ -115,6 +118,9 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     void setApprovalResult(Reimburse form, Reimburse entity) {
         entity.setDecision(form.getDecision());
         entity.setComment(form.getComment());
+        if (StringUtils.isNotBlank(form.getPayLevel())) {
+            entity.setPayLevel(form.getPayLevel());
+        }
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
     }

@@ -16,11 +16,11 @@ import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
-import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
 import com.abt.wf.service.BusinessService;
 import com.abt.wf.service.FlowOperationLogService;
+import com.abt.wf.service.SignatureService;
 import com.abt.wf.service.WorkFlowService;
 import com.abt.wf.util.WorkFlowUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -43,11 +43,6 @@ import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,9 +64,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     private RuntimeService runtimeService;
     private IFileService fileService;
     private HistoryService historyService;
-
-//    @Value("${com.abt.file.upload.save}")
-//    private String savedRoot;
+    private SignatureService signatureService;
 
     @Override
     public void setAuthUser(String userid) {
@@ -285,21 +278,19 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             return completed;
         }
         //添加签名
-//        for (FlowOperationLog log : completed) {
-//            //根据id获取签名图片，暂时用Name
-//            String userid = log.getOperatorId();
-//            String username = log.getOperatorName();
-//            try {
-//                final File sig = getImage(username);
-//                if (sig == null) {
-//                    throw new BusinessException(String.format("未查询到用户[%s]签名，请联系人事部门上传签名", username));
-//                }
-//                log.setSignatureBase64(Base64.getEncoder().encodeToString(Files.readAllBytes(sig.toPath())));
-//            } catch (IOException e) {
-//                throw new BusinessException(String.format("查询用户[%s]签名异常", username));
-//            }
-//
-//        }
+        for (FlowOperationLog optLog : completed) {
+            if (optLog.getTaskName().contains("会计") || optLog.getTaskName().contains("出纳")) {
+                //会计审批和出纳不显示签名
+                continue;
+            }
+            //根据id获取签名图片，暂时用Name
+            String userid = optLog.getOperatorId();
+            String imgStr = getImageBase64String(userid);
+            if (StringUtils.isBlank(imgStr)) {
+                log.warn("未查询到用户({})签名!", userid);
+            }
+            optLog.setSignatureBase64(imgStr);
+        }
         String procId = completed.get(0).getProcessInstanceId();
         final Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
         if (task != null) {
@@ -321,21 +312,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         return completed;
     }
 
-    private File getImage(String name) throws IOException {
-        String sigPath = "F:\\sig\\";
-        Path dir = Paths.get(sigPath);
-        if (!Files.isDirectory(dir)) {
-            throw new IllegalArgumentException("提供的路径不是一个有效的目录");
-        }
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-            for (Path entry : stream) {
-                if (Files.isRegularFile(entry) && entry.getFileName().toString().contains(name)) {
-                    return entry.toFile();
-                }
-            }
-        }
-        return null;
-
+    public String getImageBase64String(String userid) {
+        return signatureService.getUserSignatureBase64StringByUserid(userid);
     }
 
     public List<String> getCandidateUserStringList(BpmnModelInstance bpmnModelInstance, String taskDefId) {

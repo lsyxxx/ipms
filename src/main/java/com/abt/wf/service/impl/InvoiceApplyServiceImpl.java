@@ -12,6 +12,7 @@ import com.abt.wf.repository.InvoiceApplyRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.InvoiceApplyService;
+import com.abt.wf.service.SignatureService;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
@@ -47,6 +48,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
 
     private final IFileService fileService;
     private final HistoryService historyService;
+    private final SignatureService signatureService;
 
 
     @Value("${wf.inv.url.pre}")
@@ -56,8 +58,8 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
                                    TaskService taskService, FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
                                    RuntimeService runtimeService,
                                    InvoiceApplyRepository invoiceApplyRepository,
-                                   BpmnModelInstance invoiceApplyBpmnModelInstance, IFileService fileService, HistoryService historyService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
+                                   BpmnModelInstance invoiceApplyBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
         this.userService = userService;
         this.taskService = taskService;
@@ -68,6 +70,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
         this.invoiceApplyBpmnModelInstance = invoiceApplyBpmnModelInstance;
         this.fileService = fileService;
         this.historyService = historyService;
+        this.signatureService = signatureService;
     }
 
 

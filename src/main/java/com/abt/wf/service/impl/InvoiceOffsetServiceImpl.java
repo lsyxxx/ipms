@@ -17,6 +17,7 @@ import com.abt.wf.repository.InvoiceOffsetRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.InvoiceOffsetService;
+import com.abt.wf.service.SignatureService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -51,6 +52,7 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     private final TaskService taskService;
     private final FlowOperationLogService flowOperationLogService;
     private final UserService userService;
+    private final SignatureService signatureService;
 
     private final InvoiceOffsetRepository invoiceOffsetRepository;
 
@@ -60,16 +62,17 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
     private final HistoryService historyService;
 
     public InvoiceOffsetServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
-                                    @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService,
+                                    @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, SignatureService signatureService,
                                     InvoiceOffsetRepository invoiceOffsetRepository,
                                     @Qualifier("invoiceOffsetBpmnModelInstance") BpmnModelInstance invoiceOffsetBpmnModelInstance, IFileService fileService, HistoryService historyService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.taskService = taskService;
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
+        this.signatureService = signatureService;
         this.invoiceOffsetRepository = invoiceOffsetRepository;
         this.invoiceOffsetBpmnModelInstance = invoiceOffsetBpmnModelInstance;
         this.fileService = fileService;

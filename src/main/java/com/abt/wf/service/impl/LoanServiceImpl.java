@@ -12,6 +12,7 @@ import com.abt.wf.repository.LoanRepository;
 import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.LoanService;
+import com.abt.wf.service.SignatureService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -46,14 +47,15 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     private final RepositoryService repositoryService;
     private final RuntimeService runtimeService;
     private final BpmnModelInstance loanBpmnModelInstance;
+    private final SignatureService signatureService;
 
     private final IFileService fileService;
     private final HistoryService historyService;
 
     public LoanServiceImpl(LoanRepository loanRepository, IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
-                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, IFileService fileService, HistoryService historyService) {
-        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService);
+                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, SignatureService signatureService, IFileService fileService, HistoryService historyService) {
+        super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.loanRepository = loanRepository;
         this.identityService = identityService;
         this.userService = userService;
@@ -62,6 +64,7 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.loanBpmnModelInstance = loanBpmnModelInstance;
+        this.signatureService = signatureService;
         this.fileService = fileService;
         this.historyService = historyService;
     }
