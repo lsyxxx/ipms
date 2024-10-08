@@ -2,16 +2,18 @@ package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.User;
+import com.abt.finance.entity.AccountItem;
+import com.abt.finance.entity.BankAccount;
 import com.abt.wf.entity.act.ActHiTaskInst;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -19,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import static com.abt.wf.config.Constants.KEY_MANAGER;
+import static com.abt.wf.config.Constants.*;
 
 /**
  *
@@ -137,6 +139,50 @@ public class Reimburse extends WorkflowBase {
     @Column(name="pay_lv", columnDefinition = "VARCHAR(16)")
     private String payLevel;
 
+    @Column(name="payt_type", length = 32)
+    private String payType;
+
+    /**
+     * 付款账号id
+     */
+    @Column(name="pay_acc_id", columnDefinition="VARCHAR(128)")
+    private String payAccountId;
+
+    @OneToOne
+    @JoinColumn(name = "pay_acc_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private BankAccount payBankAccount;
+
+    /**
+     * 付款时间
+     */
+    @Column(name="pay_date")
+    private LocalDate payDate;
+    /**
+     * 关联税务会计科目id
+     */
+    @Column(name="tax_item_id", columnDefinition="VARCHAR(128)")
+    private String taxItemId;
+
+    @OneToOne
+    @JoinColumn(name = "tax_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private AccountItem taxItem;
+
+    /**
+     * 关联核算会计科目id
+     */
+    @Column(name="acc_item_id", columnDefinition="VARCHAR(128)")
+    private String accountItemId;
+
+    @OneToOne
+    @JoinColumn(name = "acc_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private AccountItem accountItem;
+
+
+
+
     //-- 审批
     @Transient
     private String decision;
@@ -144,6 +190,7 @@ public class Reimburse extends WorkflowBase {
     private String comment;
     @Transient
     private HashMap<String, Object> variableMap = new HashMap<>();
+
 
     //-- 流程参数key
     public static final String KEY_COST = "cost";
@@ -159,6 +206,7 @@ public class Reimburse extends WorkflowBase {
             variableMap.put(KEY_MANAGER, List.of(this.getManagers().split(",")));
         }
         this.variableMap.put(KEY_STARTER, this.getSubmitUserid());
+        this.variableMap.put(KEY_COST, this.getCost());
 //        this.variableMap.put(VAR_KEY_DESC, this.description());
         return this.variableMap;
     }

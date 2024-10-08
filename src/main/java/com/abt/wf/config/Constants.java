@@ -85,7 +85,7 @@ public class Constants {
 
     //--- selectUserType
     /**
-     * 选择用户方式-用户自选
+     * 选择用户方式-用户自选多人
      */
     public static final int SELECT_USER_TYPE_MANUAL = 0;
     /**
@@ -102,6 +102,10 @@ public class Constants {
      */
     public static final int SELECT_USER_TYPE_CANDIDATE = 3;
     public static final int SELECT_USER_TYPE_COPY = 4;
+    /**
+     * 用户自选单人
+     */
+    public static final int SELECT_USER_TYPE_SINGLE = 5;
     /**
      * 选择用户方式-所有人
      * 一般用于申请节点
@@ -129,6 +133,8 @@ public class Constants {
     public static final String KEY_STARTER = "starter";
     public static final String KEY_MANAGER = "managerList";
     public static final String KEY_COST = "cost";
+    public static final String KEY_MANAGER1 = "manager1";
+    public static final String KEY_MANAGER2 = "manager2";
 
     //--- setting
     public static final String SETTING_TYPE_RBS_COPY = "rbsDefaultCopy";

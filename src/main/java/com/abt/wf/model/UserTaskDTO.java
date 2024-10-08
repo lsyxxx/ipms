@@ -38,10 +38,16 @@ public class UserTaskDTO extends FlowOperationLog {
      *
      */
     private String taskType;
+
+    /**
+     * 节点描述，由流程图定义
+     */
+    private String taskDesc;
     /**
      * 选择用户方式
-     * 0: 用户自选
+     * 0: 用户自选单人
      * 1: 指定用户
+     * 2: 用户自选多人
      */
     private int selectUserType = Constants.SELECT_USER_TYPE_MANUAL;
     /**
@@ -67,6 +73,19 @@ public class UserTaskDTO extends FlowOperationLog {
      * 如果是多实例节点，那么有子节点
      */
     private List<UserTaskDTO> taskList = new ArrayList<>();
+
+    /**
+     * 审批人（单人）
+     * 可以是指定，也可没有
+     */
+    private User assignee;
+
+
+    /**
+     * 审批人（多人）
+     */
+    private List<User> assigneeList = new ArrayList<>();
+
 
     public UserTaskDTO setProperties(Collection<CamundaProperty> collection) {
         collection.forEach(i -> {

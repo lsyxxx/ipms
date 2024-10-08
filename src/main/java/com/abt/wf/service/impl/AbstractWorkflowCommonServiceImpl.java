@@ -238,6 +238,12 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         child.setProcessDefinitionKey(form.getProcessDefinitionKey());
         child.setProcessDefinitionId(form.getProcessDefinitionId());
         if (node instanceof UserTask u) {
+            UserTask userTaskModel = (UserTask) u;
+            StringBuilder desc = new StringBuilder();
+            userTaskModel.getDocumentations().forEach(d -> {
+                desc.append(d.getTextContent());
+            });
+            parent.setTaskDesc(desc.toString());
             final Collection<CamundaProperty> extensionProperties = WorkFlowUtil.queryUserTaskBpmnModelExtensionProperties(bpmnModelInstance, node.getId());
             if (extensionProperties != null) {
                 parent.setProperties(extensionProperties);
@@ -246,6 +252,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             if (parent.isApplyNode()) {
                 child.setOperatorId(form.getSubmitUserid());
                 child.setOperatorName(form.getSubmitUsername());
+                parent.setAssignee(new User(form.getSubmitUserid(), form.getSubmitUsername()));
             } else if (parent.isSeqApprove()) {
                 String assigneeId = u.getCamundaAssignee();
                 //指定用户才能解析
@@ -254,6 +261,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
                     if (simpleUserInfo != null) {
                         child.setOperatorId(assigneeId);
                         child.setOperatorName(simpleUserInfo.getUsername());
+                        parent.setAssignee(new User(assigneeId, simpleUserInfo.getUsername()));
                     } else {
                         log.warn("未查询到用户{}", assigneeId);
                     }
@@ -279,11 +287,10 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         }
         //添加签名
         for (FlowOperationLog optLog : completed) {
-            if (optLog.getTaskName().contains("会计") || optLog.getTaskName().contains("出纳")) {
-                //会计审批和出纳不显示签名
+            if (optLog.getTaskName() != null && optLog.getTaskName().contains("出纳")) {
+                //出纳不显示签名
                 continue;
             }
-            //根据id获取签名图片，暂时用Name
             String userid = optLog.getOperatorId();
             String imgStr = getImageBase64String(userid);
             if (StringUtils.isBlank(imgStr)) {

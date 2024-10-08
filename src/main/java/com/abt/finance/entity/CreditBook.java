@@ -105,15 +105,24 @@ public class CreditBook extends AuditInfo implements UserJpaAudit {
 
 
     /**
-     * 关联会计科目id
+     * 关联税务会计科目id
      */
-    @NotNull
+    @Column(name="tax_item_id", columnDefinition="VARCHAR(128)")
+    private String taxItemId;
+    @Column(name="tax_item_name", length = 64)
+    private String taxItemName;
+    @Column(name="tax_item_code", length = 64 )
+    private String taxItemCode;
+
+    /**
+     * 关联核算会计科目id
+     */
     @Column(name="acc_item_id", columnDefinition="VARCHAR(128)")
     private String accountItemId;
-
-    private String accountItemCode;
-
+    @Column(name="acc_item_name", length = 64)
     private String accountItemName;
+    @Column(name="acc_item_code", length = 64 )
+    private String accountItemCode;
 
     /**
      * 付款方式

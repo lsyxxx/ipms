@@ -46,8 +46,7 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0tg101u</bpmn:incoming>
-      <bpmn:outgoing>Flow_0hchdh3</bpmn:outgoing>
-      <bpmn:outgoing>Flow_14ytyqz</bpmn:outgoing>
+      <bpmn:outgoing>Flow_01ovdtc</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="rbsLoan_ceo" name="总经理" camunda:assignee="U20230406002">
       <bpmn:extensionElements>
@@ -57,8 +56,9 @@
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_14ytyqz</bpmn:incoming>
+      <bpmn:incoming>Flow_01ovdtc</bpmn:incoming>
       <bpmn:outgoing>Flow_1cc5liz</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1neclh7</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="rbsLoan_cashier" name="出纳" camunda:assignee="U20230406007">
       <bpmn:extensionElements>
@@ -69,7 +69,7 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0bvo277</bpmn:incoming>
-      <bpmn:incoming>Flow_0ymt3qk</bpmn:incoming>
+      <bpmn:incoming>Flow_1neclh7</bpmn:incoming>
       <bpmn:outgoing>Flow_18wy4p8</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="rbsLoan_chief" name="董事长" camunda:assignee="U20230406001">
@@ -100,26 +100,14 @@
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1p7dmo6" sourceRef="rbsLoan_managers" targetRef="rbsLoan_acc" />
     <bpmn:sequenceFlow id="Flow_0tg101u" sourceRef="rbsLoan_acc" targetRef="rbsLoan_finMgr" />
-    <bpmn:userTask id="rbsLoan_vp" name="常务副总" camunda:assignee="U20230406020">
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0hchdh3</bpmn:incoming>
-      <bpmn:outgoing>Flow_0ymt3qk</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_0hchdh3" name="金额小于5000" sourceRef="rbsLoan_finMgr" targetRef="rbsLoan_vp">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1cc5liz" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_chief" />
-    <bpmn:sequenceFlow id="Flow_14ytyqz" name="金额大于等于5000" sourceRef="rbsLoan_finMgr" targetRef="rbsLoan_ceo">
+    <bpmn:sequenceFlow id="Flow_1cc5liz" name="金额大于等于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_chief">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0bvo277" sourceRef="rbsLoan_chief" targetRef="rbsLoan_cashier" />
-    <bpmn:sequenceFlow id="Flow_0ymt3qk" sourceRef="rbsLoan_vp" targetRef="rbsLoan_cashier" />
+    <bpmn:sequenceFlow id="Flow_01ovdtc" sourceRef="rbsLoan_finMgr" targetRef="rbsLoan_ceo" />
+    <bpmn:sequenceFlow id="Flow_1neclh7" name="金额小于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_cashier">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsLoan">
@@ -145,6 +133,10 @@
         <dc:Bounds x="960" y="290" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_144yvgd_di" bpmnElement="rbsLoan_cashier">
+        <dc:Bounds x="570" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_126cqbt_di" bpmnElement="rbsLoan_chief">
         <dc:Bounds x="780" y="290" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -157,14 +149,6 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1cdtzku_di" bpmnElement="rbsLoan_acc">
         <dc:Bounds x="750" y="57" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1wq9zl1_di" bpmnElement="rbsLoan_vp">
-        <dc:Bounds x="1120" y="290" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_144yvgd_di" bpmnElement="rbsLoan_cashier">
-        <dc:Bounds x="570" y="290" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1erl8o0_di" bpmnElement="Flow_1erl8o0">
@@ -187,34 +171,29 @@
         <di:waypoint x="850" y="97" />
         <di:waypoint x="960" y="97" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0hchdh3_di" bpmnElement="Flow_0hchdh3">
-        <di:waypoint x="1060" y="97" />
-        <di:waypoint x="1170" y="97" />
-        <di:waypoint x="1170" y="290" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1082" y="79" width="68" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1cc5liz_di" bpmnElement="Flow_1cc5liz">
         <di:waypoint x="960" y="330" />
         <di:waypoint x="880" y="330" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_14ytyqz_di" bpmnElement="Flow_14ytyqz">
-        <di:waypoint x="1010" y="137" />
-        <di:waypoint x="1010" y="290" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="980" y="211" width="90" height="14" />
+          <dc:Bounds x="876" y="312" width="90" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0bvo277_di" bpmnElement="Flow_0bvo277">
         <di:waypoint x="780" y="330" />
         <di:waypoint x="670" y="330" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ymt3qk_di" bpmnElement="Flow_0ymt3qk">
-        <di:waypoint x="1170" y="370" />
-        <di:waypoint x="1170" y="470" />
-        <di:waypoint x="620" y="470" />
+      <bpmndi:BPMNEdge id="Flow_01ovdtc_di" bpmnElement="Flow_01ovdtc">
+        <di:waypoint x="1010" y="137" />
+        <di:waypoint x="1010" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1neclh7_di" bpmnElement="Flow_1neclh7">
+        <di:waypoint x="1010" y="370" />
+        <di:waypoint x="1010" y="460" />
+        <di:waypoint x="620" y="460" />
         <di:waypoint x="620" y="370" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="781" y="442" width="68" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

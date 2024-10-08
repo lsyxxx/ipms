@@ -47,8 +47,9 @@
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0fqb2l0</bpmn:incoming>
+      <bpmn:incoming>Flow_00aedfh</bpmn:incoming>
       <bpmn:outgoing>Flow_0cf1909</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1p09bg6</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="rbsTrip_cashier" name="出纳" camunda:assignee="U20230406007">
       <bpmn:documentation>出纳审批</bpmn:documentation>
@@ -60,7 +61,7 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0svdhep</bpmn:incoming>
-      <bpmn:incoming>Flow_08xfwl4</bpmn:incoming>
+      <bpmn:incoming>Flow_1p09bg6</bpmn:incoming>
       <bpmn:outgoing>Flow_0dmj6b7</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:endEvent id="Event_06433k8" name="结束">
@@ -77,8 +78,7 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0z2rhvu</bpmn:incoming>
-      <bpmn:outgoing>Flow_0kb01x8</bpmn:outgoing>
-      <bpmn:outgoing>Flow_0fqb2l0</bpmn:outgoing>
+      <bpmn:outgoing>Flow_00aedfh</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="rbsTrip_chief" name="董事长" camunda:assignee="U20230406001">
       <bpmn:documentation>董事长审批</bpmn:documentation>
@@ -105,26 +105,14 @@
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1pbn1jw" sourceRef="rbsTrip_managers" targetRef="rbsTrip_acc" />
     <bpmn:sequenceFlow id="Flow_0z2rhvu" sourceRef="rbsTrip_acc" targetRef="rbsTrip_finMgr" />
-    <bpmn:sequenceFlow id="Flow_0cf1909" sourceRef="rbsTrip_ceo" targetRef="rbsTrip_chief" />
-    <bpmn:userTask id="rbsTrip_vp" name="常务副总" camunda:assignee="U20230406020">
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0kb01x8</bpmn:incoming>
-      <bpmn:outgoing>Flow_08xfwl4</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_0kb01x8" name="金额小于5000" sourceRef="rbsTrip_finMgr" targetRef="rbsTrip_vp">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0fqb2l0" name="金额大于等于5000" sourceRef="rbsTrip_finMgr" targetRef="rbsTrip_ceo">
+    <bpmn:sequenceFlow id="Flow_0cf1909" name="金额大于等于5000" sourceRef="rbsTrip_ceo" targetRef="rbsTrip_chief">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0svdhep" sourceRef="rbsTrip_chief" targetRef="rbsTrip_cashier" />
-    <bpmn:sequenceFlow id="Flow_08xfwl4" sourceRef="rbsTrip_vp" targetRef="rbsTrip_cashier" />
+    <bpmn:sequenceFlow id="Flow_1p09bg6" name="金额小于5000" sourceRef="rbsTrip_ceo" targetRef="rbsTrip_cashier">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_00aedfh" sourceRef="rbsTrip_finMgr" targetRef="rbsTrip_ceo" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsTrip">
@@ -143,7 +131,7 @@
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0fb9r5q_di" bpmnElement="rbsTrip_ceo">
-        <dc:Bounds x="810" y="300" width="100" height="80" />
+        <dc:Bounds x="1050" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_013fkd9_di" bpmnElement="rbsTrip_cashier">
@@ -161,15 +149,11 @@
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_05o7n6g_di" bpmnElement="rbsTrip_chief">
-        <dc:Bounds x="630" y="300" width="100" height="80" />
+        <dc:Bounds x="670" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_10kiwtz_di" bpmnElement="rbsTrip_acc">
         <dc:Bounds x="630" y="77" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1wq9zl1_di" bpmnElement="rbsTrip_vp">
-        <dc:Bounds x="990" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0ww0a4j_di" bpmnElement="Flow_0ww0a4j">
@@ -196,33 +180,29 @@
         <di:waypoint x="810" y="117" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0cf1909_di" bpmnElement="Flow_0cf1909">
-        <di:waypoint x="810" y="340" />
-        <di:waypoint x="730" y="340" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0kb01x8_di" bpmnElement="Flow_0kb01x8">
-        <di:waypoint x="910" y="117" />
-        <di:waypoint x="1040" y="117" />
-        <di:waypoint x="1040" y="300" />
+        <di:waypoint x="1050" y="340" />
+        <di:waypoint x="770" y="340" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="941" y="99" width="68" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0fqb2l0_di" bpmnElement="Flow_0fqb2l0">
-        <di:waypoint x="860" y="157" />
-        <di:waypoint x="860" y="300" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="830" y="226" width="90" height="14" />
+          <dc:Bounds x="865" y="322" width="90" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0svdhep_di" bpmnElement="Flow_0svdhep">
-        <di:waypoint x="630" y="340" />
+        <di:waypoint x="670" y="340" />
         <di:waypoint x="370" y="340" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_08xfwl4_di" bpmnElement="Flow_08xfwl4">
-        <di:waypoint x="1040" y="380" />
-        <di:waypoint x="1040" y="500" />
-        <di:waypoint x="320" y="500" />
+      <bpmndi:BPMNEdge id="Flow_1p09bg6_di" bpmnElement="Flow_1p09bg6">
+        <di:waypoint x="1100" y="380" />
+        <di:waypoint x="1100" y="490" />
+        <di:waypoint x="320" y="490" />
         <di:waypoint x="320" y="380" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="676" y="472" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_00aedfh_di" bpmnElement="Flow_00aedfh">
+        <di:waypoint x="910" y="117" />
+        <di:waypoint x="1100" y="117" />
+        <di:waypoint x="1100" y="300" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
