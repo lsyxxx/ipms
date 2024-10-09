@@ -65,6 +65,8 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final HistoryService historyService;
     private final SignatureService signatureService;
 
+    private final CreditAndDebitBook<Reimburse> creditAndDebitBook;
+
     private List<User> copyList;
 
     @Value("${wf.rbs.url.pre}")
@@ -72,7 +74,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
-                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService) {
+                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService, CreditAndDebitBook<Reimburse> creditAndDebitBook) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService,signatureService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
@@ -86,6 +88,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.fileService = fileService;
         this.historyService = historyService;
         this.signatureService = signatureService;
+        this.creditAndDebitBook = creditAndDebitBook;
     }
 
 
@@ -121,6 +124,9 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         if (StringUtils.isNotBlank(form.getPayLevel())) {
             entity.setPayLevel(form.getPayLevel());
         }
+
+        creditAndDebitBook.setCreditBookProperty(form, entity, entity.getCurrentTaskName());
+
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
     }

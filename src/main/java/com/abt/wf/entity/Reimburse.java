@@ -1,10 +1,9 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
-import com.abt.common.model.User;
 import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
-import com.abt.wf.entity.act.ActHiTaskInst;
+import com.abt.finance.service.ICreditBook;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -35,7 +34,7 @@ import static com.abt.wf.config.Constants.*;
 @DynamicUpdate
 @Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Reimburse extends WorkflowBase {
+public class Reimburse extends WorkflowBase implements ICreditBook {
 
     @Id
     @GeneratedValue(generator  = "timestampIdGenerator")
@@ -225,4 +224,5 @@ public class Reimburse extends WorkflowBase {
     public int hashCode() {
         return Objects.hash(super.hashCode(), id, cost, reserveLoan, reserveRefund, reason, rbsDate, voucherNum, rbsType, company, project, departmentId, departmentName, teamId, teamName, pdfFileList, otherFileList, managers);
     }
+
 }

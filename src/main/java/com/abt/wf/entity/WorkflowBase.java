@@ -109,10 +109,8 @@ public class WorkflowBase extends AuditInfo {
     //--------------------------
     //没有查询到则忽略
     @OneToOne(fetch = FetchType.LAZY)
-//    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "proc_inst_id", referencedColumnName = "PROC_INST_ID_", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     @NotFound(action= NotFoundAction.IGNORE)
-//    private List<ActRuTask> currentTask;
     private ActRuTask currentTask;
 
     @OneToMany(fetch = FetchType.LAZY)
@@ -168,8 +166,4 @@ public class WorkflowBase extends AuditInfo {
         return List.of(this.getCopy().split(","));
     }
 
-    //获取一个，暂时这么处理
-//    public ActRuTask getCurrentTask() {
-//        return (this.currentTask == null || this.currentTask.isEmpty()) ? null : this.currentTask.get(0);
-//    }
 }

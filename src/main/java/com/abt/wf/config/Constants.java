@@ -146,6 +146,10 @@ public class Constants {
     public static final String  SAVE_SERVICE_INV = "inv";
     public static final String  SAVE_SERVICE_INVOFFSET = "invoffset";
 
+    public static final String NODE_ACC = "会计审批";
+    public static final String NODE_FI_MGR = "财务总监";
+    public static final String NODE_CASHIER = "出纳";
+
     public static String getSaveServiceBy(String processDefinitionKey) {
         switch(processDefinitionKey) {
             case DEF_KEY_RBS:

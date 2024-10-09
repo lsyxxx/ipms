@@ -18,10 +18,7 @@ import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
-import com.abt.wf.service.BusinessService;
-import com.abt.wf.service.FlowOperationLogService;
-import com.abt.wf.service.SignatureService;
-import com.abt.wf.service.WorkFlowService;
+import com.abt.wf.service.*;
 import com.abt.wf.util.WorkFlowUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.AllArgsConstructor;
@@ -582,7 +579,6 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
 
     abstract void clearEntityId(T entity);
-//    abstract void copyFile(T entity, String service) ;
 
     void copyFile(T entity, String def) {
         final String service = getSaveServiceBy(def);
@@ -594,11 +590,9 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
                 final SystemFile newFile = fileService.copyFile(file, i.getOriginalName(), service, true, true);
                 newList.add(newFile);
             });
-//            entity.setOtherFileList(JsonUtil.toJson(newList));
             setFileListJson(entity, JsonUtil.toJson(newList));
         } catch (Exception e) {
             log.error("copy file error", e);
-//            entity.setOtherFileList(null);
             setFileListJson(entity, null);
         }
     }
