@@ -18,15 +18,18 @@ public class CreditAndDebitBook<T extends ICreditBook> {
     public void setCreditBookProperty(T form, T entity, String role) {
         if (role == null)
             return;
-        if (Constants.NODE_ACC.equals(role)) {
-            //会计
-            entity.setAccountItemId(form.getAccountItemId());
-            entity.setTaxItemId(form.getTaxItemId());
-            entity.setPayType(form.getPayType());
-            entity.setPayAccountId(form.getPayAccountId());
-        } else if (Constants.NODE_FI_MGR.equals(role)) {
-            //财务总监
-            entity.setPayLevel(form.getPayLevel());
+        switch (role) {
+            case Constants.NODE_ACC -> {
+                //会计
+                entity.setAccountItemId(form.getAccountItemId());
+                entity.setTaxItemId(form.getTaxItemId());
+                entity.setPayType(form.getPayType());
+                entity.setPayAccountId(form.getPayAccountId());
+            }
+            case Constants.NODE_FI_MGR ->
+                //财务总监
+                    entity.setPayLevel(form.getPayLevel());
+            case Constants.NODE_CASHIER -> entity.setPayDate(form.getPayDate());
         }
     }
 
