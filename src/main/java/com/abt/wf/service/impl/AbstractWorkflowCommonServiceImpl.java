@@ -390,6 +390,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         //pass log
         FlowOperationLog optLog = FlowOperationLog.passLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, id);
         optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
+        optLog.setCheckItems(form.getCheckItemJson());
         optLog.setComment(comment);
         optLog.setTaskResult(WorkFlowUtil.decisionTranslate(getDecision(form)));
         flowOperationLogService.saveLog(optLog);

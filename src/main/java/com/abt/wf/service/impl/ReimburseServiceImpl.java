@@ -124,7 +124,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         if (StringUtils.isNotBlank(form.getPayLevel())) {
             entity.setPayLevel(form.getPayLevel());
         }
-
+        entity.setCheckItemJson(form.getCheckItemJson());
         creditAndDebitBook.setCreditBookProperty(form, entity, entity.getCurrentTaskName());
 
         entity.setSubmitUserid(form.getSubmitUserid());

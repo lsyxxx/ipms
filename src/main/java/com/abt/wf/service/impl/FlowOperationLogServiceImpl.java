@@ -6,6 +6,7 @@ import com.abt.wf.service.FlowOperationLogService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FlowOperationLogServiceImpl implements FlowOperationLogService {
@@ -23,5 +24,10 @@ public class FlowOperationLogServiceImpl implements FlowOperationLogService {
     @Override
     public List<FlowOperationLog> findLogsByEntityId(String entityId) {
         return flowOperationLogRepository.findByEntityIdOrderByTaskStartTimeAsc(entityId);
+    }
+
+    @Override
+    public Optional<FlowOperationLog> findById(String id) {
+        return flowOperationLogRepository.findById(id);
     }
 }

@@ -3,17 +3,26 @@ package com.abt.wf.controller;
 import com.abt.common.model.Page;
 import com.abt.common.model.R;
 import com.abt.common.model.User;
+import com.abt.common.util.JsonUtil;
+import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.service.IFileService;
+import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.ActivitiRequestForm;
 import com.abt.wf.service.ActivitiService;
+import com.abt.wf.service.FlowOperationLogService;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,9 +34,18 @@ import java.util.List;
 public class WorkflowController {
     private final ActivitiService activitiService;;
 
+    private final IFileService fileService;
 
-    public WorkflowController(ActivitiService activitiService) {
+    private final FlowOperationLogService flowOperationLogService;
+
+    @Value("${com.abt.file.upload.save}")
+    private String savedRoot;
+
+
+    public WorkflowController(ActivitiService activitiService, IFileService fileService, FlowOperationLogService flowOperationLogService) {
         this.activitiService = activitiService;
+        this.fileService = fileService;
+        this.flowOperationLogService = flowOperationLogService;
     }
 
     /**
@@ -103,5 +121,49 @@ public class WorkflowController {
     public R<List<ProcessInstance>> runtimeProcess(@ModelAttribute ActivitiRequestForm requestForm) {
         final Page<ProcessInstance> processInstancePage = activitiService.runtimeProcess(requestForm);
         return R.success(processInstancePage.getContent(), processInstancePage.getTotal());
+    }
+
+
+    /**
+     * 流程审批节点补充附件
+     */
+    @PostMapping("/optLogAtt/upload")
+    public R<List<SystemFile>> optLogAttachmentUpload(@RequestParam("file") MultipartFile[] files, @RequestParam String optLogId,
+                                                      @RequestParam String service) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        if (files == null || files.length < 1) {
+            log.warn("用户没有上传文件");
+            return R.noFileUpload();
+        }
+
+        String failed = null;
+        String msg = null;
+        List<SystemFile> saved = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) {
+                continue;
+            }
+            try {
+                SystemFile systemFile = fileService.saveFile(file, savedRoot, service, true, true);
+                saved.add(systemFile);
+            } catch (Exception e) {
+                log.error("保存文件失败", e);
+                if (failed != null) {
+                    failed = " ," + failed + file.getOriginalFilename();
+                } else {
+                    failed = file.getName();
+                }
+                msg = MessageUtil.format("com.abt.sys.FileController.save.error", failed);
+            }
+        }
+
+        flowOperationLogService.findById(optLogId)
+                .ifPresent(opt -> {
+                    opt.setFileJson(JsonUtil.convertJson(saved));
+                    flowOperationLogService.saveLog(opt);
+                });
+
+        return R.success(saved, saved.size(), msg);
+
     }
 }
