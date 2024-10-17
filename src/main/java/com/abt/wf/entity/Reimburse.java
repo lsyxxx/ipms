@@ -180,8 +180,6 @@ public class Reimburse extends WorkflowBase implements ICreditBook {
     private AccountItem accountItem;
 
 
-
-
     //-- 审批
     @Transient
     private String decision;

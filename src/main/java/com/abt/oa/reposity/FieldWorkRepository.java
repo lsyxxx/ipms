@@ -132,4 +132,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
     @Modifying
     @Query("update FieldWork fw set fw.isDeleted = true where fw.id = :id")
     void softDeleteById(String id);
+
+    List<FieldWork> findByAttendanceDateAndUserid(LocalDate attendanceDate, String userid);
+
 }

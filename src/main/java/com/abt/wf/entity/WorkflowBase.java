@@ -154,10 +154,10 @@ public class WorkflowBase extends AuditInfo {
     private String submitUsername;
 
     @Transient
-    private List<String> briefDesc;
+    private String checkItemJson;
 
     @Transient
-    private String checkItemJson;
+    private List<String> briefDesc;
 
     public List<String> copyList() {
         if (this.getCopy() == null) {

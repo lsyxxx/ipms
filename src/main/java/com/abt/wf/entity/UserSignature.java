@@ -17,7 +17,7 @@ public class UserSignature {
     private String id;
 
     @Size(max = 255)
-    @Column(name = "job_number")
+    @Column(name = "job_number", unique = true, nullable = false)
     private String jobNumber;
 
     @Size(max = 32)

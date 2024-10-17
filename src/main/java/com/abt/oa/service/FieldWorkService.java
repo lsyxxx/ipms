@@ -98,8 +98,6 @@ public interface FieldWorkService {
 
     /**
      * 导出excel
-     *
-     * @return
      */
     File writeExcel(Table table) throws IOException, TemplateException;
 
@@ -108,4 +106,13 @@ public interface FieldWorkService {
     int confirm(String userid, List<String> ids);
 
     FieldConfirmResult getConfirmStat(FieldWorkRequestForm form);
+
+    /**
+     * 判断是否重复提交考勤。
+     * 规则：当天(date)存在正常的（未删除/未撤销）审批中或已审批通过的认为重复
+     * @param date 考勤日期
+     * @param userid 用户id
+     * @return true: 重复提交，false: 未重复
+     */
+    Boolean isDuplicatedDate(LocalDate date, String userid);
 }

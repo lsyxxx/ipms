@@ -32,7 +32,8 @@ public class InsertSig {
     private static final String IMG_TEST = "F:\\sig\\test\\";
 
     public static void main(String[] args) throws IOException {
-        getImage();
+//        getImage();
+        insertOne("186", "周珺", "F:\\sig\\186周珺.png");
     }
 
     public static void getImage() throws IOException {
@@ -92,16 +93,22 @@ public class InsertSig {
         }
     }
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @Accessors(chain = true)
-    static class ImageData {
-        private String path;
-        private String jobNumber;
-        private String userid;
-        private String username;
-        private String imageData;
-        private String id;
+    /**
+     * 插入单独的
+     * @param jobNumber
+     * @param imgPath
+     */
+    public static void insertOne(String jobNumber, String name, String imgPath) throws IOException {
+        File file = new File(imgPath);
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] fileBytes = new byte[(int) file.length()];
+        fileInputStream.read(fileBytes);
+        fileInputStream.close();
+
+        // 使用Base64进行编码
+        String base64 = "data:image/png;base64," + Base64.getEncoder().encodeToString(fileBytes);
+        System.out.println("base64Str: " + ("data:image/png;base64,"+ base64));
+        insertImage(jobNumber, name, file, base64);
     }
+
 }

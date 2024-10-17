@@ -42,6 +42,11 @@ public class CalendarEvent {
     private String sid = "";
 
     /**
+     * 补贴金额合计
+     */
+    private Double moneySum;
+
+    /**
      * 事件背景颜色
      */
     private String backgroundColor;

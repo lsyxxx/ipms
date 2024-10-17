@@ -1,8 +1,10 @@
 package com.abt.common.util;
 
+import com.abt.common.CommonConstants;
 import com.abt.sys.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.sql.Timestamp;
 import java.time.*;
@@ -11,6 +13,8 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -178,6 +182,11 @@ public class TimeUtil {
 
     public static YearMonth toYearMonth(String yyyy_MM) {
         return YearMonth.parse(yyyy_MM, yyyy_MM_formatter);
+    }
+
+    public static String chinaDayOfWeek(DayOfWeek dayOfWeek) {
+        Assert.notNull(dayOfWeek, "Parameter(dayOfWeek) must not be null!");
+        return CommonConstants.chinaDayOfWeek.get(dayOfWeek);
     }
 
 

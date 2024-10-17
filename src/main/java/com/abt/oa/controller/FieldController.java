@@ -27,13 +27,8 @@ import freemarker.template.TemplateException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -116,6 +111,10 @@ public class FieldController {
     @PostMapping("/add")
     public R<Object> add(@Validated(value = {ValidateGroup.Save.class})  @RequestBody FieldWork work) {
         work.setConfirm(false);
+        final Boolean isDup = fieldWorkService.isDuplicatedDate(work.getAttendanceDate(), work.getUserid());
+        if (isDup) {
+           return  R.bizException(isDup, "重复提交");
+        }
         fieldWorkService.saveFieldWork(work);
         return R.success("提交成功");
     }
@@ -370,6 +369,17 @@ public class FieldController {
         form.setState(OAConstants.FW_PASS);
         final FieldConfirmResult stat = fieldWorkService.getConfirmStat(form);
         return R.success(stat);
+    }
+
+    /**
+     * 同一天重复提交
+     * @param date 考勤日期
+     * @param userid 考勤用户id
+     */
+    @GetMapping("/verify/date")
+    public R<Boolean> verifyDuplicatedDate(LocalDate date, String userid) {
+        final Boolean duplicatedDate = fieldWorkService.isDuplicatedDate(date, userid);
+        return R.success(duplicatedDate);
     }
 
 

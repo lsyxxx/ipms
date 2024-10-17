@@ -539,6 +539,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         long t1 = System.currentTimeMillis();
         //查询记录(已确认的)
         final List<FieldWork> records = all.stream().filter(i -> i.isConfirm() && i.isPass() && !i.isDeleted()).toList();
+        final List<FieldWorkItem> items = records.stream().flatMap(fieldWork -> fieldWork.getItems().stream()).toList();
         List<CalendarEvent> allEvents = new ArrayList<>();
         final List<FieldWorkAttendanceSetting> settings = findLatestSettings();
         //生成表
@@ -565,6 +566,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
             //生成每个人的考勤
             List<CalendarEvent> userEvents = createFieldWorkCalendarEvents(userFws);
+            userEvents.forEach(e -> {
+                items.stream().filter(i -> e.getId().equals(i.getId())).findAny().ifPresent(i -> e.setMoneySum(i.getSum()));
+            });
 
             //处理数据,生成表格
             //补贴数据, 生成row，根据日期(start)
@@ -770,17 +774,30 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         List<String> summaryHeader = new ArrayList<>(headers.stream().map(CalendarEvent::getTitle).toList());
         summaryHeader.add(0, COL_ATD);
         dataModel.put(code + "SummaryHeader", summaryHeader);
-        //表头-日期+简称
+        //表头1-日期+简称
         final List<LocalDate> dateHeader = this.createDateHeader(table.getStart(), table.getEnd());
         List<String> shortHeader = new ArrayList<>();
-        shortHeader.add("序号");
-        shortHeader.add("姓名");
+        shortHeader.add("");
+        shortHeader.add("");
         List<String> dateStrs = dateHeader.stream().map(TimeUtil::yyyy_MM_ddString).toList();
         final List<String> shortStr = dateStrs.stream().map(s -> s.substring(s.length() - 2)).toList();
         shortHeader.addAll(shortStr);
         shortHeader.add(COL_ATD);
         shortHeader.addAll(headers.stream().map(CalendarEvent::getShortName).toList());
         dataModel.put(code + "SummaryHeaderShort", shortHeader);
+        //表头2-星期+补贴金额
+        //星期
+        List<String> shortHeader2 = new ArrayList<>();
+        final List<String> weekDays = dateHeader.stream().map(LocalDate::getDayOfWeek).map(TimeUtil::chinaDayOfWeek).toList();
+        shortHeader2.add("序号");
+        shortHeader2.add("姓名");
+        shortHeader2.addAll(weekDays);
+        //出勤天数对应空
+        shortHeader2.add("出勤天数");
+        //补贴金额
+        shortHeader2.addAll(headers.stream().map(CalendarEvent::getMoneySum).map(String::valueOf).toList());
+        dataModel.put(code + "SummaryHeaderShort2", shortHeader2);
+
         //筛选数据
         List<String> header = new ArrayList<>();
         header.add("序号");
@@ -890,6 +907,18 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
 
         return result;
+    }
+
+
+    @Override
+    public Boolean isDuplicatedDate(LocalDate date, String userid) {
+        //查询用户的考勤记录
+        final List<FieldWork> list = fieldWorkRepository.findByAttendanceDateAndUserid(date, userid);
+        if (list == null || list.isEmpty()) {
+            return false;
+        }
+        final List<FieldWork> filtered = list.stream().filter(i -> (i.isPass() || i.isWaiting()) && (!i.isDeleted())).toList();
+        return !filtered.isEmpty();
     }
 
 }

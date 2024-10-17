@@ -197,7 +197,9 @@ public class R<T> {
         return new R<>(null, ResCode.WARN.getCode(), message);
     }
 
-
+    public static<T> R<T> bizException(T data, String message) {
+        return  new R<>(data, ResCode.BIZ_EXCEPTION.getCode(), message);
+    }
 
 
 

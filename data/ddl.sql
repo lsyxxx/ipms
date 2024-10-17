@@ -171,3 +171,16 @@ WHERE EXISTS (
     FROM [user] u
     WHERE u.empnum = u_sig.job_number
     );
+
+-- 插入u_sig userid 指定用户
+UPDATE u_sig
+SET user_id = (
+    SELECT u.id
+    FROM [user] u
+WHERE u.empnum = '186'
+    )
+WHERE EXISTS (
+    SELECT 1
+    FROM [user] u
+    WHERE u.empnum = '186'
+    );
