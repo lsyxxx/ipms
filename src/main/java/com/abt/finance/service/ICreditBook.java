@@ -42,9 +42,20 @@ public interface ICreditBook {
     void setAccountItemId(String accountItemId);
     String getAccountItemId();
 
+    String getBusinessId();
+
     /**
-     * 确认项目
+     * 业务归属
      */
-    void setCheckItemJson(String checkItemJson);
-    String getCheckItemJson();
+    String getCompany();
+
+    /**
+     * 事由
+     */
+    String getReason();
+
+    /**
+     * 经办人姓名
+     */
+    String getUsername();
 }

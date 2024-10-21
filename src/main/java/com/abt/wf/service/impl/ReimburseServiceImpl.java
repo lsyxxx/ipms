@@ -4,6 +4,7 @@ import com.abt.common.model.User;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
+import com.abt.finance.entity.CreditBook;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.model.entity.SystemFile;
@@ -300,6 +301,17 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         list.add("报销类别:" + entity.getRbsType());
         list.add("报销事由:" + entity.getReason());
         return list;
+    }
+
+    @Override
+    public List<CreditBook> loadCreditBook() {
+        return List.of();
+    }
+
+    @Override
+    public void writeCreditBook(Reimburse biz) {
+        log.info("写入资金流出记录 -- 费用报销：entityId: {}", biz.getId());
+        CreditBook creditBook = new CreditBook();
     }
 
     static class ReimburseSpecification extends CommonSpecifications<ReimburseRequestForm, Reimburse> {

@@ -156,6 +156,8 @@ public class Reimburse extends WorkflowBase implements ICreditBook {
      * 付款时间
      */
     @Column(name="pay_date")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate payDate;
     /**
      * 关联税务会计科目id
@@ -223,4 +225,14 @@ public class Reimburse extends WorkflowBase implements ICreditBook {
         return Objects.hash(super.hashCode(), id, cost, reserveLoan, reserveRefund, reason, rbsDate, voucherNum, rbsType, company, project, departmentId, departmentName, teamId, teamName, pdfFileList, otherFileList, managers);
     }
 
+
+    @Override
+    public String getBusinessId() {
+        return this.id;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.getCreateUsername();
+    }
 }

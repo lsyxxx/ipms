@@ -2,20 +2,18 @@ package com.abt.finance.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.InsertJpaUser;
-import com.abt.common.service.UserJpaAudit;
+import com.abt.finance.service.ICreditBook;
 import com.abt.wf.entity.FlowOperationLog;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -27,13 +25,13 @@ import java.util.List;
 @DynamicUpdate
 @DynamicInsert
 @Entity
-@Table(name = "fi_credit_book")
+@Table(name = "fi_credit_book", indexes={
+    @Index(name = "idx_biz_id", columnList = "biz_id"),})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners({InsertJpaUser.class})
-public class CreditBook extends AuditInfo implements UserJpaAudit {
+public class CreditBook extends AuditInfo {
     @Id
-    @GeneratedValue(generator  = "timestampIdGenerator")
-    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @NotNull
@@ -46,10 +44,16 @@ public class CreditBook extends AuditInfo implements UserJpaAudit {
     @Column(name="srv_name", columnDefinition="VARCHAR(128)")
     private String serviceName;
 
+    /**
+     * 经办人姓名
+     */
+    @Column(name="user_name", columnDefinition = "VARCHAR(32)")
+    private String username;
 
     /**
      * 业务实体id
      */
+    @NotNull
     @Column(name="biz_id", columnDefinition="VARCHAR(128)")
     private String businessId;
 
@@ -58,12 +62,13 @@ public class CreditBook extends AuditInfo implements UserJpaAudit {
      */
 
     @NotNull
-    @Column(name="amt", columnDefinition="DECIMAL(10,2)")
-    private Double amount;
+    @Column(name="cost", columnDefinition="DECIMAL(10,2)")
+    private Double cost;
 
     /**
      * 事由
      */
+    @NotNull
     @Column(name="reason_", columnDefinition="VARCHAR(1000)")
     private String reason;
 
@@ -80,91 +85,11 @@ public class CreditBook extends AuditInfo implements UserJpaAudit {
     @Column(name="proj_name", columnDefinition = "VARCHAR(1000)")
     private String projectName;
 
-
-    /**
-     * 票据种类
-     * 白条，收据，发票
-     */
-    @Column(name="inst_type")
-    private String instrumentType;
-
-    /**
-     * 票据数量
-     */
-    @Column(name="inst_num", columnDefinition="TINYINT")
-    private Integer instrumentNum;
-
-    @Column(name="file_json", columnDefinition = "VARCHAR(MAX)")
-    private String fileJson;
-
     /**
      * 收款用户name
      */
-    @Column(name="rec_username", columnDefinition = "VARCHAR(32)")
-    private String receiveUsername;
-
-
-    /**
-     * 关联税务会计科目id
-     */
-    @Column(name="tax_item_id", columnDefinition="VARCHAR(128)")
-    private String taxItemId;
-    @Column(name="tax_item_name", length = 64)
-    private String taxItemName;
-    @Column(name="tax_item_code", length = 64 )
-    private String taxItemCode;
-
-    /**
-     * 关联核算会计科目id
-     */
-    @Column(name="acc_item_id", columnDefinition="VARCHAR(128)")
-    private String accountItemId;
-    @Column(name="acc_item_name", length = 64)
-    private String accountItemName;
-    @Column(name="acc_item_code", length = 64 )
-    private String accountItemCode;
-
-    /**
-     * 付款方式
-     */
-    @NotNull
-    @Column(name="pay_type", columnDefinition="VARCHAR(128)")
-    private String payType;
-    /**
-     * 付款时间
-     */
-    @Column(name="pay_date")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime payDate;
-
-    /**
-     * 付款账号
-     */
-    @Column(name="pay_acc", columnDefinition="VARCHAR(128)")
-    private String payAccount;
-
-    /**
-     * 付款账号银行
-     */
-    @Column(name="pay_bank", columnDefinition="VARCHAR(128)")
-    private String payBank;
-
-    /**
-     * 付款执行时间
-     */
-    @Column(name="real_pay_date")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDate realPayDate;
-
-
-    /**
-     * 关联审批
-     */
-//    @OneToMany(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-//    private List<FlowOperationLog> logs;
+    @Column(name="rec_user  ", columnDefinition = "VARCHAR(32)")
+    private String receiveUser;
 
 
     /**
@@ -191,6 +116,74 @@ public class CreditBook extends AuditInfo implements UserJpaAudit {
     @Column(name="dept_team_name", columnDefinition = "VARCHAR(128)")
     private String teamName;
 
+
+    /**
+     * 付款级别:正常，加急，特急
+     */
+    @Column(name="pay_lv", columnDefinition = "VARCHAR(16)")
+    private String payLevel;
+
+    @Column(name="payt_type", length = 32)
+    private String payType;
+
+    /**
+     * 付款账号id
+     */
+    @Column(name="pay_acc_id", columnDefinition="VARCHAR(128)")
+    private String payAccountId;
+
+    @OneToOne
+    @JoinColumn(name = "pay_acc_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private BankAccount payBankAccount;
+
+    /**
+     * 付款时间
+     */
+    @Column(name="pay_date")
+    private LocalDate payDate;
+    /**
+     * 关联税务会计科目id
+     */
+    @Column(name="tax_item_id", columnDefinition="VARCHAR(128)")
+    private String taxItemId;
+
+    @OneToOne
+    @JoinColumn(name = "tax_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private AccountItem taxItem;
+
+    /**
+     * 关联核算会计科目id
+     */
+    @Column(name="acc_item_id", columnDefinition="VARCHAR(128)")
+    private String accountItemId;
+
+    @OneToOne
+    @JoinColumn(name = "acc_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private AccountItem accountItem;
+
+//    @OneToMany(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "biz_id", referencedColumnName = "entity_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+//    @NotFound(action= NotFoundAction.IGNORE)
+//    private List<FlowOperationLog> flowLogs;
+
+    public static CreditBook create(ICreditBook creditBook) {
+        CreditBook cb = new CreditBook();
+        cb.setBusinessId(creditBook.getBusinessId());
+        cb.setReason(creditBook.getReason());
+        cb.setCompany(creditBook.getCompany());
+        cb.setAccountItemId(creditBook.getAccountItemId());
+        cb.setTaxItemId(creditBook.getTaxItemId());
+        cb.setPayDate(creditBook.getPayDate());
+        cb.setPayType(creditBook.getPayType());
+        cb.setPayAccountId(creditBook.getPayAccountId());
+
+
+
+        return cb;
+    }
 
 }
 

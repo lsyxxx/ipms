@@ -5,6 +5,7 @@ import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.service.ICreditBook;
 import com.abt.wf.listener.JpaWorkflowListener;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
@@ -14,6 +15,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -136,6 +138,8 @@ public class Loan extends WorkflowBase implements ICreditBook {
      * 付款时间
      */
     @Column(name="pay_date")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate payDate;
     /**
      * 关联税务会计科目id
@@ -177,4 +181,13 @@ public class Loan extends WorkflowBase implements ICreditBook {
         return this.variableMap;
     }
 
+    @Override
+    public String getBusinessId() {
+        return this.id;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.getCreateUsername();
+    }
 }
