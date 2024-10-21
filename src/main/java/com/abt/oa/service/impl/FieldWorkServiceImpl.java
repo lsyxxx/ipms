@@ -269,7 +269,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Override
     public Page<FieldWork> findAllRecords(FieldWorkRequestForm form) {
         final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
-        final Page<FieldWork> page = fieldWorkRepository.findAllFetchedByQuery(form.getQuery(), form.getState(),
+        final Page<FieldWork> page = fieldWorkRepository.findAllFetchedByQuery(form.getUsername(), form.getQuery(), form.getState(),
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
         WithQueryUtil.build(page.getContent());
         return page;
@@ -541,7 +541,8 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         final List<FieldWork> records = all.stream().filter(i -> i.isConfirm() && i.isPass() && !i.isDeleted()).toList();
         final List<FieldWorkItem> items = records.stream().flatMap(fieldWork -> fieldWork.getItems().stream()).toList();
         List<CalendarEvent> allEvents = new ArrayList<>();
-        final List<FieldWorkAttendanceSetting> settings = findLatestSettings();
+//        final List<FieldWorkAttendanceSetting> settings = findLatestSettings();
+        final List<FieldWorkAttendanceSetting> allSettings = findAllSettings();
         //生成表
         //根据用户
         final Map<String, List<FieldWork>> groupByUser = records.stream().collect(Collectors.groupingBy(FieldWork::getJobNumber, Collectors.toList()));
@@ -586,7 +587,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             //1. 出勤
             Set<String> workDaySet = new HashSet<>();
             for (CalendarEvent event : userEvents) {
-                if (isWorkDay(settings, event)) {
+                if (isWorkDay(allSettings, event)) {
                     workDaySet.add(event.getStart());
                 }
             }

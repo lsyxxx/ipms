@@ -36,7 +36,7 @@
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_02cbf5y" sourceRef="rbsLoan_apply" targetRef="rbsLoan_managers" />
-    <bpmn:userTask id="rbsLoan_finMgr" name="财务主管" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
+    <bpmn:userTask id="rbsLoan_finMgr" name="财务总监" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
       <bpmn:documentation>财务主管审批</bpmn:documentation>
       <bpmn:extensionElements>
         <camunda:properties>
@@ -87,7 +87,7 @@
       <bpmn:incoming>Flow_18wy4p8</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_18wy4p8" sourceRef="rbsLoan_cashier" targetRef="Event_1mt8dt2" />
-    <bpmn:userTask id="rbsLoan_acc" name="会计" camunda:assignee="U20230406007">
+    <bpmn:userTask id="rbsLoan_acc" name="会计审批" camunda:assignee="U20230406007">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />

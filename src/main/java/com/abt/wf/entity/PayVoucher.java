@@ -1,20 +1,23 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.finance.entity.AccountItem;
+import com.abt.finance.service.ICreditBook;
 import com.abt.wf.config.Constants;
 import com.abt.wf.listener.JpaWorkflowListener;
 import jakarta.persistence.*;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +36,7 @@ import static com.abt.wf.config.Constants.*;
 @DynamicInsert
 @DynamicUpdate
 @AllArgsConstructor
-public class PayVoucher extends WorkflowBase{
+public class PayVoucher extends WorkflowBase implements ICreditBook {
     @Id
     @GeneratedValue(generator  = "timestampIdGenerator")
     @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
@@ -136,6 +139,51 @@ public class PayVoucher extends WorkflowBase{
 
     @Column(name="company_", columnDefinition="VARCHAR(16)")
     private String company;
+
+
+
+    /**
+     * 付款级别:正常，加急，特急
+     */
+    @Column(name="pay_lv", columnDefinition = "VARCHAR(16)")
+    private String payLevel;
+
+    @Column(name="payt_type", length = 32)
+    private String payType;
+
+    /**
+     * 付款时间
+     */
+    @Column(name="pay_date")
+    private LocalDate payDate;
+    /**
+     * 关联税务会计科目id
+     */
+    @Column(name="tax_item_id", columnDefinition="VARCHAR(128)")
+    private String taxItemId;
+
+    @OneToOne
+    @JoinColumn(name = "tax_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private AccountItem taxItem;
+
+    /**
+     * 关联核算会计科目id
+     */
+    @Column(name="acc_item_id", columnDefinition="VARCHAR(128)")
+    private String accountItemId;
+
+    @OneToOne
+    @JoinColumn(name = "acc_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private AccountItem accountItem;
+
+    /**
+     * 付款账号id
+     */
+    @Column(name="pay_acc_id", columnDefinition="VARCHAR(128)")
+    private String payAccountId;
+
 
     @Transient
     private String comment;

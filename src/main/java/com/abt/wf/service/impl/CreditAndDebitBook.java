@@ -23,13 +23,15 @@ public class CreditAndDebitBook<T extends ICreditBook> {
                 //会计
                 entity.setAccountItemId(form.getAccountItemId());
                 entity.setTaxItemId(form.getTaxItemId());
-                entity.setPayType(form.getPayType());
-                entity.setPayAccountId(form.getPayAccountId());
             }
-            case Constants.NODE_FI_MGR ->
-                //财务总监
-                    entity.setPayLevel(form.getPayLevel());
-            case Constants.NODE_CASHIER -> entity.setPayDate(form.getPayDate());
+            case Constants.NODE_FI_MGR -> {
+                entity.setPayLevel(form.getPayLevel());
+            }
+            case Constants.NODE_CASHIER -> {
+                entity.setPayAccountId(form.getPayAccountId());
+                entity.setPayType(form.getPayType());
+                entity.setPayDate(form.getPayDate());
+            }
         }
     }
 

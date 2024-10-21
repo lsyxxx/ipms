@@ -5,6 +5,7 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Loan;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.LoanRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
@@ -52,9 +53,11 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     private final IFileService fileService;
     private final HistoryService historyService;
 
+    private final CreditAndDebitBook<Loan> creditAndDebitBook;
+
     public LoanServiceImpl(LoanRepository loanRepository, IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
-                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, SignatureService signatureService, IFileService fileService, HistoryService historyService) {
+                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, SignatureService signatureService, IFileService fileService, HistoryService historyService, CreditAndDebitBook<Loan> creditAndDebitBook) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.loanRepository = loanRepository;
         this.identityService = identityService;
@@ -67,6 +70,7 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         this.signatureService = signatureService;
         this.fileService = fileService;
         this.historyService = historyService;
+        this.creditAndDebitBook = creditAndDebitBook;
     }
 
     static class LoanSpecifications extends CommonSpecifications<LoanRequestForm, Loan> {
@@ -162,6 +166,13 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         entity.setComment(form.getComment());
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
+
+        if (StringUtils.isNotBlank(form.getPayLevel())) {
+            entity.setPayLevel(form.getPayLevel());
+        }
+        entity.setCheckItemJson(form.getCheckItemJson());
+        creditAndDebitBook.setCreditBookProperty(form, entity, entity.getCurrentTaskName());
+
     }
 
     @Override
@@ -181,7 +192,9 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
 
     @Override
     public Loan load(String entityId) {
-        return loanRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到业务实体(loan)"));
+        final Loan loan = loanRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到业务实体(loan)"));
+        setActiveTask(loan);
+        return loan;
     }
 
     @Override

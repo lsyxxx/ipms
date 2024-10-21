@@ -1,11 +1,13 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.util.TimeUtil;
+import com.abt.finance.service.ICreditBook;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.PayVoucher;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
@@ -49,13 +51,14 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     private final PayVoucherRepository payVoucherRepository;
     private final SignatureService signatureService;
     private final BpmnModelInstance payVoucherModelInstance;
+    private final CreditAndDebitBook<PayVoucher> creditAndDebitBook;
 
     private final IFileService fileService;
     private final HistoryService historyService;
 
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                  @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository, SignatureService signatureService,
-                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, IFileService fileService, HistoryService historyService) {
+                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, CreditAndDebitBook<PayVoucher> creditAndDebitBook, IFileService fileService, HistoryService historyService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
         this.flowOperationLogService = flowOperationLogService;
@@ -66,6 +69,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.payVoucherRepository = payVoucherRepository;
         this.signatureService = signatureService;
         this.payVoucherModelInstance = payVoucherModelInstance;
+        this.creditAndDebitBook = creditAndDebitBook;
         this.fileService = fileService;
         this.historyService = historyService;
     }
@@ -141,6 +145,13 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         entity.setComment(form.getComment());
         entity.setSubmitUserid(form.getSubmitUserid());
         entity.setSubmitUsername(form.getSubmitUsername());
+
+        if (StringUtils.isNotBlank(form.getPayLevel())) {
+            entity.setPayLevel(form.getPayLevel());
+        }
+        entity.setCheckItemJson(form.getCheckItemJson());
+        creditAndDebitBook.setCreditBookProperty(form, entity, entity.getCurrentTaskName());
+
     }
 
     @Override
@@ -160,7 +171,9 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
 
     @Override
     public PayVoucher load(String id) {
-        return payVoucherRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到款项支付单(id=" + id + ")"));
+        final PayVoucher entity = payVoucherRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到款项支付单(id=" + id + ")"));
+        setActiveTask(entity);
+        return entity;
     }
 
 

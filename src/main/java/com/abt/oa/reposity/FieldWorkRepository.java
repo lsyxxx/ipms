@@ -96,14 +96,15 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
             "    or fw.project like %:query% " +
             "    or fw.well like %:query% " +
 //            "    or fw.departmentName like %:query% " +
-            "    or fw.username like %:query%" +
+//            "    or fw.username like %:query%" +
             "    or fi.allowanceName like %:query%) " +
+            "and (:username is null or :username = '' or fw.username like %:username%)" +
             "and (:state is null or  :state = '' or fw.reviewResult = :state) " +
             "and (:startDate IS NULL OR  fw.attendanceDate >= :startDate) " +
             "and (:endDate IS NULL OR fw.attendanceDate <= :endDate) " +
             "order by fw.attendanceDate asc "
     )
-    Page<FieldWork> findAllFetchedByQuery(String query, String state, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    Page<FieldWork> findAllFetchedByQuery(String username, String query, String state, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     List<FieldWork> findByJobNumberAndAttendanceDateBetween(String jobNumber, LocalDate startDate, LocalDate endDate);
 
