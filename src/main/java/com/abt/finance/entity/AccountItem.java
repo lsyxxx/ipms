@@ -77,8 +77,15 @@ public class AccountItem extends AuditInfo implements Comparable<AccountItem>{
     @Column(name="remark_", columnDefinition="VARCHAR(128)")
     private String remark;
 
+    /**
+     * 级联名称
+     */
+    @Column(name="cascade", columnDefinition = "VARCHAR(512)")
+    private String cascade;
+
     @Transient
     private long sort;
+
 
 
     /**

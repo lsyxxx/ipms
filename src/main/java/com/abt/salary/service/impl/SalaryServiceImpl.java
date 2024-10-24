@@ -490,7 +490,7 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public void resetFirst(String jobNumber) {
         final SalaryEnc enc = findAndCreateSalaryEnc(jobNumber);
-        enc.setFirst(true);
+        enc.resetFirst();
         salaryEncRepository.save(enc);
     }
 

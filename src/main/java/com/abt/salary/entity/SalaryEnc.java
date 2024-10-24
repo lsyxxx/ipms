@@ -55,6 +55,12 @@ public class SalaryEnc {
   @LastModifiedBy
   private String lastUpdateUserid;
 
+  /**
+   * 重置密码次数
+   */
+  @Column(name = "count")
+  private int count = 0;
+
 
 
   /**
@@ -70,9 +76,8 @@ public class SalaryEnc {
   public static final int STATE_LOCK = 9;
 
   //重置
-  public SalaryEnc reset(String pwd) {
+  public SalaryEnc resetFirst() {
     this.isFirst = true;
-    this.pwd = pwd;
     return this;
   }
 

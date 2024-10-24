@@ -6,6 +6,7 @@ import com.abt.finance.model.AccountItemRequestForm;
 import com.abt.finance.repository.AccountItemRepository;
 import com.abt.finance.repository.BankAccountRepository;
 import com.abt.finance.service.FinanceCommonService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -85,4 +86,22 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
         Collections.sort(list);
         return new PageImpl<>(list, pageable, page.getTotalElements());
     }
+
+    /**
+     * 生成级联名称
+     */
+    public void createAllAccountItemCascade() {
+        final List<AccountItem> all = accountItemRepository.findAll();
+        for (final AccountItem ai : all) {
+            if (ai.getLevel() == 0) {
+                continue;
+            }
+            if (ai.getLevel() == 1) {
+                String code = ai.getCode();
+            }
+        }
+
+    }
+
+
 }
