@@ -8,6 +8,94 @@
     <bpmn:startEvent id="StartEvent_1" name="报销申请" camunda:initiator="starter">
       <bpmn:outgoing>Flow_1qcaapv</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_1" name="报销结束">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0sr2zkv</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1qcaapv" sourceRef="StartEvent_1" targetRef="rbsMulti_apply" />
+    <bpmn:userTask id="rbsMulti_apply" name="申请" camunda:assignee="${starter}">
+      <bpmn:documentation>提交申请</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="taskType" value="apply" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="carbonCopy" value="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1qcaapv</bpmn:incoming>
+      <bpmn:outgoing>Flow_employee</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="rbsMulti_acct" name="出纳" camunda:assignee="U20230406007">
+      <bpmn:documentation>出纳</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0o07avl</bpmn:incoming>
+      <bpmn:incoming>Flow_02x2fgz</bpmn:incoming>
+      <bpmn:outgoing>Flow_0sr2zkv</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="rbsMulti_chief" name="董事" camunda:assignee="U20230406001">
+      <bpmn:documentation>董事审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_03rf4z0</bpmn:incoming>
+      <bpmn:outgoing>Flow_0o07avl</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0o07avl" sourceRef="rbsMulti_chief" targetRef="rbsMulti_acct" />
+    <bpmn:userTask id="rbsMulti_ceo" name="总经理" camunda:assignee="U20230406002">
+      <bpmn:documentation>总经理审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1exbhj2</bpmn:incoming>
+      <bpmn:outgoing>Flow_02x2fgz</bpmn:outgoing>
+      <bpmn:outgoing>Flow_03rf4z0</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_02x2fgz" name="金额小于5000" sourceRef="rbsMulti_ceo" targetRef="rbsMulti_acct">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_03rf4z0" name="金额大于等于5000" sourceRef="rbsMulti_ceo" targetRef="rbsMulti_chief">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_employee" sourceRef="rbsMulti_apply" targetRef="rbsMulti_managers" />
+    <bpmn:userTask id="rbsMulti_finMgr" name="财务总监" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
+      <bpmn:documentation>财务主管审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_11eyagk</bpmn:incoming>
+      <bpmn:outgoing>Flow_1exbhj2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1exbhj2" sourceRef="rbsMulti_finMgr" targetRef="rbsMulti_ceo" />
+    <bpmn:userTask id="rbsMulti_acc" name="会计审批" camunda:assignee="U20230406007">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1v3epsw</bpmn:incoming>
+      <bpmn:outgoing>Flow_11eyagk</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_11eyagk" sourceRef="rbsMulti_acc" targetRef="rbsMulti_finMgr" />
     <bpmn:userTask id="rbsMulti_managers" name="主管及技术负责人" camunda:assignee="${manager}">
       <bpmn:documentation>技术负责人及主管审批</bpmn:documentation>
       <bpmn:extensionElements>
@@ -23,96 +111,8 @@
         <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">${nrOfInstances == nrOfCompletedInstances}</bpmn:completionCondition>
       </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
-    <bpmn:userTask id="rbsMulti_finMgr" name="财务总监" camunda:assignee="b6883628-ab11-4ad8-a533-11632fcdb4f3">
-      <bpmn:documentation>财务主管审批</bpmn:documentation>
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_11eyagk</bpmn:incoming>
-      <bpmn:outgoing>Flow_1exbhj2</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:userTask id="rbsMulti_ceo" name="总经理" camunda:assignee="U20230406002">
-      <bpmn:documentation>总经理审批</bpmn:documentation>
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1exbhj2</bpmn:incoming>
-      <bpmn:outgoing>Flow_03rf4z0</bpmn:outgoing>
-      <bpmn:outgoing>Flow_02x2fgz</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:userTask id="rbsMulti_chief" name="董事" camunda:assignee="U20230406001">
-      <bpmn:documentation>董事审批</bpmn:documentation>
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_03rf4z0</bpmn:incoming>
-      <bpmn:outgoing>Flow_0o07avl</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:endEvent id="EndEvent_1" name="报销结束">
-      <bpmn:extensionElements />
-      <bpmn:incoming>Flow_1v7ojw3</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1qcaapv" sourceRef="StartEvent_1" targetRef="rbsMulti_apply" />
-    <bpmn:userTask id="rbsMulti_apply" name="申请" camunda:assignee="${starter}">
-      <bpmn:documentation>提交申请</bpmn:documentation>
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="taskType" value="apply" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="carbonCopy" value="621faa40-f45c-4da8-9a8f-65b0c5353f40,U20230406002" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1qcaapv</bpmn:incoming>
-      <bpmn:outgoing>Flow_employee</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_employee" sourceRef="rbsMulti_apply" targetRef="rbsMulti_managers" />
-    <bpmn:userTask id="rbsMulti_acct" name="出纳" camunda:assignee="U20230406007">
-      <bpmn:documentation>出纳</bpmn:documentation>
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0o07avl</bpmn:incoming>
-      <bpmn:incoming>Flow_02x2fgz</bpmn:incoming>
-      <bpmn:outgoing>Flow_1v7ojw3</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_1v7ojw3" sourceRef="rbsMulti_acct" targetRef="EndEvent_1" />
     <bpmn:sequenceFlow id="Flow_1v3epsw" sourceRef="rbsMulti_managers" targetRef="rbsMulti_acc" />
-    <bpmn:userTask id="rbsMulti_acc" name="会计审批" camunda:assignee="U20230406007">
-      <bpmn:extensionElements>
-        <camunda:properties>
-          <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="1" />
-          <camunda:property name="taskType" value="approval" />
-        </camunda:properties>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1v3epsw</bpmn:incoming>
-      <bpmn:outgoing>Flow_11eyagk</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:sequenceFlow id="Flow_11eyagk" sourceRef="rbsMulti_acc" targetRef="rbsMulti_finMgr" />
-    <bpmn:sequenceFlow id="Flow_03rf4z0" name="金额大于等于5000" sourceRef="rbsMulti_ceo" targetRef="rbsMulti_chief">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0o07avl" sourceRef="rbsMulti_chief" targetRef="rbsMulti_acct" />
-    <bpmn:sequenceFlow id="Flow_1exbhj2" sourceRef="rbsMulti_finMgr" targetRef="rbsMulti_ceo" />
-    <bpmn:sequenceFlow id="Flow_02x2fgz" name="金额小于5000" sourceRef="rbsMulti_ceo" targetRef="rbsMulti_acct">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0sr2zkv" sourceRef="rbsMulti_acct" targetRef="EndEvent_1" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsMulti">
@@ -167,10 +167,6 @@
           <dc:Bounds x="417" y="99" width="22" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1v7ojw3_di" bpmnElement="Flow_1v7ojw3">
-        <di:waypoint x="850" y="340" />
-        <di:waypoint x="418" y="340" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1v3epsw_di" bpmnElement="Flow_1v3epsw">
         <di:waypoint x="480" y="117" />
         <di:waypoint x="540" y="117" />
@@ -201,6 +197,10 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="881" y="226" width="68" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0sr2zkv_di" bpmnElement="Flow_0sr2zkv">
+        <di:waypoint x="850" y="340" />
+        <di:waypoint x="418" y="340" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

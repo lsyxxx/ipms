@@ -1,6 +1,8 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.util.TimeUtil;
+import com.abt.finance.entity.CreditBook;
+import com.abt.finance.service.CreditBookService;
 import com.abt.finance.service.ICreditBook;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.IFileService;
@@ -55,10 +57,12 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
 
     private final IFileService fileService;
     private final HistoryService historyService;
+    private final CreditBookService creditBookService;
+
 
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                  @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository, SignatureService signatureService,
-                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, CreditAndDebitBook<PayVoucher> creditAndDebitBook, IFileService fileService, HistoryService historyService) {
+                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, CreditAndDebitBook<PayVoucher> creditAndDebitBook, IFileService fileService, HistoryService historyService, CreditBookService creditBookService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
         this.flowOperationLogService = flowOperationLogService;
@@ -72,6 +76,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.creditAndDebitBook = creditAndDebitBook;
         this.fileService = fileService;
         this.historyService = historyService;
+        this.creditBookService = creditBookService;
     }
 
     @Override
@@ -228,6 +233,24 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         page.getContent().forEach(this::buildActiveTask);
         return page;
+    }
+
+    @Override
+    public List<CreditBook> loadCreditBook() {
+        return List.of();
+    }
+
+    @Override
+    public void writeCreditBook(PayVoucher biz) {
+        log.info("写入资金流出记录 -- 支付申请：entityId: {}", biz.getId());
+        CreditBook creditBook = CreditBook.create(biz);
+        creditBook.setServiceName(SERVICE_PAY);
+        creditBookService.saveCreditBook(creditBook);
+    }
+
+    @Override
+    public PayVoucher loadBusiness(String businessId) {
+        return payVoucherRepository.findById(businessId).orElse(null);
     }
 
     static class PayVoucherSpecifications extends CommonSpecifications<PayVoucherRequestForm, PayVoucher> {

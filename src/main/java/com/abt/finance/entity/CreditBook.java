@@ -2,18 +2,21 @@ package com.abt.finance.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.InsertJpaUser;
+import com.abt.common.service.UserJpaAudit;
 import com.abt.finance.service.ICreditBook;
 import com.abt.wf.entity.FlowOperationLog;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -27,15 +30,37 @@ import java.util.List;
 @Entity
 @Table(name = "fi_credit_book", indexes={
     @Index(name = "idx_biz_id", columnList = "biz_id"),})
+@NamedEntityGraphs({
+        @NamedEntityGraph(
+                name = "CreditBook.withTaxItem",
+                attributeNodes = @NamedAttributeNode("taxItem")
+        ),
+        @NamedEntityGraph(
+                name = "CreditBook.withAccItem",
+                attributeNodes = @NamedAttributeNode("accountItem")
+        ),
+        @NamedEntityGraph(
+                name = "CreditBook.withPayAccount",
+                attributeNodes = @NamedAttributeNode("payBankAccount")
+        ),
+        @NamedEntityGraph(
+                name = "CreditBook.withOptLogs",
+                attributeNodes = @NamedAttributeNode("flowLogs")
+        ),
+        @NamedEntityGraph(name = "CreditBook.all", attributeNodes = {@NamedAttributeNode("taxItem"), @NamedAttributeNode("accountItem"),
+                @NamedAttributeNode("payBankAccount"), @NamedAttributeNode("flowLogs"),})
+
+})
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners({InsertJpaUser.class})
-public class CreditBook extends AuditInfo {
+public class CreditBook extends AuditInfo implements ICreditBook, UserJpaAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @NotNull
-    @Column(name="company_", columnDefinition = "VARCHAR(256)")
+//    @NotNull
+    @Column(name="company_", columnDefinition = "VARCHAR(32)")
     private String company;
 
     /**
@@ -47,13 +72,13 @@ public class CreditBook extends AuditInfo {
     /**
      * 经办人姓名
      */
-    @Column(name="user_name", columnDefinition = "VARCHAR(32)")
+    @Column(name="user_name", columnDefinition = "VARCHAR(256)")
     private String username;
 
     /**
      * 业务实体id
      */
-    @NotNull
+//    @NotNull
     @Column(name="biz_id", columnDefinition="VARCHAR(128)")
     private String businessId;
 
@@ -61,14 +86,14 @@ public class CreditBook extends AuditInfo {
      * 金额
      */
 
-    @NotNull
+//    @NotNull
     @Column(name="cost", columnDefinition="DECIMAL(10,2)")
     private Double cost;
 
     /**
      * 事由
      */
-    @NotNull
+//    @NotNull
     @Column(name="reason_", columnDefinition="VARCHAR(1000)")
     private String reason;
 
@@ -88,7 +113,7 @@ public class CreditBook extends AuditInfo {
     /**
      * 收款用户name
      */
-    @Column(name="rec_user  ", columnDefinition = "VARCHAR(32)")
+    @Column(name="rec_user  ", columnDefinition = "VARCHAR(512)")
     private String receiveUser;
 
 
@@ -123,7 +148,7 @@ public class CreditBook extends AuditInfo {
     @Column(name="pay_lv", columnDefinition = "VARCHAR(16)")
     private String payLevel;
 
-    @Column(name="payt_type", length = 32)
+    @Column(name="pay_type", length = 32)
     private String payType;
 
     /**
@@ -141,6 +166,8 @@ public class CreditBook extends AuditInfo {
      * 付款时间
      */
     @Column(name="pay_date")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate payDate;
     /**
      * 关联税务会计科目id
@@ -164,14 +191,32 @@ public class CreditBook extends AuditInfo {
     @NotFound(action= NotFoundAction.IGNORE)
     private AccountItem accountItem;
 
-//    @OneToMany(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "biz_id", referencedColumnName = "entity_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-//    @NotFound(action= NotFoundAction.IGNORE)
-//    private List<FlowOperationLog> flowLogs;
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "entity_id", referencedColumnName = "biz_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    private List<FlowOperationLog> flowLogs;
+
+    /**
+     * 附件json
+     */
+    @Transient
+    private String fileJson;
+
+    /**
+     * 业务申请日期
+     */
+    @Transient
+    private LocalDateTime bizCreateDate;
+
+    /**
+     * 票据数量
+     */
+    @Transient
+    private int voucherNum;
 
     public static CreditBook create(ICreditBook creditBook) {
         CreditBook cb = new CreditBook();
         cb.setBusinessId(creditBook.getBusinessId());
+        cb.setCost(creditBook.getExpense());
         cb.setReason(creditBook.getReason());
         cb.setCompany(creditBook.getCompany());
         cb.setAccountItemId(creditBook.getAccountItemId());
@@ -179,11 +224,22 @@ public class CreditBook extends AuditInfo {
         cb.setPayDate(creditBook.getPayDate());
         cb.setPayType(creditBook.getPayType());
         cb.setPayAccountId(creditBook.getPayAccountId());
-
-
-
+        cb.setPayLevel(creditBook.getPayLevel());
+        cb.setUsername(creditBook.getUsername());
+        cb.setReceiveUser(creditBook.getReceiveUser());
+        cb.setDepartmentId(creditBook.getDepartmentId());
+        cb.setDepartmentName(creditBook.getDepartmentName());
+        cb.setTeamId(creditBook.getTeamId());
+        cb.setTeamName(creditBook.getTeamName());
+        cb.setFileJson(cb.getFileJson());
+        cb.setBizCreateDate(creditBook.getBizCreateDate());
+        cb.setVoucherNum(creditBook.getVoucherNum());
         return cb;
     }
 
+    @Override
+    public Double getExpense() {
+        return this.cost;
+    }
 }
 

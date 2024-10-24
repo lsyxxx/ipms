@@ -21,11 +21,11 @@ public class CreditAndDebitBook<T extends ICreditBook> {
         switch (role) {
             case Constants.NODE_ACC -> {
                 //会计
-                entity.setAccountItemId(form.getAccountItemId());
-                entity.setTaxItemId(form.getTaxItemId());
             }
             case Constants.NODE_FI_MGR -> {
                 entity.setPayLevel(form.getPayLevel());
+                entity.setAccountItemId(form.getAccountItemId());
+                entity.setTaxItemId(form.getTaxItemId());
             }
             case Constants.NODE_CASHIER -> {
                 entity.setPayAccountId(form.getPayAccountId());

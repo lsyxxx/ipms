@@ -32,56 +32,56 @@ public class CashController {
         this.financeBookKeepingService = financeBookKeepingService;
     }
 
-    /**
-     * 借方记账(资金流入)完成新增/编辑
-     */
-    @PostMapping("/debit/save")
-    public R<DebitBook> debitBookKeeping(@Validated @RequestBody DebitBook debitBookForm) {
-        final DebitBook book = financeBookKeepingService.debitBookKeeping(debitBookForm);
-        return R.success(book);
-    }
+//    /**
+//     * 借方记账(资金流入)完成新增/编辑
+//     */
+//    @PostMapping("/debit/save")
+//    public R<DebitBook> debitBookKeeping(@Validated @RequestBody DebitBook debitBookForm) {
+//        final DebitBook book = financeBookKeepingService.debitBookKeeping(debitBookForm);
+//        return R.success(book);
+//    }
+//
+//    /**
+//     * 贷方记账(资金流出)完成新增/编辑
+//     */
+//    @PostMapping("/credit/save")
+//    public R<CreditBook>  creditBookKeeping(@Validated @RequestBody CreditBook creditBookForm) {
+//        financeBookKeepingService.initCreditBookApplyForm(creditBookForm);
+//        final CreditBook book = financeBookKeepingService.creditBookKeeping(creditBookForm);
+//        return R.success(book);
+//    }
+//
+//    @GetMapping("/debit/load")
+//    public R<List<DebitBook>> loadDebit(String businessId) {
+//        final List<DebitBook> debitBooks = financeBookKeepingService.loadDebits(businessId);
+//        return R.success(debitBooks, debitBooks.size());
+//    }
+//
+//    @GetMapping("/credit/load")
+//    public R<List<CreditBook>> loadCredits(String businessId) {
+//        final List<CreditBook> debitBooks = financeBookKeepingService.loadCreditBookByBusinessId(businessId);
+//        return R.success(debitBooks, debitBooks.size());
+//    }
 
-    /**
-     * 贷方记账(资金流出)完成新增/编辑
-     */
-    @PostMapping("/credit/save")
-    public R<CreditBook>  creditBookKeeping(@Validated @RequestBody CreditBook creditBookForm) {
-        financeBookKeepingService.initCreditBookApplyForm(creditBookForm);
-        final CreditBook book = financeBookKeepingService.creditBookKeeping(creditBookForm);
-        return R.success(book);
-    }
+//    /**
+//     * 删除一条记账信息
+//     * @param id 记账id
+//     */
+//    @GetMapping("/debit/del")
+//    public R<Object> deleteDebit(String id) {
+//        financeBookKeepingService.deleteDebitById(id);
+//        return R.success("删除资金流入记录成功");
+//    }
 
-    @GetMapping("/debit/load")
-    public R<List<DebitBook>> loadDebit(String businessId) {
-        final List<DebitBook> debitBooks = financeBookKeepingService.loadDebits(businessId);
-        return R.success(debitBooks, debitBooks.size());
-    }
-
-    @GetMapping("/credit/load")
-    public R<List<CreditBook>> loadCredits(String businessId) {
-        final List<CreditBook> debitBooks = financeBookKeepingService.loadCreditBookByBusinessId(businessId);
-        return R.success(debitBooks, debitBooks.size());
-    }
-
-    /**
-     * 删除一条记账信息
-     * @param id 记账id
-     */
-    @GetMapping("/debit/del")
-    public R<Object> deleteDebit(String id) {
-        financeBookKeepingService.deleteDebitById(id);
-        return R.success("删除资金流入记录成功");
-    }
-
-    /**
-     * 删除一条记账信息
-     * @param id 记账id
-     */
-    @GetMapping("/credit/del")
-    public R<Object> deleteCredit(String id) {
-        financeBookKeepingService.deleteCreditById(id);
-        return R.success("删除资金流出记录成功");
-    }
+//    /**
+//     * 删除一条记账信息
+//     * @param id 记账id
+//     */
+//    @GetMapping("/credit/del")
+//    public R<Object> deleteCredit(String id) {
+//        financeBookKeepingService.deleteCreditById(id);
+//        return R.success("删除资金流出记录成功");
+//    }
 
     /**
      * 所有账户信息
@@ -92,14 +92,14 @@ public class CashController {
         return R.success(bankAccounts, bankAccounts.size());
     }
 
-    /**
-     * 查询贷方（资金流出记录）
-     */
-    @GetMapping("/credit/all")
-    public R<List<CreditBook>> loadCreditsByCriteria(@ModelAttribute CashRequestForm cashRequestForm) {
-        final List<CreditBook> creditBooks = financeBookKeepingService.loadCreditByCriteria(cashRequestForm);
-        return R.success(creditBooks);
-    }
+//    /**
+//     * 查询贷方（资金流出记录）
+//     */
+//    @GetMapping("/credit/all")
+//    public R<List<CreditBook>> loadCreditsByCriteria(@ModelAttribute CashRequestForm cashRequestForm) {
+//        final List<CreditBook> creditBooks = financeBookKeepingService.loadCreditByCriteria(cashRequestForm);
+//        return R.success(creditBooks);
+//    }
 
 
     /**

@@ -14,4 +14,9 @@ public interface ICashCreditService<T extends ICreditBook> {
      */
     void writeCreditBook(T biz);
 
+
+    /**
+     * 读取业务信息
+     */
+    T loadBusiness(String businessId);
 }

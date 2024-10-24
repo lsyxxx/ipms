@@ -1,6 +1,8 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.util.TimeUtil;
+import com.abt.finance.entity.CreditBook;
+import com.abt.finance.service.CreditBookService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.SERVICE_LOAN;
+import static com.abt.wf.config.Constants.SERVICE_PAY;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_LOAN;
 
 /**
@@ -52,12 +55,13 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
 
     private final IFileService fileService;
     private final HistoryService historyService;
+    private final CreditBookService creditBookService;
 
     private final CreditAndDebitBook<Loan> creditAndDebitBook;
 
     public LoanServiceImpl(LoanRepository loanRepository, IdentityService identityService, @Qualifier("sqlServerUserService") UserService userService, TaskService taskService,
                            FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
-                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, SignatureService signatureService, IFileService fileService, HistoryService historyService, CreditAndDebitBook<Loan> creditAndDebitBook) {
+                           RuntimeService runtimeService, BpmnModelInstance loanBpmnModelInstance, SignatureService signatureService, IFileService fileService, HistoryService historyService, CreditBookService creditBookService, CreditAndDebitBook<Loan> creditAndDebitBook) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.loanRepository = loanRepository;
         this.identityService = identityService;
@@ -70,7 +74,26 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
         this.signatureService = signatureService;
         this.fileService = fileService;
         this.historyService = historyService;
+        this.creditBookService = creditBookService;
         this.creditAndDebitBook = creditAndDebitBook;
+    }
+
+    @Override
+    public List<CreditBook> loadCreditBook() {
+        return List.of();
+    }
+
+    @Override
+    public void writeCreditBook(Loan biz) {
+        log.info("写入资金流出记录 -- 借款申请：entityId: {}", biz.getId());
+        CreditBook creditBook = CreditBook.create(biz);
+        creditBook.setServiceName(SERVICE_LOAN);
+        creditBookService.saveCreditBook(creditBook);
+    }
+
+    @Override
+    public Loan loadBusiness(String businessId) {
+        return loanRepository.findById(businessId).orElse(null);
     }
 
     static class LoanSpecifications extends CommonSpecifications<LoanRequestForm, Loan> {

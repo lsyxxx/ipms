@@ -18,6 +18,7 @@ import org.hibernate.annotations.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class Loan extends WorkflowBase implements ICreditBook {
     /**
      * 收款人
      */
-    @Column(name="rec_user", columnDefinition="VARCHAR(128)")
+    @Column(name="rec_user", columnDefinition="VARCHAR(512)")
     private String receiveUser;
 
     /**
@@ -189,5 +190,40 @@ public class Loan extends WorkflowBase implements ICreditBook {
     @Override
     public String getUsername() {
         return this.getCreateUsername();
+    }
+
+    @Override
+    public Double getExpense() {
+        return this.loanAmount;
+    }
+
+    @Override
+    public String getDepartmentId() {
+        return this.getDeptId();
+    }
+
+    @Override
+    public String getDepartmentName() {
+        return this.getDeptName();
+    }
+
+    @Override
+    public String getTeamId() {
+        return this.getCreateTeamId();
+    }
+
+    @Override
+    public String getTeamName() {
+        return this.getCreateTeamName();
+    }
+
+    @Override
+    public String getFileJson() {
+        return this.fileList;
+    }
+
+    @Override
+    public LocalDateTime getBizCreateDate() {
+        return this.getCreateDate();
     }
 }

@@ -37,6 +37,12 @@ public class LoanProcessEndListener implements ExecutionListener {
             entity.setFinished(true);
             loanService.saveEntity(entity);
             //抄送TODO;
+
+            //资金流出记录，只有流程结束且通过的才记录
+            if ("COMPLETED".equals(entity.getProcessState()) && Constants.STATE_DETAIL_PASS.equals(entity.getBusinessState())) {
+                loanService.writeCreditBook(entity);
+            }
+
         }
     }
 }

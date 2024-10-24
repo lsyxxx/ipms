@@ -58,10 +58,6 @@ public class WorkFlowConfig {
         this.repositoryService = repositoryService;
     }
 
-    public static final List<String> financeWorkflowDef = List.of(DEF_KEY_TRIP, DEF_KEY_RBS, DEF_KEY_INV, DEF_KEY_PAY_VOUCHER, DEF_KEY_LOAN, DEF_KEY_INVOFFSET);
-    public static final List<String> financeWorkflowBusinessKey = List.of(SERVICE_RBS, SERVICE_INV, SERVICE_TRIP);
-
-
     /**
      * 查询报销类型
      */

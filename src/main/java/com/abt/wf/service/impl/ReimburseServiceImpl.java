@@ -5,6 +5,7 @@ import com.abt.common.model.ValidationResult;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
+import com.abt.finance.service.CreditBookService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.model.entity.SystemFile;
@@ -16,7 +17,6 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.ReimburseRepository;
-import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.service.SignatureService;
@@ -32,7 +32,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -40,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.abt.common.util.QueryUtil.like;
 import static com.abt.wf.config.Constants.*;
 
 /**
@@ -67,6 +65,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final SignatureService signatureService;
 
     private final CreditAndDebitBook<Reimburse> creditAndDebitBook;
+    private final CreditBookService creditBookService;
 
     private List<User> copyList;
 
@@ -75,7 +74,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
-                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService, CreditAndDebitBook<Reimburse> creditAndDebitBook) {
+                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService, CreditAndDebitBook<Reimburse> creditAndDebitBook, CreditBookService creditBookService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService,signatureService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
@@ -90,6 +89,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.historyService = historyService;
         this.signatureService = signatureService;
         this.creditAndDebitBook = creditAndDebitBook;
+        this.creditBookService = creditBookService;
     }
 
 
@@ -173,29 +173,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
             entity.setOtherFileList(null);
         }
     }
-
-//    @Override
-//    public Reimburse getRbsCopyEntity(String copyId) throws Exception{
-//        if (StringUtils.isBlank(copyId)) {
-//            throw new BusinessException("请选择一个流程提交");
-//        }
-//
-//        //1. 获取copyId对应的实体
-//        Reimburse copyEntity = load(copyId);
-//
-//        //清空其他数据
-//        clearEntityId(copyEntity);
-//        copyEntity.setProcessInstanceId(null);
-//        copyEntity.setProcessDefinitionKey(null);
-//        copyEntity.setBusinessState(null);
-//        copyEntity.setProcessState(null);
-//        copyEntity.setFinished(false);
-//        copyEntity.setEndTime(null);
-//        copyEntity.setDelete(false);
-//        copyEntity.setDeleteReason(null);
-//        copyFile(copyEntity);
-//        return copyEntity;
-//    }
 
     @Override
     public Page<Reimburse> findAllByQueryPageable(ReimburseRequestForm requestForm) {
@@ -311,18 +288,14 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     @Override
     public void writeCreditBook(Reimburse biz) {
         log.info("写入资金流出记录 -- 费用报销：entityId: {}", biz.getId());
-        CreditBook creditBook = new CreditBook();
+        CreditBook creditBook = CreditBook.create(biz);
+        creditBook.setServiceName(SERVICE_RBS);
+        creditBookService.saveCreditBook(creditBook);
     }
 
-    static class ReimburseSpecification extends CommonSpecifications<ReimburseRequestForm, Reimburse> {
-        public Specification<Reimburse> projectNameLike(ReimburseRequestForm form) {
-            return (root, query, builder) -> {
-                if (StringUtils.isNotBlank(form.getProject())) {
-                    return builder.like(root.get("project"), like(form.getProject()));
-                }
-                return null;
-            };
-        }
+    @Override
+    public Reimburse loadBusiness(String businessId) {
+        return reimburseRepository.findById(businessId).orElse(null);
     }
 
 }

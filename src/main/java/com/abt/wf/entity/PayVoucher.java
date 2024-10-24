@@ -20,6 +20,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +108,7 @@ public class PayVoucher extends WorkflowBase implements ICreditBook {
      * 收款人
      */
     @NotNull(groups = {ValidateGroup.Apply.class}, message = "收款人必填")
-    @Column(name="rec_user", columnDefinition="VARCHAR(128)")
+    @Column(name="rec_user", columnDefinition="VARCHAR(512)")
     private String receiveUser;
 
     /**
@@ -150,7 +151,7 @@ public class PayVoucher extends WorkflowBase implements ICreditBook {
     @Column(name="pay_lv", columnDefinition = "VARCHAR(16)")
     private String payLevel;
 
-    @Column(name="payt_type", length = 32)
+    @Column(name="pay_type", length = 32)
     private String payType;
 
     /**
@@ -223,4 +224,45 @@ public class PayVoucher extends WorkflowBase implements ICreditBook {
     public String getUsername() {
         return this.getCreateUsername();
     }
+
+    @Override
+    public Double getExpense() {
+        return this.payAmount.doubleValue();
+    }
+
+    @Override
+    public String getDepartmentId() {
+        return this.getCreateDeptId();
+    }
+
+    @Override
+    public String getDepartmentName() {
+        return this.getCreateDeptName();
+    }
+
+    @Override
+    public String getTeamId() {
+        return this.getCreateTeamId();
+    }
+
+    @Override
+    public String getTeamName() {
+        return this.getCreateDeptName();
+    }
+
+    @Override
+    public String getFileJson() {
+        return this.otherFileList;
+    }
+
+    @Override
+    public LocalDateTime getBizCreateDate() {
+        return getCreateDate();
+    }
+
+    @Override
+    public int getVoucherNum() {
+        return this.payInvoiceNum;
+    }
+
 }

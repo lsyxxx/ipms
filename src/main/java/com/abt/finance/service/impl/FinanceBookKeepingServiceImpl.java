@@ -1,12 +1,10 @@
 package com.abt.finance.service.impl;
 
 import com.abt.common.model.User;
-import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.entity.DebitBook;
 import com.abt.finance.model.CashRequestForm;
-import com.abt.finance.repository.AccountItemRepository;
 import com.abt.finance.repository.BankAccountRepository;
 import com.abt.finance.repository.CreditBookRepository;
 import com.abt.finance.repository.DebitBookRepository;
@@ -24,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.abt.common.util.QueryUtil.like;
@@ -82,7 +79,8 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
 
     @Override
     public List<CreditBook> loadCreditBookByBusinessId(String businessId) {
-        return creditBookRepository.findByBusinessIdOrderByCreateDateDesc(businessId);
+//        return creditBookRepository.findByBusinessIdOrderByCreateDateDesc(businessId);
+        return List.of();
     }
 
     @Override
@@ -100,8 +98,9 @@ public class FinanceBookKeepingServiceImpl implements FinanceBookKeepingService 
                 .and(CreditSpecifications.payAccountEq(criteria));
         Pageable pageable = PageRequest.of(criteria.jpaPage(), criteria.getLimit(),
                 Sort.by(Sort.Direction.DESC, "businessId", "payDate", "payAccount", "expenseType", "invoiceType", "payType"));
-        final Page<CreditBook> all = creditBookRepository.findAll(spec, pageable);
-        return all.getContent();
+//        final Page<CreditBook> all = creditBookRepository.findAll(spec, pageable);
+        return null;
+//        return all.getContent();
     }
 
     @Override

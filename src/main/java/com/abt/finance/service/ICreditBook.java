@@ -1,6 +1,7 @@
 package com.abt.finance.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 资金流出接口
@@ -58,4 +59,24 @@ public interface ICreditBook {
      * 经办人姓名
      */
     String getUsername();
+
+    /**
+     * 费用
+     */
+    Double getExpense();
+
+    /**
+     * 收款人名称
+     */
+    String getReceiveUser();
+
+    String getDepartmentId();
+    String getDepartmentName();
+    String getTeamId();
+    String getTeamName();
+
+    String getFileJson();
+    LocalDateTime getBizCreateDate();
+    int getVoucherNum();
+
 }
