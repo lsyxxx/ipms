@@ -16,7 +16,7 @@ public enum ResCode {
     SESSION_OUT(2, 9998, "Out of Session"),
     //和webapi保持一致
     AUTHENTICATION_FAIL(3, HttpStatus.UNAUTHORIZED.value(), "认证失败，请提供认证信息"),
-    INVALID_TOKEN(4, HttpStatus.UNAUTHORIZED.value(), "认证失败，请提供认证信息"),
+    INVALID_TOKEN(4, HttpStatus.UNAUTHORIZED.value(), "Token信息无效"),
     ACCESS_DENIED(5, HttpStatus.UNAUTHORIZED.value(), "Access Denied - unauthorized"),
     BAD_REQUEST(6, HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase()),
     FILE_NOT_FOUND(7, HttpStatus.NOT_FOUND.value(), "文件未找到"),

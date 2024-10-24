@@ -12,9 +12,12 @@ import com.abt.salary.model.UserSalaryDetail;
 import com.abt.salary.model.UserSlip;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,10 +36,12 @@ import static com.abt.salary.Constants.*;
 public class SalaryController {
 
     private final SalaryService salaryService;
+    private final EmployeeService employeeService;
 
 
-    public SalaryController(SalaryService salaryService) {
+    public SalaryController(SalaryService salaryService, EmployeeService employeeService) {
         this.salaryService = salaryService;
+        this.employeeService = employeeService;
     }
 
 
@@ -164,10 +169,18 @@ public class SalaryController {
     /**
      * 重置密码为初始状态
      */
-    @GetMapping("/pwd/reset")
-    public R<Object> resetFirst() {
-        salaryService.resetFirst();
-        return R.success("已重置");
+    @Secured("JS_SL_ENC_RESET")
+    @GetMapping("/enc/resetFirst")
+    public R<Object> resetFirst(String jobNumber, String name) {
+        final EmployeeInfo emp = employeeService.findByJobNumber(jobNumber);
+        if (emp == null) {
+            throw new BusinessException("未查询到员工(工号: " + jobNumber + ")");
+        }
+        if (!emp.getName().equals(name)) {
+            throw new BusinessException("工号与姓名不一致");
+        }
+        salaryService.resetFirst(jobNumber);
+        return R.success("已重置，请重新设置密码");
     }
 
     /**

@@ -1,7 +1,6 @@
 package com.abt.salary.service.impl;
 
 import com.abt.common.util.FileUtil;
-import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.salary.SalaryExcelReadListener;
 import com.abt.salary.entity.*;
@@ -12,7 +11,6 @@ import com.abt.salary.model.UserSlip;
 import com.abt.salary.repository.*;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.model.entity.TUser;
 import com.abt.sys.repository.EmployeeRepository;
@@ -490,12 +488,12 @@ public class SalaryServiceImpl implements SalaryService {
 
     //重置为初始状态，重置密码
     @Override
-    public void resetFirst() {
-        final UserView userFromAuthToken = TokenUtil.getUserFromAuthToken();
-        final String jobNumber = userFromAuthToken.getEmpnum();
+    public void resetFirst(String jobNumber) {
         final SalaryEnc enc = findAndCreateSalaryEnc(jobNumber);
-        enc.reset(encrypt(DEFAULT_PWD));
+        enc.setFirst(true);
+        salaryEncRepository.save(enc);
     }
+
 
     @Override
     public boolean verifyFirst(String jobNumber) {

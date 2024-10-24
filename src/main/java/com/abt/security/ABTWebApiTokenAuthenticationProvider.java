@@ -68,8 +68,6 @@ public class ABTWebApiTokenAuthenticationProvider implements AuthenticationProvi
 
     /**
      * TODO: 只对ABTWebApiAuthenticationToken 进行处理
-     * @param authentication
-     * @return
      */
     @Override
     public boolean supports(Class<?> authentication) {

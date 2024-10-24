@@ -54,8 +54,8 @@ public interface SalaryService {
      */
     List<UserSalaryDetail> getSalaryDetail(String slipId, String mainId);
 
-    //重置为初始状态
-    void resetFirst();
+    //重置为初始状态，重置密码
+    void resetFirst(String jobNumber);
 
     boolean verifyFirst(String jobNumber);
 
