@@ -88,7 +88,7 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
     }
 
     /**
-     * 生成级联名称
+     * TODO: 生成级联名称
      */
     public void createAllAccountItemCascade() {
         final List<AccountItem> all = accountItemRepository.findAll();
@@ -98,7 +98,10 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
             }
             if (ai.getLevel() == 1) {
                 String code = ai.getCode();
+                all.stream().filter(i -> i.getLevel() != 1 && i.getCode().startsWith(code)).forEach(i -> i.setCascade(code +"_" + i.getName()));
             }
+
+
         }
 
     }
