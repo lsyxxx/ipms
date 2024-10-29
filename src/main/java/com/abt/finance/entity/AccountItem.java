@@ -80,12 +80,22 @@ public class AccountItem extends AuditInfo implements Comparable<AccountItem>{
     /**
      * 级联名称
      */
-    @Column(name="cascade_", columnDefinition = "VARCHAR(512)")
-    private String cascade;
+    @Column(name="cas_name", columnDefinition = "VARCHAR(1000)")
+    private String cascadeName;
+    /**
+     * 级联代码
+     */
+    @Column(name="cas_code", columnDefinition = "VARCHAR(512)")
+    private String cascadeCode;
 
     @Transient
     private long sort;
 
+    @Transient
+    private String lv1Name;
+
+    @Transient
+    private String lv2Name;
 
 
     /**

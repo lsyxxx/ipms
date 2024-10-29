@@ -366,6 +366,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         taskService.claim(task.getId(), form.getSubmitUserid());
 //        taskService.complete(task.getId());
         //delete process
+        runtimeService.setVariable(task.getProcessInstanceId(), VAR_KEY_REVOKE, DELETE_STATE_DELETE);
         runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
         //update status
         form.setBusinessState(STATE_DETAIL_REJECT);
@@ -410,6 +411,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
                 if (runningTask != null) {
                     historyService.deleteHistoricTaskInstance(runningTask.getId());
                 }
+                runtimeService.setVariable(entity.getProcessInstanceId(), VAR_KEY_REVOKE, DELETE_STATE_DELETE);
                 runtimeService.deleteProcessInstance(entity.getProcessInstanceId(), DELETE_REASON_DELETE + "_" + user.getId());
             } else {
                 //已结束的流程，不能使用deleteProcessInstance
@@ -443,6 +445,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     public void doRevoke(T entity) {
         //listener会修改状态，所以先删除
+        runtimeService.setVariable(entity.getProcessInstanceId(), VAR_KEY_REVOKE, DELETE_STATE_REVOKE);
         runtimeService.deleteProcessInstance(entity.getProcessInstanceId(), DEL_REASON_REVOKE);
         //3. 修改状态
         entity.setBusinessState(STATE_DETAIL_REVOKE);

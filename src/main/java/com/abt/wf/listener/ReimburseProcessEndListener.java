@@ -11,6 +11,7 @@ import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.service.ReimburseService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,6 +39,7 @@ public class ReimburseProcessEndListener implements ExecutionListener {
     public void notify(DelegateExecution execution) {
         log.info("报销业务流程结束 -- 流程id: {}", execution.getProcessInstanceId());
         Object obj = execution.getVariable(Constants.VAR_KEY_ENTITY);
+        Object revoke = execution.getVariable(Constants.VAR_KEY_REVOKE);
         String entityId = "";
         if (obj == null) {
             log.error("流程参数中未保存业务实体id! 流程实例id: {}", execution.getProcessInstanceId());
@@ -56,7 +58,9 @@ public class ReimburseProcessEndListener implements ExecutionListener {
                 //抄送:
 
                 //资金流出记录，只有流程结束且通过的才记录
-                if ("COMPLETED".equals(rbs.getProcessState()) && Constants.STATE_DETAIL_PASS.equals(rbs.getBusinessState())) {
+                if ("COMPLETED".equals(rbs.getProcessState())
+                        && Constants.STATE_DETAIL_PASS.equals(rbs.getBusinessState())
+                        && revoke == null) {
                     reimburseService.writeCreditBook(rbs);
                 } else {
                     log.info("流程未通过或异常结束, 不记录资金流出记录");

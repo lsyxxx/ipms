@@ -21,4 +21,6 @@ public interface FinanceCommonService {
     Page<AccountItem> findAccountItemPageByQuery(AccountItemRequestForm form);
 
     List<AccountItem> findAccountItemListByQuery(AccountItemRequestForm form);
+
+    void createAllAccountItemCascade();
 }

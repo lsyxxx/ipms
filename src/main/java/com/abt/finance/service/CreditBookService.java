@@ -11,6 +11,11 @@ public interface CreditBookService {
 
     Page<CreditBook> findBySpecification(CreditBookRequestForm form);
 
+    void delete(String id);
+
+    @SuppressWarnings("unchecked")
+    <T extends ICreditBook> T loadBusiness(String type, String id);
+
     /**
      * 资金流出详情
      */

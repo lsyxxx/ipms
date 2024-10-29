@@ -1,10 +1,6 @@
 package com.abt.liaohe;
 
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.springframework.util.Assert;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -17,21 +13,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 /**
  *
  */
-@Slf4j
-public class FileFilter {
+public class CopyFile {
 
 
     public static void main(String[] args) throws IOException {
-//        String keyword = "常规物性";
-//        String root = "F:\\00平台资料汇总\\辽河数据\\辽河2024\\";
-//        String target = "F:\\00平台资料汇总\\辽河数据\\辽河2024\\2024-辽河-常规物性\\";
-//        System.out.println("参数: 关键字(keyword): " + keyword);
-//        System.out.println("参数: 查询文件根目录(root): " + root);
-//        System.out.println("参数: 复制目标文件夹目录(target): " + target);
-//        findAndCopyXlsxFiles(keyword, root, target);
-//        System.out.println("---- 过滤及复制文件完成! ----- ");
 
-        SwingUtilities.invokeLater(FileFilter::createAndShowGUI);
+        SwingUtilities.invokeLater(CopyFile::createAndShowGUI);
 
     }
 
@@ -88,10 +75,14 @@ public class FileFilter {
      * @param root 文件夹根目录
      */
     public static void findAndCopyXlsxFiles(String keyword, String root, String targetDir) throws IOException {
-        Assert.hasText(root, "根目录(root)不能为空");
-        Assert.hasText(targetDir, "目标目录(targetDir)不能为空");
+        if (root == null || root.isEmpty()) {
+            throw new RuntimeException("根目录(root)不能为空");
+        }
+        if (targetDir == null || targetDir.isEmpty()) {
+            throw new RuntimeException("目标目录(targetDir)不能为空");
+        }
         File rf = new File(root);
-        if (!FileUtils.isDirectory(rf)) {
+        if (!rf.exists() || !rf.isDirectory()) {
             throw new RuntimeException("根目录(root)不是合法文件");
         }
 

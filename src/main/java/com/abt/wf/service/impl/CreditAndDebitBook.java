@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.finance.entity.CreditBook;
 import com.abt.finance.service.ICreditBook;
 import com.abt.wf.config.Constants;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,22 @@ public class CreditAndDebitBook<T extends ICreditBook> {
                 entity.setPayDate(form.getPayDate());
             }
         }
+    }
+
+
+    /**
+     * 业务信息
+     * @param form 业务实体
+     * @param creditBook 资金流出记录
+     */
+    public CreditBook setBusiness(T form, CreditBook creditBook) {
+        if (creditBook == null) {
+            creditBook = new CreditBook();
+        }
+        creditBook.setFileJson(form.getFileJson());
+        creditBook.setVoucherNum(form.getVoucherNum());
+        return creditBook;
+
     }
 
 

@@ -66,7 +66,6 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
 
         final Page<AccountItem> byQuery = accountItemRepository.findByQuery(form.getQuery(), form.isEnabled(), form.getLevel(), pageable);
         return orderByCode(byQuery);
-//        return null;
     }
 
     @Override
@@ -74,7 +73,6 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
         List<AccountItem> byQuery = accountItemRepository.findByQuery(form.getQuery(), form.isEnabled(), form.getLevel());
         Collections.sort(byQuery);
         return byQuery;
-//        return null;
     }
 
     /**
@@ -88,21 +86,42 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
     }
 
     /**
-     * TODO: 生成级联名称
+     * 生成级联名称
      */
+    @Override
     public void createAllAccountItemCascade() {
         final List<AccountItem> all = accountItemRepository.findAll();
-        for (final AccountItem ai : all) {
-            if (ai.getLevel() == 0) {
-                continue;
-            }
-            if (ai.getLevel() == 1) {
-                String code = ai.getCode();
-                all.stream().filter(i -> i.getLevel() != 1 && i.getCode().startsWith(code)).forEach(i -> i.setCascade(code +"_" + i.getName()));
-            }
-
-
+        final List<AccountItem> lv1List = all.stream().filter(i -> i.getLevel() == 1).toList();
+        final List<AccountItem> lv2List = all.stream().filter(i -> i.getLevel() == 2).toList();
+        final List<AccountItem> lv3List = all.stream().filter(i -> i.getLevel() == 3).toList();
+        lv1List.forEach(i -> {
+            i.setCascadeName(i.getName());
+            i.setCascadeCode(i.getCode());
+        });
+        for (AccountItem ai : lv1List) {
+            String c1 = ai.getCode();
+            String n1 = ai.getName();
+            final List<AccountItem> found = lv2List.stream().filter(i -> i.getCode().startsWith(c1)).toList();
+            found.forEach(i -> {
+                i.setCascadeCode(c1 + "_" + i.getCode());
+                i.setCascadeName(n1 + "_" + i.getName());
+            });
         }
+
+        for (AccountItem ai : lv2List) {
+            lv3List.stream().filter(i -> i.getCode().startsWith(ai.getCode())).forEach(i -> {
+                i.setCascadeName(ai.getCascadeName() + "_" + ai.getName());
+                i.setCascadeCode(ai.getCascadeCode() + "_" + ai.getCode());
+            });
+        }
+        accountItemRepository.saveAll(all);
+        final long count = all.stream().filter(i -> StringUtils.isBlank(i.getCascadeName())).count();
+        System.out.println("count: " + count);
+        all.stream().filter(i -> StringUtils.isBlank(i.getCascadeCode())).forEach(i -> {
+            i.setCascadeCode(i.getCode());
+            i.setCascadeName(i.getName());
+        });
+        accountItemRepository.saveAll(all);
 
     }
 

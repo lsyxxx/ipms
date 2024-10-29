@@ -98,7 +98,7 @@ public interface FieldWorkRepository extends JpaRepository<FieldWork, String> {
 //            "    or fw.departmentName like %:query% " +
 //            "    or fw.username like %:query%" +
             "    or fi.allowanceName like %:query%) " +
-            "and (:username is null or :username = '' or fw.username like %:username%)" +
+            "and (:username is null or :username = '' or fw.username = :query)" +
             "and (:state is null or  :state = '' or fw.reviewResult = :state) " +
             "and (:startDate IS NULL OR  fw.attendanceDate >= :startDate) " +
             "and (:endDate IS NULL OR fw.attendanceDate <= :endDate) " +

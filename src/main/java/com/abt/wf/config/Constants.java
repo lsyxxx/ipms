@@ -14,6 +14,10 @@ public class Constants {
     public static final String VAR_KEY_ENTITY = "entityId";
     public static final String VAR_KEY_STARTER= "starter";
     public static final String VAR_KEY_DESC = "desc";
+    /**
+     * 删除状态: 撤销，删除
+     */
+    public static final String VAR_KEY_REVOKE = "revoke";
 
     /*-----------------------
      * 流程删除原因
@@ -23,6 +27,8 @@ public class Constants {
     public static final String DELETE_REASON_REVOKE = "用户撤销流程";
     public static final String DELETE_REASON_AUTO = "流程正常结束";
     public static final String DELETE_REASON_DELETE = "deleteByUser";
+    public static final String DELETE_STATE_REVOKE = "revoke";
+    public static final String DELETE_STATE_DELETE = "delete";
 
     /**
      * 流程结束者-系统

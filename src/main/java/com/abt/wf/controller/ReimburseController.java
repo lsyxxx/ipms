@@ -101,8 +101,8 @@ public class ReimburseController {
         if (StringUtils.isBlank(id)) {
             throw new BusinessException("审批编号不能为空!");
         }
-        Reimburse invoiceApply = reimburseService.load(id);
-        return R.success(invoiceApply);
+        Reimburse rbs = reimburseService.load(id);
+        return R.success(rbs);
     }
 
 

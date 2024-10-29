@@ -124,7 +124,7 @@ public class GlobalExceptionHandler {
      * 访问拒绝（无授权）
      */
     @ExceptionHandler(AccessDeniedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+//    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public void handleAccessDeniedException(AccessDeniedException ex) {
         log.error(ex.getMessage(), ex);
         throw new BusinessException("无权访问或操作");

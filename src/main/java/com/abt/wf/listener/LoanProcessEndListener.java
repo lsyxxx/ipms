@@ -23,6 +23,7 @@ public class LoanProcessEndListener implements ExecutionListener {
     public void notify(DelegateExecution execution) {
         log.info("借款申请流程结束 -- 流程id: {}", execution.getProcessInstanceId());
         Object obj = execution.getVariable(Constants.VAR_KEY_ENTITY);
+        Object revoke = execution.getVariable(Constants.VAR_KEY_REVOKE);
         String entityId = "";
         if (obj == null) {
             log.error("借款申请流程参数中未保存业务实体id! 流程实例id: {}", execution.getProcessInstanceId());
@@ -39,7 +40,9 @@ public class LoanProcessEndListener implements ExecutionListener {
             //抄送TODO;
 
             //资金流出记录，只有流程结束且通过的才记录
-            if ("COMPLETED".equals(entity.getProcessState()) && Constants.STATE_DETAIL_PASS.equals(entity.getBusinessState())) {
+            if ("COMPLETED".equals(entity.getProcessState())
+                    && Constants.STATE_DETAIL_PASS.equals(entity.getBusinessState())
+                    && revoke == null) {
                 loanService.writeCreditBook(entity);
             }
 

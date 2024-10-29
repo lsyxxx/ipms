@@ -4,7 +4,11 @@ import com.abt.finance.entity.CreditBook;
 import com.abt.finance.model.CreditBookRequestForm;
 import com.abt.finance.repository.CreditBookRepository;
 import com.abt.finance.service.CreditBookService;
-import com.abt.finance.service.ICashCreditService;
+import com.abt.finance.service.ICreditBook;
+import com.abt.wf.repository.LoanRepository;
+import com.abt.wf.repository.PayVoucherRepository;
+import com.abt.wf.repository.ReimburseRepository;
+import com.abt.wf.repository.TripMainRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,9 +16,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Optional;
+
+import static com.abt.wf.config.Constants.*;
 
 
 /**
@@ -25,9 +32,17 @@ import java.util.Optional;
 public class CreditBookServiceImpl implements CreditBookService {
 
     private final CreditBookRepository creditBookRepository;
+    private final ReimburseRepository reimburseRepository;
+    private final PayVoucherRepository payVoucherRepository;
+    private final LoanRepository loanRepository;
+    private final TripMainRepository tripMainRepository;
 
-    public CreditBookServiceImpl(CreditBookRepository creditBookRepository) {
+    public CreditBookServiceImpl(CreditBookRepository creditBookRepository, ReimburseRepository reimburseRepository, PayVoucherRepository payVoucherRepository, LoanRepository loanRepository, TripMainRepository tripMainRepository) {
         this.creditBookRepository = creditBookRepository;
+        this.reimburseRepository = reimburseRepository;
+        this.payVoucherRepository = payVoucherRepository;
+        this.loanRepository = loanRepository;
+        this.tripMainRepository = tripMainRepository;
     }
 
 
@@ -45,6 +60,28 @@ public class CreditBookServiceImpl implements CreditBookService {
         return creditBookRepository.findAll(spec, pageable);
     }
 
+    @Override
+    public void delete(String id) {
+        Assert.hasText(id, "资金流出记录id不能为空");
+        creditBookRepository.deleteById(id);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends ICreditBook> T loadBusiness(String type, String id) {
+        Assert.hasText(type, "流程-业务类型(type)不能为空");
+        Assert.hasText(id, "流程-审批编号(id)不能为空");
+        return switch (type) {
+            case SERVICE_RBS -> (T) reimburseRepository.findById(id).orElse(null);
+            case SERVICE_PAY -> (T) payVoucherRepository.findById(id).orElse(null);
+            case SERVICE_LOAN -> (T) loanRepository.findById(id).orElse(null);
+            case SERVICE_TRIP -> (T) tripMainRepository.findById(id).orElse(null);
+            default -> {
+                log.warn("未知的业务类型: {}", type);
+                yield null;
+            }
+        };
+    }
 
     @Override
     public Optional<CreditBook> findById(String id) {
@@ -77,7 +114,5 @@ public class CreditBookServiceImpl implements CreditBookService {
                 return builder.conjunction();
             };
         }
-
-
     }
 }
