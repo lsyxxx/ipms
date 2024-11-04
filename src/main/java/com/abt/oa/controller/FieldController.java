@@ -113,7 +113,7 @@ public class FieldController {
         work.setConfirm(false);
         final Boolean isDup = fieldWorkService.isDuplicatedDate(work.getAttendanceDate(), work.getUserid());
         if (isDup) {
-           return  R.bizException(isDup, "重复提交");
+           return R.bizException(isDup, "重复提交");
         }
         fieldWorkService.saveFieldWork(work);
         return R.success("提交成功");

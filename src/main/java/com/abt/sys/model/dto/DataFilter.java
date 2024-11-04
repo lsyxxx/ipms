@@ -67,7 +67,7 @@ public class DataFilter {
     }
 
 
-    public boolean doFilter(UserView user) {
+    public boolean  doFilter(UserView user) {
         Set<String> set = new HashSet<>();
         if (isRoleRule()) {
             set = user.getAuthorities().stream().map(Role::getId).collect(Collectors.toSet());

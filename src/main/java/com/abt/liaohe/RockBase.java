@@ -1,6 +1,8 @@
 package com.abt.liaohe;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,12 +13,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@MappedSuperclass
 public class RockBase {
 
     /**
      * 检测编号
      * test id
      */
+    @NotNull
     private String tid;
 
     /**
@@ -46,14 +50,31 @@ public class RockBase {
     /**
      * 层位
      */
-    @ExcelProperty(index = 5)
     private String layer;
 
 
     /**
      * 岩性
      */
-    @ExcelProperty(index = 6)
     private String rockName;
+
+
+
+    /**
+     * 检测日期
+     */
+    private String testDate;
+
+    /**
+     * 检测单位（我方）
+     */
+    private String company = "西安阿伯塔资环分析测试技术有限公司";
+
+    private String remark;
+
+    /**
+     * 报告名称
+     */
+    private String reportName;
 
 }
