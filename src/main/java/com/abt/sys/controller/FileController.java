@@ -1,12 +1,14 @@
 package com.abt.sys.controller;
 
 import com.abt.common.model.R;
+import com.abt.common.util.FileUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +39,9 @@ public class FileController {
 
     @Value("${com.abt.file.upload.save}")
     private String savedRoot;
+
+    @Value("com.abt.file.upload.temp")
+    private String tempAccess;
 
     private final IFileService fileService;
 
@@ -132,6 +137,23 @@ public class FileController {
             log.error("文件下载失败: ", e);
             return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.EXPECTATION_FAILED);
         }
+    }
+
+    /**
+     * 复制文件到外网可访问的地址
+     * @param url 文件原始地址
+     */
+    @GetMapping("/copy/temp")
+    public R<Object> copyToTempFile(String url, String originalName) throws IOException {
+        File file = new File(url);
+        String rename = FileUtil.rename(originalName);
+        System.out.printf("fileName: %s, rename: %s", file.getName(), rename);
+
+        String newUrl = this.tempAccess + File.separator + rename;
+        File tempFile = new File(newUrl);
+        //复制文件到外网临时地址
+        FileUtils.copyFile(file, tempFile);
+        return R.success(newUrl);
     }
 
 
