@@ -15,8 +15,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.abt.liaohe.Util.getCellValueAsString;
-import static com.abt.liaohe.Util.removeBlank;
+import static com.abt.liaohe.Util.*;
 
 /**
  * 常规物性excel
@@ -151,18 +150,6 @@ public class RockAnalysisExcel {
                 list.add("");
             }
         }
-    }
-
-    /**
-     * 验证list是否全部为空元素
-     * @param header 要校验的list
-     * @return true: 全空, false: 不全空
-     */
-    private boolean validateEmpty(List<String> header) {
-        if (header == null || header.isEmpty()) {
-            return true;
-        }
-        return header.stream().allMatch(StringUtils::isBlank);
     }
 
 

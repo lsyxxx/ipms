@@ -40,8 +40,11 @@ public class FileController {
     @Value("${com.abt.file.upload.save}")
     private String savedRoot;
 
-    @Value("com.abt.file.upload.temp")
+    @Value("${com.abt.file.upload.temp}")
     private String tempAccess;
+
+    @Value("${com.abt.file.web.root}")
+    private String tempRoot;
 
     private final IFileService fileService;
 
@@ -141,19 +144,24 @@ public class FileController {
 
     /**
      * 复制文件到外网可访问的地址
+     * todo: 需要定时清理临时文件
      * @param url 文件原始地址
      */
     @GetMapping("/copy/temp")
-    public R<Object> copyToTempFile(String url, String originalName) throws IOException {
+    public R<String> copyToTempFile(String url, String originalName) throws IOException {
         File file = new File(url);
         String rename = FileUtil.rename(originalName);
-        System.out.printf("fileName: %s, rename: %s", file.getName(), rename);
+        String path = tempRoot + File.separator + tempAccess;
+        File dir = new File(path);
+        if (!FileUtils.isDirectory(dir)) {
+            dir.mkdirs();
+        }
 
-        String newUrl = this.tempAccess + File.separator + rename;
+        String newUrl = path + File.separator + rename;
         File tempFile = new File(newUrl);
         //复制文件到外网临时地址
         FileUtils.copyFile(file, tempFile);
-        return R.success(newUrl);
+        return R.success(tempAccess + File.separator + rename, "获取新的url");
     }
 
 

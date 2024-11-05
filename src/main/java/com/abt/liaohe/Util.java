@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 /**
  *
@@ -104,5 +105,18 @@ public class Util {
         }
         return 0;
     }
+
+    /**
+     * 验证list是否全部为空元素
+     * @param header 要校验的list
+     * @return true: 全空, false: 不全空
+     */
+    public static boolean validateEmpty(List<String> header) {
+        if (header == null || header.isEmpty()) {
+            return true;
+        }
+        return header.stream().allMatch(StringUtils::isBlank);
+    }
+
 
 }
