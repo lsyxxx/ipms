@@ -14,4 +14,8 @@ public interface AppVersionRepository extends JpaRepository<AppVersion, String> 
           "and (:version is null or :version = '' or app.version like %:version%) " +
           "order by app.version desc")
   Page<AppVersion> findBy(String platForm, String version, Pageable pageable);
+
+
+  AppVersion findByVersion(String version);
+
 }

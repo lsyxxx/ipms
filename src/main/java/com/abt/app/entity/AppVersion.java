@@ -55,16 +55,16 @@ public class AppVersion extends AuditInfo implements UserJpaAudit {
     /**
      * ios app
      */
-    public static final String FLATFORM_IOS_APP = "iOS_app";
+    public static final String PLATFORM_IOS_APP = "iOS_app";
     /**
      * ipad
      */
-    public static final String FLATFORM_IOS_PAD = "iOS_pad";
+    public static final String PLATFORM_IOS_PAD = "iOS_pad";
 
     /**
      * 安卓pad
      */
-    public static final String FLATFORM_ANDROID_PAD = "Android_pad";
+    public static final String PLATFORM_ANDROID_PAD = "Android_pad";
 
     /**
      * 备份地址

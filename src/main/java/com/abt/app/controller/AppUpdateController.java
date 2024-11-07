@@ -49,7 +49,7 @@ public class AppUpdateController {
 
     @PostMapping("/upload")
     public R<Object> uploadApk(@RequestParam("file") MultipartFile file, @RequestParam("id") String id) throws IOException {
-        appUpdateService.uploadApk(file, id);
+//        appUpdateService.uploadApk(file, id);
         return R.success("上传成功!");
     }
 

@@ -14,5 +14,5 @@ public interface AppUpdateService {
 
     void delete(String id);
 
-    void uploadApk(MultipartFile file, String id) throws IOException;
+    void uploadApk(MultipartFile file, String id, String platform) throws IOException;
 }
