@@ -43,8 +43,8 @@ public class FileController {
     @Value("${com.abt.file.upload.temp}")
     private String tempAccess;
 
-    @Value("${com.abt.file.web.root}")
-    private String tempRoot;
+//    @Value("${com.abt.file.web.root}")
+    private static final String tempRoot = "E:\\质检OA附件记录";
 
     private final IFileService fileService;
 
