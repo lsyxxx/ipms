@@ -36,4 +36,10 @@ class DataExportTest {
     void handleData() {
         dataExport.handleData();
     }
+
+
+    //岩石碳酸盐含量
+    void handleRockCarbonateMeasu() {
+
+    }
 }

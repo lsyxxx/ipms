@@ -482,6 +482,30 @@ public class RockAnalysisExcel {
         convertNdToMd("脉冲法超低渗透率nd");
     }
 
+    /**
+     * 保存碳酸盐含量
+     */
+    public List<List<Object>> saveCarbonateData(String fileName) {
+        final List<RawData> list = rawDataRepository.findByReportName(fileName);
+        //根据行分组
+        final Map<Integer, List<RawData>> groupByRow = list.stream().collect(Collectors.groupingBy(RawData::getRowIdx));
+        //导入excel的数据
+        List<List<Object>> excelTable = new ArrayList<>();
+        for(Map.Entry<Integer, List<RawData>> entry : groupByRow.entrySet()) {
+            final List<RawData> row = entry.getValue();
+            List<Object> excelRow = new ArrayList<>();
+            excelRow.add(getTestNo(row));
+            excelRow.add(getSampleNo(row));
+
+
+
+            excelTable.add(excelRow);
+        }
+
+
+        return excelTable;
+    }
+
 
 
 
