@@ -77,4 +77,9 @@ public class RockBase {
      */
     private String reportName;
 
+    /**
+     * 样品批次
+     */
+    private String sampleBatch;
+
 }

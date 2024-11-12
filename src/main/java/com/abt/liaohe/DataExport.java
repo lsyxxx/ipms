@@ -4,7 +4,6 @@ package com.abt.liaohe;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 数据导出
@@ -45,6 +43,10 @@ public class DataExport {
         RockAnalysisExcel excel = new RockAnalysisExcel(rawDataRepository, rockAnalysisDataRepository);
 //        excel.handleVerticalPermeability();
         excel.handlePulsePermeabilityNd();
+    }
+
+    public List<RockAnalysisData> getRockAnalysisDataAll() {
+        return rockAnalysisDataRepository.findAll();
     }
 
 
