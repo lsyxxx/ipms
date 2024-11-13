@@ -8,6 +8,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
+/**
+ * 物品详情
+ */
 @Getter
 @Setter
 @Entity

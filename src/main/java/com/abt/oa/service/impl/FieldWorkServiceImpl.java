@@ -597,7 +597,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             final Map<String, Double> sumByAllowance = userEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
             sumByAllowance.forEach((k, v) -> {
                 final FieldWorkAttendanceSetting setting = findSettingById(k);
-                Cell cell = new Cell(String.valueOf(v), setting.getName());
+                Cell cell = new Cell(v, setting.getName());
                 cell.setSummaryColumn(true);
                 CalendarEvent event = new CalendarEvent();
                 event.setOrder(1000 + setting.getSort());

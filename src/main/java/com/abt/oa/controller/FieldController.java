@@ -327,7 +327,6 @@ public class FieldController {
         Table table = (Table) attribute;
         File file = fieldWorkService.writeExcel(table);
 
-        System.out.println("path: " + file.getAbsolutePath());
         return R.success(file.getAbsolutePath(), "生成excel数据成功!");
     }
 

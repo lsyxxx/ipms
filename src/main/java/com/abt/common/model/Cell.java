@@ -17,6 +17,7 @@ public class Cell {
     private int columnIndex;
     private String valueStr;
     private String styleStr;
+    private Object valueObj;
     /**
      * 是否是统计列
      */
@@ -36,6 +37,12 @@ public class Cell {
         this.valueStr = valueStr;
         this.columnName = columnName;
         this.columnIndex = columnIndex;
+    }
+
+    public Cell(Object valueObj, String columnName) {
+        this.valueObj = valueObj;
+        this.valueStr = String.valueOf(valueObj);
+        this.columnName = columnName;
     }
 
 
