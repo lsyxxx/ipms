@@ -161,7 +161,7 @@ public class FlowOperationLog {
     public static FlowOperationLog applyLog(String operatorId, String operatorName, WorkflowBase form, Task task, String entityId) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
         optLog.setEntityId(entityId);
-        optLog. setTaskInstanceId(task.getId());
+        optLog.setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         optLog.setTaskEndTime(LocalDateTime.now());
@@ -175,7 +175,7 @@ public class FlowOperationLog {
     public static FlowOperationLog passLog(String operatorId, String operatorName, WorkflowBase form, Task task, String entityId) {
         FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
         optLog.setEntityId(entityId);
-        optLog. setTaskInstanceId(task.getId());
+        optLog.setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         optLog.setTaskEndTime(LocalDateTime.now());

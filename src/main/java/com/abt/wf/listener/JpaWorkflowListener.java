@@ -28,12 +28,19 @@ public class JpaWorkflowListener {
     public <T extends WorkflowBase> void insertCreateDept(T entity) {
         String createUserid = entity.getCreateUserid();
         if (createUserid != null && !createUserid.isEmpty()) {
-            final User user = userRepository.getEmployeeDeptByUserid(createUserid);
-            entity.setCreateUsername(user.getUsername());
-            entity.setCreateDeptId(user.getDeptId());
-            entity.setCreateDeptName(user.getDeptName());
-            entity.setCreateTeamId(user.getTeamId());
-            entity.setCreateTeamName(user.getTeamName());
+            try {
+                final User user = userRepository.getEmployeeDeptByUserid(createUserid);
+                if (user != null) {
+                    entity.setCreateDeptId(user.getDeptId());
+                    entity.setCreateDeptName(user.getDeptName());
+                    entity.setCreateTeamId(user.getTeamId());
+                    entity.setCreateTeamName(user.getTeamName());entity.setCreateUsername(user.getUsername());
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                log.warn("未获取用户信息 - createUserid: {}", createUserid);
+            }
+
         } else {
             log.warn("未获取创建用户id! - Service: {}, ProcInstId: {}", entity.getServiceName(), entity.getProcessInstanceId());
         }

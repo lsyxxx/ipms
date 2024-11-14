@@ -37,6 +37,7 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_LOAN = "rbsLoan";
     public static final String DEF_KEY_INV = "rbsInv";
     public static final String DEF_KEY_INVOFFSET = "invOffset";
+    public static final String DEF_KEY_PURCHASE = "purchase";
 
     public static final String SERVICE_RBS = "reimburse";
     public static final String SERVICE_TRIP = "trip";
@@ -109,84 +110,59 @@ public class WorkFlowConfig {
     @Order(100)
     public BpmnModelInstance rbsBpmnModelInstance() {
         log.info("rbsBpmnModelInstance bean init...");
-        ProcessDefinition rbsDef = this.processDefinitionMap.get(DEF_KEY_RBS);
-        if (rbsDef == null) {
-            rbsDef = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_RBS).latestVersion().singleResult();
-            processDefinitionMap.put(DEF_KEY_RBS, rbsDef);
-        }
-        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(rbsDef.getId());
-        bpmnModelInstanceMap.put(DEF_KEY_RBS, bpmnModelInstance);
-        return bpmnModelInstance;
+        return getBpmnModelInstanceFromMap(DEF_KEY_RBS);
     }
+
 
     @Bean("rbsTripBpmnModelInstance")
     @Order(100)
     public BpmnModelInstance rbsTripModelInstance() {
         log.info("rbsTripModelInstance bean init...");
-        ProcessDefinition rbsDef = this.processDefinitionMap.get(DEF_KEY_TRIP);
-
-        if (rbsDef == null) {
-            rbsDef = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_TRIP).latestVersion().singleResult();
-            processDefinitionMap.put(DEF_KEY_TRIP, rbsDef);
-        }
-        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(rbsDef.getId());
-        bpmnModelInstanceMap.put(DEF_KEY_TRIP, bpmnModelInstance);
-        return bpmnModelInstance;
+        return getBpmnModelInstanceFromMap(DEF_KEY_TRIP);
     }
 
     @Bean("payVoucherBpmnModelInstance")
     @Order(100)
     public BpmnModelInstance payVoucherModelInstance() {
         log.info("payVoucherModelInstance bean init...");
-        ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_PAY_VOUCHER);
-
-        if (definition == null) {
-            definition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_PAY_VOUCHER).latestVersion().singleResult();
-            processDefinitionMap.put(DEF_KEY_PAY_VOUCHER, definition);
-        }
-        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(definition.getId());
-        bpmnModelInstanceMap.put(DEF_KEY_PAY_VOUCHER, bpmnModelInstance);
-        return bpmnModelInstance;
+        return getBpmnModelInstanceFromMap(DEF_KEY_PAY_VOUCHER);
     }
     @Bean("loanBpmnModelInstance")
     @Order(100)
     public BpmnModelInstance loanBpmnModelInstance() {
         log.info("loanBpmnModelInstance bean init...");
-        ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_LOAN);
-        if (definition == null) {
-            definition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_LOAN).latestVersion().singleResult();
-            processDefinitionMap.put(DEF_KEY_LOAN, definition);
-        }
-        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(definition.getId());
-        bpmnModelInstanceMap.put(DEF_KEY_LOAN, bpmnModelInstance);
-        return bpmnModelInstance;
+        return getBpmnModelInstanceFromMap(DEF_KEY_LOAN);
     }
 
     @Bean("invoiceApplyBpmnModelInstance")
     @Order(100)
     public BpmnModelInstance invoiceApplyBpmnModelInstance() {
         log.info("invoiceApplyBpmnModelInstance bean init...");
-        ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_INV);
-        if (definition == null) {
-            definition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_INV).latestVersion().singleResult();
-            processDefinitionMap.put(DEF_KEY_INV, definition);
-        }
-        BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(definition.getId());
-        bpmnModelInstanceMap.put(DEF_KEY_INV, bpmnModelInstance);
-        return bpmnModelInstance;
+        return getBpmnModelInstanceFromMap(DEF_KEY_INV);
     }
 
     @Bean("invoiceOffsetBpmnModelInstance")
     @Order(100)
     public BpmnModelInstance invoiceOffsetBpmnModelInstance() {
         log.info("invoiceOffsetBpmnModelInstance bean init...");
-        ProcessDefinition definition = this.processDefinitionMap.get(DEF_KEY_INVOFFSET);
+        return getBpmnModelInstanceFromMap(DEF_KEY_INVOFFSET);
+    }
+
+    @Bean("purchaseBpmnModelInstance")
+    @Order(100)
+    public BpmnModelInstance purchaseBpmnModelInstance() {
+        log.info("purchaseBpmnModelInstance bean init...");
+        return getBpmnModelInstanceFromMap(DEF_KEY_PURCHASE);
+    }
+
+    private BpmnModelInstance getBpmnModelInstanceFromMap(String defKey) {
+        ProcessDefinition definition = this.processDefinitionMap.get(defKey);
         if (definition == null) {
-            definition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(DEF_KEY_INVOFFSET).latestVersion().singleResult();
-            processDefinitionMap.put(DEF_KEY_INVOFFSET, definition);
+            definition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(defKey).latestVersion().singleResult();
+            processDefinitionMap.put(defKey, definition);
         }
         BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(definition.getId());
-        bpmnModelInstanceMap.put(DEF_KEY_INVOFFSET, bpmnModelInstance);
+        bpmnModelInstanceMap.put(defKey, bpmnModelInstance);
         return bpmnModelInstance;
     }
 
