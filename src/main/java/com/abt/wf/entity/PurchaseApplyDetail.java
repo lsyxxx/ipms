@@ -1,5 +1,6 @@
 package com.abt.wf.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 
@@ -27,7 +29,8 @@ public class PurchaseApplyDetail {
      * id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator  = "timestampIdGenerator")
+    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
 
     /**
@@ -38,6 +41,7 @@ public class PurchaseApplyDetail {
 
     @ManyToOne
     @JoinColumn(name = "m_id", referencedColumnName = "id")
+    @JsonIgnore
     private PurchaseApplyMain main;
 
     /**

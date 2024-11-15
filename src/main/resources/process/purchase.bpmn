@@ -8,18 +8,39 @@
     <bpmn:sequenceFlow id="Flow_1ujfo08" sourceRef="StartEvent_1" targetRef="pur_mgr" />
     <bpmn:userTask id="pur_mgr" name="业务主管" camunda:assignee="${manager}">
       <bpmn:documentation>业务主管审批（无可不填写）</bpmn:documentation>
+      <bpmn:extensionElements>
+          <camunda:properties>
+            <camunda:property name="approvalType" value="0" />
+            <camunda:property name="selectUserType" value="0" />
+            <camunda:property name="taskType" value="approval" />
+          </camunda:properties>
+        </bpmn:extensionElements>
       <bpmn:incoming>Flow_1ujfo08</bpmn:incoming>
       <bpmn:outgoing>Flow_1nej1b4</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1nej1b4" sourceRef="pur_mgr" targetRef="pur_leader" />
     <bpmn:userTask id="pur_leader" name="业务副总" camunda:assignee="${leader}">
       <bpmn:documentation>业务副总审批（无可不填写）</bpmn:documentation>
+      <bpmn:extensionElements>
+          <camunda:properties>
+            <camunda:property name="approvalType" value="0" />
+            <camunda:property name="selectUserType" value="0" />
+            <camunda:property name="taskType" value="approval" />
+          </camunda:properties>
+        </bpmn:extensionElements>
       <bpmn:incoming>Flow_1nej1b4</bpmn:incoming>
       <bpmn:outgoing>Flow_1q5pykw</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1q5pykw" sourceRef="pur_leader" targetRef="pur_final" />
     <bpmn:userTask id="pur_final" name="综合办公室" camunda:assignee="U20230406026">
       <bpmn:documentation>综合办公室审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1q5pykw</bpmn:incoming>
       <bpmn:outgoing>Flow_0cf985t</bpmn:outgoing>
     </bpmn:userTask>
@@ -29,7 +50,7 @@
     </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="wf_purchase">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="purchase">
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="152" y="102" width="36" height="36" />
         <bpmndi:BPMNLabel>

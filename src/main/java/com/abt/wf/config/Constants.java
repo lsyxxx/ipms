@@ -53,6 +53,7 @@ public class Constants {
 
     public static final String STATE_DETAIL_ACTIVE = "审批中";
     public static final String STATE_DETAIL_APPLY = "申请";
+    public static final String STATE_DETAIL_TEMP = "草稿";
 
     public static final String OPERATOR_SYS = "system";
     public static final String OPERATE_TYPE_SYS = "system";

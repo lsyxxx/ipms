@@ -2,7 +2,6 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
-import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
@@ -10,6 +9,7 @@ import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -27,11 +27,13 @@ import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -194,7 +196,14 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     @Override
     public Page<PurchaseApplyMain> findMyApplyByQueryPageable(PurchaseApplyRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<PurchaseApplyMain> myApplyPaged = purchaseApplyMainRepository.findMyApplyPaged(requestForm.getUserid(),
+                requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()),
+                TimeUtil.toLocalDateTime(requestForm.getEndDate()),
+                pageable);
+        myApplyPaged.getContent().forEach(this::buildActiveTask);
+        return myApplyPaged;
     }
 
     @Override
@@ -240,5 +249,11 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     @Override
     public List<String> createBriefDesc(PurchaseApplyMain entity) {
         return List.of();
+    }
+
+    @Override
+    public void tempSave(PurchaseApplyMain entity) {
+        entity.setBusinessState(STATE_DETAIL_TEMP);
+        purchaseApplyMainRepository.save(entity);
     }
 }
