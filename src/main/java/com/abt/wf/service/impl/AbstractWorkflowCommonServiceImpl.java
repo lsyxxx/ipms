@@ -276,6 +276,38 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         return parent;
     }
 
+    /**
+     * 简单的审批记录，包含申请节点及当前正在审批中的节点
+     * @param entityId 业务实体Id
+     * @param serviceName 业务铭恒
+     */
+    public List<FlowOperationLog> simpleProcessRecord(String entityId, String serviceName) {
+        List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(entityId);
+        //正在进行的
+        setActiveTaskOptLog(completed, entityId, serviceName);
+        return completed;
+    }
+
+    public void setActiveTaskOptLog(List<FlowOperationLog> logs, String entityId, String serviceName) {
+        String procId = logs.get(0).getProcessInstanceId();
+        final Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
+        if (task != null) {
+            FlowOperationLog active = new FlowOperationLog();
+            active.setEntityId(entityId);
+            active.setServiceName(serviceName);
+            active.setTaskDefinitionKey(task.getTaskDefinitionKey());
+            active.setTaskName(task.getName());
+            active.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
+            active.setOperatorId(task.getAssignee());
+            User operator = userService.getSimpleUserInfo(task.getAssignee());
+            if (operator != null) {
+                active.setOperatorName(operator.getUsername());
+            }
+            active.setTaskResult(STATE_DETAIL_ACTIVE);
+            logs.add(active);
+        }
+    }
+
     @Override
     public List<FlowOperationLog> processRecord(String entityId, String serviceName) {
         List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(entityId);
@@ -295,24 +327,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             }
             optLog.setSignatureBase64(imgStr);
         }
-        String procId = completed.get(0).getProcessInstanceId();
-        final Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
-        if (task != null) {
-            FlowOperationLog active = new FlowOperationLog();
-            active.setEntityId(entityId);
-            active.setServiceName(serviceName);
-            active.setTaskDefinitionKey(task.getTaskDefinitionKey());
-            active.setTaskName(task.getName());
-            active.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
-            active.setOperatorId(task.getAssignee());
-            User operator = userService.getSimpleUserInfo(task.getAssignee());
-            if (operator != null) {
-                active.setOperatorName(operator.getUsername());
-            }
-            active.setTaskResult(STATE_DETAIL_ACTIVE);
-            completed.add(active);
-        }
-
+        setActiveTaskOptLog(completed, entityId, serviceName);
         return completed;
     }
 

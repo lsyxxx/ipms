@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +34,8 @@ public class PurchaseApplyMain extends WorkflowBase {
      * id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator  = "timestampIdGenerator")
+    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
 
     /**

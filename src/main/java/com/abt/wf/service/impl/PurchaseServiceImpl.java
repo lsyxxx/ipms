@@ -19,6 +19,7 @@ import com.abt.wf.service.PurchaseService;
 import com.abt.wf.service.SignatureService;
 import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
@@ -38,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.*;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_PURCHASE;
+import static com.abt.wf.model.ActionEnum.AUTOPASS;
 
 /**
  *
@@ -111,6 +114,11 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     }
 
+    @Override
+    public List<FlowOperationLog> processRecord(String entityId, String serviceName) {
+        return this.simpleProcessRecord(entityId, serviceName);
+    }
+
     @Transactional
     @Override
     public void apply(PurchaseApplyMain form) {
@@ -130,12 +138,36 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         //log
         FlowOperationLog optLog = FlowOperationLog.create(form.getCreateUserid(), form.getCreateUsername(), form);
         optLog.setEntityId(id);
-        optLog.setTaskName(ActionEnum.APPLY.name());
+        optLog.setTaskDefinitionKey(DEF_KEY_PURCHASE);
+        optLog.setTaskName(STATE_DETAIL_APPLY);
         optLog.setTaskStartTime(LocalDateTime.now());
         optLog.setTaskEndTime(LocalDateTime.now());
         optLog.setAction(ActionEnum.APPLY.name());
         optLog.setTaskResult(STATE_DETAIL_APPLY);
         flowOperationLogService.saveLog(optLog);
+
+        //判断下一个节点是否自动跳过
+        skipEmptyUserTask(form);
+    }
+
+
+    /**
+     * 自动跳过审批人为空的节点
+     * @param form 当前form(注意要是最新的)
+     */
+    public void skipEmptyUserTask(PurchaseApplyMain form) {
+        final Task currentTask = taskService.createTaskQuery().processInstanceId(form.getProcessInstanceId()).active().singleResult();
+        if (currentTask == null) {
+            return;
+        }
+        final String assignee = currentTask.getAssignee();
+        if (StringUtils.isNotBlank(assignee)) {
+            return;
+        }
+        FlowOperationLog optLog = FlowOperationLog.autoPassLog(form, currentTask, form.getId());
+        flowOperationLogService.saveLog(optLog);
+        taskService.complete(currentTask.getId());
+        skipEmptyUserTask(form);
     }
 
     @Override
@@ -167,6 +199,8 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         if (details != null) {
             details.forEach(d -> {
                 d.setMain(entity);
+                //处理最终完成数量
+                d.handleFinalQuantity();
             });
         }
         return purchaseApplyMainRepository.save(entity);
@@ -254,6 +288,6 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     @Override
     public void tempSave(PurchaseApplyMain entity) {
         entity.setBusinessState(STATE_DETAIL_TEMP);
-        purchaseApplyMainRepository.save(entity);
+        this.saveEntity(entity);
     }
 }

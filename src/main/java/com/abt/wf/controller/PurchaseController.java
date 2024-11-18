@@ -3,15 +3,19 @@ package com.abt.wf.controller;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
+import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.PurchaseService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.abt.wf.config.Constants.SERVICE_PURCHASE;
 
 /**
  * 采购流程
@@ -30,6 +34,7 @@ public class PurchaseController {
 
     @PostMapping("/apply")
     public R<Object> apply(@RequestBody PurchaseApplyMain form) {
+        setTokenUser(form);
         purchaseService.apply(form);
         return R.success("提交采购申请成功");
     }
@@ -79,10 +84,38 @@ public class PurchaseController {
         return R.success(page.getContent(), (int) page.getTotalElements());
     }
 
+    @GetMapping("/load")
+    public R<PurchaseApplyMain> load(String id) {
+        final PurchaseApplyMain entity = purchaseService.load(id);
+        return R.success(entity);
+    }
+
+    @PostMapping("/approve")
+    public R<Object> approve(@RequestBody PurchaseApplyMain form) {
+        setTokenUser(form);
+        purchaseService.approve(form);
+        return R.success("审批成功");
+    }
+
+    @GetMapping("/record/{id}")
+    public R<List<FlowOperationLog>> processRecord(@PathVariable String id) {
+        if (StringUtils.isEmpty(id)) {
+            return R.warn("未传入审批编号", List.of());
+        }
+        final List<FlowOperationLog> records = purchaseService.processRecord(id, SERVICE_PURCHASE);
+        return R.success(records);
+    }
+
 
     public void setTokenUser(PurchaseApplyRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
         form.setUserid(user.getId());
         form.setUsername(user.getName());
+    }
+
+    public void setTokenUser(PurchaseApplyMain form) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        form.setSubmitUserid(user.getId());
+        form.setSubmitUsername(user.getUsername());
     }
 }

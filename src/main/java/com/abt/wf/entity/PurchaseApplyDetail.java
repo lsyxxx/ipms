@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDateTime;
 
@@ -29,8 +30,7 @@ public class PurchaseApplyDetail {
      * id
      */
     @Id
-    @GeneratedValue(generator  = "timestampIdGenerator")
-    @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     /**
@@ -72,21 +72,19 @@ public class PurchaseApplyDetail {
      * 申请数量
      */
     @Column(name="quantity_")
-    private int quantity;
+    private Integer quantity;
 
     /**
-     * 数量为-1表示未修改;
-     * 0表示删除该物品。
+     * 当前结果
      */
-    public static final int NO_MODIFY = -1;
-
-    public static final int DELETE = 0;
+    @Column(name="cur_quantity")
+    private Integer currentQuantity;
 
     /**
      * 业务主管修改后数量
      */
     @Column(name="mgr_modify")
-    private int managerModify = NO_MODIFY;
+    private Integer managerModify = null;
     /**
      * 业务主管
      */
@@ -101,7 +99,7 @@ public class PurchaseApplyDetail {
      * 业务副总修改后数量
      */
     @Column(name="leader_modify")
-    private int leaderModify= NO_MODIFY;
+    private Integer leaderModify= null;
 
     /**
      * 业务副总
@@ -117,13 +115,15 @@ public class PurchaseApplyDetail {
      * 综合办公室修改
      */
     @Column(name="final_modify")
-    private int finalModify = NO_MODIFY;
+    private Integer finalModify = null;
 
     /**
      * 综合办公室审批人id
      */
+    @Value("${abt.purchase.final.userid}")
     @Column(name="final_id")
     private String finalId;
+    @Value("${abt.purchase.final.username}")
     @Column(name="final_name")
     private String finalName;
     @Column(name="final_updatetime")
@@ -139,21 +139,19 @@ public class PurchaseApplyDetail {
 
 
     /**
-     * 该物品被删除
+     * 计算最终数量
+     * 按最新审批的数量
      */
-    public boolean isMaterialDeleted() {
-        return isManagerDeleted() || isLeaderDeleted() || isFinalDeleted();
-    }
-
-    private boolean isManagerDeleted() {
-        return this.managerModify == DELETE;
-    }
-
-    private boolean isLeaderDeleted() {
-        return this.leaderModify == DELETE;
-    }
-
-    private boolean isFinalDeleted() {
-        return this.finalModify == DELETE;
+    public void handleFinalQuantity() {
+        this.currentQuantity = this.quantity;
+        if (this.managerModify != null) {
+            this.finalModify = this.managerModify;
+        }
+        if (this.leaderModify != null) {
+            this.finalModify = this.leaderModify;
+        }
+        if (this.finalModify != null) {
+            this.currentQuantity = this.finalModify;
+        }
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApplyMain, String> {
 
@@ -22,7 +21,6 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
-//            "   or e.createUsername like %:query% " +
             "   ) " +
             "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL OR e.createDate <= :endDate) "

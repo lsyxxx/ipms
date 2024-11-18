@@ -11,7 +11,8 @@ public enum ActionEnum {
     REJECT("拒绝"),
     REVOKE("撤回"),
     DELETE("删除"),
-    COPY("抄送")
+    COPY("抄送"),
+    AUTOPASS("系统自动通过")
     ;
     private String action;
     ActionEnum(String action) {

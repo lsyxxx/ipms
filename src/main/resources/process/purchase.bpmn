@@ -6,28 +6,28 @@
       <bpmn:outgoing>Flow_1ujfo08</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_1ujfo08" sourceRef="StartEvent_1" targetRef="pur_mgr" />
-    <bpmn:userTask id="pur_mgr" name="业务主管" camunda:assignee="${manager}">
+    <bpmn:userTask id="pur_mgr" name="部门主管" camunda:assignee="${manager}">
       <bpmn:documentation>业务主管审批（无可不填写）</bpmn:documentation>
       <bpmn:extensionElements>
-          <camunda:properties>
-            <camunda:property name="approvalType" value="0" />
-            <camunda:property name="selectUserType" value="0" />
-            <camunda:property name="taskType" value="approval" />
-          </camunda:properties>
-        </bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="0" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1ujfo08</bpmn:incoming>
       <bpmn:outgoing>Flow_1nej1b4</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1nej1b4" sourceRef="pur_mgr" targetRef="pur_leader" />
-    <bpmn:userTask id="pur_leader" name="业务副总" camunda:assignee="${leader}">
+    <bpmn:userTask id="pur_leader" name="主管副总" camunda:assignee="${leader}">
       <bpmn:documentation>业务副总审批（无可不填写）</bpmn:documentation>
       <bpmn:extensionElements>
-          <camunda:properties>
-            <camunda:property name="approvalType" value="0" />
-            <camunda:property name="selectUserType" value="0" />
-            <camunda:property name="taskType" value="approval" />
-          </camunda:properties>
-        </bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="0" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1nej1b4</bpmn:incoming>
       <bpmn:outgoing>Flow_1q5pykw</bpmn:outgoing>
     </bpmn:userTask>

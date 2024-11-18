@@ -50,6 +50,7 @@ public class Constants {
     public static final String STATE_DETAIL_PASS = "已通过";
     public static final String STATE_DETAIL_REVOKE = "已撤销";
     public static final String STATE_DETAIL_DELETE = "已删除";
+    public static final String STATE_DETAIL_AUTOPASS = "自动跳过";
 
     public static final String STATE_DETAIL_ACTIVE = "审批中";
     public static final String STATE_DETAIL_APPLY = "申请";

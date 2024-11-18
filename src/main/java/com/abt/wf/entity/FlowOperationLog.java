@@ -15,6 +15,8 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.lang.Nullable;
 import static com.abt.wf.config.Constants.*;
+import static com.abt.wf.model.ActionEnum.AUTOPASS;
+
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
@@ -188,7 +190,7 @@ public class FlowOperationLog {
                 form.getProcessInstanceId(), form.getProcessDefinitionId(), form.getProcessDefinitionKey(),
                 form.getServiceName());
         optLog.setEntityId(entityId);
-        optLog. setTaskInstanceId(task.getId());
+        optLog.setTaskInstanceId(task.getId());
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         optLog.setTaskEndTime(LocalDateTime.now());
@@ -207,6 +209,21 @@ public class FlowOperationLog {
         optLog.setAction(ActionEnum.REVOKE.name());
         optLog.setComment("系统：用户主动撤销");
         optLog.setTaskResult(STATE_DETAIL_REVOKE);
+        return optLog;
+    }
+
+    public static FlowOperationLog autoPassLog(WorkflowBase form, Task task, String entityId) {
+        FlowOperationLog optLog = FlowOperationLog.create(TERMINATE_SYS, TERMINATE_SYS, form);
+        optLog.setEntityId(entityId);
+        optLog.setTaskName(task.getName());
+        optLog.setTaskDefinitionKey(task.getTaskDefinitionKey());
+        optLog.setTaskInstanceId(task.getId());
+        optLog.setTaskStartTime(LocalDateTime.now());
+        optLog.setTaskEndTime(LocalDateTime.now());
+        optLog.setAction(ActionEnum.AUTOPASS.name());
+        optLog.setComment("系统：用户未选择审批人，自动跳过空审批人");
+        optLog.setTaskResult(STATE_DETAIL_AUTOPASS);
+
         return optLog;
     }
 
