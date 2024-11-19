@@ -1,5 +1,6 @@
 package com.abt.wf.entity;
 
+import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +30,7 @@ import static com.abt.wf.config.Constants.KEY_MANAGER;
 @DynamicUpdate
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PurchaseApplyMain extends WorkflowBase {
+public class PurchaseApplyMain extends WorkflowBase{
 
     /**
      * id
@@ -41,7 +43,7 @@ public class PurchaseApplyMain extends WorkflowBase {
     /**
      * 采购申请表单
      */
-    @OneToMany(mappedBy = "main", cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "main", cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PurchaseApplyDetail> details = new ArrayList<>();
 
     //-- 审批
@@ -93,11 +95,5 @@ public class PurchaseApplyMain extends WorkflowBase {
         list.add(detail);
         this.setDetails(list);
     }
-
-
-
-
-
-
 
 }

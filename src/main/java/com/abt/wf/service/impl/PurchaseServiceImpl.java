@@ -225,7 +225,14 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     @Override
     public Page<PurchaseApplyMain> findAllByQueryPageable(PurchaseApplyRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<PurchaseApplyMain> paged = purchaseApplyMainRepository.findAllByQueryPaged(requestForm.getUserid(),
+                requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()),
+                TimeUtil.toLocalDateTime(requestForm.getEndDate()),
+                pageable);
+        paged.getContent().forEach(this::buildActiveTask);
+        return paged;
     }
 
     @Override
@@ -242,12 +249,26 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     @Override
     public Page<PurchaseApplyMain> findMyTodoByQueryPageable(PurchaseApplyRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<PurchaseApplyMain> paged = purchaseApplyMainRepository.findMyTodoPaged(requestForm.getUserid(),
+                requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()),
+                TimeUtil.toLocalDateTime(requestForm.getEndDate()),
+                pageable);
+        paged.getContent().forEach(this::buildActiveTask);
+        return paged;
     }
 
     @Override
     public Page<PurchaseApplyMain> findMyDoneByQueryPageable(PurchaseApplyRequestForm requestForm) {
-        return null;
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<PurchaseApplyMain> paged = purchaseApplyMainRepository.findMyDonePaged(requestForm.getUserid(),
+                requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()),
+                TimeUtil.toLocalDateTime(requestForm.getEndDate()),
+                pageable);
+        paged.getContent().forEach(this::buildActiveTask);
+        return paged;
     }
 
     @Override

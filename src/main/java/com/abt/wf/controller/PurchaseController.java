@@ -66,14 +66,14 @@ public class PurchaseController {
     @GetMapping("/todo")
     public R<List<PurchaseApplyMain>> todoList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
         setTokenUser(requestForm);
-        final Page<PurchaseApplyMain> page = purchaseService.findMyApplyByQueryPageable(requestForm);
+        final Page<PurchaseApplyMain> page = purchaseService.findMyTodoByQueryPageable(requestForm);
         return R.success(page.getContent(), (int) page.getTotalElements());
     }
 
     @GetMapping("/done")
     public R<List<PurchaseApplyMain>> doneList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
         setTokenUser(requestForm);
-        final Page<PurchaseApplyMain> page = purchaseService.findMyApplyByQueryPageable(requestForm);
+        final Page<PurchaseApplyMain> page = purchaseService.findMyDoneByQueryPageable(requestForm);
         return R.success(page.getContent(), (int) page.getTotalElements());
     }
 
@@ -83,6 +83,14 @@ public class PurchaseController {
         final Page<PurchaseApplyMain> page = purchaseService.findMyApplyByQueryPageable(requestForm);
         return R.success(page.getContent(), (int) page.getTotalElements());
     }
+
+    @GetMapping("/all")
+    public R<List<PurchaseApplyMain>> allList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
+        setTokenUser(requestForm);
+        final Page<PurchaseApplyMain> page = purchaseService.findAllByQueryPageable(requestForm);
+        return R.success(page.getContent(), (int) page.getTotalElements());
+    }
+
 
     @GetMapping("/load")
     public R<PurchaseApplyMain> load(String id) {

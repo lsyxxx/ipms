@@ -42,15 +42,15 @@ public class PurchaseApplyProcessEndListener implements ExecutionListener {
         } else {
             entityId = obj.toString();
             try {
-                PurchaseApplyMain rbs = purchaseService.load(entityId);
+                PurchaseApplyMain pur = purchaseService.load(entityId);
                 //判断流程状态
-                if (Constants.STATE_DETAIL_ACTIVE.equals(rbs.getBusinessState())) {
+                if (Constants.STATE_DETAIL_ACTIVE.equals(pur.getBusinessState())) {
                     //表示之前一直正常通过，特殊状态在业务中已更改状态
-                    rbs.setBusinessState(Constants.STATE_DETAIL_PASS);
-                    rbs.setProcessState("COMPLETED");
+                    pur.setBusinessState(Constants.STATE_DETAIL_PASS);
+                    pur.setProcessState("COMPLETED");
                 }
-                rbs.setFinished(true);
-                purchaseService.saveEntity(rbs);
+                pur.setFinished(true);
+                purchaseService.saveEntity(pur);
 
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
