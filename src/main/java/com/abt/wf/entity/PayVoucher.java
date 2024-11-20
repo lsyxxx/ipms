@@ -41,25 +41,25 @@ import static com.abt.wf.config.Constants.*;
 @AllArgsConstructor
 public class PayVoucher extends WorkflowBase implements ICreditBook {
     @Id
-    @GeneratedValue(generator  = "timestampIdGenerator")
+    @GeneratedValue(generator = "timestampIdGenerator")
     @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
     private String id;
 
     /**
      * 项目名称
      */
-    @Column(name="project", columnDefinition="VARCHAR(128)")
+    @Column(name = "project", columnDefinition = "VARCHAR(128)")
     private String project;
 
     /**
      * 此次支付发票及单据数量
      */
-    @Column(name="pay_inv_num", columnDefinition="TINYINT")
+    @Column(name = "pay_inv_num", columnDefinition = "TINYINT")
     private int payInvoiceNum;
     /**
      * 付款金额
      */
-    @Column(name="pay_amt", columnDefinition="DECIMAL(10,2)")
+    @Column(name = "pay_amt", columnDefinition = "DECIMAL(10,2)")
     @NotNull(message = "付款金额必填", groups = {ValidateGroup.Apply.class, ValidateGroup.Preview.class})
     private BigDecimal payAmount;
 
@@ -67,126 +67,125 @@ public class PayVoucher extends WorkflowBase implements ICreditBook {
      * 合同名称
      */
     @NotNull(message = "合同名称必填", groups = {ValidateGroup.Apply.class})
-    @Column(name="contract_name", columnDefinition="VARCHAR(128)")
+    @Column(name = "contract_name", columnDefinition = "VARCHAR(128)")
     private String contractName;
 
     /**
      * 合同内容
      */
     @NotNull(message = "合同内容必填", groups = {ValidateGroup.Apply.class})
-    @Column(name="contract_desc", columnDefinition="VARCHAR(1000)")
+    @Column(name = "contract_desc", columnDefinition = "VARCHAR(1000)")
     private String contractDesc;
     /**
      * 合同编号
      */
-    @Column(name="contract_no", columnDefinition="VARCHAR(128)")
+    @Column(name = "contract_no", columnDefinition = "VARCHAR(128)")
     private String contractNo;
     /**
      * 合同金额
      */
-    @Column(name="contract_amt", columnDefinition="DECIMAL(10,2)")
+    @Column(name = "contract_amt", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal contractAmount;
 
     /**
      * 已付款金额
      */
-    @Column(name="payed_amt", columnDefinition="DECIMAL(10,2)")
+    @Column(name = "payed_amt", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal payedAmount;
     /**
      * 已开具发票
      * TODO: 待确认
      */
-    @Column(name="payed_inv_num", columnDefinition="TINYINT")
+    @Column(name = "payed_inv_num", columnDefinition = "TINYINT")
     private int payedInvoiceNum;
 
     /**
      * 付款说明
      */
-    @Column(name="pay_desc", columnDefinition="VARCHAR(1000)")
+    @Column(name = "pay_desc", columnDefinition = "VARCHAR(1000)")
     private String payDesc;
     /**
      * 收款人
      */
     @NotNull(groups = {ValidateGroup.Apply.class}, message = "收款人必填")
-    @Column(name="rec_user", columnDefinition="VARCHAR(512)")
+    @Column(name = "rec_user", columnDefinition = "VARCHAR(512)")
     private String receiveUser;
 
     /**
      * 收款人开户行
      */
-    @Column(name="rec_bank", columnDefinition="VARCHAR(128)")
+    @Column(name = "rec_bank", columnDefinition = "VARCHAR(128)")
     private String receiveBank;
 
     /**
      * 收款人账户
      */
-    @Column(name="rec_account", columnDefinition="VARCHAR(128)")
+    @Column(name = "rec_account", columnDefinition = "VARCHAR(128)")
     private String receiveAccount;
 
     /**
      * 电子发票附件
      * json
      */
-    @Column(name="pdf_file", columnDefinition="TEXT")
+    @Column(name = "pdf_file", columnDefinition = "TEXT")
     private String pdfFileList;
 
     /**
      * 其他附件
      * json
      */
-    @Column(name="other_file", columnDefinition="TEXT")
+    @Column(name = "other_file", columnDefinition = "TEXT")
     private String otherFileList;
 
-    @Column(name="managers", columnDefinition="VARCHAR(1600)")
+    @Column(name = "managers", columnDefinition = "VARCHAR(1600)")
     private String managers;
 
-    @Column(name="company_", columnDefinition="VARCHAR(16)")
+    @Column(name = "company_", columnDefinition = "VARCHAR(16)")
     private String company;
-
 
 
     /**
      * 付款级别:正常，加急，特急
      */
-    @Column(name="pay_lv", columnDefinition = "VARCHAR(16)")
+    @Column(name = "pay_lv", columnDefinition = "VARCHAR(16)")
     private String payLevel;
 
-    @Column(name="pay_type", length = 32)
+    @Column(name = "pay_type", length = 32)
     private String payType;
 
     /**
      * 付款时间
      */
-    @Column(name="pay_date")
+    @Column(name = "pay_date")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate payDate;
     /**
      * 关联税务会计科目id
      */
-    @Column(name="tax_item_id", columnDefinition="VARCHAR(128)")
+    @Column(name = "tax_item_id", columnDefinition = "VARCHAR(128)")
     private String taxItemId;
 
     @OneToOne
-    @JoinColumn(name = "tax_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    @NotFound(action= NotFoundAction.IGNORE)
+    @JoinColumn(name = "tax_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable = false, updatable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private AccountItem taxItem;
 
     /**
      * 关联核算会计科目id
      */
-    @Column(name="acc_item_id", columnDefinition="VARCHAR(128)")
+    @Column(name = "acc_item_id", columnDefinition = "VARCHAR(128)")
     private String accountItemId;
 
     @OneToOne
-    @JoinColumn(name = "acc_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    @NotFound(action= NotFoundAction.IGNORE)
+    @JoinColumn(name = "acc_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable = false, updatable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private AccountItem accountItem;
 
     /**
      * 付款账号id
      */
-    @Column(name="pay_acc_id", columnDefinition="VARCHAR(128)")
+    @Column(name = "pay_acc_id", columnDefinition = "VARCHAR(128)")
     private String payAccountId;
 
 
@@ -263,6 +262,19 @@ public class PayVoucher extends WorkflowBase implements ICreditBook {
     @Override
     public int getVoucherNum() {
         return this.payInvoiceNum;
+    }
+
+
+    @Override
+    public void clearData() {
+        setPayDate(null);
+        setPayType(null);
+        setPayLevel(null);
+        setPayAccountId(null);
+        setAccountItem(null);
+        setAccountItemId(null);
+        setTaxItem(null);
+        setTaxItemId(null);
     }
 
 }

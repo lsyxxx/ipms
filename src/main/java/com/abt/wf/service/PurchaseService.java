@@ -10,6 +10,8 @@ import com.abt.wf.model.ReimburseRequestForm;
  * 采购流程
  */
 public interface PurchaseService extends WorkFlowService<PurchaseApplyMain>, BusinessService<PurchaseApplyRequestForm, PurchaseApplyMain> {
+    void skipEmptyUserTask(PurchaseApplyMain form);
+
     /**
      * 暂存草稿
      */

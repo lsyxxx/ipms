@@ -35,7 +35,8 @@ public class PurchaseController {
     @PostMapping("/apply")
     public R<Object> apply(@RequestBody PurchaseApplyMain form) {
         setTokenUser(form);
-        purchaseService.apply(form);
+        final PurchaseApplyMain entity = purchaseService.apply(form);
+        purchaseService.skipEmptyUserTask(entity);
         return R.success("提交采购申请成功");
     }
 
@@ -112,6 +113,19 @@ public class PurchaseController {
         }
         final List<FlowOperationLog> records = purchaseService.processRecord(id, SERVICE_PURCHASE);
         return R.success(records);
+    }
+
+    @GetMapping("/restart")
+    public R<PurchaseApplyMain> restart(String id) {
+        final PurchaseApplyMain copyEntity = purchaseService.getCopyEntity(id);
+        return R.success(copyEntity);
+    }
+
+    @GetMapping("/revoke")
+    public R<Object> revoke(String id) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        purchaseService.revoke(id, user.getId(), user.getName());
+        return R.success("已撤销");
     }
 
 

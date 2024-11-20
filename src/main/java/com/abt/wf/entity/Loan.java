@@ -226,4 +226,17 @@ public class Loan extends WorkflowBase implements ICreditBook {
     public LocalDateTime getBizCreateDate() {
         return this.getCreateDate();
     }
+
+    @Override
+    public void clearData() {
+        setPayDate(null);
+        setPayType(null);
+        setPayLevel(null);
+        setPayAccountId(null);
+        setAccountItem(null);
+        setAccountItemId(null);
+        setTaxItem(null);
+        setTaxItemId(null);
+        setPayBankAccount(null);
+    }
 }

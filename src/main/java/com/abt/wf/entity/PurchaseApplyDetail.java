@@ -145,10 +145,10 @@ public class PurchaseApplyDetail {
     public void handleFinalQuantity() {
         this.currentQuantity = this.quantity;
         if (this.managerModify != null) {
-            this.finalModify = this.managerModify;
+            this.currentQuantity = this.managerModify;
         }
         if (this.leaderModify != null) {
-            this.finalModify = this.leaderModify;
+            this.currentQuantity = this.leaderModify;
         }
         if (this.finalModify != null) {
             this.currentQuantity = this.finalModify;

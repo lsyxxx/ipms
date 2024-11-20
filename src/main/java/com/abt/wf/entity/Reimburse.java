@@ -251,4 +251,17 @@ public class Reimburse extends WorkflowBase implements ICreditBook {
     public LocalDateTime getBizCreateDate() {
         return getCreateDate();
     }
+
+    @Override
+    public void clearData() {
+        setPayDate(null);
+        setPayBankAccount(null);
+        setPayType(null);
+        setPayLevel(null);
+        setPayAccountId(null);
+        setAccountItem(null);
+        setAccountItemId(null);
+        setTaxItem(null);
+        setTaxItemId(null);
+    }
 }

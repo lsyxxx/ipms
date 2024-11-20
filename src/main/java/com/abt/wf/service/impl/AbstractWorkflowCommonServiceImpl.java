@@ -100,7 +100,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
 
     @Override
-    public void apply(T form) {
+    public T apply(T form) {
         //-- validate
         WorkFlowUtil.ensureProcessDefinitionKey(form);
         validateAttachment(form);
@@ -121,6 +121,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         optLog.setTaskDefinitionKey(applyTask.getTaskDefinitionKey());
         optLog.setTaskResult(STATE_DETAIL_APPLY);
         flowOperationLogService.saveLog(optLog);
+
+        return entity;
     }
 
     @Override
@@ -531,13 +533,13 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         //清空其他数据
         clearEntityId(copyEntity);
         copyEntity.setProcessInstanceId(null);
-//        copyEntity.setProcessDefinitionKey(null);
         copyEntity.setBusinessState(null);
         copyEntity.setProcessState(null);
         copyEntity.setFinished(false);
         copyEntity.setEndTime(null);
         copyEntity.setDelete(false);
         copyEntity.setDeleteReason(null);
+        clearBizProcessData(copyEntity);
         copyFile(copyEntity, copyEntity.getProcessDefinitionKey());
         return copyEntity;
     }

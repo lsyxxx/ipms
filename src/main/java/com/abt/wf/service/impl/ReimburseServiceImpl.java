@@ -13,6 +13,7 @@ import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;
+import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -296,6 +297,13 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     @Override
     public Reimburse loadBusiness(String businessId) {
         return reimburseRepository.findById(businessId).orElse(null);
+    }
+
+
+    @Override
+    public Reimburse clearBizProcessData(Reimburse form) {
+        form.clearData();
+        return form;
     }
 
 }

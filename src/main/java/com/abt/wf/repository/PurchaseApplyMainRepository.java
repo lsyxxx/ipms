@@ -17,6 +17,7 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
 
     @Query("select e from PurchaseApplyMain e " +
             "left join fetch e.currentTask rt " +
+            "left join fetch rt.tuser tu " +
             "where (e.createUserid = :userid) " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +
@@ -31,6 +32,7 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
 
     @Query("select e from PurchaseApplyMain e " +
             "left join fetch e.currentTask rt " +
+            "left join fetch rt.tuser tu " +
             "where 1=1 " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +
@@ -46,6 +48,7 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
 
     @Query("select e from PurchaseApplyMain e " +
             "left join fetch e.currentTask rt " +
+            "left join fetch rt.tuser tu " +
             "where (rt.assignee = :userid) " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +
@@ -61,6 +64,7 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
 
     @Query("select e from PurchaseApplyMain e " +
             "left join fetch e.currentTask rt " +
+            "left join fetch rt.tuser tu " +
             "left join fetch ActHiTaskInst ht on ht.procInstId = e.processInstanceId " +
             "where lower(ht.taskDefKey) not like '%apply%' " +
             "and (:userid is null or :userid = '' or e.createUserid = :userid or ht.assignee = :userid) " +

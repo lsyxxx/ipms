@@ -38,7 +38,7 @@ public interface WorkFlowService<T> {
     /**
      * 申请流程
      */
-    void apply(T form);
+    T apply(T form);
 
     /**
      * 审批
@@ -100,4 +100,12 @@ public interface WorkFlowService<T> {
     List<String> createBriefDesc(T entity);
 
     void validateAttachment(T form);
+
+    /**
+     * 清除流程中添加的业务数据
+     * @param form 原流程
+     */
+    default T clearBizProcessData(T form) {
+        return form;
+    }
 }

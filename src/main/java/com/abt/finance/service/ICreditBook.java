@@ -79,4 +79,6 @@ public interface ICreditBook {
     LocalDateTime getBizCreateDate();
     int getVoucherNum();
 
+    void clearData();
+
 }

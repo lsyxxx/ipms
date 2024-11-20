@@ -241,5 +241,10 @@ public class CreditBook extends AuditInfo implements ICreditBook, UserJpaAudit {
     public Double getExpense() {
         return this.cost;
     }
+
+    @Override
+    public void clearData() {
+
+    }
 }
 

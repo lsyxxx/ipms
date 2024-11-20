@@ -2,28 +2,22 @@ package com.abt.wf.service.impl;
 
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
-import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
-import com.abt.wf.entity.Reimburse;
-import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.PurchaseApplyMainRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.PurchaseService;
 import com.abt.wf.service.SignatureService;
-import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
-import org.camunda.bpm.engine.history.HistoricProcessInstance;
-import org.camunda.bpm.engine.repository.ProcessDefinition;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,15 +26,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.*;
-import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_PURCHASE;
-import static com.abt.wf.model.ActionEnum.AUTOPASS;
 
 /**
  *
@@ -119,42 +109,11 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         return this.simpleProcessRecord(entityId, serviceName);
     }
 
-    @Transactional
-    @Override
-    public void apply(PurchaseApplyMain form) {
-        //重写apply，申请节点不再放入流程图中
-        WorkFlowUtil.ensureProcessDefinitionKey(form);
-        final Map<String, Object> variableMap = this.createVariableMap(form);
-        final ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionKey(form.getProcessDefinitionKey()).latestVersion().active().singleResult();
-        final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(form.getProcessDefinitionKey(), businessKey(form), variableMap);
-        form.setProcessDefinitionId(processDefinition.getId());
-        form.setProcessInstanceId(processInstance.getId());
-        form.setProcessState(HistoricProcessInstance.STATE_ACTIVE);
-        form.setBusinessState(STATE_DETAIL_ACTIVE);
-        form.setServiceName(SERVICE_PURCHASE);
-        final PurchaseApplyMain entity = this.saveEntity(form);
-        final String id = this.getEntityId(entity);
-        runtimeService.setVariable(form.getProcessInstanceId(), Constants.VAR_KEY_ENTITY, id);
-        //log
-        FlowOperationLog optLog = FlowOperationLog.create(form.getCreateUserid(), form.getCreateUsername(), form);
-        optLog.setEntityId(id);
-        optLog.setTaskDefinitionKey(DEF_KEY_PURCHASE);
-        optLog.setTaskName(STATE_DETAIL_APPLY);
-        optLog.setTaskStartTime(LocalDateTime.now());
-        optLog.setTaskEndTime(LocalDateTime.now());
-        optLog.setAction(ActionEnum.APPLY.name());
-        optLog.setTaskResult(STATE_DETAIL_APPLY);
-        flowOperationLogService.saveLog(optLog);
-
-        //判断下一个节点是否自动跳过
-        skipEmptyUserTask(form);
-    }
-
-
     /**
      * 自动跳过审批人为空的节点
-     * @param form 当前form(注意要是最新的)
+     * @param form 当前form
      */
+    @Override
     public void skipEmptyUserTask(PurchaseApplyMain form) {
         final Task currentTask = taskService.createTaskQuery().processInstanceId(form.getProcessInstanceId()).active().singleResult();
         if (currentTask == null) {
@@ -311,4 +270,19 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         entity.setBusinessState(STATE_DETAIL_TEMP);
         this.saveEntity(entity);
     }
+
+    @Override
+    public PurchaseApplyMain getCopyEntity(String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("请选择一个流程提交");
+        }
+        PurchaseApplyMain entity = purchaseApplyMainRepository.findByIdWithDetails(id);
+        clearEntityId(entity);
+        entity.getDetails().forEach(d -> {
+            d.setId(null);
+            d.setMain(entity);
+        });
+        return entity;
+    }
+
 }
