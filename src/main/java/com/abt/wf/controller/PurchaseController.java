@@ -4,6 +4,7 @@ import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -102,6 +103,7 @@ public class PurchaseController {
     @PostMapping("/approve")
     public R<Object> approve(@RequestBody PurchaseApplyMain form) {
         setTokenUser(form);
+        purchaseService.saveEntity(form);
         purchaseService.approve(form);
         return R.success("审批成功");
     }
@@ -125,6 +127,17 @@ public class PurchaseController {
     public R<Object> revoke(String id) {
         UserView user = TokenUtil.getUserFromAuthToken();
         purchaseService.revoke(id, user.getId(), user.getName());
+        return R.success("已撤销");
+    }
+
+    /**
+     * 验收
+     */
+    @PostMapping("/accept/all")
+    public R<Object> accept(@RequestBody PurchaseApplyMain form) {
+        log.info("验收");
+        form.getDetails().forEach(PurchaseApplyDetail::qualified);
+        purchaseService.saveEntity(form);
         return R.success("已撤销");
     }
 

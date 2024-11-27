@@ -179,4 +179,24 @@ public class Constants {
         }
     }
 
+    /**
+     * 新增草稿
+     */
+    public static final String SAVE_TYPE_NEW = "new";
+    /**
+     * 覆盖原有草稿
+     */
+    public static final String SAVE_TYPE_OVERRIDE = "override";
+
+    /**
+     * 验收结果-合格
+     */
+    public static final String ACCEPT_QUALIFIED = "合格";
+    /**
+     * 验收结果-不合格
+     */
+    public static final String ACCEPT_UNQUALIFIED = "不合格";
+
+    public static final String ACCEPT_ITEM_DEFAULT = "品名、规格、等级、生产日期、有效期、成分、包装、外观、贮存、数量、合格证明、说明书、保修卡";
+
 }

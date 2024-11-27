@@ -43,6 +43,7 @@ public class RawData {
     /**
      * 检测日期
      */
-    private String testDate;
+    private String testDateStart;
+    private String testDateEnd;
 
 }

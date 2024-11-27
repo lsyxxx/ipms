@@ -37,6 +37,7 @@ public interface RawDataRepository extends JpaRepository<RawData, String> {
 
 
     List<RawData> findByTestName(String testName);
+    List<RawData> findByTestNameContaining(String testName);
 
 
     /**

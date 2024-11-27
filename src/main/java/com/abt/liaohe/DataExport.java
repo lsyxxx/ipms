@@ -65,7 +65,7 @@ public class DataExport {
                 if (Files.isRegularFile(path)) {
                     String fileName = path.getFileName().toString();
                     System.out.printf("read file: %s%n", fileName);
-                    if (fileName.contains("物性")) {
+                    if (fileName.contains("工业")) {
                         RockAnalysisExcel rockAnalysisExcel = new RockAnalysisExcel(rawDataRepository, rockAnalysisDataRepository);
                         rockAnalysisExcel.setFile(path.toFile());
                         rockAnalysisExcel.extractToDb();

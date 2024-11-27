@@ -1,5 +1,6 @@
 package com.abt.wf.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -10,8 +11,11 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+
+import static com.abt.wf.config.Constants.ACCEPT_QUALIFIED;
 
 /**
  * 采购申请单-物品详情
@@ -93,6 +97,8 @@ public class PurchaseApplyDetail {
     @Column(name="mgr_name")
     private String managerName;
     @Column(name="mgr_updatetime")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime managerUpdateTime;
 
     /**
@@ -109,6 +115,8 @@ public class PurchaseApplyDetail {
     @Column(name="leader_name")
     private String leaderName;
     @Column(name="leader_updatetime")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime leaderUpdateTime;
 
     /**
@@ -127,8 +135,38 @@ public class PurchaseApplyDetail {
     @Column(name="final_name")
     private String finalName;
     @Column(name="final_updatetime")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime finalUpdateTime;
 
+    /**
+     * 是否验收
+     */
+    @Column(name = "is_accepted")
+    private boolean isAccepted = false;
+
+    /**
+     * 验收结果: 合格/不合格
+     */
+    @Column(name="accept_result", length = 128)
+    private String acceptResult;
+
+    /**
+     * 验收项目
+     */
+    @Column(name="accept_items", columnDefinition = "VARCHAR(MAX)")
+    private String acceptItems;
+
+    /**
+     * 验收备注
+     */
+    @Column(name="accept_remark", length = 500)
+    private String acceptRemark;
+
+    @Column(name = "accept_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime acceptTime;
 
     public String getMainId() {
         if (main != null) {
@@ -153,5 +191,14 @@ public class PurchaseApplyDetail {
         if (this.finalModify != null) {
             this.currentQuantity = this.finalModify;
         }
+    }
+
+    /**
+     * 验收合格
+     */
+    public void qualified() {
+        this.setAcceptResult(ACCEPT_QUALIFIED);
+        this.setAcceptTime(LocalDateTime.now());
+
     }
 }

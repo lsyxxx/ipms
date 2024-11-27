@@ -60,6 +60,15 @@ public class PurchaseApplyMain extends WorkflowBase{
     @Transient
     private String leaderUserid;
 
+    @Transient
+    private String saveType;
+
+    /**
+     * 是否全部验收
+     */
+    @Column(name = "is_accepted")
+    private boolean isAccepted = false;
+
 
     /**
      * 业务主管审批人

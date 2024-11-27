@@ -35,3 +35,41 @@ update [dbo].[tmp_raw_data]  set testName = '渗透率（mD）垂直'  where tes
 -- update [dbo].[tmp_raw_data]  set testName = '脉冲法渗透率（mD）'  where testName = '脉冲法超低渗透率nd';
 update [dbo].[tmp_raw_data] set testValue = '' where testValue = '/';
 update [dbo].[tmp_raw_data] set testValue = '' where testValue = '-';
+
+
+select reportName, null as "检测编号（置空）", sampleBatch, null as "样品编号（置空）",
+       wellNo, sid,
+       CAST(CAST(mdTop AS FLOAT) AS DECIMAL(18, 3)) AS mdTop,
+       CAST(CAST(mdbase AS FLOAT) AS DECIMAL(18, 3)) AS mdbase,
+       layer, rockName,
+       CAST(CAST(porosity AS FLOAT) AS DECIMAL(18, 4)) AS porosity,
+       CAST(CAST(horizonPermeability AS FLOAT) AS DECIMAL(18, 4)) AS horizonPermeability,
+       CAST(CAST(verticalPermeability AS FLOAT) AS DECIMAL(18, 4)) AS verticalPermeability,
+       CAST(CAST(rockDensity AS FLOAT) AS DECIMAL(18, 4)) AS rockDensity,
+       company, testDateStart, testDateEnd, remark
+from tmp_rock_analysis
+order by tid desc, testDateStart;
+
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'JC2021125 - 宁古7井（第2、3筒） - 物性报告.xls', '井号', '宁古7');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'C2021125 - 宁古7井 第1筒 - 物性报告.xls', '井号', '宁古7');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'JC2021120 - 庆辽乐86H601导井 - 物性报告.xls', '井号', '庆辽乐86H601导');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'JC2021079 - 乐52-4井 - 物性报告.xls', '井号', '乐52-4');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'JC2021067B - 宁古11井 - 物性报告 .xls', '井号', '宁古11');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y027 - 辽河油田 - 宁618井 -  常规物性报告.xls', '井号', '宁618');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y025 - 辽河油田 - 宜56-1井 - 常规物性报告.xls', '井号', '宜56-1');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y024 - 辽河油田 - 宜10-26-16井 - 常规物性报告.xls', '井号', '宜10-26-16');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y022 - 辽河油田 - 宁621井 - 常规物性报告.xls', '井号', '宁621');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y021 - 辽河油田 - 宁620井 - 常规物性报告.xls', '井号', '宁620');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y017-宜庆10井 - 常规物性报告.xls', '井号', '宜庆10');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y015-宜41井-储量、页岩研究测试- 常规物性报告.xls', '井号', '宜41');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y011 - 辽河油田 - 宁624井 -常规物性报告.xls', '井号', '宁624');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2023001Y003 - 宜庆19井 - 煤岩常规物性报告-20个.xls', '井号', '宜庆19');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), '1-6、49-乐61-H712导井 -  常规物性报告.xls', '井号', '乐61-H712导');
+-- insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), '6-7- 常规物性报告-7个.xls', '井号', '宁古3-4');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2022019Y008 - 宜120井 - 常规物性报告.xls', '井号', '宜120');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2022019Y007 - 辽河油田 - 宜10-9-53井 -本溪组 - 常规物性报告-23个.xls', '井号', '宜10-9-53');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2022019Y007 - 宜庆13井 - 常规物性报告-10个.xls', '井号', '宜庆13');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2022019Y007 - 辽河油田 - 宜116井 - 山2 - 常规物性报告-56个.xls', '井号', '宜116');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2022019Y006A - 辽河油田 - 宜157-H1（第二批） - 常规物性报告.xls', '井号', '宜157-H1');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), '15、16、18-21、27-常规物性报告.xls', '井号', '正161-H717导');
+insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), '15~20、26-常规物性报告.xls', '井号', '宁51-H702导');

@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -118,6 +119,28 @@ public class RockAnalysisData extends RockBase{
         //处理井号
         if (StringUtils.isNotBlank(data.getWellNo())) {
             data.setWellNo(data.getWellNo().replace("井", ""));
+        }
+
+        //处理日期
+        final String startDate = row.get(0).getTestDateStart();
+        final String endDate = row.get(0).getTestDateEnd();
+        if (StringUtils.isNotBlank(startDate)) {
+            LocalDate date1 = LocalDate.parse(startDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            data.setTestDateStart(date1.format(DateTimeFormatter.ofPattern("yyyy/M/d")));
+        }
+        if (StringUtils.isNotBlank(endDate)) {
+            LocalDate date2 = LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            data.setTestDateEnd(date2.format(DateTimeFormatter.ofPattern("yyyy/M/d")));
+        }
+
+
+        //批号
+        if (StringUtils.isNotBlank(startDate)) {
+            if (StringUtils.isBlank(endDate)) {
+                data.setSampleBatch(startDate + "-" + startDate);
+            } else {
+                data.setSampleBatch(startDate + "-" + endDate);
+            }
         }
 
         return data;

@@ -268,6 +268,9 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     @Override
     public void tempSave(PurchaseApplyMain entity) {
         entity.setBusinessState(STATE_DETAIL_TEMP);
+        if (SAVE_TYPE_NEW.equals(entity.getSaveType())) {
+            entity.setId(null);
+        }
         this.saveEntity(entity);
     }
 
@@ -276,6 +279,7 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         if (StringUtils.isBlank(id)) {
             throw new BusinessException("请选择一个流程提交");
         }
+
         PurchaseApplyMain entity = purchaseApplyMainRepository.findByIdWithDetails(id);
         clearEntityId(entity);
         entity.getDetails().forEach(d -> {
@@ -285,4 +289,20 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         return entity;
     }
 
+    /**
+     * 验收全部
+     * @param id 表单id
+     */
+    public void accept(String id) {
+        final PurchaseApplyMain entity = purchaseApplyMainRepository.findByIdWithDetails(id);
+        entity.getDetails().forEach(PurchaseApplyDetail::qualified);
+    }
+
+    /**
+     * 验收全部
+     */
+    public void accept(PurchaseApplyMain form) {
+        form.getDetails().forEach(PurchaseApplyDetail::qualified);
+        purchaseApplyMainRepository.save(form);
+    }
 }

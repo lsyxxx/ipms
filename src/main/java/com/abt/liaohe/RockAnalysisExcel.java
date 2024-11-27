@@ -108,7 +108,6 @@ public class RockAnalysisExcel {
             }
         }
         System.out.printf("合并后的headerMap: %s%n", mergedHeader);
-
     }
 
 
@@ -359,10 +358,11 @@ public class RockAnalysisExcel {
     private void afterRawData() {
         rawDataRepository.deleteIndexCol();;
         rawDataRepository.deleteEmptyData();
-        rawDataRepository.updateTestName("水", "饱和度（%）水");
-        rawDataRepository.updateTestName("垂直", "渗透率（mD）垂直");
-        rawDataRepository.updateTestName("岩心描述", "岩性");
-        rawDataRepository.updateTestName("渗透率（mD）", "渗透率（mD）水平");
+        rawDataRepository.updateTestName("水分（%）", "水分%空气干燥基");
+        rawDataRepository.updateTestName("固定碳（%）", "固定碳%空气干燥基 ");
+        rawDataRepository.updateTestName("灰分（%）", "灰分%空气干燥基");
+        rawDataRepository.updateTestName("挥发分（%）", "挥发分 %空气干燥基");
+        rawDataRepository.updateTestName("岩性入井定名", "岩性");
         rawDataRepository.updateEmptyTestValue();
     }
 
@@ -381,7 +381,7 @@ public class RockAnalysisExcel {
         rawData.setColIdx(col);
         rawData.setRowIdx(row);
         rawData.setReportName(this.file.getName());
-        rawData.setTestDate(testDate);
+        rawData.setTestDateStart(testDate);
 
         return rawData;
     }
@@ -401,7 +401,6 @@ public class RockAnalysisExcel {
         for(Map.Entry<Integer, List<RawData>> entry : rowMap.entrySet()) {
             List<RawData> rawDataList = entry.getValue();
             RockAnalysisData rockAnalysisData = RockAnalysisData.create(rawDataList);
-            rockAnalysisData.setTestDate(this.testDate);
             rockAnalysisData.setReportName(this.file.getName());
             if (StringUtils.isBlank(rockAnalysisData.getTid())) {
                 System.out.printf("检测编号为空！报告:%s%n", rockAnalysisData.getReportName());
@@ -411,9 +410,6 @@ public class RockAnalysisExcel {
         }
         rockAnalysisDataRepository.saveAllAndFlush(cached);
     }
-
-
-
 
 
 
@@ -481,31 +477,6 @@ public class RockAnalysisExcel {
     public void handlePulsePermeabilityNd() {
         convertNdToMd("脉冲法超低渗透率nd");
     }
-
-    /**
-     * 保存碳酸盐含量
-     */
-    public List<List<Object>> saveCarbonateData(String fileName) {
-        final List<RawData> list = rawDataRepository.findByReportName(fileName);
-        //根据行分组
-        final Map<Integer, List<RawData>> groupByRow = list.stream().collect(Collectors.groupingBy(RawData::getRowIdx));
-        //导入excel的数据
-        List<List<Object>> excelTable = new ArrayList<>();
-        for(Map.Entry<Integer, List<RawData>> entry : groupByRow.entrySet()) {
-            final List<RawData> row = entry.getValue();
-            List<Object> excelRow = new ArrayList<>();
-            excelRow.add(getTestNo(row));
-            excelRow.add(getSampleNo(row));
-
-
-
-            excelTable.add(excelRow);
-        }
-
-
-        return excelTable;
-    }
-
 
 
 

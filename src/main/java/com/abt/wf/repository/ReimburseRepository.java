@@ -45,7 +45,9 @@ public interface ReimburseRepository extends JpaRepository<Reimburse, String>, J
             "   or r.createUsername like %:query% " +
             "   or r.reason like %:query%) " +
             "AND (:startDate IS NULL OR r.createDate >= :startDate) " +
-            "AND (:endDate IS NULL OR r.createDate <= :endDate) ")
+            "AND (:endDate IS NULL OR r.createDate <= :endDate) " +
+            "order by r.updateDate desc"
+    )
     Page<Reimburse> findMyApplyPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
 

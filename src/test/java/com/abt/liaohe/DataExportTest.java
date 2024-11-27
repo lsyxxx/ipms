@@ -33,8 +33,8 @@ class DataExportTest {
 
     @Test
     void writeExcel() throws IOException {
-        String fileName = "F:\\00平台资料汇总\\辽河数据\\辽河2024\\岩石分析-2020-2024.xlsx";
-        dataExport.writeExcel(dir, fileName);
+        String dir = "F:\\00平台资料汇总\\辽河数据\\辽河2024\\煤工业分析-all";
+        dataExport.readRawData(dir);
     }
 
     @Test
