@@ -1,5 +1,6 @@
 package com.abt.liaohe;
 
+import com.abt.common.util.TimeUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +14,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ public class MajorElementExcel {
 
     private final RawDataRepository rawDataRepository;
     private final MajorElementRepository majorElementRepository;
+    private final TestBaseTableRepository testBaseTableRepository;
 
 
     @Getter
@@ -51,9 +54,10 @@ public class MajorElementExcel {
 
     private ArrayList<String> header = new ArrayList<>();
 
-    public MajorElementExcel(RawDataRepository rawDataRepository, MajorElementRepository majorElementRepository) {
+    public MajorElementExcel(RawDataRepository rawDataRepository, MajorElementRepository majorElementRepository, TestBaseTableRepository testBaseTableRepository) {
         this.rawDataRepository = rawDataRepository;
         this.majorElementRepository = majorElementRepository;
+        this.testBaseTableRepository = testBaseTableRepository;
         header = new ArrayList<>();
     }
 
@@ -142,6 +146,21 @@ public class MajorElementExcel {
         }
     }
 
+    public void writeBase() {
+        final TestBaseTable testBase = testBaseTableRepository.findByReportName(this.file.getName());
+        final List<MajorElement> list = majorElementRepository.findByReportName(this.file.getName());
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy/M/dd");
+        String dateStart = Util.handleTestDate(testBase.getTestDateStart());
+        String dateEnd = Util.handleTestDate(testBase.getTestDateEnd());
+        String sampleBatch = Util.handleSampleNo(testBase.getTestDateStart(), testBase.getTestDateEnd());
+        list.forEach(majorElement -> {
+            majorElement.setTestDateStart(dateStart);
+            majorElement.setTestDateEnd(dateEnd);
+            majorElement.setSampleNo(sampleBatch);
+        });
+        majorElementRepository.saveAllAndFlush(list);
+    }
+
     public void saveMajorElementDB() {
         //排除有问题的
         if (file.getName().contains("JC2021094B")) {
@@ -154,37 +173,14 @@ public class MajorElementExcel {
             List<RawData> row = entry.getValue();
             MajorElement majorElement = new MajorElement(row);
             majorElement.setReportName(this.file.getName());
+            majorElement.handleData();
             cached.add(majorElement);
         }
         majorElementRepository.saveAllAndFlush(cached);
     }
 
-    public static void main(String[] args) {
-        String dirPath = "F:\\00平台资料汇总\\辽河数据\\主微量稀土报告\\主微量稀土报告\\";
-        Path dir = Paths.get(dirPath);
-        if (!Files.isDirectory(dir)) {
-            throw new RuntimeException(dirPath + " is not a directory");
-        }
-        try(DirectoryStream<Path> paths = Files.newDirectoryStream(dir)) {
-            int i = 0;
-            for (Path path : paths) {
-                if (i == 3) {
-                    return;
-                }
-                if (Files.isRegularFile(path)) {
-                    String fileName = path.getFileName().toString();
-                    if (fileName.contains("主量") || fileName.contains("常量")) {
-                        System.out.printf("read file: %s%n", fileName);
-//                        MajorElementExcel excel = new MajorElementExcel(null, majorElementRepository);
-//                        excel.setFile(path.toFile());
-//                        excel.readExcel();
-                    }
-                }
-                i++;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public boolean isMajor() {
+        return this.file.getName().contains("主量") ||  this.file.getName().contains("常量");
     }
 
 }

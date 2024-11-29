@@ -113,3 +113,36 @@ select reportName, tid, null as "检测编号（置空）", sampleBatch, null as
        '西安阿伯塔资环分析测试技术有限公司' as "检测单位", testDateStart as '检测开始日期', testDateEnd as '检测结束日期', remark as '备注'
 from tmp_coal_industry_analysis
 order by tid asc, testDateStart;
+
+-- 主量元素
+SELECT
+    m.reportName,
+    m.tid,
+    NULL AS "检测编号（置空）",
+    CONCAT(b.testDateStart, '-', b.testDateEnd) as sampleBatch,
+    NULL AS "样品编号（置空）",
+    wellNo AS "井号",
+    sid AS "原样号",
+    CAST ( CAST ( mdTop AS FLOAT ) AS DECIMAL ( 18, 3 ) ) AS '顶界深度',
+        CAST ( CAST ( mdbase AS FLOAT ) AS DECIMAL ( 18, 3 ) ) AS '底界深度',
+        layer AS '层位',
+        rockName AS '岩性',
+        CASE  WHEN SIO2 IS NULL  OR SIO2 = '' THEN NULL ELSE CAST ( CAST ( SIO2 AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "SIO2",
+    CASE  WHEN AL2O3 IS NULL OR AL2O3 = '' THEN NULL ELSE CAST ( CAST ( AL2O3 AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "AL2O3",
+    CASE  WHEN TFe2O3 IS NULL OR TFe2O3 = '' THEN NULL ELSE CAST ( CAST ( TFe2O3 AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "FE2O3",
+    CASE  WHEN MGO IS NULL OR MGO = '' THEN NULL ELSE CAST ( CAST ( MGO AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "MGO",
+    CASE  WHEN CAO IS NULL OR CAO = '' THEN NULL ELSE CAST ( CAST ( CAO AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "CAO",
+    CASE  WHEN NA2O IS NULL OR NA2O = '' THEN NULL ELSE CAST ( CAST ( NA2O AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "NA2O",
+    CASE  WHEN MNO IS NULL OR MNO = '' THEN NULL ELSE CAST ( CAST ( MNO AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "MNO",
+    CASE  WHEN TIO2 IS NULL OR TIO2 = '' THEN NULL ELSE CAST ( CAST ( TIO2 AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "TIO2",
+    CASE  WHEN P2O5 IS NULL OR P2O5 = '' THEN NULL ELSE CAST ( CAST ( P2O5 AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "P2O5",
+    CASE  WHEN LOI IS NULL OR LOI = '' THEN NULL ELSE CAST ( CAST ( LOI AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "LOI",
+    CASE  WHEN TOTAL IS NULL OR TOTAL = '' THEN NULL ELSE CAST ( CAST ( TOTAL AS FLOAT ) AS DECIMAL ( 18, 4 ) ) END AS "TOTAL",
+    b.testDateStart, b.testDateEnd
+FROM
+    [dbo].[tmp_ele_major] m
+LEFT JOIN tmp_base b on m.reportName = b.reportName
+
+ORDER BY
+    m.reportName,
+    m.tid

@@ -8,6 +8,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -249,6 +251,22 @@ public class Util {
         return null;
     }
 
+    public static String handleTestDate(LocalDate date) {
+        return date.format(DateTimeFormatter.ofPattern("yyyy/M/dd"));
+    }
+
+    public static String handleSampleNo(LocalDate dateStart, LocalDate dateEnd) {
+        if (dateStart == null) {
+            return "";
+        }
+        String d1 = dateStart.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String d2 = "";
+        if (dateEnd == null) {
+            return d1 + "-" + d1;
+        }
+        d2 = dateEnd.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        return d1 + "-" + d2;
+    }
 
 
 

@@ -12,10 +12,14 @@ import java.nio.file.Paths;
 @SpringBootTest
 class MajorElementExcelTest {
 
+//    @Autowired
+//    private RawDataRepository rawDataRepository;
+//    @Autowired
+//    private MajorElementRepository majorElementRepository;
+
     @Autowired
-    private RawDataRepository rawDataRepository;
-    @Autowired
-    private MajorElementRepository majorElementRepository;
+    private MajorElementExcel majorElementExcel;
+
 
 
     @Test
@@ -35,10 +39,9 @@ class MajorElementExcelTest {
                 if (Files.isRegularFile(path)) {
                     String fileName = path.getFileName().toString();
                     System.out.printf("read file: %s%n", fileName);
-                    if (fileName.contains("主量") || fileName.contains("常量")) {
-                        MajorElementExcel excel = new MajorElementExcel(rawDataRepository, majorElementRepository);
-                        excel.setFile(path.toFile());
-                        excel.saveMajorElementDB();
+                    majorElementExcel.setFile(path.toFile());
+                    if (majorElementExcel.isMajor()) {
+                        majorElementExcel.saveMajorElementDB();
                     }
                 }
                 i++;

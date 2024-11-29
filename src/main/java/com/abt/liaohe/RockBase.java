@@ -151,6 +151,25 @@ public class RockBase {
 
     }
 
+    public static void main(String[] args) {
+        String depth = "1695.71";
+        Pattern pattern = Pattern.compile("[^0-9.]");
+        Matcher matcher = pattern.matcher(depth);
+        // 提取并连接非数字和小数点的字符
+        StringBuilder result = new StringBuilder();
+        while (matcher.find()) {
+            result.append(matcher.group());
+        }
+        if (result.length() == 1) {
+            //正常的
+            final String[] split = depth.split(result.toString());
+            System.out.println("顶界深度: " +  split[0]);
+            System.out.println("底界深度: " +  split[1]);
+        } else {
+            System.out.println("顶界深度: " +  depth);
+        }
+    }
+
     public void handleData() {
         //处理深度
         if (StringUtils.isNotBlank(this.depth)) {
