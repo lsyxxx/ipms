@@ -73,3 +73,43 @@ insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 
 insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), 'AJC2022019Y006A - 辽河油田 - 宜157-H1（第二批） - 常规物性报告.xls', '井号', '宜157-H1');
 insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), '15、16、18-21、27-常规物性报告.xls', '井号', '正161-H717导');
 insert into tmp_raw_data (id, reportName, testName, testValue) values (NEWID(), '15~20、26-常规物性报告.xls', '井号', '宁51-H702导');
+
+
+select reportName, tid, null as "检测编号（置空）", sampleBatch, null as "样品编号（置空）",
+       wellNo as "井号", sid as "原样号",
+       CAST(CAST(mdTop AS FLOAT) AS DECIMAL(18, 3)) AS '顶界深度',
+        CAST(CAST(mdbase AS FLOAT) AS DECIMAL(18, 3)) AS '底界深度',
+        layer as '层位', rockName as '岩性',
+        CASE
+            WHEN moistureAirDry IS NULL or moistureAirDry = '' THEN NULL
+            ELSE CAST(CAST(moistureAirDry AS FLOAT) AS DECIMAL(18, 4))
+            END AS "水分-空气干燥基",
+       CASE
+           WHEN ashAirDry IS NULL or ashAirDry = '' THEN NULL
+           ELSE CAST(CAST(ashAirDry AS FLOAT) AS DECIMAL(18, 4))
+           END AS "灰分-空气干燥基",
+       CASE
+           WHEN ashDry IS NULL or ashDry = '' THEN NULL
+           ELSE CAST(CAST(ashDry AS FLOAT) AS DECIMAL(18, 4))
+           END AS "灰分-干燥基",
+       CASE
+           WHEN volatileAirDry IS NULL or volatileAirDry = '' THEN NULL
+           ELSE CAST(CAST(volatileAirDry AS FLOAT) AS DECIMAL(18, 4))
+           END AS "挥发分-空气干燥基",
+       CASE
+           WHEN volatileDry IS NULL or volatileDry = '' THEN NULL
+           ELSE CAST(CAST(volatileDry AS FLOAT) AS DECIMAL(18, 4))
+           END AS "挥发分-干燥基",
+       CASE
+           WHEN volatileDryAshFree IS NULL or volatileDryAshFree = '' THEN NULL
+           ELSE CAST(CAST(volatileDryAshFree AS FLOAT) AS DECIMAL(18, 4))
+           END AS "挥发分-干燥无灰基",
+       fixedCarbonAirDry,
+-- CASE
+--     WHEN fixedCarbonAirDry IS NULL or fixedCarbonAirDry = '' THEN NULL
+--     ELSE CAST(CAST(fixedCarbonAirDry AS FLOAT) AS DECIMAL(18, 4))
+-- END AS "固定碳-空气干燥基",
+
+       '西安阿伯塔资环分析测试技术有限公司' as "检测单位", testDateStart as '检测开始日期', testDateEnd as '检测结束日期', remark as '备注'
+from tmp_coal_industry_analysis
+order by tid asc, testDateStart;

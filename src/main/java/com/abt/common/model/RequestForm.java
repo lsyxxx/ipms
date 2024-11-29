@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
  * client请求参数
  */
 @Data
-@Accessors(chain = true)
 public class RequestForm {
 
     public static final int PAGE_LIMIT = 999;
@@ -73,6 +72,8 @@ public class RequestForm {
 
     private boolean enabled;
 
+    private String taskDefKey;
+
     /**
      * 是否分页
      */
@@ -93,7 +94,10 @@ public class RequestForm {
         if (type == null) {
             type  = "";
         }
-        form.setPage(page).setType(type).setLimit(limit).setQuery(query);
+        form.setPage(page);
+        form.setType(type);
+        form.setLimit(limit);
+        form.setQuery(query);
         return form;
     }
 

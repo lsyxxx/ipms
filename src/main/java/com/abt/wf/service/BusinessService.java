@@ -29,4 +29,10 @@ public interface BusinessService<T extends RequestForm, R extends WorkflowBase> 
 
     Page<R> findMyDoneByQueryPageable(T requestForm);
 
+    int countMyTodo(T form);
+    int countMyTodoByRequestForm(RequestForm requestForm);
+
+    List<R> findMyTodoList(RequestForm requestForm);
+
+    T createRequestForm();
 }

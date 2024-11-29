@@ -47,6 +47,32 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
             "AND (:endDate IS NULL OR e.createDate <= :endDate) ")
     Page<TripMain> findUserTodoByQueryPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
+    @Query("select e from TripMain e " +
+            "left join fetch e.currentTask rt " +
+            "left join fetch rt.tuser tu  " +
+            "where (:userid is null or :userid = '' or rt.assignee = :userid) " +
+            "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey)" +
+            "and (:state is null or :state = '' or e.businessState = :state) " +
+            "and (:query IS NULL OR :query = '' " +
+            "   or e.id like %:query% " +
+            "   or FUNCTION('STR', e.sum) like %:query% " +
+            "   or e.createUsername like %:query% " +
+            "   or e.reason like %:query%) " +
+            "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
+            "AND (:endDate IS NULL OR e.createDate <= :endDate) ")
+    List<TripMain> findUserTodoList(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, String taskDefKey);
+
+    @Query("select count(e) from TripMain e " +
+            "left join e.currentTask rt " +
+            "where (:userid is null or :userid = '' or rt.assignee = :userid) " +
+            "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey)" +
+            "and (:query IS NULL OR :query = '' " +
+            "   or e.id like %:query% " +
+            "   or FUNCTION('STR', e.sum) like %:query% " +
+            "   or e.createUsername like %:query% " +
+            "   or e.reason like %:query%) "
+    )
+    int countTodoByQuery(String userid, String query, String taskDefKey);
 
     @Query("select e from TripMain e " +
 //            "left join fetch e.details  " +

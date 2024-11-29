@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import static com.abt.wf.config.Constants.SERVICE_PURCHASE;
+import static com.abt.wf.config.Constants.STATE_DETAIL_REJECT;
 
 /**
  * 采购流程
@@ -72,6 +73,13 @@ public class PurchaseController {
         return R.success(page.getContent(), (int) page.getTotalElements());
     }
 
+    @GetMapping("/todo/count")
+    public R<Integer> todoCount(@ModelAttribute PurchaseApplyRequestForm requestForm) {
+        setTokenUser(requestForm);
+        final int count = purchaseService.countMyTodo(requestForm);
+        return R.success(count, "查询成功");
+    }
+
     @GetMapping("/done")
     public R<List<PurchaseApplyMain>> doneList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
         setTokenUser(requestForm);
@@ -103,6 +111,7 @@ public class PurchaseController {
     @PostMapping("/approve")
     public R<Object> approve(@RequestBody PurchaseApplyMain form) {
         setTokenUser(form);
+        purchaseService.setCostVariable(form);
         purchaseService.saveEntity(form);
         purchaseService.approve(form);
         return R.success("审批成功");
@@ -135,10 +144,13 @@ public class PurchaseController {
      */
     @PostMapping("/accept/all")
     public R<Object> accept(@RequestBody PurchaseApplyMain form) {
-        log.info("验收");
+        //判断是否能验收
+        if (STATE_DETAIL_REJECT.equals(form.getBusinessState())) {
+            return R.fail("流程审批未通过，不能验收!");
+        }
         form.getDetails().forEach(PurchaseApplyDetail::qualified);
         purchaseService.saveEntity(form);
-        return R.success("已撤销");
+        return R.success("已全部验收");
     }
 
 

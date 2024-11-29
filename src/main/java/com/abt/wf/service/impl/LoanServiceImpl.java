@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.RequestForm;
 import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.service.CreditBookService;
@@ -274,6 +275,27 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         page.getContent().forEach(this::buildActiveTask);
         return page;
+    }
+
+    @Override
+    public int countMyTodo(LoanRequestForm requestForm) {
+        return loanRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public int countMyTodoByRequestForm(RequestForm requestForm) {
+        return loanRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public List<Loan> findMyTodoList(RequestForm requestForm) {
+        return loanRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public LoanRequestForm createRequestForm() {
+        return new LoanRequestForm();
     }
 
     @Override

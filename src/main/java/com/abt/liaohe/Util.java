@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
  */
 public class Util {
 
-
     /**
      * 保留3位有效数字
      */
@@ -75,7 +74,7 @@ public class Util {
             case BOOLEAN:
                 return String.valueOf(cell.getBooleanCellValue());
             case FORMULA:
-                return cell.getCellFormula();
+                return cell.getNumericCellValue() + "";
             case BLANK:
             default:
                 return "";
@@ -121,6 +120,19 @@ public class Util {
         return header.stream().allMatch(StringUtils::isBlank);
     }
 
+    public static boolean validateEmptyRow(Row row) {
+        for (Cell cell : row) {
+            final String cellValue = getCellValueAsString(cell);
+            if (StringUtils.isNotBlank(cellValue)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean containsIgnoreCase(String s1, String s2) {
+        return s1.toUpperCase().contains(s2.toUpperCase());
+    }
 
     /**
      * 从rawData中获取检测编号

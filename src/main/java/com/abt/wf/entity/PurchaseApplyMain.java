@@ -12,6 +12,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,12 @@ public class PurchaseApplyMain extends WorkflowBase{
     @Column(name = "is_accepted")
     private boolean isAccepted = false;
 
+    /**
+     * 采购总金额
+     */
+    @Column(name="cost_", columnDefinition = "DECIMAL(10,2)")
+    private BigDecimal cost;
+
 
     /**
      * 业务主管审批人
@@ -84,6 +91,11 @@ public class PurchaseApplyMain extends WorkflowBase{
      * 流程启动人/申请人
      */
     public static final String KEY_STARTER = "starter";
+
+    /**
+     * 采购总金额
+     */
+    public static final String KEY_COST = "cost";
 
     public Map<String, Object> getVariableMap() {
         this.variableMap.clear();

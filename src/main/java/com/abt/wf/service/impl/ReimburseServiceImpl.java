@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.User;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.JsonUtil;
@@ -200,6 +201,27 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         myTodoPaged.getContent().forEach(this::buildActiveTask);
         return myTodoPaged;
+    }
+
+    @Override
+    public int countMyTodo(ReimburseRequestForm requestForm) {
+        return reimburseRepository.countMyTodo(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public int countMyTodoByRequestForm(RequestForm requestForm) {
+        return reimburseRepository.countMyTodo(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public List<Reimburse> findMyTodoList(RequestForm requestForm) {
+        return reimburseRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public ReimburseRequestForm createRequestForm() {
+        return new ReimburseRequestForm();
     }
 
     @Override

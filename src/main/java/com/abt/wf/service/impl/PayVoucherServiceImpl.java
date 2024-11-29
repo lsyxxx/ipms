@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.RequestForm;
 import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.service.CreditBookService;
@@ -233,6 +234,27 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         page.getContent().forEach(this::buildActiveTask);
         return page;
+    }
+
+    @Override
+    public int countMyTodo(PayVoucherRequestForm requestForm) {
+        return payVoucherRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public int countMyTodoByRequestForm(RequestForm requestForm) {
+        return payVoucherRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public List<PayVoucher> findMyTodoList(RequestForm requestForm) {
+        return payVoucherRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public PayVoucherRequestForm createRequestForm() {
+        return new PayVoucherRequestForm();
     }
 
     @Override

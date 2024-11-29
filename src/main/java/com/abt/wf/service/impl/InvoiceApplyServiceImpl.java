@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
@@ -222,6 +223,27 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         page.getContent().forEach(this::buildActiveTask);
         return page;
+    }
+
+    @Override
+    public int countMyTodo(InvoiceApplyRequestForm requestForm) {
+        return invoiceApplyRepository.countMyTodo(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public int countMyTodoByRequestForm(RequestForm requestForm) {
+        return invoiceApplyRepository.countMyTodo(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public List<InvoiceApply> findMyTodoList(RequestForm requestForm) {
+        return invoiceApplyRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public InvoiceApplyRequestForm createRequestForm() {
+        return new InvoiceApplyRequestForm();
     }
 
     @Override

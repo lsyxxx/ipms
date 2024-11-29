@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.User;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
@@ -170,6 +171,27 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), pageable);
         page.getContent().forEach(this::buildActiveTask);
         return page;
+    }
+
+    @Override
+    public int countMyTodo(InvoiceOffsetRequestForm requestForm) {
+        return invoiceOffsetRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public int countMyTodoByRequestForm(RequestForm requestForm) {
+        return invoiceOffsetRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public List<InvoiceOffset> findMyTodoList(RequestForm requestForm) {
+        return invoiceOffsetRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public InvoiceOffsetRequestForm createRequestForm() {
+        return new InvoiceOffsetRequestForm();
     }
 
     @Override

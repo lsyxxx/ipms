@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApplyMain, String> {
 
@@ -60,6 +61,31 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
     )
     Page<PurchaseApplyMain> findMyTodoPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
+    @Query("select count(e) from PurchaseApplyMain e " +
+            "left join e.currentTask rt " +
+            "where (rt.assignee = :userid) " +
+            "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey)" +
+            "and (:query IS NULL OR :query = '' " +
+            "   or e.id like %:query% " +
+            "   or e.createUsername like %:query%" +
+            "   ) "
+    )
+    int countTodoByQuery(String userid, String query, String taskDefKey);
+
+    @Query("select e from PurchaseApplyMain e " +
+            "left join fetch e.currentTask rt " +
+            "left join fetch rt.tuser tu " +
+            "where (rt.assignee = :userid) " +
+            "and (:state is null or :state = '' or e.businessState = :state) " +
+            "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey)" +
+            "and (:query IS NULL OR :query = '' " +
+            "   or e.id like %:query% " +
+            "   or e.createUsername like %:query%" +
+            "   ) " +
+            "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
+            "AND (:endDate IS NULL OR e.createDate <= :endDate) "
+    )
+    List<PurchaseApplyMain> findUserTodoList(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, String taskDefKey);
 
 
     @Query("select e from PurchaseApplyMain e " +

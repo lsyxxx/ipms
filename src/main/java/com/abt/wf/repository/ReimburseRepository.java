@@ -31,6 +31,34 @@ public interface ReimburseRepository extends JpaRepository<Reimburse, String>, J
             "AND (:endDate IS NULL OR r.createDate <= :endDate) ")
     Page<Reimburse> findMyTodoPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
+    @Query("select count(r) from Reimburse r " +
+            "left join r.currentTask rt " +
+            "where (:userid is null or :userid = '' or rt.assignee = :userid) " +
+            "and (:taskDefKey is null or :taskDefKey = '' or  rt.taskDefKey = :taskDefKey) " +
+            "and (:query IS NULL OR :query = '' " +
+            "   or r.id like %:query% " +
+            "   or FUNCTION('STR', r.cost) like %:query% " +
+            "   or r.createUsername like %:query% " +
+            "   or r.reason like %:query%) "
+    )
+    int countMyTodo(String userid, String query, String taskDefKey);
+
+    @Query("select r from Reimburse r " +
+            "left join fetch r.currentTask rt " +
+            "left join fetch rt.tuser tu  " +
+            "where (:userid is null or :userid = '' or rt.assignee = :userid) " +
+            "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey)" +
+            "and (:state is null or :state = '' or r.businessState = :state) " +
+            "and (:query IS NULL OR :query = '' " +
+            "   or r.id like %:query% " +
+            "   or FUNCTION('STR', r.cost) like %:query% " +
+            "   or r.createUsername like %:query% " +
+            "   or r.reason like %:query%) " +
+            "AND (:startDate IS NULL OR r.createDate >= :startDate) " +
+            "AND (:endDate IS NULL OR r.createDate <= :endDate) ")
+    List<Reimburse> findUserTodoList(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, String taskDefKey);
+
+
     /**
      * 我创建的
      */

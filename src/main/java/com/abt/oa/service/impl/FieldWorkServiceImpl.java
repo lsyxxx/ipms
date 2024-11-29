@@ -47,6 +47,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.abt.oa.OAConstants.FW_WAITING;
 import static com.abt.oa.OAConstants.FW_WITHDRAW;
 import static com.abt.sys.config.Constant.SYSTEM_ID;
 
@@ -98,7 +99,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
     @Override
     public List<FieldWorkAttendanceSetting> findLatestSettings() {
-        final List<FieldWorkAttendanceSetting> all = findAllSettings();
+        final List<FieldWorkAttendanceSetting> all = findAllEnabledAllowance();
         final Map<String, FieldWorkAttendanceSetting> map = all.stream().collect(
                 Collectors.toMap(
                         FieldWorkAttendanceSetting::getVid,
@@ -140,11 +141,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
     @Override
-    public List<FieldWorkAttendanceSetting> findAllEnabledAllowance() {
-        return fieldAttendanceSettingRepository.findByEnabledOrderBySortAsc(true);
-    }
-
-    @Override
     public List<FieldWork> findUserRecord(FieldWork query) {
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("username", ExampleMatcher.GenericPropertyMatcher::contains)
@@ -155,6 +151,11 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         fieldWorkRepository.findAll(example,
                 Sort.by(Sort.Order.asc("createUserid"), Sort.Order.desc("attendanceDate"), Sort.Order.asc("reviewTime")));
         return null;
+    }
+
+    @Override
+    public List<FieldWorkAttendanceSetting> findAllEnabledAllowance() {
+        return fieldAttendanceSettingRepository.findByEnabledOrderBySortAsc(true);
     }
 
     //员工表中部门经理
@@ -182,7 +183,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Transactional
     @Override
     public void saveFieldWork(FieldWork fw) {
-        fw.setReviewResult(OAConstants.FW_WAITING);
+        fw.setReviewResult(FW_WAITING);
         fw = fieldWorkRepository.save(fw);
         String id = fw.getId();
         fw.getItemIds().forEach(i -> {
@@ -241,7 +242,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Override
     public Page<FieldWork> findTodoRecords(FieldWorkRequestForm form) {
         final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
-        final Page<FieldWork> page = fieldWorkRepository.findTodoFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
+        final Page<FieldWork> page = fieldWorkRepository.findTodoFetchedByQuery(form.getQuery(), form.getUserid(), FW_WAITING,
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
         WithQueryUtil.build(page.getContent());
         return page;

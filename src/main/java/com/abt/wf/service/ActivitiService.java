@@ -4,6 +4,7 @@ import com.abt.common.model.Page;
 import com.abt.common.model.User;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.ActivitiRequestForm;
+import com.abt.wf.model.UserTodo;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
@@ -21,8 +22,8 @@ public interface ActivitiService {
 
     WorkflowBase findUserTodoLatest1ByProcessDefinitionKeys(String userid, List<String> keys);
 
-
-    long countUserTodo(String userid, List<String> keys);
+    //查询所有的待办流程
+    UserTodo countTodoAll(String activeKey, String userid);
 
     void deleteProcessInstance(String processInstanceId, String deleteReason);
 

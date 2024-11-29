@@ -9,9 +9,9 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
-import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.ActivitiRequestForm;
+import com.abt.wf.model.UserTodo;
 import com.abt.wf.service.ActivitiService;
 import com.abt.wf.service.FlowOperationLogService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_RBS;
 
 /**
  * 通用
@@ -80,10 +82,18 @@ public class WorkflowController {
     }
 
     /**
-     * 获取用户最近的财务类待办事项
+     * 用户待办页面
+     *
+     * @param activeKey: 激活的流程id, 若无默认显示DEF_KEY_RBS
      */
-    public void financeUserTodo() {
-        UserView user = TokenUtil.getUserFromAuthToken();
+    @GetMapping("/count/all")
+    public R<UserTodo> userTodoPage(@RequestParam(required = false, defaultValue = DEF_KEY_RBS) String activeKey) {
+        final UserTodo userTodo = activitiService.countTodoAll(activeKey, TokenUtil.getUseridFromAuthToken());
+        return R.success(userTodo, "查询待办成功!");
+    }
+
+    public void todo() {
+
     }
 
     /**
@@ -164,6 +174,6 @@ public class WorkflowController {
                 });
 
         return R.success(saved, saved.size(), msg);
-
     }
+
 }

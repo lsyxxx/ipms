@@ -1,6 +1,8 @@
 package com.abt.wf.service.impl;
 
 import com.abt.wf.service.ActivitiService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
@@ -8,9 +10,12 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstanceQuery;
+import org.camunda.bpm.engine.task.Task;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -30,6 +35,8 @@ class ActivitiServiceImplTest {
     private HistoryService historyService;
     @Autowired
     private RepositoryService repositoryService;
+    @Autowired
+    private EntityManager entityManager;
 
 
 
@@ -76,5 +83,30 @@ class ActivitiServiceImplTest {
 //        historyService.deleteHistoricTaskInstance(runningTask.getId());
 
         runtimeService.deleteProcessInstance("a108002e-5b72-11ef-af73-522f9b379759", "先删除historyTask");
+    }
+
+    @Test
+    void findUserTaskDef() {
+        final List<Task> tasks = taskService.createNativeTaskQuery()
+                .sql("select distinct(NAME_) from ACT_RU_TASK where ASSIGNEE_ = #{userid} and PROC_DEF_ID_ LIKE #{procDefIdLike}")
+                .parameter("userid", "U20230406007")
+                .parameter("procDefIdLike", "%rbsMulti%")
+                .list();
+        Assert.notEmpty(tasks, "task 空");
+        tasks.forEach(t -> {
+            System.out.println(t.getName());
+        });
+    }
+
+    @Test
+    void findUserTaskName() {
+        final Query query = entityManager.createNativeQuery("select distinct(NAME_) from ACT_RU_TASK where ASSIGNEE_ = :userid and PROC_DEF_ID_ LIKE :procDefIdLike");
+        query.setParameter("userid", "U20230406007");
+        query.setParameter("procDefIdLike", "%rbsMulti%");
+        final List resultList = query.getResultList();
+        Assert.notEmpty(resultList, "result list is null");
+        resultList.forEach(System.out::println);
+
+
     }
 }

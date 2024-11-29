@@ -1,5 +1,6 @@
 package com.abt.liaohe;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Transient;
@@ -14,7 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.alibaba.excel.annotation.ExcelIgnore;
 
 /**
  * 岩石分析基础
@@ -32,7 +32,6 @@ public class RockBase {
      * 检测编号
      * test id
      */
-    @NotNull
     private String tid;
 
     /**

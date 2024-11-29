@@ -1,13 +1,18 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.model.Page;
+import com.abt.common.model.Pair;
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.User;
+import com.abt.common.util.QueryUtil;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.*;
 import com.abt.wf.service.*;
 import com.abt.wf.util.WorkFlowUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.HistoryService;
@@ -23,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,7 +45,7 @@ public class ActivitiServiceImpl implements ActivitiService {
     private final HistoryService historyService;
     private final RuntimeService runtimeService;
 
-    private final Map<String, BusinessService> serviceMap;
+    private final Map<String, BusinessService<? extends RequestForm, ? extends WorkflowBase>> serviceMap;
 
     private final ReimburseService reimburseService;
     private final TripService tripService;
@@ -47,8 +53,11 @@ public class ActivitiServiceImpl implements ActivitiService {
     private final InvoiceOffsetService invoiceOffsetService;
     private final LoanService loanService;
     private final PayVoucherService payVoucherService;
+    private final EntityManager entityManager;
 
-    public ActivitiServiceImpl(WorkFlowConfig workFlowConfig, TaskService taskService, HistoryService historyService, RuntimeService runtimeService, Map<String, BusinessService> serviceMap, ReimburseService reimburseService, TripService tripService, InvoiceApplyService invoiceApplyService, InvoiceOffsetService invoiceOffsetService, LoanService loanService, PayVoucherService payVoucherService) {
+    public ActivitiServiceImpl(WorkFlowConfig workFlowConfig, TaskService taskService, HistoryService historyService, RuntimeService runtimeService,
+                               Map<String, BusinessService<? extends RequestForm, ? extends WorkflowBase>> serviceMap,
+                               ReimburseService reimburseService, TripService tripService, InvoiceApplyService invoiceApplyService, InvoiceOffsetService invoiceOffsetService, LoanService loanService, PayVoucherService payVoucherService, EntityManager entityManager) {
         this.workFlowConfig = workFlowConfig;
         this.taskService = taskService;
         this.historyService = historyService;
@@ -60,6 +69,7 @@ public class ActivitiServiceImpl implements ActivitiService {
         this.invoiceOffsetService = invoiceOffsetService;
         this.loanService = loanService;
         this.payVoucherService = payVoucherService;
+        this.entityManager = entityManager;
     }
     @Override
     public List<WorkflowBase> findUserTodoAll(String userid, String query, int page, int limit) {
@@ -166,22 +176,38 @@ public class ActivitiServiceImpl implements ActivitiService {
         return null;
     }
 
-
+    //查询所有的待办流程
     @Override
-    public long countUserTodo(String userid, List<String> keys) {
-        String keyIn = keys.stream().map(item -> "'" + item + "'").collect(Collectors.joining(", "));
-        final long count = taskService.createNativeTaskQuery()
-                .sql("SELECT count(1) FROM ACT_RU_TASK t " +
-                        "left join ACT_RE_PROCDEF D on t.PROC_DEF_ID_ = D.ID_  " +
-                        "left join ACT_RU_IDENTITYLINK i on t.ID_ = i.TASK_ID_ " +
-                        "WHERE t.TASK_DEF_KEY_ NOT LIKE '%apply%' " +
-                        "and (t.ASSIGNEE_ = #{userid} or (t.ASSIGNEE_ is null and i.USER_ID_ = #{userid})) " +
-                        "and t.SUSPENSION_STATE_ = 1 " +
-                        "and D.KEY_ in (" + keyIn + "); "
-                )
-                .parameter("userid", userid)
-                .count();
-        return count;
+    public UserTodo countTodoAll(String activeKey, String userid) {
+        UserTodo userTodo = new UserTodo();
+        serviceMap.forEach((key, service) -> {
+            RequestForm form = service.createRequestForm();
+            form.setPage(1);
+            form.setLimit(9999);
+            form.setUserid(userid);
+            //查询用户在这个流程担任了几个task
+            final List<Pair> names = findUserTaskName(userid, key);
+            if (names.size() > 1) {
+                //有1个以上显示不同职责
+                names.forEach(n -> {
+                    form.setTaskDefKey(n.getKey().toString());
+                    int count = service.countMyTodoByRequestForm(form);
+                    userTodo.addTodoCount(key + "|" + n.getValue(), count);
+                    userTodo.accumulateCount(count);
+                });
+            } else {
+                //只有1个职责则不显示
+                int count = service.countMyTodoByRequestForm(form);
+                userTodo.addTodoCount(key, count);
+                userTodo.accumulateCount(count);
+            }
+            if (key.equals(activeKey)) {
+                final List<? extends WorkflowBase> list = service.findMyTodoList(form);
+                userTodo.setActiveTodoList(Collections.singletonList(list));
+                userTodo.setActiveKey(key);
+            }
+        });
+        return userTodo;
     }
 
 
@@ -224,5 +250,23 @@ public class ActivitiServiceImpl implements ActivitiService {
         final long count = query.count();
         return new Page<ProcessInstance>(list, (int)count);
     }
+
+    public List<Pair> findUserTaskName(String userid, String procDefKey) {
+        final Query query = entityManager.createNativeQuery("select distinct(TASK_DEF_KEY_), NAME_ from ACT_RU_TASK where ASSIGNEE_ = :userid and PROC_DEF_ID_ LIKE :procDefIdLike");
+        query.setParameter("userid", userid);
+        query.setParameter("procDefIdLike", QueryUtil.like(procDefKey));
+        final List<Object[]> resultList = query.getResultList();
+        if (CollectionUtils.isEmpty(resultList)) {
+            return List.of();
+        } else {
+            List<Pair> result = new ArrayList<>();
+            for (Object[] row : resultList) {
+                Pair pair = new Pair(row[0], row[1]);
+                result.add(pair);
+            }
+            return result;
+        }
+    }
+
 
 }

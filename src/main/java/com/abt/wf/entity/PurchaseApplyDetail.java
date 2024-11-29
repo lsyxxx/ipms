@@ -13,6 +13,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static com.abt.wf.config.Constants.ACCEPT_QUALIFIED;
@@ -138,6 +139,12 @@ public class PurchaseApplyDetail {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime finalUpdateTime;
+
+    /**
+     * 当前物品采购总金额
+     */
+    @Column(name="cost_", columnDefinition = "DECIMAL(9,2)")
+    private BigDecimal cost;
 
     /**
      * 是否验收

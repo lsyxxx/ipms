@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
@@ -31,11 +32,12 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.*;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_PURCHASE;
 
 /**
  *
  */
-@Service
+@Service(DEF_KEY_PURCHASE)
 @Slf4j
 public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<PurchaseApplyMain, PurchaseApplyRequestForm> implements PurchaseService {
     private final IdentityService identityService;
@@ -231,6 +233,27 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     }
 
     @Override
+    public int countMyTodo(PurchaseApplyRequestForm requestForm) {
+        return purchaseApplyMainRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public int countMyTodoByRequestForm(RequestForm requestForm) {
+        return purchaseApplyMainRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public List<PurchaseApplyMain> findMyTodoList(RequestForm requestForm) {
+        return purchaseApplyMainRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+    }
+
+    @Override
+    public PurchaseApplyRequestForm createRequestForm() {
+        return new PurchaseApplyRequestForm();
+    }
+
+    @Override
     public Map<String, Object> createVariableMap(PurchaseApplyMain form) {
         return form.getVariableMap();
     }
@@ -289,20 +312,15 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         return entity;
     }
 
-    /**
-     * 验收全部
-     * @param id 表单id
-     */
-    public void accept(String id) {
-        final PurchaseApplyMain entity = purchaseApplyMainRepository.findByIdWithDetails(id);
-        entity.getDetails().forEach(PurchaseApplyDetail::qualified);
+    @Override
+    public void setCostVariable(PurchaseApplyMain entity) {
+        runtimeService.setVariable(entity.getProcessInstanceId(), PurchaseApplyMain.KEY_COST, entity.getCost());
     }
 
-    /**
-     * 验收全部
-     */
-    public void accept(PurchaseApplyMain form) {
-        form.getDetails().forEach(PurchaseApplyDetail::qualified);
-        purchaseApplyMainRepository.save(form);
+
+    public void todoCount(String userid) {
+
     }
+
+
 }
