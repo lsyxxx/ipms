@@ -84,7 +84,8 @@ public interface PayVoucherRepository extends JpaRepository<PayVoucher, String>,
             "   or e.payDesc like %:query% " +
             "   or e.createUsername like %:query%) " +
             "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
-            "AND (:endDate IS NULL OR e.createDate <= :endDate) ")
+            "AND (:endDate IS NULL OR e.createDate <= :endDate) " +
+            "order by e.updateDate desc ")
     List<PayVoucher> findUserTodoList(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, String taskDefKey);
 
 

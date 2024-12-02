@@ -215,8 +215,10 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     @Override
     public List<Reimburse> findMyTodoList(RequestForm requestForm) {
-        return reimburseRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+        final List<Reimburse> list = reimburseRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+        list.forEach(this::buildActiveTask);
+        return list;
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.abt.common.model.Pair;
 import com.abt.common.model.RequestForm;
 import com.abt.common.model.User;
 import com.abt.common.util.QueryUtil;
-import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.*;
@@ -22,7 +21,6 @@ import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricProcessInstanceQuery;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstanceQuery;
-import org.camunda.bpm.engine.runtime.VariableInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -31,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -142,39 +139,6 @@ public class ActivitiServiceImpl implements ActivitiService {
         return workFlowConfig.workflowDefaultCopy();
     }
 
-    @Override
-    public WorkflowBase findUserTodoLatest1ByProcessDefinitionKeys(String userid, List<String> keys) {
-        String keyIn = keys.stream().map(item -> "'" + item + "'").collect(Collectors.joining(", "));
-        final List<Task> list = taskService.createNativeTaskQuery()
-                .sql("SELECT * FROM ACT_RU_TASK t " +
-                        "left join ACT_RE_PROCDEF D on t.PROC_DEF_ID_ = D.ID_  " +
-                        "left join ACT_RU_IDENTITYLINK i on t.ID_ = i.TASK_ID_ " +
-                        "WHERE t.TASK_DEF_KEY_ NOT LIKE '%apply%' " +
-                        "and (t.ASSIGNEE_ = #{userid} or (t.ASSIGNEE_ is null and i.USER_ID_ = #{userid})) " +
-                        "and t.SUSPENSION_STATE_ = 1 " +
-                        "and D.KEY_ in (" + keyIn + ") " +
-                        "order by t.CREATE_TIME_ desc;"
-                )
-                .parameter("userid", userid)
-                .list();
-        //去掉申请节点
-        if (!CollectionUtils.isEmpty(list)) {
-            //1. 获取对应的业务实体
-            Task task = list.get(0);
-            String procId = task.getProcessInstanceId();
-            final HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(procId).singleResult();
-            final VariableInstance variableInstance = runtimeService.createVariableInstanceQuery().processInstanceIdIn(procId).variableName(Constants.VAR_KEY_ENTITY).singleResult();
-            if (variableInstance == null) {
-                //临时处理，存在null情况
-                return null;
-            }
-            final String entityId = variableInstance.getValue().toString();
-            BusinessService businessService = serviceMap.get(historicProcessInstance.getProcessDefinitionKey());
-            final WorkflowBase load = businessService.load(entityId);
-            return load;
-        }
-        return null;
-    }
 
     //查询所有的待办流程
     @Override
@@ -207,9 +171,43 @@ public class ActivitiServiceImpl implements ActivitiService {
                 userTodo.setActiveKey(key);
             }
         });
+        userTodo.addTodoCount("all", userTodo.getTodoCountAll());
         return userTodo;
     }
 
+    @Override
+    public List<Object> findTodoByDefKey(String defKey, String taskName, String query, String userid) {
+        List<Object> list = new ArrayList<>();
+        if (defKey.contains("all")) {
+            serviceMap.forEach((key, service) -> {
+                RequestForm form = service.createRequestForm();
+                form.setPage(1);
+                form.setLimit(9999);
+                form.setUserid(userid);
+                form.setQuery(query);
+                final List<? extends WorkflowBase> defList = service.findMyTodoList(form);
+                final List<? extends WorkflowBase> filtered = defList.stream()
+                        .filter(i -> StringUtils.isBlank(taskName) || taskName.equals(i.getCurrentTaskName())).toList();
+                list.addAll(filtered);
+            });
+            return list;
+        } else {
+            final BusinessService<? extends RequestForm, ? extends WorkflowBase> service = serviceMap.get(defKey);
+            if (service == null) {
+                return null;
+            }
+            RequestForm form = service.createRequestForm();
+            form.setPage(1);
+            form.setLimit(9999);
+            form.setUserid(userid);
+            form.setQuery(query);
+            final List<? extends WorkflowBase> defList = service.findMyTodoList(form);
+            final List<? extends WorkflowBase> filtered = defList.stream()
+                    .filter(i -> StringUtils.isBlank(taskName) || taskName.equals(i.getCurrentTaskName())).toList();
+            list.addAll(filtered);
+            return list;
+        }
+    }
 
     @Override
     public void deleteProcessInstance(String processInstanceId, String deleteReason) {

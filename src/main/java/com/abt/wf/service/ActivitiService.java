@@ -20,10 +20,11 @@ public interface ActivitiService {
 
     List<User> findDefaultCopyUsers();
 
-    WorkflowBase findUserTodoLatest1ByProcessDefinitionKeys(String userid, List<String> keys);
 
     //查询所有的待办流程
     UserTodo countTodoAll(String activeKey, String userid);
+
+    List<Object> findTodoByDefKey(String defKey, String taskName, String query, String userid);
 
     void deleteProcessInstance(String processInstanceId, String deleteReason);
 

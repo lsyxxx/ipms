@@ -185,8 +185,10 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
 
     @Override
     public List<InvoiceOffset> findMyTodoList(RequestForm requestForm) {
-        return invoiceOffsetRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+        final List<InvoiceOffset> list = invoiceOffsetRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+        list.forEach(this::buildActiveTask);
+        return list;
     }
 
     @Override

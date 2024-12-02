@@ -11,6 +11,7 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.config.WorkFlowConfig;
+import com.abt.wf.entity.PayVoucher;
 import com.abt.wf.entity.TripDetail;
 import com.abt.wf.entity.TripMain;
 import com.abt.wf.entity.TripOtherItem;
@@ -223,8 +224,10 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
 
     @Override
     public List<TripMain> findMyTodoList(RequestForm requestForm) {
-        return tripMainRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+        final List<TripMain> list = tripMainRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+        list.forEach(this::buildActiveTask);
+        return list;
     }
 
     @Override
@@ -275,6 +278,5 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
         main.setApproveUser(user.getId().equals(main.getCurrentTaskAssigneeId()));
         return main;
     }
-
 
 }

@@ -67,7 +67,7 @@ public class MajorElement extends RockBase{
                 System.out.println(e.getMessage());
             }
         });
-        row.stream().filter(i -> i.getTestName().toUpperCase().contains("TFE2O3")).findAny().ifPresent(i -> {
+        row.stream().filter(i -> i.getTestName().toUpperCase().contains("FE2O3")).findAny().ifPresent(i -> {
             try {
                 this.setTFe2O3(Double.parseDouble(i.getTestValue()));
             } catch (Exception e) {

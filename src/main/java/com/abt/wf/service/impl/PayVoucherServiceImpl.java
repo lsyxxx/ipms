@@ -248,8 +248,10 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
 
     @Override
     public List<PayVoucher> findMyTodoList(RequestForm requestForm) {
-        return payVoucherRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+        final List<PayVoucher> list = payVoucherRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+        list.forEach(this::buildActiveTask);
+        return list;
     }
 
     @Override
@@ -269,6 +271,13 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         creditBook.setServiceName(SERVICE_PAY);
         creditBookService.saveCreditBook(creditBook);
     }
+
+    @Override
+    public PayVoucher clearBizProcessData(PayVoucher form) {
+        form.clearData();
+        return form;
+    }
+
 
     @Override
     public PayVoucher loadBusiness(String businessId) {

@@ -289,8 +289,10 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
 
     @Override
     public List<Loan> findMyTodoList(RequestForm requestForm) {
-        return loanRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+        final List<Loan> list = loanRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+        list.forEach(this::buildActiveTask);
+        return list;
     }
 
     @Override
@@ -301,5 +303,11 @@ public class LoanServiceImpl extends AbstractWorkflowCommonServiceImpl<Loan, Loa
     @Override
     public Loan saveEntity(Loan loan) {
         return loanRepository.save(loan);
+    }
+
+    @Override
+    public Loan clearBizProcessData(Loan form) {
+        form.clearData();
+        return form;
     }
 }

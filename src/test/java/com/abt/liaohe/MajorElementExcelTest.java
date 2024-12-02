@@ -42,6 +42,7 @@ class MajorElementExcelTest {
                     majorElementExcel.setFile(path.toFile());
                     if (majorElementExcel.isMajor()) {
                         majorElementExcel.saveMajorElementDB();
+                        majorElementExcel.writeBase();
                     }
                 }
                 i++;

@@ -59,7 +59,8 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
             "   or e.createUsername like %:query% " +
             "   or e.reason like %:query%) " +
             "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
-            "AND (:endDate IS NULL OR e.createDate <= :endDate) ")
+            "AND (:endDate IS NULL OR e.createDate <= :endDate) " +
+            "order by e.updateDate desc ")
     List<TripMain> findUserTodoList(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, String taskDefKey);
 
     @Query("select count(e) from TripMain e " +

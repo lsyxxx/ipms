@@ -114,6 +114,7 @@ public class PurchaseController {
         purchaseService.setCostVariable(form);
         purchaseService.saveEntity(form);
         purchaseService.approve(form);
+        purchaseService.skipEmptyUserTask(form);
         return R.success("审批成功");
     }
 

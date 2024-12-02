@@ -237,8 +237,10 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
 
     @Override
     public List<InvoiceApply> findMyTodoList(RequestForm requestForm) {
-        return invoiceApplyRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
+        final List<InvoiceApply> list = invoiceApplyRepository.findUserTodoList(requestForm.getUserid(), requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()), TimeUtil.toLocalDateTime(requestForm.getEndDate()), requestForm.getTaskDefKey());
+        list.forEach(this::buildActiveTask);
+        return list;
     }
 
     @Override

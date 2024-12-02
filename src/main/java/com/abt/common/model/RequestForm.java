@@ -73,6 +73,7 @@ public class RequestForm {
     private boolean enabled;
 
     private String taskDefKey;
+    private String taskName;
 
     /**
      * 是否分页

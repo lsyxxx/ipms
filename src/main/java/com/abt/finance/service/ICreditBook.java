@@ -1,5 +1,8 @@
 package com.abt.finance.service;
 
+import com.abt.finance.entity.AccountItem;
+import com.abt.finance.entity.BankAccount;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -24,6 +27,7 @@ public interface ICreditBook {
      */
     void setPayAccountId(String payAccountId);
     String getPayAccountId();
+    void setPayBankAccount(BankAccount payBankAccount);
 
     /**
      * 付款时间
@@ -36,12 +40,14 @@ public interface ICreditBook {
      */
     void setTaxItemId(String taxItemId);
     String getTaxItemId();
+    void setTaxItem(AccountItem taxItem);
 
     /**
      * 核算科目id
      */
     void setAccountItemId(String accountItemId);
     String getAccountItemId();
+    void setAccountItem(AccountItem accountItem);
 
     String getBusinessId();
 
@@ -79,6 +85,16 @@ public interface ICreditBook {
     LocalDateTime getBizCreateDate();
     int getVoucherNum();
 
-    void clearData();
+    default void clearData() {
+        setPayDate(null);
+        setPayBankAccount(null);
+        setPayType(null);
+        setPayLevel(null);
+        setPayAccountId(null);
+        setAccountItem(null);
+        setAccountItemId(null);
+        setTaxItem(null);
+        setTaxItemId(null);
+    }
 
 }

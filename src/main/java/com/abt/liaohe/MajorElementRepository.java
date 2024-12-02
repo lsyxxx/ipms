@@ -14,9 +14,5 @@ public interface MajorElementRepository extends JpaRepository<MajorElement, Stri
     @Transactional
     void deleteByReportName(String reportName);
 
-    @Modifying
-    @Transactional
-    void updateOneByReportName(String reportName, MajorElement majorElement);
-
     List<MajorElement> findByReportName(String reportName);
 }

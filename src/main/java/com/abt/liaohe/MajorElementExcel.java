@@ -148,15 +148,18 @@ public class MajorElementExcel {
 
     public void writeBase() {
         final TestBaseTable testBase = testBaseTableRepository.findByReportName(this.file.getName());
+        if (testBase == null) {
+            System.out.println("未导入" + this.file.getName() + "基础数据");
+            return;
+        }
         final List<MajorElement> list = majorElementRepository.findByReportName(this.file.getName());
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy/M/dd");
         String dateStart = Util.handleTestDate(testBase.getTestDateStart());
         String dateEnd = Util.handleTestDate(testBase.getTestDateEnd());
         String sampleBatch = Util.handleSampleNo(testBase.getTestDateStart(), testBase.getTestDateEnd());
         list.forEach(majorElement -> {
             majorElement.setTestDateStart(dateStart);
             majorElement.setTestDateEnd(dateEnd);
-            majorElement.setSampleNo(sampleBatch);
+            majorElement.setSampleBatch(sampleBatch);
         });
         majorElementRepository.saveAllAndFlush(list);
     }
@@ -166,6 +169,7 @@ public class MajorElementExcel {
         if (file.getName().contains("JC2021094B")) {
             return;
         }
+        majorElementRepository.deleteByReportName(this.file.getName());
         final List<RawData> rawData = rawDataRepository.findByReportName(this.file.getName());
         final Map<Integer, List<RawData>> rowMap = rawData.stream().collect(Collectors.groupingBy(RawData::getRowIdx, TreeMap::new, Collectors.toList()));
         List<MajorElement> cached = new ArrayList<>();

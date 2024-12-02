@@ -173,6 +173,10 @@ public class RockBase {
     public void handleData() {
         //处理深度
         if (StringUtils.isNotBlank(this.depth)) {
+            if ("/".equals(this.depth)) {
+                return;
+            }
+
             Pattern pattern = Pattern.compile("[^0-9.]");
             Matcher matcher = pattern.matcher(depth);
             // 提取并连接非数字和小数点的字符
@@ -192,6 +196,9 @@ public class RockBase {
 
         //处理井号
         if (StringUtils.isNotBlank(this.wellNo)) {
+            if ("/".equals(this.wellNo)) {
+                return;
+            }
             this.wellNo = this.wellNo.replace("井", "");
         }
 

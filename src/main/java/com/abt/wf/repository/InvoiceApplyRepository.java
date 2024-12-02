@@ -80,7 +80,8 @@ public interface InvoiceApplyRepository extends JpaRepository<InvoiceApply, Stri
             "   or e.clientName like %:query% " +
             "   or e.createUsername like %:query%) " +
             "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
-            "AND (:endDate IS NULL OR e.createDate <= :endDate) ")
+            "AND (:endDate IS NULL OR e.createDate <= :endDate) " +
+            "order by e.updateDate desc ")
     List<InvoiceApply> findUserTodoList(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, String taskDefKey);
 
     @Query("select count(e) from InvoiceApply e " +

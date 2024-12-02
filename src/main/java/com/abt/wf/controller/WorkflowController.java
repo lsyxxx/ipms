@@ -51,16 +51,6 @@ public class WorkflowController {
     }
 
     /**
-     * 获取财务相关流程待办
-     */
-//    @GetMapping("/fin/todo/find1")
-//    public R<WorkflowBase> getMyFinanceTodoList() {
-//        UserView user = TokenUtil.getUserFromAuthToken();
-//        final WorkflowBase financeTask = activitiService.findFinanceTask(user.getId());
-//        return R.success(financeTask);
-//    }
-
-    /**
      * 默认抄送人
      */
     @GetMapping("/defaultcc")
@@ -92,8 +82,12 @@ public class WorkflowController {
         return R.success(userTodo, "查询待办成功!");
     }
 
-    public void todo() {
-
+    @GetMapping("/find/todo/defkey")
+    public R<List<Object>> findTodoByDefKeyAndTaskName(@RequestParam String defKey,
+                                                       @RequestParam(required = false, defaultValue = "") String taskName,
+                                                       @RequestParam(required = false, defaultValue = "") String query) {
+        final List<Object> list = activitiService.findTodoByDefKey(defKey, taskName, query, TokenUtil.getUseridFromAuthToken());
+        return R.success(list, list.size());
     }
 
     /**
