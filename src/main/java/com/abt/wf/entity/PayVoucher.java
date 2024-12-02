@@ -2,6 +2,7 @@ package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.finance.entity.AccountItem;
+import com.abt.finance.entity.BankAccount;
 import com.abt.finance.service.ICreditBook;
 import com.abt.wf.config.Constants;
 import com.abt.wf.listener.JpaWorkflowListener;
@@ -208,6 +209,11 @@ public class PayVoucher extends WorkflowBase implements ICreditBook {
         return this.variableMap;
     }
 
+
+    @Override
+    public void setPayBankAccount(BankAccount payBankAccount) {
+        this.setPayBankAccount(payBankAccount);
+    }
 
     @Override
     public String getBusinessId() {

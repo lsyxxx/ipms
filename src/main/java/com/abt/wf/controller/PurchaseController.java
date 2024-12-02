@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.abt.wf.config.Constants.SERVICE_PURCHASE;
-import static com.abt.wf.config.Constants.STATE_DETAIL_REJECT;
+import static com.abt.wf.config.Constants.*;
 
 /**
  * 采购流程
@@ -146,7 +145,7 @@ public class PurchaseController {
     @PostMapping("/accept/all")
     public R<Object> accept(@RequestBody PurchaseApplyMain form) {
         //判断是否能验收
-        if (STATE_DETAIL_REJECT.equals(form.getBusinessState())) {
+        if (STATE_DETAIL_PASS.equals(form.getBusinessState())) {
             return R.fail("流程审批未通过，不能验收!");
         }
         form.getDetails().forEach(PurchaseApplyDetail::qualified);
