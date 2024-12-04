@@ -30,7 +30,7 @@ public class Relevance {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String Id;
 
-    @Column(name="Description", columnDefinition="VARCAHR(100)")
+    @Column(name="Description", columnDefinition="VARCHAR(100)")
     private String description;
 
     @Column(name="`Key`", columnDefinition="VARCHAR(100)")

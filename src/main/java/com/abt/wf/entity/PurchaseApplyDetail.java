@@ -149,7 +149,7 @@ public class PurchaseApplyDetail {
     /**
      * 物品单价
      */
-    @Column(name="price_", columnDefinition = "9,2")
+    @Column(name="price_", columnDefinition = "DECIMAL(9,2)")
     private BigDecimal price;
 
     /**

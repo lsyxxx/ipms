@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -268,6 +269,9 @@ public class Util {
         return d1 + "-" + d2;
     }
 
+    public static boolean isExcelFile(File file) {
+        return file.getName().toLowerCase().endsWith(".xls") || file.getName().toLowerCase().endsWith(".xlsx");
+    }
 
 
 }

@@ -37,6 +37,7 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
@@ -616,6 +617,26 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             log.error("copy file error", e);
             setFileListJson(entity, null);
         }
+    }
+
+    /**
+     * 导出
+     * @param requestForm 按条件导出
+     */
+    public List<T> findAllByQuery(R requestForm) {
+        if (requestForm == null || requestForm.getLimit() == 0) {
+            //导出所有
+            requestForm = createRequestForm();
+            requestForm.setPage(1);
+            requestForm.setLimit(99999);
+        }
+        Page<T> page = findAllByQueryPageable(requestForm);
+        final int total = (int)page.getTotalElements();
+        if (total > 99999) {
+            requestForm.setLimit(total + 1);
+            page = findAllByQueryPageable(requestForm);
+        }
+        return page.getContent();
     }
 
 }

@@ -814,7 +814,10 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             List<String> eRow = new ArrayList<>();
             for (String h : header) {
                 final List<String> values = row.getCells().stream().filter(c -> h.equals(c.getColumnName())).map(Cell::getValueStr).toList();
-                final String join = String.join("\n", values);
+                String join = String.join("\n", values);
+                if (join.endsWith("\n")) {
+                    join = join.replace("\n", "");
+                }
                 eRow.add(join);
             }
             data.add(eRow);
@@ -906,7 +909,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         //-- 统计
         //合并list
 //        final List<FieldWorkItem> itemList = list.stream().flatMap(fw -> fw.getItems().stream()).toList();
-
 
         return result;
     }
