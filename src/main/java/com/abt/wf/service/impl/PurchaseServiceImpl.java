@@ -187,7 +187,7 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     @Override
     public Page<PurchaseApplyMain> findAllByQueryPageable(PurchaseApplyRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
-        final Page<PurchaseApplyMain> paged = purchaseApplyMainRepository.findAllByQueryPaged(requestForm.getUserid(),
+        final Page<PurchaseApplyMain> paged = purchaseApplyMainRepository.findAllByQueryPaged(null,
                 requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()),
                 TimeUtil.toLocalDateTime(requestForm.getEndDate()),
@@ -319,10 +319,20 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         runtimeService.setVariable(entity.getProcessInstanceId(), PurchaseApplyMain.KEY_COST, entity.getCost());
     }
 
-
-    public void todoCount(String userid) {
-
+    @Override
+    public PurchaseApplyMain clearBizProcessData(PurchaseApplyMain entity) {
+        entity.setAccepted(false);
+        entity.setManagerUserid(null);
+        entity.setLeaderUserid(null);
+        if (entity.getDetails() != null) {
+            entity.getDetails().forEach(PurchaseApplyDetail::clearModify);
+        }
+        return entity;
     }
 
-
+    @Override
+    public void accept(PurchaseApplyMain form) {
+        form.qualified();
+        saveEntity(form);
+    }
 }

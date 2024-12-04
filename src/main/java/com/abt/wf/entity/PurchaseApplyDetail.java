@@ -147,6 +147,12 @@ public class PurchaseApplyDetail {
     private BigDecimal cost;
 
     /**
+     * 物品单价
+     */
+    @Column(name="price_", columnDefinition = "9,2")
+    private BigDecimal price;
+
+    /**
      * 是否验收
      */
     @Column(name = "is_accepted")
@@ -174,6 +180,7 @@ public class PurchaseApplyDetail {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime acceptTime;
+
 
     public String getMainId() {
         if (main != null) {
@@ -207,5 +214,24 @@ public class PurchaseApplyDetail {
         this.setAcceptResult(ACCEPT_QUALIFIED);
         this.setAcceptTime(LocalDateTime.now());
 
+    }
+
+    public void clearModify() {
+        this.setAcceptItems(null);
+        this.setAcceptRemark(null);
+        this.setAcceptTime(null);
+        this.setCurrentQuantity(this.getQuantity());
+        this.setFinalModify(null);
+        this.setFinalName(null);
+        this.setFinalUpdateTime(null);
+        this.setFinalId(null);
+        this.setLeaderId(null);
+        this.setLeaderModify(null);
+        this.setLeaderName(null);
+        this.setLeaderUpdateTime(null);
+        this.setManagerId(null);
+        this.setManagerModify(null);
+        this.setManagerName(null);
+        this.setManagerUpdateTime(null);
     }
 }

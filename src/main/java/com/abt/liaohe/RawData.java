@@ -45,5 +45,6 @@ public class RawData {
      */
     private String testDateStart;
     private String testDateEnd;
+    private String sheetName;
 
 }

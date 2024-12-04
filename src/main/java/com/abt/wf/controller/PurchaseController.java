@@ -145,11 +145,13 @@ public class PurchaseController {
     @PostMapping("/accept/all")
     public R<Object> accept(@RequestBody PurchaseApplyMain form) {
         //判断是否能验收
-        if (STATE_DETAIL_PASS.equals(form.getBusinessState())) {
+        if (!STATE_DETAIL_PASS.equals(form.getBusinessState())) {
             return R.fail("流程审批未通过，不能验收!");
         }
-        form.getDetails().forEach(PurchaseApplyDetail::qualified);
-        purchaseService.saveEntity(form);
+        if (!form.getCreateUserid().equals(TokenUtil.getUseridFromAuthToken())) {
+            return R.fail(String.format("只有申请人(%s)才可验收，当前用户:%s", form.getCreateUsername(), TokenUtil.getUserFromAuthToken().getName()));
+        }
+        purchaseService.accept(form);
         return R.success("已全部验收");
     }
 

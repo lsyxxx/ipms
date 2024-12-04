@@ -27,6 +27,16 @@ public interface RawDataRepository extends JpaRepository<RawData, String> {
     @Query("delete from RawData where (testName is null or testName = '') and (testValue is null or testValue = '')")
     void deleteEmptyData();
 
+    @Transactional
+    @Modifying
+    @Query("delete from RawData where testName like '%备注%'")
+    void deleteRemarkContent();
+
+    @Transactional
+    @Modifying
+    @Query("delete from RawData where (testValue is null or testValue = '')")
+    void deleteEmptyTestValue();
+
     /**
      * 删除序号
      */

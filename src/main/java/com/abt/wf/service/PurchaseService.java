@@ -18,4 +18,6 @@ public interface PurchaseService extends WorkFlowService<PurchaseApplyMain>, Bus
     void tempSave(PurchaseApplyMain entity);
 
     void setCostVariable(PurchaseApplyMain entity);
+
+    void accept(PurchaseApplyMain form);
 }

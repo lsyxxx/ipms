@@ -76,7 +76,6 @@ public class PurchaseApplyMain extends WorkflowBase{
     @Column(name="cost_", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal cost;
 
-
     /**
      * 业务主管审批人
      */
@@ -103,6 +102,13 @@ public class PurchaseApplyMain extends WorkflowBase{
         this.variableMap.put(KEY_MANAGER, this.getManagerUserid());
         this.variableMap.put(KEY_LEADER, this.getLeaderUserid());
         return this.variableMap;
+    }
+
+    public void qualified() {
+        this.setAccepted(true);
+        if (this.details != null) {
+            this.details.forEach(PurchaseApplyDetail::qualified);
+        }
     }
 
     public void addDetail(PurchaseApplyDetail detail) {
