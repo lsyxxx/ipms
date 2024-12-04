@@ -21,9 +21,7 @@ import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.service.SignatureService;
-import com.alibaba.excel.EasyExcel;
 import com.fasterxml.jackson.core.type.TypeReference;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -75,8 +73,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     private List<User> copyList;
 
-    @Value("${abt.rbs.excel.template}")
-    private String excelTemplate;
+
 
     @Value("${wf.rbs.url.pre}")
     private String urlPrefix;
@@ -335,20 +332,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     public Reimburse clearBizProcessData(Reimburse form) {
         form.clearData();
         return form;
-    }
-
-    @Override
-    public void export(ReimburseRequestForm requestForm, HttpServletResponse response) throws IOException {
-        final List<Reimburse> all = this.findAllByQuery(requestForm);
-        //写入excel
-        if (!Files.isRegularFile(Paths.get(this.excelTemplate))) {
-            throw new BusinessException("未添加费用报销导出模板!");
-        }
-        String newFileName = "报销导出.xlsx";
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setCharacterEncoding("utf-8");
-        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + newFileName);
-        EasyExcel.write(response.getOutputStream(), Reimburse.class).withTemplate(this.excelTemplate).sheet().doFill(all);
     }
 
 }

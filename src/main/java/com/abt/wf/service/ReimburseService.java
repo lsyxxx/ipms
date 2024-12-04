@@ -9,5 +9,4 @@ import org.springframework.data.domain.Page;
 import java.io.IOException;
 
 public interface ReimburseService extends WorkFlowService<Reimburse>, BusinessService<ReimburseRequestForm, Reimburse>, ICashCreditService<Reimburse> {
-    void export(ReimburseRequestForm requestForm, HttpServletResponse response) throws IOException;
 }

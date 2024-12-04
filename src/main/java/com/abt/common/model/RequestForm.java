@@ -75,6 +75,8 @@ public class RequestForm {
     private String taskDefKey;
     private String taskName;
 
+    private String exportType;
+
     /**
      * 是否分页
      */

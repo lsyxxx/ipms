@@ -2,6 +2,7 @@ package com.abt.wf.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
@@ -15,12 +16,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -29,12 +32,16 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@AllArgsConstructor
 @RequestMapping("/wf/rbs")
 public class ReimburseController {
 
     private final ReimburseService reimburseService;
+    @Value("${abt.rbs.excel.template}")
+    private String excelTemplate;
 
+    public ReimburseController(ReimburseService reimburseService) {
+        this.reimburseService = reimburseService;
+    }
 
     /**
      * 撤销一个流程
@@ -132,9 +139,15 @@ public class ReimburseController {
         return R.success(processRecord, processRecord.size());
     }
 
-    @GetMapping("/export")
-    public void export(ReimburseRequestForm requestForm) {
-
+    @GetMapping("/export}")
+    public void export(ReimburseRequestForm requestForm, HttpServletResponse response) throws IOException {
+        try {
+            requestForm.setUserid(TokenUtil.getUseridFromAuthToken());
+            reimburseService.export(requestForm, response, excelTemplate);
+        } catch (IOException e) {
+            final R<Object> fail = R.fail("导出失败!");
+            response.getWriter().println(JsonUtil.toJson(fail));
+        }
     }
 
     public void setTokenUser(ReimburseRequestForm form) {

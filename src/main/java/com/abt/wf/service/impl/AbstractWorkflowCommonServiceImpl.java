@@ -14,13 +14,16 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
 import com.abt.wf.service.*;
 import com.abt.wf.util.WorkFlowUtil;
+import com.alibaba.excel.EasyExcel;
 import com.fasterxml.jackson.core.type.TypeReference;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,8 +42,12 @@ import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -623,20 +630,38 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
      * 导出
      * @param requestForm 按条件导出
      */
-    public List<T> findAllByQuery(R requestForm) {
-        if (requestForm == null || requestForm.getLimit() == 0) {
+    public List<T> findUserApplyByQuery(R requestForm) {
+        if (requestForm == null ) {
             //导出所有
             requestForm = createRequestForm();
             requestForm.setPage(1);
             requestForm.setLimit(99999);
         }
-        Page<T> page = findAllByQueryPageable(requestForm);
+        if (requestForm.getLimit() == 0) {
+            requestForm.setLimit(99999);
+        }
+        Page<T> page = findMyApplyByQueryPageable(requestForm);
         final int total = (int)page.getTotalElements();
         if (total > 99999) {
             requestForm.setLimit(total + 1);
             page = findAllByQueryPageable(requestForm);
         }
         return page.getContent();
+    }
+
+    @Override
+    public void export(R requestForm, HttpServletResponse response, String templatePath) throws IOException {
+        Assert.notNull(response, "response is null!");
+        Assert.notNull(templatePath, "templatePath is null!");
+        if (!Files.isRegularFile(Paths.get(templatePath))) {
+            throw new BusinessException("未添导出模板!");
+        }
+        final List<T> all = findUserApplyByQuery(requestForm);
+        String newFileName = "rbs_export.xlsx";
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + newFileName);
+        EasyExcel.write(response.getOutputStream(), Reimburse.class).withTemplate(templatePath).sheet().doFill(all);
     }
 
 }

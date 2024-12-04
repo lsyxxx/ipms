@@ -4,9 +4,11 @@ import com.abt.common.model.RequestForm;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.ReimburseRequestForm;
+import jakarta.servlet.http.HttpServletResponse;
 import org.camunda.bpm.engine.task.Task;
 import org.springframework.data.domain.Page;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -35,4 +37,6 @@ public interface BusinessService<T extends RequestForm, R extends WorkflowBase> 
     List<R> findMyTodoList(RequestForm requestForm);
 
     T createRequestForm();
+
+    void export(T requestForm, HttpServletResponse response, String templatePath) throws IOException;
 }
