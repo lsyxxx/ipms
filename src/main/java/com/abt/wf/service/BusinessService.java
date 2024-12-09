@@ -38,5 +38,5 @@ public interface BusinessService<T extends RequestForm, R extends WorkflowBase> 
 
     T createRequestForm();
 
-    void export(T requestForm, HttpServletResponse response, String templatePath) throws IOException;
+    void export(T requestForm, HttpServletResponse response, String templatePath, String newFileName, Class<R> dataClass) throws IOException;
 }

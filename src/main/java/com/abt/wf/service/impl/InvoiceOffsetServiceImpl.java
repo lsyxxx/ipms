@@ -313,37 +313,6 @@ public class InvoiceOffsetServiceImpl extends AbstractWorkflowCommonServiceImpl<
             };
         }
 
-//        public Specification<InvoiceOffset> leftJoinRuTask(InvoiceOffsetRequestForm form) {
-//            return (root, query, builder) -> {
-//                List<Predicate> predicates = new ArrayList<>();
-//                Join<InvoiceOffset, ActRuTask> taskJoin = root.join("currentTask", JoinType.LEFT);
-//                if (StringUtils.isNotBlank(form.getUserid())) {
-//                    predicates.add(builder.equal(taskJoin.get("assignee"), form.getUserid()));
-//                }
-//                return builder.and(predicates.toArray(new Predicate[0]));
-//            };
-//        }
-
-//        public Specification<InvoiceOffset> leftJoinHiTask(InvoiceOffsetRequestForm form) {
-//            return (root, query, builder) -> {
-//                List<Predicate> predicates = new ArrayList<>();
-//                Join<InvoiceOffset, ActHiTaskInstance> taskJoin = root.join("invokedTask", JoinType.LEFT);
-//                if (StringUtils.isNotBlank(form.getUserid())) {
-//                    predicates.add(builder.equal(taskJoin.get("assignee"), form.getUserid()));
-//                }
-//                if (StringUtils.isNotBlank(form.getProcDefKey())) {
-//                    predicates.add(builder.equal(taskJoin.get("procDefKey"), form.getTaskDefKey()));
-//                }
-//                predicates.add(builder.notLike(taskJoin.get("taskDefKey"), like("apply")));
-//                if (form.getQueryMode() == 1) {
-//                    //todo_
-//                    predicates.add(builder.isNull(taskJoin.get("endTime")));
-//                } else if (form.getQueryMode() == 2) {
-//                    predicates.add(builder.isNotNull(taskJoin.get("endTime")));
-//                }
-//                return builder.and(predicates.toArray(new Predicate[0]));
-//            };
-//        }
 
     }
 }

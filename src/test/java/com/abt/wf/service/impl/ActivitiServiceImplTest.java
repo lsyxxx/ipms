@@ -1,15 +1,18 @@
 package com.abt.wf.service.impl;
 
 import com.abt.wf.service.ActivitiService;
+import com.abt.wf.service.PayVoucherService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.history.HistoricTaskInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstanceQuery;
+import org.camunda.bpm.engine.runtime.RestartProcessInstanceBuilder;
 import org.camunda.bpm.engine.task.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.Assert;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,6 +42,9 @@ class ActivitiServiceImplTest {
     private RepositoryService repositoryService;
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private PayVoucherService payVoucherService;
 
 
 
@@ -108,5 +116,44 @@ class ActivitiServiceImplTest {
         resultList.forEach(System.out::println);
 
 
+    }
+
+    @Test
+    void restart() {
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("restart", true);
+
+        runtimeService.restartProcessInstances("rbsPay:19:2c4041e2-ad67-11ef-b541-522f9b379759")
+                .processInstanceIds("f8c39d4d-b5d7-11ef-b615-522f9b379759")
+                .startBeforeActivity("rbsPay_cashier")
+                .execute();
+    }
+
+    @Test
+    void findFinished() {
+        final List<HistoricProcessInstance> list = historyService.createHistoricProcessInstanceQuery().finished().list();
+        Assert.notEmpty(list, "not empty");
+        list.forEach(i -> {
+            System.out.printf("procId: %s, def: %s\n", i.getRootProcessInstanceId(), i.getProcessDefinitionKey());
+        });
+    }
+
+    @Test
+    void findPay() {
+        final List<ProcessInstance> list = runtimeService.createProcessInstanceQuery()
+                .processDefinitionId("rbsPay:19:2c4041e2-ad67-11ef-b541-522f9b379759").active()
+                .list();
+        Assert.notEmpty(list, "not empty");
+        list.forEach(System.out::println);
+    }
+
+    @Test
+    void findHistory() {
+        final List<HistoricProcessInstance> list = historyService.createHistoricProcessInstanceQuery()
+                .superProcessInstanceId("f8c39d4d-b5d7-11ef-b615-522f9b379759").active()
+                .orderByProcessInstanceStartTime().desc().list();
+        Assert.notEmpty(list, "not empty");
+        list.forEach(System.out::println);
     }
 }

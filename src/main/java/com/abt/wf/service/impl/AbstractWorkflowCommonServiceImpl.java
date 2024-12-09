@@ -14,7 +14,6 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
-import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
 import com.abt.wf.model.UserTaskDTO;
@@ -52,6 +51,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.abt.oa.OAConstants.*;
 import static com.abt.wf.config.Constants.*;
 
 /**
@@ -630,7 +630,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
      * 导出
      * @param requestForm 按条件导出
      */
-    public List<T> findUserApplyByQuery(R requestForm) {
+    public List<T> findExportData(R requestForm) {
         if (requestForm == null ) {
             //导出所有
             requestForm = createRequestForm();
@@ -640,28 +640,46 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         if (requestForm.getLimit() == 0) {
             requestForm.setLimit(99999);
         }
-        Page<T> page = findMyApplyByQueryPageable(requestForm);
+        Page<T> page = commonFind(requestForm);
         final int total = (int)page.getTotalElements();
         if (total > 99999) {
             requestForm.setLimit(total + 1);
-            page = findAllByQueryPageable(requestForm);
+            page = commonFind(requestForm);
         }
         return page.getContent();
     }
 
+    private Page<T> commonFind(R requestForm) {
+        switch (requestForm.getQueryMode()) {
+            case QUERY_MODE_TODO -> {
+                return findMyTodoByQueryPageable(requestForm);
+            }
+            case QUERY_MODE_DONE -> {
+                return findMyDoneByQueryPageable(requestForm);
+            }
+            case QUERY_MODE_ALL -> {
+                return findAllByQueryPageable(requestForm);
+            }
+            default -> {
+                return findMyApplyByQueryPageable(requestForm);
+            }
+        }
+    }
+
     @Override
-    public void export(R requestForm, HttpServletResponse response, String templatePath) throws IOException {
+    public void export(R requestForm, HttpServletResponse response, String templatePath, String newFileName, Class<T> dataClass) throws IOException {
         Assert.notNull(response, "response is null!");
         Assert.notNull(templatePath, "templatePath is null!");
         if (!Files.isRegularFile(Paths.get(templatePath))) {
-            throw new BusinessException("未添导出模板!");
+            throw new BusinessException("未添加导出模板!");
         }
-        final List<T> all = findUserApplyByQuery(requestForm);
-        String newFileName = "rbs_export.xlsx";
+        final List<T> all = findExportData(requestForm);
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setCharacterEncoding("utf-8");
         response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + newFileName);
-        EasyExcel.write(response.getOutputStream(), Reimburse.class).withTemplate(templatePath).sheet().doFill(all);
+        EasyExcel.write(response.getOutputStream(), dataClass).withTemplate(templatePath).sheet().doFill(all);
     }
+
+
 
 }

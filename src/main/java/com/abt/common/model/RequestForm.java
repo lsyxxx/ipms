@@ -1,13 +1,6 @@
 package com.abt.common.model;
 
-import com.abt.sys.model.dto.UserView;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import lombok.experimental.Accessors;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * client请求参数
@@ -75,7 +68,16 @@ public class RequestForm {
     private String taskDefKey;
     private String taskName;
 
-    private String exportType;
+    /**
+     * 导出模式
+     * QUERY_MODE_*
+     * 无表示全部
+     */
+    private String queryMode;
+
+    private String key;
+
+
 
     /**
      * 是否分页

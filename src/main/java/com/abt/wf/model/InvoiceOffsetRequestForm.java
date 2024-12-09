@@ -19,10 +19,4 @@ public class InvoiceOffsetRequestForm extends RequestForm {
     private String contractName;
     private String taskDefKey;
     private String procDefKey;
-    /**
-     * 0： ALL
-     * 1： TODO_
-     * 2. DONE
-     */
-    private int queryMode = 0;
 }

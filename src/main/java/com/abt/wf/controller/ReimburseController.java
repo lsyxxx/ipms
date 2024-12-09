@@ -139,11 +139,11 @@ public class ReimburseController {
         return R.success(processRecord, processRecord.size());
     }
 
-    @GetMapping("/export}")
+    @GetMapping("/export")
     public void export(ReimburseRequestForm requestForm, HttpServletResponse response) throws IOException {
         try {
             requestForm.setUserid(TokenUtil.getUseridFromAuthToken());
-            reimburseService.export(requestForm, response, excelTemplate);
+            reimburseService.export(requestForm, response, excelTemplate,"rbs_export.xlsx", Reimburse.class);
         } catch (IOException e) {
             final R<Object> fail = R.fail("导出失败!");
             response.getWriter().println(JsonUtil.toJson(fail));
