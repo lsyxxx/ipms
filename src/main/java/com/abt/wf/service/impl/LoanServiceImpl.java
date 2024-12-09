@@ -8,7 +8,6 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.Loan;
-import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.LoanRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.abt.wf.config.Constants.SERVICE_LOAN;
-import static com.abt.wf.config.Constants.SERVICE_PAY;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_LOAN;
 
 /**
