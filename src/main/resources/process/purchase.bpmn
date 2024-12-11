@@ -16,6 +16,7 @@
           <camunda:property name="selectUserType" value="0" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
+        <camunda:taskListener delegateExpression="${purchaseMangerListener}" event="complete" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1d1s4cg</bpmn:incoming>
       <bpmn:outgoing>Flow_1nej1b4</bpmn:outgoing>

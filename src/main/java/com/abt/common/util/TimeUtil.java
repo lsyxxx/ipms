@@ -189,5 +189,18 @@ public class TimeUtil {
         return CommonConstants.chinaDayOfWeek.get(dayOfWeek);
     }
 
+    /**
+     * 将时间转为yyyy-mm-dd格式
+     * @param dateTime 日期时间
+     * @return yyyy-mm-dd字符串
+     */
+    public static String toYYYY_MM_DDString(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "";
+        }
+        final LocalDate localDate = dateTime.toLocalDate();
+        return localDate.format(dateFormatter);
+    }
+
 
 }

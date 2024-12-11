@@ -23,4 +23,6 @@ public interface SignatureService {
     UserSignature getSignatureByUserid(String userid);
 
     String getUserSignatureBase64StringByUserid(String userid);
+
+    String getSignatureDir();
 }

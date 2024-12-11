@@ -3,7 +3,9 @@ package com.abt.wf.service.impl;
 import com.abt.wf.entity.UserSignature;
 import com.abt.wf.repository.UserSignatureRepository;
 import com.abt.wf.service.SignatureService;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -12,6 +14,10 @@ import org.springframework.util.Assert;
 public class SignatureServiceImpl implements SignatureService {
 
     private final UserSignatureRepository userSignatureRepository;
+
+    @Getter
+    @Value("${abt.sig.dir}")
+    private String sigDir;
 
     public SignatureServiceImpl(UserSignatureRepository userSignatureRepository) {
         this.userSignatureRepository = userSignatureRepository;
@@ -48,5 +54,10 @@ public class SignatureServiceImpl implements SignatureService {
             return userSignature.getBase64();
         }
         return "";
+    }
+
+    @Override
+    public String getSignatureDir() {
+        return this.sigDir;
     }
 }

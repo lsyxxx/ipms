@@ -532,6 +532,15 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         fieldWorkRepository.save(entity);
     }
 
+
+    public Table createData(String yearMonth, LocalDate start, LocalDate end, List<FieldWork> all) {
+        Table table = new Table();
+
+
+
+        return table;
+    }
+
     /**
      * 考勤统计表
      */
@@ -795,7 +804,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         shortHeader2.add("姓名");
         shortHeader2.addAll(weekDays);
         //出勤天数对应空
-        shortHeader2.add("出勤天数");
+        shortHeader2.add(COL_ATD);
         //补贴金额
         shortHeader2.addAll(headers.stream().map(CalendarEvent::getMoneySum).map(String::valueOf).toList());
         dataModel.put(code + "SummaryHeaderShort2", shortHeader2);
@@ -803,6 +812,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         //筛选数据
         List<String> header = new ArrayList<>();
         header.add("序号");
+        header.add("部门");
         header.add("姓名");
         header.addAll(dateStrs);
         header.addAll(summaryHeader);

@@ -4,16 +4,24 @@ import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.entity.FlowOperationLog;
-import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.PurchaseService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import static com.abt.wf.config.Constants.*;
@@ -28,6 +36,22 @@ public class PurchaseController {
 
     private final PurchaseService purchaseService;
 
+
+    /**
+     *  临时下载保存地址
+     */
+    @Value("${abt.temp.dir}")
+    private String tempDir;
+
+    @Value("${abt.pur.tmp.name}")
+    private String tempName;
+
+    /**
+     * 报销文件地址
+     */
+    @Value("${abt.rbs.pur.dir}")
+    private String rbsPurDir;
+
     public PurchaseController(PurchaseService purchaseService) {
         this.purchaseService = purchaseService;
     }
@@ -37,6 +61,7 @@ public class PurchaseController {
     public R<Object> apply(@RequestBody PurchaseApplyMain form) {
         setTokenUser(form);
         final PurchaseApplyMain entity = purchaseService.apply(form);
+        purchaseService.setBusinessId(entity.getProcessInstanceId(), entity.getId());
         purchaseService.skipEmptyUserTask(entity);
         return R.success("提交采购申请成功");
     }
@@ -153,6 +178,26 @@ public class PurchaseController {
         }
         purchaseService.accept(form);
         return R.success("已全部验收");
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<byte[]> exportPdf(String id) throws Exception {
+        try {
+            final File pdf = purchaseService.createPdf(id, tempDir + tempName);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode("采购", "UTF-8"));
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            return new ResponseEntity<>(FileUtils.readFileToByteArray(pdf), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>("导出Pdf文件失败".getBytes(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    @GetMapping("/create/pdf")
+    public R<String> createPdf(String id) throws Exception {
+        File pdf = purchaseService.createPdf(id, rbsPurDir + System.currentTimeMillis() + ".pdf");
+        return R.success(pdf.getAbsolutePath(), "生成pdf成功!");
     }
 
 

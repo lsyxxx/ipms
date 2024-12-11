@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.sys.model.WithQuery;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,9 +11,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,11 +59,25 @@ public class PurchaseApplyMain extends WorkflowBase{
     @Transient
     private HashMap<String, Object> variableMap = new HashMap<>();
 
-    @Transient
+    /**
+     * 部门主管
+     */
+    @Column(name="mgr_userid")
     private String managerUserid;
+    @Column(name="mgr_check_date")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime managerCheckDate;
 
-    @Transient
+    /**
+     * 主管副总
+     */
+    @Column(name="leader_userid")
     private String leaderUserid;
+    @Column(name="leader_check_date")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime leaderCheckDate;
 
     @Transient
     private String saveType;
@@ -95,6 +113,8 @@ public class PurchaseApplyMain extends WorkflowBase{
      * 采购总金额
      */
     public static final String KEY_COST = "cost";
+
+    public static final String KEY_BIZ_ID = "bizId";
 
     public Map<String, Object> getVariableMap() {
         this.variableMap.clear();

@@ -1,5 +1,6 @@
 package com.abt.wf.service.impl;
 
+import com.abt.common.ExcelUtil;
 import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
@@ -10,26 +11,38 @@ import com.abt.sys.service.UserService;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
+import com.abt.wf.entity.UserSignature;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.PurchaseApplyMainRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.PurchaseService;
 import com.abt.wf.service.SignatureService;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.metadata.data.ImageData;
+import com.alibaba.excel.metadata.data.WriteCellData;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillConfig;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static com.abt.wf.config.Constants.*;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_PURCHASE;
@@ -56,6 +69,9 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     private final PurchaseApplyMainRepository purchaseApplyMainRepository;
 
+
+    @Value("${abt.pur.excel.template}")
+    private String excelTemplate;
 
 
     public PurchaseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService,
@@ -335,4 +351,86 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         form.qualified();
         saveEntity(form);
     }
+
+    @Override
+    public File createPdf(String id, String pdfPath) throws Exception {
+        final PurchaseApplyMain main = load(id);
+        if (main == null) {
+            throw new BusinessException("未找到采购申请单(审批编号: " + id + ")");
+        }
+        final String excelPath = createExcel(main, pdfPath);
+        return ExcelUtil.excel2Pdf(excelPath, pdfPath);
+    }
+
+    /**
+     * 生成excel文件
+     * @return 返回生成文件的路径
+     */
+    public String createExcel(PurchaseApplyMain form, String pdfPath) throws IOException {
+        //数据list
+        List<PurchaseApplyDetail> list = form.getDetails();
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        //填充map
+        Map<String, Object> map = new HashMap<>();
+        map.put("createDate", TimeUtil.toYYYY_MM_DDString(form.getCreateDate()));
+        map.put("managerUpdate", TimeUtil.toYYYY_MM_DDString(form.getManagerCheckDate()));
+        map.put("leaderUpdate", TimeUtil.toYYYY_MM_DDString(form.getLeaderCheckDate()));
+        map.put("managerSig", Objects.requireNonNullElse(setExcelSig(form.getManagerUserid()), "/"));
+        map.put("leaderSig", Objects.requireNonNullElse(setExcelSig(form.getLeaderUserid()), "/"));
+        map.put("createUserSig", setExcelSig(form.getCreateUserid()));
+        map.put("total", form.getCost());
+        File newFile = new File(pdfPath);
+
+        try (ExcelWriter excelWriter = EasyExcel.write(newFile).withTemplate(excelTemplate).build()) {
+            WriteSheet writeSheet = EasyExcel.writerSheet().build();
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+            excelWriter.fill(list, fillConfig, writeSheet);
+            excelWriter.fill(map, writeSheet);
+        }
+        return newFile.getAbsolutePath();
+    }
+
+    private WriteCellData<Void> setExcelSig(String userid) throws IOException {
+        if (StringUtils.isNotBlank(userid)) {
+            final UserSignature msig = signatureService.getSignatureByUserid(userid);
+            if (msig != null) {
+                File sf = new File(signatureService.getSignatureDir() + msig.getFileName());
+                return createImageData(sf);
+            }
+        }
+        return null;
+    }
+
+    private WriteCellData<Void> createImageData(File imageFile) throws IOException {
+        WriteCellData<Void> writeCellData = new WriteCellData<>();
+        ImageData imageData = new ImageData();
+        imageData.setImage(Files.readAllBytes(imageFile.toPath()));
+        imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
+        imageData.setTop(5);
+        imageData.setBottom(5);
+        imageData.setLeft(5);
+        imageData.setRight(5);
+        writeCellData.setImageDataList(List.of(imageData));
+        return writeCellData;
+    }
+
+    @Override
+    public void setBusinessId(String procId, String entityId) {
+        runtimeService.setVariable(procId, PurchaseApplyMain.KEY_BIZ_ID, entityId);
+    }
+
+    @Override
+    public void setMangerUser(String userid, PurchaseApplyMain form) {
+        form.setManagerUserid(userid);
+        form.setManagerCheckDate(LocalDateTime.now());
+    }
+
+    @Override
+    public void setLeaderUser(String userid, PurchaseApplyMain form) {
+        form.setLeaderUserid(userid);
+        form.setLeaderCheckDate(LocalDateTime.now());
+    }
+
 }

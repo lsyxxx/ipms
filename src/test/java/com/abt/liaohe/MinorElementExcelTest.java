@@ -35,7 +35,6 @@ class MinorElementExcelTest {
                     if (minorElementExcel.isMinor()) {
                         System.out.printf("read file: %s%n", fileName);
                         minorElementExcel.setFile(path.toFile());
-//                        minorElementExcel.readAndSaveRawData();
                         minorElementExcel.handleRawData();
                     }
                 }
