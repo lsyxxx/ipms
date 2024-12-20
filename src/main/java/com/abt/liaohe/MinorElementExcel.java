@@ -85,7 +85,10 @@ public class MinorElementExcel{
         rawDataRepository.updateTestName("井名", "井号");
         rawDataRepository.updateTestName("样号", "样品编号");
         rawDataRepository.updateTestName("井段", "深度");
-
+        rawDataRepository.updateTestName("岩性定名", "岩性");
+        rawDataRepository.deleteByTestName("半定量元素分析报告");
+        rawDataRepository.deleteByTestName("报告编号：AJC2024001Y030QYZL001");
+        rawDataRepository.deleteEmptyTestValue();
     }
 
 
@@ -191,6 +194,13 @@ public class MinorElementExcel{
 
     public boolean isMinor() {
         return this.file.getName().contains("微量") ||  this.file.getName().contains("稀土");
+    }
+
+    /**
+     * 半定量
+     */
+    public boolean isSemi() {
+        return this.file.getName().contains("半定量");
     }
 
 }

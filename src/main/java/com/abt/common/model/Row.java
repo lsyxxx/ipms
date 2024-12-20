@@ -18,6 +18,7 @@ public class Row {
     private String jobNumber;
     private int month;
     private String company;
+    private String dept;
 
 
     public void addCell(Cell cell) {

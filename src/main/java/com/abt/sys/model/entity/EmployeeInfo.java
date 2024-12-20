@@ -311,7 +311,7 @@ public class EmployeeInfo implements WithQuery<EmployeeInfo> {
         this.userid = userid;
     }
 
-    public EmployeeInfo(String userid,  String employeeId, String name, String deptId) {
+    public EmployeeInfo(String userid, String employeeId, String name, String deptId) {
         this.id = employeeId;
         this.userid = userid;
         this.name = name;

@@ -57,4 +57,8 @@ public interface RawDataRepository extends JpaRepository<RawData, String> {
     @Modifying
     @Query(nativeQuery = true, value = "update [dbo].[tmp_raw_data] set testValue = '' where testValue = '/';")
     void updateEmptyTestValue();
+
+    @Transactional
+    @Modifying
+    void deleteByTestName(String testName);
 }

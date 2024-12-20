@@ -294,7 +294,9 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
     public List<FlowOperationLog> simpleProcessRecord(String entityId, String serviceName) {
         List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(entityId);
         //正在进行的
-        setActiveTaskOptLog(completed, entityId, serviceName);
+        if (!completed.isEmpty()) {
+            setActiveTaskOptLog(completed, entityId, serviceName);
+        }
         return completed;
     }
 

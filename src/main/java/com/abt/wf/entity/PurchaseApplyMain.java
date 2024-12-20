@@ -79,6 +79,14 @@ public class PurchaseApplyMain extends WorkflowBase{
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime leaderCheckDate;
 
+    @Column(name="purchaser_id")
+    private String purchaser;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name="purchaser_check_date")
+    private LocalDateTime purchaserCheckDate;
+
     @Transient
     private String saveType;
 
@@ -93,6 +101,12 @@ public class PurchaseApplyMain extends WorkflowBase{
      */
     @Column(name="cost_", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal cost;
+
+    /**
+     * 最近验收日期。如果有多次验收，则记录最新的
+     */
+    @Column(name="accept_date")
+    private LocalDateTime acceptDate;
 
     /**
      * 业务主管审批人
@@ -124,10 +138,11 @@ public class PurchaseApplyMain extends WorkflowBase{
         return this.variableMap;
     }
 
-    public void qualified() {
+    public void qualified(String acceptItems) {
         this.setAccepted(true);
+        this.setAcceptDate(LocalDateTime.now());
         if (this.details != null) {
-            this.details.forEach(PurchaseApplyDetail::qualified);
+            this.details.forEach(i -> i.doAccept(acceptItems));
         }
     }
 

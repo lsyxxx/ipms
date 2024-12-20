@@ -1,7 +1,9 @@
 package com.abt.wf.controller;
 
+import com.abt.common.ExcelUtil;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyMain;
@@ -17,11 +19,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.abt.wf.config.Constants.*;
@@ -185,7 +189,7 @@ public class PurchaseController {
         try {
             final File pdf = purchaseService.createPdf(id, tempDir + tempName);
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentDispositionFormData("attachment", URLEncoder.encode("采购", "UTF-8"));
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode("采购", StandardCharsets.UTF_8));
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             return new ResponseEntity<>(FileUtils.readFileToByteArray(pdf), headers, HttpStatus.OK);
         } catch (Exception e) {
@@ -200,6 +204,75 @@ public class PurchaseController {
         return R.success(pdf.getAbsolutePath(), "生成pdf成功!");
     }
 
+    @Secured("JS_PUR_DEL")
+    @GetMapping("/del")
+    public R<Object> delete(String id) {
+        purchaseService.delete(id);
+        return R.success("删除成功!");
+    }
+
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportExcel(String id) throws Exception {
+        try {
+            final File excel = purchaseService.createExcel(id, tempDir + System.currentTimeMillis() + ".xlsx");
+            // 设置HTTP响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode("采购申请单", StandardCharsets.UTF_8));
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            return new ResponseEntity<>(FileUtils.readFileToByteArray(excel), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("文件下载失败: ", e);
+            return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.EXPECTATION_FAILED);
+        }
+    }
+
+    @GetMapping("/create/accept/excel")
+    public ResponseEntity<byte[]> createAcceptExcel(String id) throws IOException {
+        try {
+            final PurchaseApplyMain main = purchaseService.load(id);
+            accessAccept(main);
+
+            // 设置HTTP响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode("采购验收单", StandardCharsets.UTF_8));
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            final File excel = purchaseService.createAcceptExcel(main, tempDir + System.currentTimeMillis() + ".xlsx");
+            return new ResponseEntity<>(FileUtils.readFileToByteArray(excel), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("文件下载失败: ", e);
+            return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/export/accept/pdf")
+    public ResponseEntity<byte[]> createAcceptPdf(String id) throws Exception {
+        try {
+            final PurchaseApplyMain main = purchaseService.load(id);
+            accessAccept(main);
+            // 设置HTTP响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode("采购验收单", StandardCharsets.UTF_8));
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            final File excel = purchaseService.createAcceptExcel(main, tempDir + System.currentTimeMillis() + ".xlsx");
+            final File file = ExcelUtil.excel2Pdf(excel.getAbsolutePath(), tempDir + System.currentTimeMillis() + ".pdf");
+            return new ResponseEntity<>(FileUtils.readFileToByteArray(file), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("文件下载失败: ", e);
+            return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public void accessAccept(PurchaseApplyMain main) {
+        if (!main.isFinished()) {
+            throw new BusinessException("采购申请流程未完成，无法生成验收单!");
+        }
+        if (!main.isAccepted()) {
+            throw new BusinessException("采购申请单未验收，请申请人验收后再生成验收单");
+        }
+    }
+
 
     public void setTokenUser(PurchaseApplyRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();
@@ -212,4 +285,5 @@ public class PurchaseController {
         form.setSubmitUserid(user.getId());
         form.setSubmitUsername(user.getUsername());
     }
+
 }

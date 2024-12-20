@@ -40,12 +40,6 @@ public class SignatureServiceImpl implements SignatureService {
         return "";
     }
 
-    @Override
-    public UserSignature getSignatureByUserid(String userid) {
-        Assert.hasLength(userid, "jobNumber cannot be null or empty!");
-        return userSignatureRepository.findByUserId(userid);
-    }
-
 
     @Override
     public String getUserSignatureBase64StringByUserid(String userid) {
@@ -54,6 +48,12 @@ public class SignatureServiceImpl implements SignatureService {
             return userSignature.getBase64();
         }
         return "";
+    }
+
+    @Override
+    public UserSignature getSignatureByUserid(String userid) {
+        Assert.hasLength(userid, "jobNumber cannot be null or empty!");
+        return userSignatureRepository.findByUserId(userid);
     }
 
     @Override

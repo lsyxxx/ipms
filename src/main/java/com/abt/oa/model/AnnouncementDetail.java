@@ -40,7 +40,7 @@ public class AnnouncementDetail  {
     /**
      * 未读人数
      */
-    private int unreadCont;
+    private int unreadCount;
 
     /**
      * 未回复人数

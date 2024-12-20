@@ -6,8 +6,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 class ChloroformBitumenAExcelTest {
     @Autowired
@@ -19,8 +17,19 @@ class ChloroformBitumenAExcelTest {
         System.out.println("复制文件结束");
     }
 
-    void readData() {
-
+    @Test
+    void readRawData() throws IOException {
+        String dirPath = "F:\\00平台资料汇总\\辽河数据\\氯仿沥青报告\\";
+        excel.walkFiles(dirPath, (file) -> excel.readExcel(file));
     }
+
+    @Test
+    void save() throws IOException {
+        String dirPath = "F:\\00平台资料汇总\\辽河数据\\氯仿沥青报告\\";
+        excel.walkFiles(dirPath, (file) -> {
+            excel.saveExcelData(file);
+        });
+    }
+
 
 }

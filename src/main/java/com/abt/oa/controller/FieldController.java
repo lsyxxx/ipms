@@ -23,7 +23,6 @@ import com.abt.sys.model.entity.DataPrivilegeRule;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.PermissionService;
-import freemarker.template.TemplateException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -315,7 +314,7 @@ public class FieldController {
     }
 
     @GetMapping("/stat/export")
-    public R<String> exportExcel(HttpServletRequest request) throws TemplateException, IOException {
+    public R<String> exportExcel(HttpServletRequest request) throws IOException {
         HttpSession session = request.getSession();
         if (session == null) {
             throw new BusinessException("Session超时，请重新生成数据");

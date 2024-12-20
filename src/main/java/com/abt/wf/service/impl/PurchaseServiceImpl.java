@@ -24,7 +24,6 @@ import com.alibaba.excel.metadata.data.ImageData;
 import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -72,6 +71,11 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     @Value("${abt.pur.excel.template}")
     private String excelTemplate;
+
+    @Value("${abt.pur.accept.excel.template}")
+    private String acceptExcelTemplate;
+
+    private static String acceptItems = "品名、规格、等级、生产日期、有效期、成分、包装、外观、贮存、数量、合格证明、说明书、保修卡";
 
 
     public PurchaseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService,
@@ -186,6 +190,9 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     @Override
     public PurchaseApplyMain load(String entityId) {
         final PurchaseApplyMain main = purchaseApplyMainRepository.findByIdWithDetails(entityId);
+        if (main == null) {
+            throw new BusinessException("未查询到采购申请(id=" + entityId + ")");
+        }
         setActiveTask(main);
         return main;
     }
@@ -348,7 +355,7 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     @Override
     public void accept(PurchaseApplyMain form) {
-        form.qualified();
+        form.qualified(acceptItems);
         saveEntity(form);
     }
 
@@ -358,15 +365,24 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         if (main == null) {
             throw new BusinessException("未找到采购申请单(审批编号: " + id + ")");
         }
-        final String excelPath = createExcel(main, pdfPath);
-        return ExcelUtil.excel2Pdf(excelPath, pdfPath);
+        final File excel = createExcel(main, pdfPath);
+        return ExcelUtil.excel2Pdf(excel.getAbsolutePath(), pdfPath);
+    }
+
+    @Override
+    public File createExcel(String id, String path) throws Exception {
+        final PurchaseApplyMain main = load(id);
+        if (main == null) {
+            throw new BusinessException("未找到采购申请单(审批编号: " + id + ")");
+        }
+        return createExcel(main, path);
     }
 
     /**
      * 生成excel文件
      * @return 返回生成文件的路径
      */
-    public String createExcel(PurchaseApplyMain form, String pdfPath) throws IOException {
+    public File createExcel(PurchaseApplyMain form, String pdfPath) throws IOException {
         //数据list
         List<PurchaseApplyDetail> list = form.getDetails();
         if (list == null) {
@@ -377,19 +393,23 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         map.put("createDate", TimeUtil.toYYYY_MM_DDString(form.getCreateDate()));
         map.put("managerUpdate", TimeUtil.toYYYY_MM_DDString(form.getManagerCheckDate()));
         map.put("leaderUpdate", TimeUtil.toYYYY_MM_DDString(form.getLeaderCheckDate()));
-        map.put("managerSig", Objects.requireNonNullElse(setExcelSig(form.getManagerUserid()), "/"));
-        map.put("leaderSig", Objects.requireNonNullElse(setExcelSig(form.getLeaderUserid()), "/"));
+        if (form.getManagerCheckDate() != null) {
+            map.put("managerSig", Objects.requireNonNullElse(setExcelSig(form.getManagerUserid()), "/"));
+        }
+        if (form.getLeaderCheckDate() != null) {
+            map.put("leaderSig", Objects.requireNonNullElse(setExcelSig(form.getLeaderUserid()), "/"));
+        }
         map.put("createUserSig", setExcelSig(form.getCreateUserid()));
         map.put("total", form.getCost());
         File newFile = new File(pdfPath);
-
         try (ExcelWriter excelWriter = EasyExcel.write(newFile).withTemplate(excelTemplate).build()) {
             WriteSheet writeSheet = EasyExcel.writerSheet().build();
             FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+
             excelWriter.fill(list, fillConfig, writeSheet);
             excelWriter.fill(map, writeSheet);
         }
-        return newFile.getAbsolutePath();
+        return newFile;
     }
 
     private WriteCellData<Void> setExcelSig(String userid) throws IOException {
@@ -408,10 +428,10 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         ImageData imageData = new ImageData();
         imageData.setImage(Files.readAllBytes(imageFile.toPath()));
         imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
-        imageData.setTop(5);
-        imageData.setBottom(5);
-        imageData.setLeft(5);
-        imageData.setRight(5);
+        imageData.setTop(10);
+        imageData.setBottom(10);
+        imageData.setLeft(10);
+        imageData.setRight(10);
         writeCellData.setImageDataList(List.of(imageData));
         return writeCellData;
     }
@@ -432,5 +452,34 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         form.setLeaderUserid(userid);
         form.setLeaderCheckDate(LocalDateTime.now());
     }
+
+    @Override
+    public void delete(String id) {
+        purchaseApplyMainRepository.deleteById(id);
+    }
+
+    @Override
+    public File createAcceptExcel(PurchaseApplyMain form, String path) throws IOException {
+        List<PurchaseApplyDetail> details = form.getDetails();
+        if (details == null) {
+            details = new ArrayList<>();
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("acceptDate", TimeUtil.toYYYY_MM_DDString(form.getAcceptDate()));
+        //采购人
+        map.put("purchaserSig", Objects.requireNonNullElse(setExcelSig(form.getPurchaser()), ""));
+        //验收人
+        map.put("createUserSig", Objects.requireNonNullElse(setExcelSig(form.getCreateUserid()), ""));
+        File file = new File(path);
+        try (ExcelWriter excelWriter = EasyExcel.write(file).withTemplate(acceptExcelTemplate).build()) {
+            WriteSheet writeSheet = EasyExcel.writerSheet().build();
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+
+            excelWriter.fill(details, fillConfig, writeSheet);
+            excelWriter.fill(map, writeSheet);
+        }
+        return file;
+    }
+
 
 }

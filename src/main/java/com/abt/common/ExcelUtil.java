@@ -1,6 +1,7 @@
 package com.abt.common;
 
 import com.abt.sys.exception.BusinessException;
+import com.aspose.cells.AutoFitterOptions;
 import com.aspose.cells.PdfSaveOptions;
 import com.aspose.cells.Workbook;
 
@@ -25,7 +26,10 @@ public class ExcelUtil {
         if (!Files.isRegularFile(Paths.get(excelPath))) {
             throw new BusinessException("非法的路径: " + excelPath);
         }
+        AutoFitterOptions options = new AutoFitterOptions();
+        options.setOnlyAuto(true);
         Workbook wb = new Workbook(excelPath);
+        wb.getWorksheets().get(0).autoFitRows(options);
         File pdfFile = new File(pdfPath);
         FileOutputStream fos = new FileOutputStream(pdfFile);
         PdfSaveOptions saveOptions = new PdfSaveOptions();

@@ -56,6 +56,7 @@ public class InvoiceApplyController {
 
     @PostMapping("/approve")
     public R<Object> approve(@RequestBody InvoiceApply form) {
+        invoiceApplyService.saveEntity(form);
         invoiceApplyService.approve(form);
         return R.success("审批成功");
     }

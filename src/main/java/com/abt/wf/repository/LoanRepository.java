@@ -41,6 +41,7 @@ public interface LoanRepository extends JpaRepository<Loan, String>, JpaSpecific
             "where lower(ht.taskDefKey) not like '%apply%' " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:userid is null or ht.assignee = :userid) " +
+            "and (ht.endTime is not null) " +
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or FUNCTION('STR', e.loanAmount) like %:query% " +

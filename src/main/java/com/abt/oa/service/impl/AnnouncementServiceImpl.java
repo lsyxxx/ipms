@@ -203,7 +203,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         detail.setReadCount(readCount);
         final int commentCount = (int)list.stream().filter(AnnouncementAttachment::isHf).count();
         detail.setCommentCount(commentCount);
-        detail.setUnreadCont(total - readCount);
+        detail.setUnreadCount(total - readCount);
         detail.setUncommentCount(total - commentCount);
         final List<Pair> commentMap = list.stream().filter(AnnouncementAttachment::isHf)
                 .map(attachment -> new Pair(attachment.getApplyUserName(), attachment.getHfContent()))

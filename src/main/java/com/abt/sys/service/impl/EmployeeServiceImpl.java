@@ -79,4 +79,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         final EmployeeInfo emp = this.findByJobNumber(jobNumber);
         return emp.getCompany();
     }
+
+    /**
+     * 根据部门查询
+     */
+    public void getByDept(String ...deptId) {
+
+    }
 }

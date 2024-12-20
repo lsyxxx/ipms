@@ -1,6 +1,10 @@
 package com.abt.liaohe;
 
-public interface ExcelHandler {
 
-    void handle();
+import java.io.File;
+import java.io.IOException;
+
+@FunctionalInterface
+public interface ExcelHandler {
+    void handle(File file) throws IOException;
 }

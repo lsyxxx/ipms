@@ -33,6 +33,12 @@ public class Cell {
         this.columnName = columnName;
     }
 
+    public Cell(String valueStr, String columnName, Object valueObj) {
+        this.valueStr = valueStr;
+        this.columnName = columnName;
+        this.valueObj = valueObj;
+    }
+
     public Cell(String valueStr, String columnName, int columnIndex) {
         this.valueStr = valueStr;
         this.columnName = columnName;

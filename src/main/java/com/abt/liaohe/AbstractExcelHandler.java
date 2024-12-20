@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  *
@@ -46,15 +47,17 @@ public abstract class AbstractExcelHandler {
         }
     }
 
-    public void readExcel() throws IOException {
+    public void readExcel(File file) throws IOException {
+        this.file = file;
         excelReader(this.file);
         readHeader();
         rawDataRepository.deleteByReportName(this.file.getName());
         readAndSaveRawData();
         afterSaveRawData();
     }
+
     public boolean validateCell(Cell cell, int headerSize) {
-        return cell.getColumnIndex() < 50 && cell.getColumnIndex() <= headerSize;
+        return cell.getColumnIndex() < 50 && cell.getColumnIndex() < headerSize;
     }
 
     public void copyFiles(String path, String copyDir) throws IOException {
@@ -74,7 +77,7 @@ public abstract class AbstractExcelHandler {
             public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) throws IOException {
                 // 检查文件扩展名
                 String fileName = filePath.getFileName().toString();
-                if ((fileName.toLowerCase().endsWith(".xls") || fileName.toLowerCase().endsWith(".xlsx")) && supportFile(filePath.toFile())) {
+                if (supportFile(filePath.toFile())) {
                     //将文件copy到copyDir
                     System.out.println(fileName);
                     try {
@@ -101,7 +104,7 @@ public abstract class AbstractExcelHandler {
             public FileVisitResult visitFile(Path pFile, BasicFileAttributes attrs) throws IOException {
                 // 检查文件扩展名
                 if (supportFile(pFile.toFile())) {
-                    handler.handle();
+                    handler.handle(pFile.toFile());
                 }
                 return FileVisitResult.CONTINUE;
             }
@@ -125,6 +128,6 @@ public abstract class AbstractExcelHandler {
 
     abstract boolean supportFile(File file);
 
-
+    abstract void saveExcelData(File file);
 
 }

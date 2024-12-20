@@ -21,13 +21,23 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.enums.WriteDirectionEnum;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillConfig;
+import com.alibaba.excel.write.metadata.fill.FillWrapper;
+import com.alibaba.excel.write.metadata.style.WriteCellStyle;
+import com.alibaba.excel.write.metadata.style.WriteFont;
+import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
+import com.alibaba.excel.write.style.column.SimpleColumnWidthStyleStrategy;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -36,8 +46,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,6 +53,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.abt.oa.OAConstants.FW_WAITING;
@@ -66,8 +75,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private final Company ABT;
     private final Company GRD;
     private final Company DC;
-    private final Configuration freemarkerConfig;
-
 
     @Setter
     @Getter
@@ -75,12 +82,16 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private String fieldWorkExcelOutput;
 
 
-    public static final String excelTemplate = "FW2003.ftl";
+    @Value("${abt.fw.export.template}")
+    public String template;
+
+    @Value("${abt.fw.export.tempfile.path}")
+    public String newExcel;
 
     public static final String COL_ATD = "出勤天数";
 
 
-    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, LeaveService leaveService, Company ABT, Company GRD, Company DC, Configuration freemarkerConfig) {
+    public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, LeaveService leaveService, Company ABT, Company GRD, Company DC) {
         this.fieldAttendanceSettingRepository = fieldAttendanceSettingRepository;
         this.fieldWorkRepository = fieldWorkRepository;
         this.employeeService = employeeService;
@@ -89,7 +100,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         this.ABT = ABT;
         this.GRD = GRD;
         this.DC = DC;
-        this.freemarkerConfig = freemarkerConfig;
     }
 
     @Override
@@ -567,13 +577,17 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             userid = userFws.get(0).getUserid();
             username = userFws.get(0).getUsername();
             jobNumber = userFws.get(0).getJobNumber();
-            String company = employeeService.getUserCompanyByJobNumber(jobNumber);
-
+            EmployeeInfo emp = employeeService.findByJobNumber(jobNumber).afterQuery();
+            emp = WithQueryUtil.build(emp);
+            String company = emp.getCompany();
             Row row = Row.create(username, jobNumber, company);
+            row.setDept(emp.getDeptName());
             User user = new User(userid, username, jobNumber);
+            user.setDeptName(emp.getDeptName());
             user.setCompany(company);
             //0. 基础信息
-            row.addCell(new Cell(user.getUsername(), "姓名"));
+            row.addCell(new Cell(user.getDeptName(), "部门", user.getDeptName()));
+            row.addCell(new Cell(user.getUsername(), "姓名", user.getUsername()));
 
             //生成每个人的考勤
             List<CalendarEvent> userEvents = createFieldWorkCalendarEvents(userFws);
@@ -589,6 +603,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 cell.setValue(i);
                 cell.setValueStr(i.getShortName());
                 cell.setDateColumn(true);
+                cell.setValueObj(i.getShortName());
                 row.addCell(cell);
             });
 
@@ -601,7 +616,10 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                     workDaySet.add(event.getStart());
                 }
             }
-            row.addCell(new Cell(String.valueOf(workDaySet.size()), COL_ATD));
+            Cell atdCell = new Cell(String.valueOf(workDaySet.size()), COL_ATD);
+            atdCell.setValueObj(workDaySet.size());
+
+            row.addCell(atdCell);
 
             //2. 作业项目统计(包含基地调休/家调休)
             final Map<String, Double> sumByAllowance = userEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
@@ -773,86 +791,104 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
 
-    public Map<String, Object> createExcelData(Table table, String shortCompany) {
+    public void createExcel(ExcelWriter excelWriter, Table table, String shortCompany) {
         Assert.notNull(shortCompany, "shortCompany must not be null");
         log.info("create excel data for {}", shortCompany);
         String code = convertCompany(shortCompany);
-        //freemarker 所需数据结构
-        Map<String, Object> dataModel = new HashMap<>();
-        dataModel.put("yearMonth", table.getYearMonth());
+
+        WriteSheet writeSheet = EasyExcel.writerSheet(code).relativeHeadRowIndex(4).build();
+        FillConfig fillConfig = FillConfig.builder().direction(WriteDirectionEnum.HORIZONTAL).build();
         List<CalendarEvent> headers = this.createHeader(table.getEvents());
-        //表头-补贴名称
-        List<String> summaryHeader = new ArrayList<>(headers.stream().map(CalendarEvent::getTitle).toList());
-        summaryHeader.add(0, COL_ATD);
-        dataModel.put(code + "SummaryHeader", summaryHeader);
+        //时间
+        Map<String, Object> map = new HashMap<>();
+        map.put("yearMonth", table.getYearMonth());
+        excelWriter.fill(map, writeSheet);
+        //dateHeader，横向
         //表头1-日期+简称
         final List<LocalDate> dateHeader = this.createDateHeader(table.getStart(), table.getEnd());
-        List<String> shortHeader = new ArrayList<>();
-        shortHeader.add("");
-        shortHeader.add("");
-        List<String> dateStrs = dateHeader.stream().map(TimeUtil::yyyy_MM_ddString).toList();
-        final List<String> shortStr = dateStrs.stream().map(s -> s.substring(s.length() - 2)).toList();
-        shortHeader.addAll(shortStr);
-        shortHeader.add(COL_ATD);
-        shortHeader.addAll(headers.stream().map(CalendarEvent::getShortName).toList());
-        dataModel.put(code + "SummaryHeaderShort", shortHeader);
-        //表头2-星期+补贴金额
-        //星期
-        List<String> shortHeader2 = new ArrayList<>();
+        List<Header> header1 = new ArrayList<>();
+        dateHeader.forEach(date -> {
+            header1.add(new Header(String.valueOf(date.getDayOfMonth())));
+        });
+        header1.add(new Header(COL_ATD));
+        header1.addAll(headerList(headers.stream().map(CalendarEvent::getShortName).toList()));
+        excelWriter.fill(new FillWrapper("dateHeader", header1), fillConfig, writeSheet);
+        //weekHeader, 星期+补贴金额 横向
+        List<Object> header2 = new ArrayList<>();
         final List<String> weekDays = dateHeader.stream().map(LocalDate::getDayOfWeek).map(TimeUtil::chinaDayOfWeek).toList();
-        shortHeader2.add("序号");
-        shortHeader2.add("姓名");
-        shortHeader2.addAll(weekDays);
-        //出勤天数对应空
-        shortHeader2.add(COL_ATD);
-        //补贴金额
-        shortHeader2.addAll(headers.stream().map(CalendarEvent::getMoneySum).map(String::valueOf).toList());
-        dataModel.put(code + "SummaryHeaderShort2", shortHeader2);
-
+        header2.addAll(weekDays);
+        header2.addAll(headers.stream().map(CalendarEvent::getMoneySum).map(String::valueOf).toList());
+        excelWriter.fill(new FillWrapper("weekHeader", headerList(header2)), fillConfig, writeSheet);
+        //header: 考勤空格+补贴
+        List<Object> summaryHeader = new ArrayList<>(headers.stream().map(CalendarEvent::getTitle).toList());
+        summaryHeader.add(0, COL_ATD);
+        IntStream.range(0, dateHeader.size()).forEach(i -> {
+            summaryHeader.add(0, "");
+        });
+        excelWriter.fill(new FillWrapper("header", headerList(summaryHeader)), fillConfig, writeSheet);
+        //写数据
         //筛选数据
         List<String> header = new ArrayList<>();
         header.add("序号");
         header.add("部门");
         header.add("姓名");
-        header.addAll(dateStrs);
-        header.addAll(summaryHeader);
-        //data
-        final List<Row> abtEvents = table.getRows().stream().filter(r -> shortCompany.equals(r.getCompany())).toList();
-        List<List<String>> data = new ArrayList<>();
-        //获取每个人的数据，顺序必须和header一样
-        for (Row row : abtEvents) {
-            List<String> eRow = new ArrayList<>();
+        header.addAll(dateHeader.stream().map(TimeUtil::yyyy_MM_ddString).toList());
+        header.add(COL_ATD);
+        header.addAll(headers.stream().map(CalendarEvent::getTitle).toList());
+        List<List<Object>> list = new ArrayList<>();
+        int index = 1;
+        final List<Row> events = table.getRows().stream().filter(r -> shortCompany.equals(r.getCompany())).toList();
+        for (Row row : events) {
+            List<Object> erow = new ArrayList<>();
             for (String h : header) {
-                final List<String> values = row.getCells().stream().filter(c -> h.equals(c.getColumnName())).map(Cell::getValueStr).toList();
-                String join = String.join("\n", values);
-                if (join.endsWith("\n")) {
-                    join = join.replace("\n", "");
+                if ("序号".equals(h)) {
+                    erow.add(index);
+                    index++;
+                    continue;
                 }
-                eRow.add(join);
+                final List<Cell> vlist = row.getCells().stream().filter(c -> h.equals(c.getColumnName())).toList();
+                if (vlist.size() > 1) {
+                    List<String> values = vlist.stream().map(Cell::getValueStr).toList();
+                    String join = String.join("\r\n", values);
+                    erow.add(join);
+                } else if (vlist.size() == 1) {
+                    erow.add(vlist.get(0).getValueObj());
+                } else {
+                    erow.add(null);
+                }
             }
-            data.add(eRow);
+            list.add(erow);
         }
-        dataModel.put(code + "List", data);
-        return dataModel;
+        excelWriter.write(list, writeSheet);
     }
-
 
 
     @Override
-    public File writeExcel(Table table) throws IOException, TemplateException {
-        Map<String, Object> dataModel = new HashMap<>();
-        dataModel.putAll(createExcelData(table, "A"));
-        dataModel.putAll(createExcelData(table, "G"));
-        dataModel.putAll(createExcelData(table, "D"));
+    public File writeExcel(Table table) {
+        WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+        contentWriteCellStyle.setWrapped(true);
+        WriteFont font = new WriteFont();
+        font.setFontHeightInPoints((short)9);
+        font.setFontName("宋体");
+        contentWriteCellStyle.setWriteFont(font);
+        contentWriteCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        contentWriteCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        SimpleColumnWidthStyleStrategy simpleColumnWidthStyleStrategy = new SimpleColumnWidthStyleStrategy(4);
+        HorizontalCellStyleStrategy horizontalCellStyleStrategy = new HorizontalCellStyleStrategy(null, contentWriteCellStyle);
 
-        Template template = freemarkerConfig.getTemplate(excelTemplate);
-        String fileName = System.currentTimeMillis() + ".xls";
-        String path = fieldWorkExcelOutput + fileName;
-        try(FileWriter fw = new FileWriter(path)) {
-            template.process(dataModel, fw);
-            return new File(path);
+        String file = newExcel + "fw_ex_" + System.currentTimeMillis() + ".xlsx";
+        try (ExcelWriter excelWriter = EasyExcel.write(file).withTemplate(template)
+                .registerWriteHandler(horizontalCellStyleStrategy)
+                .registerWriteHandler(simpleColumnWidthStyleStrategy)
+                .build()) {
+            createExcel(excelWriter, table, "A");
+            createExcel(excelWriter, table, "G");
+            createExcel(excelWriter, table, "D");
         }
+
+        return new File(file);
     }
+
 
     private String convertCompany(String shortCompany) {
         if (StringUtils.isBlank(shortCompany)) {
@@ -866,13 +902,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             return DC.getCode();
         }
         return shortCompany;
-    }
-
-    /**
-     * 转为excel需要的map数据
-     */
-    private Map<String, String> convertExcelData(Cell cell) {
-        return Map.of(cell.getColumnName(), cell.getValueStr());
     }
 
 
@@ -934,5 +963,22 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         final List<FieldWork> filtered = list.stream().filter(i -> (i.isPass() || i.isWaiting()) && (!i.isDeleted())).toList();
         return !filtered.isEmpty();
     }
+
+    private List<Header> headerList(List<?> headers) {
+        List<Header> result = new ArrayList<>();
+        for (Object header : headers) {
+            result.add(new Header(String.valueOf(header)));
+        }
+        return result;
+    }
+
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    static class Header {
+        private String name;
+    }
+
 
 }

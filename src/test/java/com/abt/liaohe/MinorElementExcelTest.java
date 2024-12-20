@@ -21,7 +21,7 @@ class MinorElementExcelTest {
     @Test
     void readRawData() throws IOException {
 
-        String dirPath = "F:\\00平台资料汇总\\辽河数据\\主微量稀土报告\\主微量稀土报告\\";
+        String dirPath = "F:\\00平台资料汇总\\辽河数据\\半定量数据\\";
         Path dir = Paths.get(dirPath);
         if (!Files.isDirectory(dir)) {
             throw new RuntimeException(dirPath + " is not a directory");
@@ -32,9 +32,10 @@ class MinorElementExcelTest {
                 if (Files.isRegularFile(path)) {
                     String fileName = path.getFileName().toString();
                     minorElementExcel.setFile(path.toFile());
-                    if (minorElementExcel.isMinor()) {
+                    if (minorElementExcel.isSemi()) {
                         System.out.printf("read file: %s%n", fileName);
                         minorElementExcel.setFile(path.toFile());
+                        minorElementExcel.readAndSaveRawData();
                         minorElementExcel.handleRawData();
                     }
                 }
@@ -47,7 +48,7 @@ class MinorElementExcelTest {
 
     @Test
     void writeMinorElementData() throws IOException {
-        String dirPath = "F:\\00平台资料汇总\\辽河数据\\主微量稀土报告\\主微量稀土报告\\";
+        String dirPath = "F:\\00平台资料汇总\\辽河数据\\半定量数据\\";
         Path dir = Paths.get(dirPath);
         if (!Files.isDirectory(dir)) {
             throw new RuntimeException(dirPath + " is not a directory");
@@ -58,7 +59,7 @@ class MinorElementExcelTest {
                 if (Files.isRegularFile(path)) {
                     String fileName = path.getFileName().toString();
                     minorElementExcel.setFile(path.toFile());
-                    if (minorElementExcel.isMinor()) {
+                    if (minorElementExcel.isSemi()) {
                         System.out.printf("read file: %s%n", fileName);
                         minorElementExcel.saveMinorElementData();
                     }

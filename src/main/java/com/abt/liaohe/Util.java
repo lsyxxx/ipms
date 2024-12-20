@@ -253,6 +253,9 @@ public class Util {
     }
 
     public static String handleTestDate(LocalDate date) {
+        if (date == null) {
+            return "";
+        }
         return date.format(DateTimeFormatter.ofPattern("yyyy/M/dd"));
     }
 

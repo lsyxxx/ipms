@@ -152,6 +152,24 @@ public class InvoiceApply extends WorkflowBase {
     @Column(name="file_list", columnDefinition="TEXT")
     private String fileList;
 
+    /**
+     * 开具的发票文件
+     */
+    @Column(name="inv_file", columnDefinition = "TEXT")
+    private String invoiceFile;
+
+    /**
+     * 开具发票时备注
+     */
+    @Column(name="inv_remark", columnDefinition = "VARCHAR(500)")
+    private String invoiceRemark;
+
+    /**
+     * 检测编号，多个用逗号分隔
+     */
+    @Column(name="test_no", columnDefinition = "VARCHAR(500)")
+    private String testNo;
+
 
     @Transient
     private String comment;

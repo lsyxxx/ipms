@@ -128,10 +128,8 @@ public class PurchaseApplyDetail {
     /**
      * 综合办公室审批人id
      */
-    @Value("${abt.purchase.final.userid}")
     @Column(name="final_id")
     private String finalId;
-    @Value("${abt.purchase.final.username}")
     @Column(name="final_name")
     private String finalName;
     @Column(name="final_updatetime")
@@ -166,7 +164,7 @@ public class PurchaseApplyDetail {
     /**
      * 验收项目
      */
-    @Column(name="accept_items", columnDefinition = "VARCHAR(MAX)")
+    @Column(name="accept_items", columnDefinition = "VARCHAR(1000)")
     private String acceptItems;
 
     /**
@@ -179,6 +177,15 @@ public class PurchaseApplyDetail {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime acceptTime;
+
+
+    /**
+     * 验收-到货日期
+     */
+    @Column(name="rec_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime receiveTime;;
 
 
     public String getMainId() {
@@ -209,8 +216,9 @@ public class PurchaseApplyDetail {
     /**
      * 验收合格
      */
-    public void qualified() {
+    public void doAccept(String acceptItems) {
         this.setAcceptResult(ACCEPT_QUALIFIED);
+        this.setAcceptItems(acceptItems);
         this.setAcceptTime(LocalDateTime.now());
 
     }

@@ -24,6 +24,7 @@ public class RawData {
 
     private String testName;
 
+    @Column(columnDefinition = "VARCHAR(1000)")
     private String testValue;
 
     /**
