@@ -3,6 +3,7 @@ package com.abt.sys.model.dto;
 import com.abt.common.model.User;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +18,16 @@ public class DeptUserList {
     /**
      * 该部门下的所有用户
      */
-    private List<User> users;
+    private List<User> users = new ArrayList<>();
 
+    public void addUser(String userid, String username, String jobNumber) {
+        User u = new User();
+        u.setId(userid);
+        u.setUsername(username);
+        u.setCode(jobNumber);
+        if (users == null) {
+            users = new ArrayList<>();
+        }
+        users.add(u);
+    }
 }

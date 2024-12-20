@@ -9,14 +9,14 @@ import com.abt.sys.repository.OrgRepository;
 import com.abt.sys.service.OrgService;
 import com.abt.sys.util.WithQueryUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.antlr.v4.runtime.tree.Tree;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -54,13 +54,24 @@ public class OrgServiceImpl implements OrgService {
         return orgRepository.findAll(example, sort);
     }
 
-
-    public List<DeptUserList> getDeptUserList(OrgRequestForm orgRequestForm) {
-        List<EmployeeInfo> all = employeeRepository.findAllWithDept();
+    @Override
+    /**
+     * 查询所有启用的部门和用户
+     */
+    public List<DeptUserList> getAllDeptUserList() {
+        List<EmployeeInfo> all = employeeRepository.findAllEnabledDeptUsers();
         all = WithQueryUtil.build(all);
-
-
-
-        return null;
+        Map<String, List<EmployeeInfo>> deptMap = all.stream()
+                .collect(Collectors.groupingBy(EmployeeInfo::getDept, Collectors.toList()));
+        List<DeptUserList> list = new ArrayList<>();
+        for (Map.Entry<String, List<EmployeeInfo>> entry : deptMap.entrySet()) {
+            String deptId = entry.getKey();
+            List<EmployeeInfo> userList = entry.getValue();
+            DeptUserList dul = new DeptUserList();
+            dul.setDeptId(deptId);
+            userList.forEach(u -> dul.addUser(u.getUserid(), u.getName(), u.getJobNumber()));
+            list.add(dul);
+        }
+        return list;
     }
 }

@@ -4,6 +4,7 @@ import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.service.CommonJpaAudit;
 import com.abt.oa.OAConstants;
+import com.abt.sys.model.entity.Org;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -24,6 +25,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -96,9 +98,18 @@ public class Announcement implements CommonJpaAudit {
     @Column(name = "ZdType", length = 50)
     private String zdType;
 
+    /**
+     * 通知对象显示名称
+     */
     @Lob
     @Column(name = "UserOrDept")
     private String userOrDept;
+
+    /**
+     * 通知对象部门，多个部门用逗号分隔
+     */
+    @Column(name = "orgs", columnDefinition = "varchar(500)")
+    private String orgs;
 
     @Lob
     @Column(name = "nodeDesignates")
@@ -111,7 +122,6 @@ public class Announcement implements CommonJpaAudit {
     @Size(max = 2)
     @Column(name = "isHf", length = 2)
     private String isHf;
-
     /**
      * 0: 草稿
      * 1: 发布, 发布撤销后是草稿

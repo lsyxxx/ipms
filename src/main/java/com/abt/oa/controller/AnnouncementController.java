@@ -12,9 +12,9 @@ import com.abt.oa.model.AnnouncementRequestForm;
 import com.abt.oa.reposity.AnnouncementAttachmentRepository;
 import com.abt.oa.service.AnnouncementService;
 import com.abt.sys.model.dto.UserView;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +52,18 @@ public class AnnouncementController {
         return R.success("发布成功");
     }
 
+    /**
+     * 保存草稿及发布
+     */
+    @PostMapping("/add/publish")
+    public R<Object> saveAndPublish(@Validated({ValidateGroup.Save.class}) @RequestBody Announcement announcement) {
+        Assert.hasLength(announcement.getOrgs(), "参数：通知对象部门(orgs) 未传入");
+        Announcement save = announcementService.addTemp(announcement);
+        announcementService.publish(save.getId(), TokenUtil.getUserFromAuthToken().getName());
+        return R.success("发布成功");
+
+    }
+
     @GetMapping("/del")
     public R<Object> delete(String id) {
         announcementService.delete(id);
@@ -71,6 +83,7 @@ public class AnnouncementController {
         announcementService.reply(attachment);
         return R.success();
     }
+
 
     @GetMapping("/find")
     public R<List<Announcement>> findAnnouncementListBy(@ModelAttribute AnnouncementRequestForm requestForm) {

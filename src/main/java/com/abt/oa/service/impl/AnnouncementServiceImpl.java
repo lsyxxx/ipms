@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -60,9 +61,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     @Override
-    public void addTemp(Announcement announcement) {
+    public Announcement addTemp(Announcement announcement) {
         announcement.doTemp();
-        announcementRepository.save(announcement);
+        return announcementRepository.save(announcement);
     }
 
     @Override
@@ -112,8 +113,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         return list;
     }
 
+
     //指定用户
     public List<AnnouncementAttachment> publishToSpecific(Announcement announcement) {
+        Assert.hasLength(announcement.getOrgs(), "参数：通知对象部门(orgs) 未传入");
         List<AnnouncementAttachment> list = new ArrayList<>();
         String toUsers = announcement.getNodeDesignates();
         final String[] toUsernames = announcement.getNodeDesignateTxts().split(",");

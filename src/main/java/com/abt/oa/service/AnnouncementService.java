@@ -13,8 +13,10 @@ import java.util.List;
 public interface AnnouncementService {
     /**
      * 添加一个草稿
+     *
+     * @return
      */
-    void addTemp(Announcement announcement);
+    Announcement addTemp(Announcement announcement);
 
     List<Announcement> findAll();
 

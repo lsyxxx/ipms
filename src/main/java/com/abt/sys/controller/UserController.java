@@ -2,12 +2,12 @@ package com.abt.sys.controller;
 
 import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
-import com.abt.sys.model.dto.UserRequestForm;
+import com.abt.sys.model.dto.DeptUserList;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.model.entity.Org;
-import com.abt.sys.service.CompanyService;
 import com.abt.sys.service.EmployeeService;
+import com.abt.sys.service.OrgService;
 import com.abt.sys.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -27,15 +27,17 @@ import java.util.List;
 public class UserController{
     private final UserService<UserView, User> sqlServerUserService;
     private final EmployeeService employeeService;
+    private final OrgService orgService;
     private final Company ABT;
     private final Company GRD;
     private final Company DC;
 
     public UserController(@Qualifier("sqlServerUserService") UserService<UserView, User> sqlServerUserService,
-                          EmployeeService employeeService,
+                          EmployeeService employeeService, OrgService orgService,
                           Company ABT, Company GRD, Company DC) {
         this.sqlServerUserService = sqlServerUserService;
         this.employeeService = employeeService;
+        this.orgService = orgService;
         this.ABT = ABT;
         this.GRD = GRD;
         this.DC = DC;
@@ -85,6 +87,12 @@ public class UserController{
         }
         final EmployeeInfo employee = employeeService.findUserByUserid(userid);
         return R.success(employee);
+    }
+
+    @GetMapping("/org/deptusers")
+    public R<List<DeptUserList>> findDeptUsers() {
+        List<DeptUserList> list = orgService.getAllDeptUserList();
+        return R.success(list, list.size());
     }
 
 }
