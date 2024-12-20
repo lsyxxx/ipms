@@ -35,10 +35,12 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
     @Query("SELECT e FROM EmployeeInfo e LEFT JOIN FETCH e.department order by e.jobNumber ")
     List<EmployeeInfo> findAllWithDept();
 
-    @Query("select e from EmployeeInfo e left join fetch e.department d " +
-            "left join e.tUser u " +
-            "where d.status = 1 " +
-            "and u.status = 1 " +
+    @Query("select e from EmployeeInfo e " +
+            "left join fetch e.department d " +
+            "left join fetch e.tUser u " +
+            "where d.status = 0 " +
+            "and u.status = 0 " +
+            "and e.isExit = false " +
             "order by d.cascadeId, u.empnum asc")
     List<EmployeeInfo> findAllEnabledDeptUsers();
 

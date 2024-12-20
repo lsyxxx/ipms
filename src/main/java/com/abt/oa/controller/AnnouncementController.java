@@ -4,6 +4,7 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
+import com.abt.oa.OAConstants;
 import com.abt.oa.entity.Announcement;
 import com.abt.oa.entity.AnnouncementAttachment;
 import com.abt.oa.model.AnnouncementAttachmentRequestForm;
@@ -57,7 +58,9 @@ public class AnnouncementController {
      */
     @PostMapping("/add/publish")
     public R<Object> saveAndPublish(@Validated({ValidateGroup.Save.class}) @RequestBody Announcement announcement) {
-        Assert.hasLength(announcement.getOrgs(), "参数：通知对象部门(orgs) 未传入");
+        if (!announcement.getZdType().equals(OAConstants.ANNOUNCEMENT_ZDTYPE_ALL)) {
+            Assert.hasLength(announcement.getOrgs(), "参数：通知对象部门(orgs) 未传入");
+        }
         Announcement save = announcementService.addTemp(announcement);
         announcementService.publish(save.getId(), TokenUtil.getUserFromAuthToken().getName());
         return R.success("发布成功");

@@ -111,6 +111,12 @@ public class Announcement implements CommonJpaAudit {
     @Column(name = "orgs", columnDefinition = "varchar(500)")
     private String orgs;
 
+    /**
+     * 通知对象的部门名称
+     */
+    @Column(name="org_names", columnDefinition = "varchar(500)")
+    private String orgNames;
+
     @Lob
     @Column(name = "nodeDesignates")
     private String nodeDesignates;

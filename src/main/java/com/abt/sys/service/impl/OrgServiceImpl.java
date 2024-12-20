@@ -63,12 +63,16 @@ public class OrgServiceImpl implements OrgService {
         all = WithQueryUtil.build(all);
         Map<String, List<EmployeeInfo>> deptMap = all.stream()
                 .collect(Collectors.groupingBy(EmployeeInfo::getDept, Collectors.toList()));
+        Map<String, String> map = all.stream()
+                .collect(Collectors
+                        .toMap(EmployeeInfo::getDept, EmployeeInfo::getDeptName, (existing, replacement) -> existing));
         List<DeptUserList> list = new ArrayList<>();
         for (Map.Entry<String, List<EmployeeInfo>> entry : deptMap.entrySet()) {
             String deptId = entry.getKey();
             List<EmployeeInfo> userList = entry.getValue();
             DeptUserList dul = new DeptUserList();
             dul.setDeptId(deptId);
+            dul.setDeptName(map.get(deptId));
             userList.forEach(u -> dul.addUser(u.getUserid(), u.getName(), u.getJobNumber()));
             list.add(dul);
         }
