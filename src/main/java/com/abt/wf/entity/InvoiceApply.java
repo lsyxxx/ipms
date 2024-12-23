@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -9,7 +10,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,6 +173,24 @@ public class InvoiceApply extends WorkflowBase {
      */
     @Column(name="test_no", columnDefinition = "VARCHAR(500)")
     private String testNo;
+
+    /**
+     * 开票时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime issueDate;
+
+    /**
+     * 开票人id
+     */
+    @Column(name="issuer_id", length = 128)
+    private String issuerId;
+    /**
+     * 开票人name
+     */
+    @Column(name="issuer_name", length = 128)
+    private String issuerName;
 
 
     @Transient
