@@ -51,6 +51,17 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
     EmployeeInfo findOneByUserid(String userid);
 
 
+    @Query("select e from EmployeeInfo e " +
+            "left join fetch e.department d " +
+            "left join fetch e.tUser u " +
+            "where 1=1 " +
+            "and (:query is null or :query = '' or e.jobNumber like %:query% or e.name like %:query% ) " +
+            "and (:status is null or u.status = :status) " +
+            "and (:exist is null or e.isExit = :exist) " +
+            "order by e.jobNumber asc "
+    )
+    List<EmployeeInfo> findByQuery(String query, Boolean exist, int status);
+
 
 
 }

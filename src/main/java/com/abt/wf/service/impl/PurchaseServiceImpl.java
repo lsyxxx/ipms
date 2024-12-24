@@ -128,7 +128,8 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     @Override
     public List<FlowOperationLog> processRecord(String entityId, String serviceName) {
-        return this.simpleProcessRecord(entityId, serviceName);
+        final PurchaseApplyMain main = load(entityId);
+        return this.simpleProcessRecord(entityId, serviceName, main.getProcessInstanceId());
     }
 
     /**

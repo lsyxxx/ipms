@@ -2,6 +2,7 @@ package com.abt.sys.service.impl;
 
 import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.model.User;
+import com.abt.sys.model.dto.UserRequestForm;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.service.EmployeeService;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -80,10 +82,25 @@ public class EmployeeServiceImpl implements EmployeeService {
         return emp.getCompany();
     }
 
-    /**
-     * 根据部门查询
-     */
-    public void getByDept(String ...deptId) {
+    @Override
+    public List<User> findUserByQuery(UserRequestForm requestForm) {
+        List<EmployeeInfo> list = employeeRepository.findByQuery(requestForm.getQuery(), requestForm.isEnabled(), requestForm.getStatus());
+        list = WithQueryUtil.build(list);
+        if (list == null) {
+            return new ArrayList<>();
+        }
+        List<User> rl = new ArrayList<>();
+        for (EmployeeInfo one : list) {
+            User u = new User();
+            u.setId(one.getUserid());
+            u.setUsername(one.getName());
+            u.setCode(one.getJobNumber());
+            u.setDeptId(one.getDept());
+            u.setDeptName(one.getDeptName());
+            rl.add(u);
+        }
+        return rl;
 
     }
+
 }

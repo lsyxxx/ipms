@@ -106,15 +106,17 @@ public class Announcement implements CommonJpaAudit {
     private String userOrDept;
 
     /**
-     * 通知对象部门，多个部门用逗号分隔
+     * 通知对象部门，数组字符串
      */
-    @Column(name = "orgs", columnDefinition = "varchar(500)")
+    @Lob
+    @Column(name = "orgs")
     private String orgs;
 
     /**
-     * 通知对象的部门名称
+     * 通知对象的部门名称，数组字符串
      */
-    @Column(name="org_names", columnDefinition = "varchar(500)")
+    @Lob
+    @Column(name="org_names")
     private String orgNames;
 
     @Lob

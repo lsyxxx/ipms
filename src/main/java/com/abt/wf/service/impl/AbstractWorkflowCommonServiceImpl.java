@@ -291,17 +291,17 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
      * @param entityId 业务实体Id
      * @param serviceName 业务铭恒
      */
-    public List<FlowOperationLog> simpleProcessRecord(String entityId, String serviceName) {
+    public List<FlowOperationLog> simpleProcessRecord(String entityId, String serviceName, String procId) {
         List<FlowOperationLog> completed = getCompletedOperationLogByEntityId(entityId);
         //正在进行的
         if (!completed.isEmpty()) {
-            setActiveTaskOptLog(completed, entityId, serviceName);
+            setActiveTaskOptLog(completed, entityId, serviceName, procId);
         }
         return completed;
     }
 
-    public void setActiveTaskOptLog(List<FlowOperationLog> logs, String entityId, String serviceName) {
-        String procId = logs.get(0).getProcessInstanceId();
+    public void setActiveTaskOptLog(List<FlowOperationLog> logs, String entityId, String serviceName, String procId) {
+//        String procId = logs.get(0).getProcessInstanceId();
         final Task task = taskService.createTaskQuery().active().processInstanceId(procId).singleResult();
         if (task != null) {
             FlowOperationLog active = new FlowOperationLog();
@@ -339,7 +339,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             }
             optLog.setSignatureBase64(imgStr);
         }
-        setActiveTaskOptLog(completed, entityId, serviceName);
+        final T entity = load(entityId);
+        setActiveTaskOptLog(completed, entityId, serviceName, entity.getProcessInstanceId());
         return completed;
     }
 

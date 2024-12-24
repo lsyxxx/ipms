@@ -3,6 +3,7 @@ package com.abt.sys.controller;
 import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.DeptUserList;
+import com.abt.sys.model.dto.UserRequestForm;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.model.entity.Org;
@@ -78,6 +79,12 @@ public class UserController{
     public R<EmployeeInfo> findEmployeeInfo(String userid) {
         final EmployeeInfo employee = employeeService.findUserByUserid(userid);
         return R.success(employee);
+    }
+
+    @GetMapping("/query")
+    public R<List<User>> findByQuery(UserRequestForm requestForm) {
+        final List<User> list = employeeService.findUserByQuery(requestForm);
+        return R.success(list, list.size());
     }
 
     @GetMapping("/basic")

@@ -88,9 +88,22 @@ public class PurchaseController {
     @PostMapping("/temp")
     public R<Object> tempSave(@RequestBody PurchaseApplyMain form) {
         UserView user = TokenUtil.getUserFromAuthToken();
-        form.setSubmitUserid(user.getId());
-        form.setSubmitUsername(user.getUsername());
-        purchaseService.tempSave(form);
+        //校验
+        final String id = form.getId();
+        try {
+            final PurchaseApplyMain main = purchaseService.load(id);
+            if (!STATE_DETAIL_TEMP.equals(main.getBusinessState())) {
+                return R.fail("只可覆盖草稿!");
+            }
+            form.setSubmitUserid(user.getId());
+            form.setSubmitUsername(user.getUsername());
+            purchaseService.tempSave(form);
+        } catch (BusinessException be) {
+            //未查询到实体
+            form.setSubmitUserid(user.getId());
+            form.setSubmitUsername(user.getUsername());
+            purchaseService.tempSave(form);
+        }
         return R.success("暂存草稿成功");
     }
 
