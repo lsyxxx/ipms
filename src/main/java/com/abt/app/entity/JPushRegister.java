@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "jpush_register")
-public class PushRegister {
+public class JPushRegister {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -34,23 +34,24 @@ public class PushRegister {
     private String registerId;
 
     /**
-     * 极光推送
-     */
-    public static final String PUSH_PLATFORM_JPUSH = "jpush";
-
-    /**
      * 推送平台，如极光推送
      */
     @Column(name="push_platform", length = 128)
     private String pushPlatform = PUSH_PLATFORM_JPUSH;
+
+    @Column(name="app_platform", length = 128)
+    private String appPlatform = APP_PLATFORM_ANDROID;
+
+    /**
+     * 极光推送
+     */
+    public static final String PUSH_PLATFORM_JPUSH = "jpush";
     public static final String APP_PLATFORM_ANDROID = "android";
     /**
      * 鸿蒙
      */
     public static final String APP_PLATFORM_HARMONY = "harmony";
     public static final String APP_PLATFORM_IOS = "ios";
-    @Column(name="app_platform", length = 128)
-    private String appPlatform = APP_PLATFORM_ANDROID;
 
 
 }

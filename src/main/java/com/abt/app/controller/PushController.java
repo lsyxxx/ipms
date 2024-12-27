@@ -1,9 +1,11 @@
 package com.abt.app.controller;
 
-import com.abt.app.entity.PushRegister;
+import com.abt.app.entity.JPushRegister;
 import com.abt.app.service.PushService;
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,9 +26,9 @@ public class PushController {
     }
 
     @PostMapping("/reg")
-    public R<Object> register(@Validated @RequestBody PushRegister pushRegister) {
-        pushService.register(pushRegister);
-        return R.success("用户" + pushRegister.getUserid() + "注册成功!");
+    public R<Object> register(@Validated({ValidateGroup.All.class}) @RequestBody JPushRegister jpushRegister) {
+        pushService.register(jpushRegister);
+        return R.success("用户" + jpushRegister.getUserid() + "注册成功!");
     }
 
 

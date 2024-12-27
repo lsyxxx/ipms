@@ -156,7 +156,6 @@ public class FileController {
         if (!FileUtils.isDirectory(dir)) {
             dir.mkdirs();
         }
-
         String newUrl = path + File.separator + rename;
         File tempFile = new File(newUrl);
         //复制文件到外网临时地址

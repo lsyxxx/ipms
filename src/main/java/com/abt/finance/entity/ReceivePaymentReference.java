@@ -1,5 +1,6 @@
 package com.abt.finance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -27,24 +28,29 @@ public class ReceivePaymentReference{
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    /**
-     * ReceivePayment id
-     */
-    @Column(name="rec_payment_id")
-    @NotNull
-    private String receivePaymentId;
+
+    @ManyToOne
+    @JoinColumn(name = "rp_id", referencedColumnName = "id")
+    @JsonIgnore
+    private ReceivePayment receivePayment;
 
     /**
-     * 关联id
+     * 关联发票/业务id
      */
-    @NotNull
     @Column(name="ref_id")
     private String refId;
 
     /**
-     * 关联类型，如合同/结算单
+     * 关联内容
      */
-    private String type;
+    @Column(name="ref_content", length = 1000)
+    private String refContent;
+
+    /**
+     * 关联类型，发票/如合同/结算单
+     */
+    private String type = TYPE_INVOICE;
+
 
     /**
      * 合同
@@ -54,5 +60,10 @@ public class ReceivePaymentReference{
      * 结算单
      */
     public static final String TYPE_SETTLEMENT = "settlement";
+
+    /**
+     * 开票信息
+     */
+    public static final String TYPE_INVOICE = "invoice";
 
 }

@@ -56,6 +56,7 @@ public class SecurityConfig {
 //                "/favicon.ico",
                 //TEST
                 "/test/**",
+                "/app/push/reg"
         };
     }
 
@@ -64,7 +65,9 @@ public class SecurityConfig {
         RequestCache nullRequestCache = new NullRequestCache();
         http.authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers(new AntPathRequestMatcher("/test/**"), new AntPathRequestMatcher("/public/**"),
-                                new AntPathRequestMatcher("/camunda/**"), new AntPathRequestMatcher("/favicon.ico")).permitAll()
+                                new AntPathRequestMatcher("/camunda/**"), new AntPathRequestMatcher("/favicon.ico"),
+                                new AntPathRequestMatcher("/app/push/reg"))
+                        .permitAll()
                         .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         .anyRequest()
                         .access(abtAuthorizationManager)

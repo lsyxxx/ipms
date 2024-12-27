@@ -1,7 +1,7 @@
 package com.abt.app.service.impl;
 
-import com.abt.app.entity.PushRegister;
-import com.abt.app.respository.PushRegisterRepository;
+import com.abt.app.entity.JPushRegister;
+import com.abt.app.respository.JPushRegisterRepository;
 import com.abt.app.service.PushService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.EmployeeInfo;
@@ -11,7 +11,6 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import java.util.Base64;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * 推送服务
@@ -20,26 +19,26 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class PushServiceImpl implements PushService {
 
-    private final PushRegisterRepository pushRegisterRepository;
+    private final JPushRegisterRepository jpushRegisterRepository;
     private final EmployeeService employeeService;
 
     public static final String jpush_appKey = "5852054ccdf204b7c5c819bc";
     public static final String jpush_masterSecret = "f3b0b8ce982000777e642ea6";
     public static final String jpush_restapi = "https://api.jpush.cn/v3/push";
 
-    public PushServiceImpl(PushRegisterRepository pushRegisterRepository, EmployeeService employeeService) {
-        this.pushRegisterRepository = pushRegisterRepository;
+    public PushServiceImpl(JPushRegisterRepository jpushRegisterRepository, EmployeeService employeeService) {
+        this.jpushRegisterRepository = jpushRegisterRepository;
         this.employeeService = employeeService;
     }
 
     @Override
-    public void register(PushRegister pushRegister) {
+    public void register(JPushRegister pushRegister) {
         String userid = pushRegister.getUserid();
         final EmployeeInfo emp = employeeService.findUserByUserid(userid);
         if (emp == null) {
             throw new BusinessException("用户不存在(id=" + userid + ")");
         }
-        pushRegisterRepository.save(pushRegister);
+        jpushRegisterRepository.save(pushRegister);
     }
 
 
