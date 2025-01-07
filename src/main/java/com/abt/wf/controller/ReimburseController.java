@@ -62,6 +62,7 @@ public class ReimburseController {
 
     @PostMapping("/apply")
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody Reimburse form) {
+        setSubmitUser(form);
         form.setRbsDate(LocalDate.now());
         reimburseService.apply(form);
         return R.success();
@@ -154,5 +155,11 @@ public class ReimburseController {
         UserView user = TokenUtil.getUserFromAuthToken();
         form.setUserid(user.getId());
         form.setUsername(user.getName());
+    }
+
+    public void setSubmitUser(Reimburse form) {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        form.setSubmitUserid(user.getId());
+        form.setSubmitUsername(user.getUsername());
     }
 }

@@ -196,18 +196,19 @@ public class Reimburse extends WorkflowBase implements ICreditBook {
     public static final String KEY_COST = "cost";
     public static final String KEY_IS_LEADER = "isLeader";
     public static final String KEY_STARTER = "starter";
+    public static final String KEY_STARTER_NAME = "starterName";
 
     public HashMap<String, Object> createVariableMap() {
         this.variableMap.clear();
-        this.variableMap.put(KEY_COST, this.getCost());
         if (StringUtils.isBlank(this.getManagers())) {
             variableMap.put(KEY_MANAGER, List.of());
         } else {
             variableMap.put(KEY_MANAGER, List.of(this.getManagers().split(",")));
         }
         this.variableMap.put(KEY_STARTER, this.getSubmitUserid());
+        this.variableMap.put(KEY_STARTER_NAME, this.getSubmitUsername());
         this.variableMap.put(KEY_COST, this.getCost());
-//        this.variableMap.put(VAR_KEY_DESC, this.description());
+        this.variableMap.put(KEY_SERVICE, "费用报销");
         return this.variableMap;
     }
 

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface SaleAgreementService {
+    Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm);
+
     Page<SaleAgreement> findPaged(SaleAgreementRequestForm requestForm);
 
     void delete(String id);

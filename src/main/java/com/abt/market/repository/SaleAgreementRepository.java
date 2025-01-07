@@ -3,6 +3,7 @@ package com.abt.market.repository;
 import com.abt.market.entity.SaleAgreement;
 import com.abt.sys.model.CountQuery;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -34,4 +35,12 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
             "GROUP BY MONTH(sa.createDate) " +
             "ORDER BY MONTH(sa.createDate) ASC ")
     List<CountQuery> countContractsByYearMonth(@Param("currentYear") int currentYear);
+
+    @Query("select s from SaleAgreement s " +
+            "where (:query is null or :query = '' " +
+            "   or s.code like %:query% " +
+            "   or s.name like %:query% " +
+            "   or s.partyA like %:query% " +
+            "   or FUNCTION('STR', s.amount) like %:query%) ")
+    Page<SaleAgreement> findByQuery(String query, Pageable pageable);
 }

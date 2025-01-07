@@ -10,4 +10,13 @@ public interface PushService {
      * 注册id
      */
     void register(JPushRegister pushRegister);
+
+    /**
+     * 安卓推送消息
+     * @param userid 用户id
+     * @param alert 消息提示标题
+     * @param message 消息提示内容
+     * @param badgeAddNum 角标
+     */
+    void pushAndroid(String userid, String alert, String message, int badgeAddNum);
 }

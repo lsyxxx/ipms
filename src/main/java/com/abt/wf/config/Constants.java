@@ -141,10 +141,12 @@ public class Constants {
 
     //--- var key
     public static final String KEY_STARTER = "starter";
+    public static final String KEY_STARTER_NAME = "starterName";
     public static final String KEY_MANAGER = "managerList";
     public static final String KEY_COST = "cost";
     public static final String KEY_MANAGER1 = "manager1";
     public static final String KEY_MANAGER2 = "manager2";
+    public static final String KEY_SERVICE = "service";
 
     //--- setting
     public static final String SETTING_TYPE_RBS_COPY = "rbsDefaultCopy";
@@ -199,4 +201,8 @@ public class Constants {
 
     public static final String ACCEPT_ITEM_DEFAULT = "品名、规格、等级、生产日期、有效期、成分、包装、外观、贮存、数量、合格证明、说明书、保修卡";
 
+    /**
+     * 推送
+     */
+    public static final String PUSH_TODO_TEMPLATE = "您有一条%s提交的%s待审批，请及时处理";
 }

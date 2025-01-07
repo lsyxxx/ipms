@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0k5y7bd" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0k5y7bd" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.30.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
   <bpmn:process id="rbsMulti" name="rbsMulti" isExecutable="true" camunda:versionTag="报销流程多实例+监听器" camunda:historyTimeToLive="99999">
     <bpmn:documentation>综合日常报销审批流程</bpmn:documentation>
     <bpmn:extensionElements>
@@ -46,6 +46,7 @@
           <camunda:property name="selectUserType" value="1" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
+        <camunda:taskListener delegateExpression="${pushListener}" event="assignment" id="pushListener" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_03rf4z0</bpmn:incoming>
       <bpmn:outgoing>Flow_0o07avl</bpmn:outgoing>
@@ -59,6 +60,7 @@
           <camunda:property name="selectUserType" value="1" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
+        <camunda:taskListener delegateExpression="${pushListener}" event="assignment" id="pushListener" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1exbhj2</bpmn:incoming>
       <bpmn:outgoing>Flow_02x2fgz</bpmn:outgoing>
@@ -122,22 +124,6 @@
           <dc:Bounds x="160" y="142" width="44" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0hfn5ti_di" bpmnElement="rbsMulti_managers">
-        <dc:Bounds x="380" y="77" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0ug99qn_di" bpmnElement="rbsMulti_finMgr">
-        <dc:Bounds x="680" y="77" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1pld53y_di" bpmnElement="rbsMulti_ceo">
-        <dc:Bounds x="850" y="77" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1yfkknr_di" bpmnElement="rbsMulti_chief">
-        <dc:Bounds x="1160" y="77" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_104br8c_di" bpmnElement="EndEvent_1">
         <dc:Bounds x="382" y="322" width="36" height="36" />
         <bpmndi:BPMNLabel>
@@ -152,28 +138,41 @@
         <dc:Bounds x="850" y="300" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1yfkknr_di" bpmnElement="rbsMulti_chief">
+        <dc:Bounds x="1160" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1pld53y_di" bpmnElement="rbsMulti_ceo">
+        <dc:Bounds x="850" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ug99qn_di" bpmnElement="rbsMulti_finMgr">
+        <dc:Bounds x="680" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0yvo403_di" bpmnElement="rbsMulti_acc">
         <dc:Bounds x="540" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0hfn5ti_di" bpmnElement="rbsMulti_managers">
+        <dc:Bounds x="380" y="77" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1qcaapv_di" bpmnElement="Flow_1qcaapv">
         <di:waypoint x="198" y="117" />
         <di:waypoint x="240" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1hrh28v_di" bpmnElement="Flow_employee">
-        <di:waypoint x="340" y="117" />
-        <di:waypoint x="380" y="117" />
+      <bpmndi:BPMNEdge id="Flow_0o07avl_di" bpmnElement="Flow_0o07avl">
+        <di:waypoint x="1210" y="157" />
+        <di:waypoint x="1210" y="340" />
+        <di:waypoint x="950" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02x2fgz_di" bpmnElement="Flow_02x2fgz">
+        <di:waypoint x="900" y="157" />
+        <di:waypoint x="900" y="300" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="417" y="99" width="22" height="14" />
+          <dc:Bounds x="881" y="226" width="68" height="14" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1v3epsw_di" bpmnElement="Flow_1v3epsw">
-        <di:waypoint x="480" y="117" />
-        <di:waypoint x="540" y="117" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_11eyagk_di" bpmnElement="Flow_11eyagk">
-        <di:waypoint x="640" y="117" />
-        <di:waypoint x="680" y="117" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_03rf4z0_di" bpmnElement="Flow_03rf4z0">
         <di:waypoint x="950" y="117" />
@@ -182,21 +181,24 @@
           <dc:Bounds x="1011" y="99" width="90" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0o07avl_di" bpmnElement="Flow_0o07avl">
-        <di:waypoint x="1210" y="157" />
-        <di:waypoint x="1210" y="340" />
-        <di:waypoint x="950" y="340" />
+      <bpmndi:BPMNEdge id="Flow_1hrh28v_di" bpmnElement="Flow_employee">
+        <di:waypoint x="340" y="117" />
+        <di:waypoint x="380" y="117" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="417" y="99" width="22" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1exbhj2_di" bpmnElement="Flow_1exbhj2">
         <di:waypoint x="780" y="117" />
         <di:waypoint x="850" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_02x2fgz_di" bpmnElement="Flow_02x2fgz">
-        <di:waypoint x="900" y="157" />
-        <di:waypoint x="900" y="300" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="881" y="226" width="68" height="14" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNEdge id="Flow_11eyagk_di" bpmnElement="Flow_11eyagk">
+        <di:waypoint x="640" y="117" />
+        <di:waypoint x="680" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1v3epsw_di" bpmnElement="Flow_1v3epsw">
+        <di:waypoint x="480" y="117" />
+        <di:waypoint x="540" y="117" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0sr2zkv_di" bpmnElement="Flow_0sr2zkv">
         <di:waypoint x="850" y="340" />

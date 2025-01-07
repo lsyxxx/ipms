@@ -97,8 +97,8 @@ public class WebApiHttpConnectServiceImpl implements HttpConnectService<WebApiDt
                 return dto;
             });
         } catch (IOException e) {
-            log.error("Post 请求异常 -- message={}, e.getCause()={}",e.getMessage(), e.getCause());
-            throw new RuntimeException(e);
+            log.error("Post 请求异常-- ", e);
+            throw new RuntimeException(e.getMessage());
         }
         return webApiDto;
     }

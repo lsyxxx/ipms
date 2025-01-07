@@ -55,6 +55,7 @@
           <camunda:property name="selectUserType" value="1" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
+        <camunda:taskListener delegateExpression="${pushListener}" event="assignment" id="pushListener" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0h6gbw3</bpmn:incoming>
       <bpmn:outgoing>Flow_1w0a64j</bpmn:outgoing>
@@ -80,6 +81,7 @@
           <camunda:property name="selectUserType" value="1" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
+        <camunda:taskListener delegateExpression="${pushListener}" event="assignment" id="pushListener" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1w0a64j</bpmn:incoming>
       <bpmn:outgoing>Flow_0fhdgr9</bpmn:outgoing>

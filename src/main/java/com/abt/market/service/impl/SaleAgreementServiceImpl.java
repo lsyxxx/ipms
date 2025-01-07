@@ -44,6 +44,12 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
     }
 
     @Override
+    public Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm) {
+        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "sortNo"));
+        return saleAgreementRepository.findByQuery(requestForm.getQuery(), page);
+    }
+
+    @Override
     public Page<SaleAgreement> findPaged(SaleAgreementRequestForm requestForm) {
         Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "sortNo"));
         SaleAgreementSpecification spec = new SaleAgreementSpecification();

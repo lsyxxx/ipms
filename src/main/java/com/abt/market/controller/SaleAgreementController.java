@@ -28,6 +28,12 @@ public class SaleAgreementController {
         this.saleAgreementService = saleAgreementService;
     }
 
+    @GetMapping("/query")
+    public R<List<SaleAgreement>> findSaleAgreementsByQuery(SaleAgreementRequestForm requestForm) {
+        final Page<SaleAgreement> paged = saleAgreementService.findByQuery(requestForm);
+        return R.success(paged.getContent(), (int) paged.getTotalElements());
+    }
+
     @GetMapping("/find")
     public R<List<SaleAgreement>> findSaleAgreements(SaleAgreementRequestForm requestForm) {
         final Page<SaleAgreement> paged = saleAgreementService.findPaged(requestForm);

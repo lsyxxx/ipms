@@ -80,14 +80,14 @@ public class ReceivePayment extends AuditInfo {
     /**
      * 银行账号
      */
-    @NotNull(message = "客户银行账号必填", groups = {ValidateGroup.Save.class})
+    @NotNull(message = "回款客户银行账号必填", groups = {ValidateGroup.Save.class})
     @Column(name="bank_account")
     private String bankAccount;
 
     /**
      * 开户行
      */
-    @NotNull(message = "客户开户行必填", groups = {ValidateGroup.Save.class})
+    @NotNull(message = "回款客户开户行必填", groups = {ValidateGroup.Save.class})
     @Column(name="bank_name")
     private String bankName;
 
@@ -98,6 +98,12 @@ public class ReceivePayment extends AuditInfo {
     @Column(name="tax_no")
     private String taxNo;
 
+
+    /**
+     * 是否通知
+     */
+    @Column(name="is_notify")
+    private boolean isNotify;
 
 
     /**
@@ -139,7 +145,7 @@ public class ReceivePayment extends AuditInfo {
      * todo 未来根据发票关联结算
      */
     @Transient
-    private List<SettlementDocument> paymentDocs;
+    private List<SettlementDocument> settlementDocuments;
 
 
     //可能有的

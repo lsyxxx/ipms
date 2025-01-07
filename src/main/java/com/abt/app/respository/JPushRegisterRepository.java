@@ -4,4 +4,5 @@ import com.abt.app.entity.JPushRegister;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JPushRegisterRepository extends JpaRepository<JPushRegister, String> {
+    JPushRegister findByUserid(String userid);
 }

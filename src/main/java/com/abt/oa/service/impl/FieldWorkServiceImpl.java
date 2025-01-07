@@ -817,6 +817,8 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         List<Object> header2 = new ArrayList<>();
         final List<String> weekDays = dateHeader.stream().map(LocalDate::getDayOfWeek).map(TimeUtil::chinaDayOfWeek).toList();
         header2.addAll(weekDays);
+        //出勤天数
+        header2.add("");
         header2.addAll(headers.stream().map(CalendarEvent::getMoneySum).map(String::valueOf).toList());
         excelWriter.fill(new FillWrapper("weekHeader", headerList(header2)), fillConfig, writeSheet);
         //header: 考勤空格+补贴
