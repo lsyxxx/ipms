@@ -20,4 +20,6 @@ public class Constants {
      * 财务总监角色 -- 财务经营部-主管
      */
     public static final String ROLE_FI_MGR = "JS019";
+
+    public static final String REC_PAY_CONFIG_TYPE_NOTIFY = "notifyUsers";
 }

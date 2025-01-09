@@ -52,7 +52,7 @@ public class SignatureServiceImpl implements SignatureService {
 
     @Override
     public UserSignature getSignatureByUserid(String userid) {
-        Assert.hasLength(userid, "jobNumber cannot be null or empty!");
+        Assert.hasLength(userid, "userid cannot be null or empty!");
         return userSignatureRepository.findByUserId(userid);
     }
 

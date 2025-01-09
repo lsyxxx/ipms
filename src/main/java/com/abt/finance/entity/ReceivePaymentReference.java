@@ -1,20 +1,20 @@
 package com.abt.finance.entity;
 
+import com.abt.wf.entity.InvoiceApply;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.format.number.PercentStyleFormatter;
+
 
 /**
  * 回款登记关联表
  */
-@Table(name = "rec_payment_ref")
+@Table(name = "fi_rec_pay_ref")
 @Entity
 @Getter
 @Setter
@@ -65,5 +65,12 @@ public class ReceivePaymentReference{
      * 开票信息
      */
     public static final String TYPE_INVOICE = "invoice";
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ref_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    private InvoiceApply invoiceApply;
+
+
 
 }

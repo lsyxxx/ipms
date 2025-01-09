@@ -2,6 +2,7 @@ package com.abt.common.model;
 
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -12,6 +13,7 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class User implements Serializable {
 
     /**

@@ -125,10 +125,11 @@ public class PushServiceImpl implements PushService {
         ObjectMapper objectMapper = new ObjectMapper();
         //root
         ObjectNode rootNode = objectMapper.createObjectNode();
+        rootNode.put("platform", "all");
         //platform
-        ArrayNode platForm = objectMapper.createArrayNode();
-        platForm.add("android");
-        rootNode.set("platform", platForm);
+//        ArrayNode platForm = objectMapper.createArrayNode();
+//        platForm.add("android");
+//        rootNode.set("platform", platForm);
         //notification
         ObjectNode notificationNode = objectMapper.createObjectNode();
         rootNode.set("notification", notificationNode);

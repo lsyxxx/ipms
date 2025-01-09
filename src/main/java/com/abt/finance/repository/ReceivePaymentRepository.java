@@ -1,7 +1,7 @@
 package com.abt.finance.repository;
 
 import com.abt.finance.entity.ReceivePayment;
-import jakarta.persistence.NamedEntityGraph;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,5 +24,10 @@ public interface ReceivePaymentRepository extends JpaRepository<ReceivePayment, 
             ") " +
             "order by p.createDate desc, p.createUserid, p.customerName")
     List<ReceivePayment> findByQuery(String query);
+
+
+    @EntityGraph(attributePaths = {"references.invoiceApply"})
+    @Query("select p from ReceivePayment p ")
+    List<ReceivePayment> findWithInvoice();
 
 }

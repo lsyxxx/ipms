@@ -1,17 +1,26 @@
 package com.abt.finance.entity;
 
+import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
+import com.abt.common.listener.JpaUsernameListener;
 import com.abt.common.model.AuditInfo;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.abt.common.model.User;
+import com.abt.common.util.JsonUtil;
 import com.abt.market.entity.SaleAgreement;
 import com.abt.wf.entity.InvoiceApply;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
@@ -34,7 +43,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @DynamicUpdate
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, JpaUsernameListener.class})
+@Slf4j
 public class ReceivePayment extends AuditInfo {
 
     /**
@@ -64,7 +74,7 @@ public class ReceivePayment extends AuditInfo {
      */
     @NotNull(message = "回款金额必填", groups = {ValidateGroup.Save.class})
     @Column(name="amount_", columnDefinition = "decimal(18,2)")
-    private Double amount;
+    private BigDecimal amount;
 
     /**
      * 实际回款客户信息，可能和开票客户不一样，那么没有id
@@ -115,6 +125,13 @@ public class ReceivePayment extends AuditInfo {
     private String notifyStrings;
 
     /**
+     * 附件
+     */
+    @Lob
+    @Column(name="files_")
+    private String files;
+
+    /**
      * 通知用户
      */
     @Transient
@@ -148,8 +165,16 @@ public class ReceivePayment extends AuditInfo {
     private List<SettlementDocument> settlementDocuments;
 
 
-    //可能有的
-    //我方接收账户，对方账户
+    public void buildNotifyUsers() {
+        this.notifyUsers = new ArrayList<>();
+        if (StringUtils.isNotBlank(this.notifyStrings)) {
+            try {
+                this.notifyUsers = JsonUtil.toObject(this.notifyStrings, new TypeReference<List<User>>() {});
+            } catch (Exception e) {
+                log.error("通知用户Json 转换失败！- {}", e.getMessage(), e);
+            }
+        }
+    }
 
 
 }

@@ -1,6 +1,8 @@
 package com.abt.finance.service;
 
+import com.abt.common.model.User;
 import com.abt.finance.entity.ReceivePayment;
+import com.abt.finance.entity.ReceivePaymentConfig;
 import com.abt.finance.model.ReceivePaymentRequestForm;
 
 import java.util.List;
@@ -24,4 +26,11 @@ public interface ReceivePaymentService {
      * @return 记录列表
      */
     List<ReceivePayment> findByQuery(ReceivePaymentRequestForm requestForm);
+
+    void saveConfig(List<ReceivePaymentConfig> configs);
+
+    /**
+     * 获取默认配置的回款通知用户
+     */
+    List<User> findDefaultNotifyUsers();
 }
