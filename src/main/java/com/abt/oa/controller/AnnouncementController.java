@@ -49,6 +49,7 @@ public class AnnouncementController {
     @GetMapping("/publish")
     public R<Object> publish(String id) {
         UserView user = TokenUtil.getUserFromAuthToken();
+        //处理机构
         announcementService.publish(id, user.getUsername());
         return R.success("发布成功");
     }

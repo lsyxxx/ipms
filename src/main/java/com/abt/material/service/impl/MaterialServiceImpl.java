@@ -1,9 +1,13 @@
 package com.abt.material.service.impl;
 
 import com.abt.material.entity.MaterialDetail;
+import com.abt.material.model.MaterialRequestForm;
 import com.abt.material.repository.MaterialDetailRepository;
 import com.abt.material.service.MaterialService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -32,5 +36,12 @@ public class MaterialServiceImpl implements MaterialService {
                         Sort.Order.asc("name"),
                         Sort.Order.asc("specification")
                 ));
+    }
+
+    @Override
+    public Page<MaterialDetail> findByDeptPageable(MaterialRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
+                Sort.by(Sort.Order.asc("deptId"), Sort.Order.asc("name"), Sort.Order.asc("index")));
+        return materialDetailRepository.findByQueryPageable(requestForm.getDeptId(), pageable);
     }
 }

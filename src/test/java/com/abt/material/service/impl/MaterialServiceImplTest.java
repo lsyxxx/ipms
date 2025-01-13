@@ -1,6 +1,7 @@
 package com.abt.material.service.impl;
 
 import com.abt.material.entity.MaterialDetail;
+import com.abt.material.model.MaterialRequestForm;
 import com.abt.material.service.MaterialService;
 import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
@@ -8,6 +9,7 @@ import com.abt.wf.repository.PurchaseApplyMainRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -19,6 +21,8 @@ class MaterialServiceImplTest {
 
     @Autowired
     private PurchaseApplyMainRepository purchaseApplyMainRepository;
+
+
 
     @Test
     void findAll() {
@@ -101,5 +105,21 @@ class MaterialServiceImplTest {
         PurchaseApplyDetail detail = main.getDetails().get(0);
         detail.setFinalId("finalId_132123");
         purchaseApplyMainRepository.save(main);
+    }
+
+    @Test
+    void findByDeptPageable() {
+        MaterialRequestForm requestForm = new MaterialRequestForm();
+        requestForm.setPage(1);
+        requestForm.setLimit(40);
+        requestForm.setDeptId("58c43f47-8c16-4862-ab37-40afee39ca76");
+        final Page<MaterialDetail> page = materialService.findByDeptPageable(requestForm);
+        Assert.notNull(page, "page is null");
+        final List<MaterialDetail> content = page.getContent();
+        Assert.notNull(content, "content is null");
+        System.out.println(content.size());
+        content.forEach(i -> {
+            System.out.printf("name: %s, dept: %s\n", i.getName(), i.getDeptName());
+        });
     }
 }

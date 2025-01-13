@@ -2,6 +2,7 @@ package com.abt.material.controller;
 
 import com.abt.common.model.R;
 import com.abt.material.entity.MaterialDetail;
+import com.abt.material.model.MaterialRequestForm;
 import com.abt.material.service.MaterialService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,12 @@ public class MaterialController {
 
     @GetMapping("/find/all")
     public R<List<MaterialDetail>> findAllMaterialDetails() {
+        final List<MaterialDetail> all = materialService.findAll();
+        return R.success(all);
+    }
+
+    @GetMapping("/find/dept")
+    public R<List<MaterialDetail>> findMaterialByDept(MaterialRequestForm requestForm) {
         final List<MaterialDetail> all = materialService.findAll();
         return R.success(all);
     }

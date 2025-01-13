@@ -16,7 +16,7 @@
           <camunda:property name="selectUserType" value="0" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
-        <camunda:taskListener delegateExpression="${purchaseMangerListener}" event="complete" />
+        <camunda:taskListener delegateExpression="${purchaseMangerListener}" event="complete" id="purchaseMangerListener" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1d1s4cg</bpmn:incoming>
       <bpmn:outgoing>Flow_1nej1b4</bpmn:outgoing>
@@ -30,7 +30,7 @@
           <camunda:property name="selectUserType" value="0" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
-        <camunda:taskListener delegateExpression="${purchaseMangerListener}" event="complete" />
+        <camunda:taskListener delegateExpression="${purchaseLeaderListener}" event="complete" id="purchaseLeaderListener" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1nej1b4</bpmn:incoming>
       <bpmn:outgoing>Flow_1q5pykw</bpmn:outgoing>
@@ -44,7 +44,7 @@
           <camunda:property name="selectUserType" value="1" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
-        <camunda:taskListener delegateExpression="${purchasePurchaserListener}" event="complete" />
+        <camunda:taskListener delegateExpression="${purchasePurchaserListener}" event="complete" id="purchasePurchaserListener" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1q5pykw</bpmn:incoming>
       <bpmn:outgoing>Flow_1fxb7ul</bpmn:outgoing>
@@ -88,6 +88,10 @@
           <dc:Bounds x="160" y="145" width="44" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1lcf46l_di" bpmnElement="pur_mgr">
+        <dc:Bounds x="480" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0xzc1mq_di" bpmnElement="pur_leader">
         <dc:Bounds x="630" y="80" width="100" height="80" />
         <bpmndi:BPMNLabel />
@@ -109,10 +113,6 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="829" y="345" width="22" height="14" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1lcf46l_di" bpmnElement="pur_mgr">
-        <dc:Bounds x="480" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1nej1b4_di" bpmnElement="Flow_1nej1b4">
         <di:waypoint x="580" y="120" />
