@@ -1,6 +1,7 @@
 package com.abt.finance.repository;
 
 import com.abt.finance.entity.ReceivePayment;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,6 +25,16 @@ public interface ReceivePaymentRepository extends JpaRepository<ReceivePayment, 
             ") " +
             "order by p.createDate desc, p.createUserid, p.customerName")
     List<ReceivePayment> findByQuery(String query);
+
+
+    @Query("select p from ReceivePayment p " +
+            "where (:query is null or :query = '' " +
+            "   or p.createUsername like %:query% " +
+            "   or FUNCTION('STR', p.amount) like %:query% " +
+            "   or p.customerName like %:query% )" +
+            "and p.notifyStrings like %:notifyUserid% "
+    )
+    Page<ReceivePayment> findByQuery(String query, String notifyUserid, Pageable pageable);
 
 
     @EntityGraph(attributePaths = {"references.invoiceApply"})

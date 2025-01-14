@@ -2,6 +2,8 @@ package com.abt.sys.repository;
 
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -55,12 +57,12 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
             "left join fetch e.department d " +
             "left join fetch e.tUser u " +
             "where 1=1 " +
-            "and (:query is null or :query = '' or e.jobNumber like %:query% or e.name like %:query% ) " +
+            "and (:query is null or :query = '' or e.jobNumber like %:query% or e.name like %:query% or e.position like %:query%) " +
             "and (:status is null or u.status = :status) " +
             "and (:exist is null or e.isExit = :exist) " +
             "order by e.jobNumber asc "
     )
-    List<EmployeeInfo> findByQuery(String query, Boolean exist, int status);
+    Page<EmployeeInfo> findByQuery(String query, Boolean exist, int status, Pageable pageable);
 
 
 

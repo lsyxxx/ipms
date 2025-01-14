@@ -4,6 +4,7 @@ import com.abt.common.model.User;
 import com.abt.finance.entity.ReceivePayment;
 import com.abt.finance.entity.ReceivePaymentConfig;
 import com.abt.finance.model.ReceivePaymentRequestForm;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -26,6 +27,8 @@ public interface ReceivePaymentService {
      * @return 记录列表
      */
     List<ReceivePayment> findByQuery(ReceivePaymentRequestForm requestForm);
+
+    Page<ReceivePayment> findByQueryPageable(ReceivePaymentRequestForm requestForm);
 
     void saveConfig(List<ReceivePaymentConfig> configs);
 

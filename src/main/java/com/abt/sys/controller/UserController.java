@@ -3,6 +3,7 @@ package com.abt.sys.controller;
 import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.DeptUserList;
+import com.abt.sys.model.dto.OrgRequestForm;
 import com.abt.sys.model.dto.UserRequestForm;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.EmployeeInfo;
@@ -13,6 +14,7 @@ import com.abt.sys.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import com.abt.common.model.R;
 import com.abt.common.entity.Company;
@@ -83,8 +85,8 @@ public class UserController{
 
     @GetMapping("/query")
     public R<List<User>> findByQuery(UserRequestForm requestForm) {
-        final List<User> list = employeeService.findUserByQuery(requestForm);
-        return R.success(list, list.size());
+        final Page<User> page = employeeService.findUserByQuery(requestForm);
+        return R.success(page.getContent(), (int) page.getTotalElements());
     }
 
     @GetMapping("/basic")
@@ -100,6 +102,18 @@ public class UserController{
     public R<List<DeptUserList>> findDeptUsers() {
         List<DeptUserList> list = orgService.getAllDeptUserList();
         return R.success(list, list.size());
+    }
+
+    @GetMapping("/org/all")
+    public R<List<Org>> findDept(OrgRequestForm requestForm) {
+        final List<Org> all = orgService.getAllBy(requestForm);
+        return R.success(all, all.size());
+    }
+
+    @GetMapping("/org/tree/abt")
+    public R<Org> findDeptTree(){
+        final Org abt = orgService.getABTOrgTree();
+        return R.success(abt);
     }
 
 }

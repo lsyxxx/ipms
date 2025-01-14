@@ -1,5 +1,6 @@
 package com.abt.sys.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -7,6 +8,9 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Nationalized;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +21,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Org")
 @Immutable
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Org {
     @Id
     @Column(name = "Id", nullable = false)
@@ -104,4 +109,16 @@ public class Org {
 
     @Column(name = "TypeId", columnDefinition = "PrimaryKey")
     private String typeId;
+
+    /**
+     * 子节点
+     */
+    @Transient
+    private List<Org> children;
+
+
+    public void addAllChildren(List<Org> list) {
+        this.children = new ArrayList<>();
+        this.children.addAll(list);
+    }
 }

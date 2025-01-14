@@ -20,4 +20,9 @@ public class ReceivePaymentRequestForm extends RequestForm {
      */
     private String invoiceApplyId;
 
+    /**
+     * 通知人用户id
+     */
+    private String notifyUserid;
+
 }

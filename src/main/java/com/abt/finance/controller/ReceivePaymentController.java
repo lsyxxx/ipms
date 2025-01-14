@@ -42,7 +42,7 @@ public class ReceivePaymentController {
      * 读取一条回款记录
      * @param id id
      */
-    @GetMapping("/load/recpay")
+    @GetMapping("/load")
     public R<ReceivePayment> loadReceivePayment(String id) {
         final ReceivePayment receivePayment = receivePaymentService.loadRegisterRecord(id);
         return R.success(receivePayment);

@@ -95,4 +95,9 @@ public class OAConstants {
     public static final String COMPANY_A = "A";
     public static final String COMPANY_G = "G";
     public static final String COMPANY_D = "D";
+
+    /**
+     * 阿伯塔根节点id
+     */
+    public static final String ORG_ROOT_ABT = "651ad04a-fafc-4118-8972-7681ee294ded";
 }

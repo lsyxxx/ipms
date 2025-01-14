@@ -8,9 +8,7 @@ import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -77,30 +75,22 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public String getUserCompanyByJobNumber(String jobNumber) {
-        final EmployeeInfo emp = this.findByJobNumber(jobNumber);
-        return emp.getCompany();
-    }
-
-    @Override
-    public List<User> findUserByQuery(UserRequestForm requestForm) {
-        List<EmployeeInfo> list = employeeRepository.findByQuery(requestForm.getQuery(), requestForm.isEnabled(), requestForm.getStatus());
-        list = WithQueryUtil.build(list);
-        if (list == null) {
-            return new ArrayList<>();
-        }
-        List<User> rl = new ArrayList<>();
-        for (EmployeeInfo one : list) {
+    public Page<User> findUserByQuery(UserRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize());
+        final Page<EmployeeInfo> page = employeeRepository.findByQuery(requestForm.getQuery(), requestForm.isEnabled(), requestForm.getStatus(), pageable);
+        WithQueryUtil.build(page.getContent());
+        List<User> ul = new ArrayList<>();
+        for (EmployeeInfo one : page.getContent()) {
             User u = new User();
             u.setId(one.getUserid());
             u.setUsername(one.getName());
             u.setCode(one.getJobNumber());
             u.setDeptId(one.getDept());
             u.setDeptName(one.getDeptName());
-            rl.add(u);
+            u.setPosition(one.getPosition());
+            ul.add(u);
         }
-        return rl;
-
+        return new PageImpl<>(ul, pageable, page.getTotalElements());
     }
 
 }

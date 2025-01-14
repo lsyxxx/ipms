@@ -12,6 +12,9 @@ import com.abt.finance.service.ReceivePaymentService;
 import com.abt.sys.exception.BusinessException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -54,6 +57,13 @@ public class ReceivePaymentServiceImpl implements ReceivePaymentService {
     @Override
     public List<ReceivePayment> findByQuery(ReceivePaymentRequestForm requestForm) {
         return receivePaymentRepository.findByQuery(requestForm.getQuery());
+    }
+
+    @Override
+    public Page<ReceivePayment> findByQueryPageable(ReceivePaymentRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.getPage(), requestForm.getSize());
+        receivePaymentRepository.findByQuery(requestForm.getQuery(), requestForm.getNotifyUserid(), pageable);
+        return null;
     }
 
     /**

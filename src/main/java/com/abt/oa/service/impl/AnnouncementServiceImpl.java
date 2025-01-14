@@ -116,7 +116,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     //指定用户
     public List<AnnouncementAttachment> publishToSpecific(Announcement announcement) {
-        Assert.hasLength(announcement.getOrgs(), "参数：通知对象部门(orgs) 未传入");
+//        Assert.hasLength(announcement.getOrgs(), "参数：通知对象部门(orgs) 未传入");
         List<AnnouncementAttachment> list = new ArrayList<>();
         String toUsers = announcement.getNodeDesignates();
         final String[] toUsernames = announcement.getNodeDesignateTxts().split(",");

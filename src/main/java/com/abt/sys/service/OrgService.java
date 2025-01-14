@@ -9,6 +9,7 @@ import java.util.List;
 public interface OrgService {
     /**
      * 查询机构，不分页
+     *
      * @param orgRequestForm 参数
      */
     List<Org> getAllBy(OrgRequestForm orgRequestForm);
@@ -17,4 +18,9 @@ public interface OrgService {
      * 查询所有启用的部门和用户
      */
     List<DeptUserList> getAllDeptUserList();
+
+    /**
+     * 获取ABT机构树结构
+     */
+    Org getABTOrgTree();
 }
