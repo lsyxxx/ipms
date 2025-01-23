@@ -79,7 +79,7 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
 //            "left join fetch e.details  " +
             "left join fetch ActHiTaskInst ht on ht.procInstId = e.processInstanceId " +
             "where lower(ht.taskDefKey) not like '%apply%' " +
-            "and (:userid is null or :userid = ''or e.createUserid = :userid or ht.assignee = :userid) " +
+            "and (:userid is null or :userid = '' or ht.assignee = :userid) " +
             "and (ht.endTime is not null) " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +

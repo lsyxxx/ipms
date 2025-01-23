@@ -4,6 +4,7 @@ import com.abt.common.model.User;
 import com.abt.finance.entity.ReceivePayment;
 import com.abt.finance.entity.ReceivePaymentConfig;
 import com.abt.finance.model.ReceivePaymentRequestForm;
+import com.abt.wf.model.InvoiceApplyStat;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -30,10 +31,21 @@ public interface ReceivePaymentService {
 
     Page<ReceivePayment> findByQueryPageable(ReceivePaymentRequestForm requestForm);
 
+    Page<ReceivePayment> receivePaymentStats(ReceivePaymentRequestForm requestForm);
+
+    Page<InvoiceApplyStat> payingStats(ReceivePaymentRequestForm requestForm);
+
     void saveConfig(List<ReceivePaymentConfig> configs);
 
     /**
      * 获取默认配置的回款通知用户
      */
     List<User> findDefaultNotifyUsers();
+
+    /**
+     * 获取所有详情，包含所有关联信息
+     */
+    ReceivePayment loadWithAll(String id);
+
+    Page<ReceivePayment> findByNotifyUsers(ReceivePaymentRequestForm requestForm);
 }

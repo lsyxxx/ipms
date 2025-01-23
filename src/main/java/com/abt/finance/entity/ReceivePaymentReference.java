@@ -1,5 +1,6 @@
 package com.abt.finance.entity;
 
+import com.abt.market.entity.SaleAgreement;
 import com.abt.wf.entity.InvoiceApply;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -49,7 +50,7 @@ public class ReceivePaymentReference{
     /**
      * 关联类型，发票/如合同/结算单
      */
-    private String type = TYPE_INVOICE;
+    private String type;
 
 
     /**
@@ -66,10 +67,17 @@ public class ReceivePaymentReference{
      */
     public static final String TYPE_INVOICE = "invoice";
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ref_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    /**
+     * 关联发票
+     */
+    @Transient
     private InvoiceApply invoiceApply;
+
+    /**
+     * 关联合同
+     */
+    @Transient
+    private SaleAgreement saleAgreement;
 
 
 

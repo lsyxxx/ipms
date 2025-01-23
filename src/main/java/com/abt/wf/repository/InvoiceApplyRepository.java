@@ -113,5 +113,7 @@ public interface InvoiceApplyRepository extends JpaRepository<InvoiceApply, Stri
             "AND (:endDate IS NULL OR e.createDate <= :endDate) ")
     Page<InvoiceApply> findAllByQueryPaged(String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
+    List<InvoiceApply> findByIdIsIn(List<String> ids);
+
 
 }

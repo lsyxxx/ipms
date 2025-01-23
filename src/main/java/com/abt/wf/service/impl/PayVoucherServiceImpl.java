@@ -1,17 +1,21 @@
 package com.abt.wf.service.impl;
 
 import com.abt.common.model.RequestForm;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.service.CreditBookService;
 import com.abt.finance.service.ICreditBook;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
+import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PayVoucher;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.PayVoucherRequestForm;
+import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
 import com.abt.wf.repository.PayVoucherRepository;
@@ -19,6 +23,7 @@ import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.PayVoucherService;
 import com.abt.wf.service.SignatureService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -283,6 +288,48 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     public PayVoucher loadBusiness(String businessId) {
         return payVoucherRepository.findById(businessId).orElse(null);
     }
+
+
+    public static final String PAY_TASK_MGR = "rbsPay_managers";
+    public static final String PAY_TASK_ACC = "rbsPay_acc";
+    public static final String PAY_TASK_FINMGR = "rbsPay_finMgr";
+    public static final String PAY_TASK_CEO = "rbsPay_ceo";
+    public static final String PAY_TASK_CHIEF = "rbsPay_chief";
+    public static final String PAY_TASK_CASHIER = "rbsPay_cashier";
+
+    @Override
+    public ReimburseExportDTO exportDetail(String id) {
+        final PayVoucher entity = load(id);
+        ReimburseExportDTO dto = new ReimburseExportDTO(PAY_TASK_MGR, null, null, PAY_TASK_ACC, PAY_TASK_FINMGR, PAY_TASK_CEO, PAY_TASK_CHIEF, PAY_TASK_CASHIER);
+        dto.setId(entity.getId());
+        dto.setCost(entity.getPayAmount().doubleValue());
+        dto.setProject(entity.getProject());
+        dto.setReason(entity.getReason());
+        dto.setCreateDate(TimeUtil.toYYYY_MM_DDString(entity.getCreateDate()));
+        dto.setCreateUsername(entity.getCreateUsername());
+        dto.setDeptName(entity.getDepartmentName());
+        dto.setTeamName(entity.getTeamName());
+        dto.setVoucherNum(entity.getVoucherNum());
+        dto.setPayDate(TimeUtil.toYYYY_MM_DDString(entity.getPayDate()));
+        dto.setPayLevel(entity.getPayLevel());
+        dto.setReceiveUser(entity.getReceiveUser());
+        dto.setCompany(entity.getCompany());
+        dto.upperCase();
+        final String json = entity.getOtherFileList();
+        final List<SystemFile> fileList = JsonUtil.toObject(json, new TypeReference<List<SystemFile>>() {});
+        if (fileList != null && !fileList.isEmpty()) {
+            dto.setAttachmentNum(fileList.size());
+        }
+        //审批记录
+        final List<FlowOperationLog> logs = this.processRecord(id, SERVICE_RBS);
+        this.multiMgrProcessRecord(logs, dto);
+
+        //sig
+        createProcessRecordSig(dto);
+        return dto;
+    }
+
+
 
     static class PayVoucherSpecifications extends CommonSpecifications<PayVoucherRequestForm, PayVoucher> {
         //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号

@@ -1,9 +1,12 @@
 package com.abt.sys.repository;
 
 import com.abt.sys.model.entity.EmployeeInfo;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -38,4 +41,12 @@ class EmployeeRepositoryTest {
         });
     }
 
+    @Test
+    void findByQuery() {
+        final Page<EmployeeInfo> page = employeeRepository.findByQuery(null, false, 0, "ab30277c-f7ba-4a85-b61d-d03d80301646", PageRequest.of(0, 50));
+        assertNotNull(page);
+        System.out.println(page.getTotalElements());
+        page.getContent().forEach(i -> System.out.printf("name: %s, dept: %s\n", i.getName(), i.getDept()));
+
+    }
 }

@@ -2,6 +2,7 @@ package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -33,6 +34,7 @@ import static com.abt.wf.config.Constants.KEY_MANAGER;
 @DynamicInsert
 @DynamicUpdate
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class InvoiceApply extends WorkflowBase {
 
     @Id
@@ -199,6 +201,18 @@ public class InvoiceApply extends WorkflowBase {
     private String decision;
     @Transient
     private Map<String, Object> variableMap = new HashMap<String, Object>();
+
+
+    public InvoiceApply(String project, String clientId, String clientName, String testNo, String contractName, String company, double invoiceAmount) {
+        super();
+        this.project = project;
+        this.clientId = clientId;
+        this.clientName = clientName;
+        this.testNo = testNo;
+        this.contractName = contractName;
+        this.company = company;
+        this.invoiceAmount = invoiceAmount;
+    }
 
     public Map<String, Object> createVariableMap() {
         this.variableMap = new HashMap<>();

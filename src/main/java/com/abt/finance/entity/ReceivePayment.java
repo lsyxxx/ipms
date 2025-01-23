@@ -13,6 +13,7 @@ import java.util.List;
 import com.abt.common.model.User;
 import com.abt.common.util.JsonUtil;
 import com.abt.market.entity.SaleAgreement;
+import com.abt.sys.model.WithQuery;
 import com.abt.wf.entity.InvoiceApply;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -45,7 +46,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners({AuditingEntityListener.class, JpaUsernameListener.class})
 @Slf4j
-public class ReceivePayment extends AuditInfo {
+public class ReceivePayment extends AuditInfo implements WithQuery<ReceivePayment> {
 
     /**
      * 登记流水号
@@ -131,6 +132,13 @@ public class ReceivePayment extends AuditInfo {
     @Column(name="files_")
     private String files;
 
+
+    /**
+     * 项目名称
+     */
+    @Column(name="project_", length = 500)
+    private String project;
+
     /**
      * 通知用户
      */
@@ -165,15 +173,52 @@ public class ReceivePayment extends AuditInfo {
     private List<SettlementDocument> settlementDocuments;
 
 
+    /**
+     * 应收
+     */
+    @Transient
+    private BigDecimal paying;
+
+    /**
+     * 已收
+     */
+    @Transient
+    private BigDecimal payed;
+
+    /**
+     * 余额
+     */
+    @Transient
+    private BigDecimal balance;
+
     public void buildNotifyUsers() {
         this.notifyUsers = new ArrayList<>();
         if (StringUtils.isNotBlank(this.notifyStrings)) {
             try {
                 this.notifyUsers = JsonUtil.toObject(this.notifyStrings, new TypeReference<List<User>>() {});
             } catch (Exception e) {
-                log.error("通知用户Json 转换失败！- {}", e.getMessage(), e);
+                log.error("回款通知对象Json 转换失败！json: {}, 错误原因: {}", this.notifyStrings, e.getMessage(), e);
             }
         }
+    }
+
+
+    @Override
+    public ReceivePayment afterQuery() {
+        //处理通知人
+        if (StringUtils.isNotBlank(this.notifyStrings)) {
+            this.buildNotifyUsers();
+        }
+        return this;
+    }
+
+    @Override
+    public void simple() {
+        this.references = null;
+        this.invoices = null;
+        this.saleAgreements = null;
+        this.settlementDocuments = null;
+
     }
 
 

@@ -2,10 +2,14 @@ package com.abt.app.service;
 
 import com.abt.app.entity.JPushRegister;
 
+import java.util.List;
+
 /**
  * 推送服务
  */
 public interface PushService {
+    List<JPushRegister> findByUserid(String userid);
+
     /**
      * 注册id
      */

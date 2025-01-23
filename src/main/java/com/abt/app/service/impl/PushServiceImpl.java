@@ -24,6 +24,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -54,6 +55,11 @@ public class PushServiceImpl implements PushService {
     }
 
     @Override
+    public List<JPushRegister> findByUserid(String userid) {
+        return jpushRegisterRepository.findByUserid(userid);
+    }
+
+    @Override
     public void register(JPushRegister pushRegister) {
         String userid = pushRegister.getUserid();
         final EmployeeInfo emp = employeeService.findUserByUserid(userid);
@@ -67,24 +73,28 @@ public class PushServiceImpl implements PushService {
     @Override
     public void pushAndroid(String userid, String alert, String message, int badgeAddNum) {
         ValidateUtil.ensurePropertyNotnull(userid, "用户id");
-        final JPushRegister jPushRegister = jpushRegisterRepository.findByUserid(userid);
-        if (jPushRegister == null) {
+        final List<JPushRegister> regList = jpushRegisterRepository.findByUserid(userid);
+        if (regList == null) {
             log.warn("用户{}未注册rid!", userid);
             return;
         }
-        try {
-            final String json = createAndroidJPushMessage(alert, message, badgeAddNum, jPushRegister.getRegisterId());
-            doPush(json);
-        } catch (Exception e) {
-            log.error("推送消失失败!{}", e.getMessage(), e);
-            SysLog sysLog = new SysLog();
-            sysLog.setContent("JPush推送失败");
-            sysLog.setTypeName("JPush推送");
-            sysLog.setCreateId(userid);
-            sysLog.setCreateTime(LocalDateTime.now());
-            sysLog.setApplication(SysLogService.APPLICATION);
-            sysLogRepository.save(sysLog);
-        }
+
+        regList.forEach(r -> {
+            try {
+                final String json = createAndroidJPushMessage(alert, message, badgeAddNum, r.getRegisterId());
+                doPush(json);
+            } catch (Exception e) {
+                log.error("推送消失失败!{}", e.getMessage(), e);
+                SysLog sysLog = new SysLog();
+                sysLog.setContent("JPush推送失败");
+                sysLog.setTypeName("JPush推送");
+                sysLog.setCreateId(userid);
+                sysLog.setCreateTime(LocalDateTime.now());
+                sysLog.setApplication(SysLogService.APPLICATION);
+                sysLogRepository.save(sysLog);
+            }
+
+        });
     }
 
     /**
@@ -168,7 +178,7 @@ public class PushServiceImpl implements PushService {
 
     public static void main(String[] args) throws JsonProcessingException {
         PushServiceImpl impl = new PushServiceImpl(null, null, null);
-        final String json = impl.createAndroidJPushMessage("您有一条待办", "您有一条刘宋菀提交的费用报销申请待处理", 1, "100d8559087c6701c7c");
+        final String json = impl.createAndroidJPushMessage("您有待办事项-测试", "您有一条刘宋菀提交的费用报销申请待处理-测试", 1, "100d8559087c6701c7c");
         impl.doPush(json);
     }
 }

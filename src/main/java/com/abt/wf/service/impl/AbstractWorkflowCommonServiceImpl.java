@@ -14,13 +14,16 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.UserSignature;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
+import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
 import com.abt.wf.service.*;
 import com.abt.wf.util.WorkFlowUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.metadata.data.WriteCellData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -51,6 +54,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.abt.common.ExcelUtil.*;
 import static com.abt.oa.OAConstants.*;
 import static com.abt.wf.config.Constants.*;
 
@@ -646,6 +650,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         Page<T> page = commonFind(requestForm);
         final int total = (int)page.getTotalElements();
         if (total > 99999) {
+            //TODO: 数据量过大时，应该多次批量导出
             requestForm.setLimit(total + 1);
             page = commonFind(requestForm);
         }
@@ -669,6 +674,54 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         }
     }
 
+    /**
+     * 含有多任务task的流程的审批记录导出
+     * @param logs 审批记录
+     * @param dto 报销详情导出dto
+     */
+    public void multiMgrProcessRecord(List<FlowOperationLog> logs, ReimburseExportDTO dto) {
+        final List<FlowOperationLog> mgrList = logs.stream().filter(i -> dto.getMultiMgrDef().equals(i.getTaskDefinitionKey())).toList();
+        if (mgrList.size() == 1) {
+            //副总
+            dto.setLeaderComment(mgrList.get(0).getComment());
+            dto.setLeaderDate(TimeUtil.toYYYY_MM_DDString(mgrList.get(0).getTaskEndTime()));
+            dto.setLeaderId(mgrList.get(0).getOperatorId());
+        } else if (mgrList.size() > 1) {
+            //主管
+            dto.setManagerComment(mgrList.get(0).getComment());
+            dto.setManagerDate(TimeUtil.toYYYY_MM_DDString(mgrList.get(0).getTaskEndTime()));
+            dto.setManagerId(mgrList.get(0).getOperatorId());
+            //副总
+            dto.setLeaderComment(mgrList.get(1).getComment());
+            dto.setLeaderDate(TimeUtil.toYYYY_MM_DDString(mgrList.get(1).getTaskStartTime()));
+            dto.setLeaderId(mgrList.get(1).getOperatorId());
+        }
+        for (FlowOperationLog log : logs) {
+            if (dto.getAccountDef().equals(log.getTaskDefinitionKey())) {
+                //财务审批
+                dto.setAcctComment(log.getComment());
+                dto.setAcctDate(TimeUtil.toYYYY_MM_DDString(log.getTaskEndTime()));
+                dto.setAcctId(log.getOperatorId());
+            } else if (dto.getFinManagerDef().equals(log.getTaskDefinitionKey())) {
+                dto.setFinManagerComment(log.getComment());
+                dto.setFinManagerDate(TimeUtil.toYYYY_MM_DDString(log.getTaskEndTime()));
+                dto.setFinManagerId(log.getOperatorId());
+            } else if (dto.getCeoDef().equals(log.getTaskDefinitionKey())) {
+                dto.setCeoComment(log.getComment());
+                dto.setCeoDate(TimeUtil.toYYYY_MM_DDString(log.getTaskEndTime()));
+                dto.setCeoId(log.getOperatorId());
+            } else if (dto.getChiefDef().equals(log.getTaskDefinitionKey())) {
+                dto.setChiefComment(log.getComment());
+                dto.setChiefDate(TimeUtil.toYYYY_MM_DDString(log.getTaskEndTime()));
+                dto.setChiefId(log.getOperatorId());
+            } else if (dto.getCashierDef().equals(log.getTaskDefinitionKey())) {
+                dto.setCashierComment(log.getComment());
+                dto.setCashierDate(TimeUtil.toYYYY_MM_DDString(log.getTaskEndTime()));
+                dto.setCashierId(log.getOperatorId());
+            }
+        }
+    }
+
     @Override
     public void export(R requestForm, HttpServletResponse response, String templatePath, String newFileName, Class<T> dataClass) throws IOException {
         Assert.notNull(response, "response is null!");
@@ -683,6 +736,46 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         EasyExcel.write(response.getOutputStream(), dataClass).withTemplate(templatePath).sheet().doFill(all);
     }
 
+    /**
+     * easyexcel中插入签名
+     * @param userid 用户id
+     * @return WriteCellData<Void>
+     */
+    WriteCellData<Void> setExcelSig(String userid) throws IOException {
+        if (StringUtils.isNotBlank(userid)) {
+            final UserSignature msig = signatureService.getSignatureByUserid(userid);
+            if (msig != null) {
+                File sf = new File(signatureService.getSignatureDir() + msig.getFileName());
+                return createImageData(sf);
+            }
+        }
+        return null;
+    }
+
+    WriteCellData<Void> setExcelSigWithMargin2(String userid) throws IOException {
+        if (StringUtils.isNotBlank(userid)) {
+            final UserSignature msig = signatureService.getSignatureByUserid(userid);
+            if (msig != null) {
+                File sf = new File(signatureService.getSignatureDir() + msig.getFileName());
+                return createImageDataWithMargin2(sf);
+            }
+        }
+        return null;
+    }
+
+    void createProcessRecordSig(ReimburseExportDTO dto) {
+        try {
+            dto.setManagerSig(setExcelSigWithMargin2(dto.getManagerId()));
+            dto.setLeaderSig(setExcelSigWithMargin2(dto.getLeaderId()));
+            dto.setAcctSig(setExcelSigWithMargin2(dto.getAcctId()));
+            dto.setFinManagerSig(setExcelSigWithMargin2(dto.getFinManagerId()));
+            dto.setCeoSig(setExcelSigWithMargin2(dto.getCeoId()));
+            dto.setChiefSig(setExcelSigWithMargin2(dto.getChiefId()));
+            dto.setCashierSig(setExcelSigWithMargin2(dto.getCashierId()));
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
 
 
 }

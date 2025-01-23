@@ -23,12 +23,4 @@ class ReceivePaymentRepositoryTest {
     void findByQuery() {
     }
 
-    @Test
-    void findWithInvoice() {
-        final List<ReceivePayment> list = receivePaymentRepository.findWithInvoice();
-        Assertions.assertNotNull(list);
-        list.forEach(p -> {
-            System.out.println(p.getInvoices().size());
-        });
-    }
 }

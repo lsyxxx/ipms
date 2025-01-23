@@ -91,7 +91,7 @@ public interface ReimburseRepository extends JpaRepository<Reimburse, String>, J
             "left join fetch ActHiTaskInst ht on ht.procInstId = r.processInstanceId " +
             "where lower(ht.taskDefKey) not like '%apply%' " +
             "and (:state is null or :state = '' or r.businessState = :state) " +
-            "and (:userid is null or :userid = '' or r.createUserid = :userid or ht.assignee = :userid) " +
+            "and (:userid is null or :userid = '' or ht.assignee = :userid) " +
             "and ht.endTime is not null " +
             "and (:query IS NULL OR :query = '' " +
             "   or r.id like %:query% " +

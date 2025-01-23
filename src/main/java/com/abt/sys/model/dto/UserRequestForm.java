@@ -13,5 +13,6 @@ import lombok.Setter;
 public class UserRequestForm extends RequestForm {
     private String jobNumber;
     private int status;
+    private String deptId;
 
 }

@@ -58,11 +58,12 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
             "left join fetch e.tUser u " +
             "where 1=1 " +
             "and (:query is null or :query = '' or e.jobNumber like %:query% or e.name like %:query% or e.position like %:query%) " +
+            "and (:deptId is null or :deptId = '' or e.dept = :deptId ) " +
             "and (:status is null or u.status = :status) " +
             "and (:exist is null or e.isExit = :exist) " +
             "order by e.jobNumber asc "
     )
-    Page<EmployeeInfo> findByQuery(String query, Boolean exist, int status, Pageable pageable);
+    Page<EmployeeInfo> findByQuery(String query, Boolean exist, int status, String deptId, Pageable pageable);
 
 
 

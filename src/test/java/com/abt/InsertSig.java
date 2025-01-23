@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -33,7 +34,7 @@ public class InsertSig {
 
     public static void main(String[] args) throws IOException {
 //        getImage();
-        insertOne("186", "周珺", "F:\\sig\\186周珺.png");
+        insertOne("015", "郁永磊", "F:\\sig\\015郁永磊.png");
     }
 
     public static void getImage() throws IOException {
@@ -69,6 +70,9 @@ public class InsertSig {
     public static void insertImage(String jobNumber, String username, File file, String base64) {
         try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD)) {
             // 读取图片文件并转换为二进制数据
+            if (!file.exists()) {
+                throw new FileNotFoundException(file.getName() + "签名图片不存在!");
+            }
             FileInputStream inputStream = new FileInputStream(file);
 
             // SQL 语句

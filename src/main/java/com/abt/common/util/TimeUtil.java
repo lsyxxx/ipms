@@ -202,5 +202,18 @@ public class TimeUtil {
         return localDate.format(dateFormatter);
     }
 
+    /**
+     * 将时间转为yyyy-mm-dd格式
+     * @param dateTime 日期时间
+     * @return yyyy-mm-dd字符串
+     */
+    public static String toYYYY_MM_DDString(LocalDate dateTime) {
+        if (dateTime == null) {
+            return "";
+        }
+        return dateTime.format(dateFormatter);
+    }
+
+
 
 }

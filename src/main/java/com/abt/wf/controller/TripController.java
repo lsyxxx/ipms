@@ -2,21 +2,27 @@ package com.abt.wf.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.TripMain;
+import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.TripRequestForm;
 import com.abt.wf.model.UserTaskDTO;
+import com.abt.wf.service.ReimburseService;
 import com.abt.wf.service.TripService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -28,6 +34,15 @@ import java.util.List;
 public class TripController {
 
     private final TripService tripService;
+
+    @Value("${abt.trip.excel.template}")
+    private String excelTemplate;
+
+    /**
+     *  临时下载保存地址
+     */
+    @Value("${abt.temp.dir}")
+    private String tempDir;
 
     public TripController(TripService tripService) {
         this.tripService = tripService;
@@ -129,6 +144,17 @@ public class TripController {
     public R<List<FlowOperationLog>> processRecord(@PathVariable String id) {
         final List<FlowOperationLog> processRecord = tripService.processRecord(id, Constants.SERVICE_PAY);
         return R.success(processRecord, processRecord.size());
+    }
+
+    @GetMapping("/export")
+    public void export(TripRequestForm requestForm, HttpServletResponse response) throws IOException {
+        try {
+            requestForm.setUserid(TokenUtil.getUseridFromAuthToken());
+            tripService.export(requestForm, response, excelTemplate,"rbs_export.xlsx", TripMain.class);
+        } catch (IOException e) {
+            final R<Object> fail = R.fail("导出失败!");
+            response.getWriter().println(JsonUtil.toJson(fail));
+        }
     }
 
     public void setTokenUser(TripRequestForm form) {

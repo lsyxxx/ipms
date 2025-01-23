@@ -9,21 +9,33 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
+import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.ReimburseService;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -38,6 +50,15 @@ public class ReimburseController {
     private final ReimburseService reimburseService;
     @Value("${abt.rbs.excel.template}")
     private String excelTemplate;
+
+    @Value("${abt.rbs.excel.dtl.template}")
+    private String detailTemplate;
+
+    /**
+     *  临时下载保存地址
+     */
+    @Value("${abt.temp.dir}")
+    private String tempDir;
 
     public ReimburseController(ReimburseService reimburseService) {
         this.reimburseService = reimburseService;
@@ -148,6 +169,29 @@ public class ReimburseController {
         } catch (IOException e) {
             final R<Object> fail = R.fail("导出失败!");
             response.getWriter().println(JsonUtil.toJson(fail));
+        }
+    }
+
+    @GetMapping("/export/dtl")
+    public ResponseEntity<byte[]> exportDetail(String id, HttpServletResponse response) throws IOException {
+        try {
+            if (!Files.isRegularFile(Paths.get(detailTemplate))) {
+                throw new BusinessException("未添加导出模板!");
+            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", URLEncoder.encode("报销详情", StandardCharsets.UTF_8));
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            final ReimburseExportDTO dto = reimburseService.exportDetail(id);
+            String newFileName =  id + ".xlsx";
+            File newFile = new File(tempDir + "/rbs/" + newFileName);
+            try (ExcelWriter excelWriter = EasyExcel.write(newFile).withTemplate(detailTemplate).build()) {
+                WriteSheet writeSheet = EasyExcel.writerSheet().build();
+                excelWriter.fill(dto, writeSheet);
+            }
+            return new ResponseEntity<>(FileUtils.readFileToByteArray(newFile), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.EXPECTATION_FAILED);
         }
     }
 

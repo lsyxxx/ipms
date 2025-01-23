@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -43,4 +44,6 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
             "   or s.partyA like %:query% " +
             "   or FUNCTION('STR', s.amount) like %:query%) ")
     Page<SaleAgreement> findByQuery(String query, Pageable pageable);
+
+    List<SaleAgreement> findByIdIsIn(Collection<String> ids);
 }

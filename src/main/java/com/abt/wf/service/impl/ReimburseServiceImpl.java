@@ -14,13 +14,17 @@ import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;
+import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
+import com.abt.wf.entity.UserSignature;
+import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.service.SignatureService;
+import com.alibaba.excel.metadata.data.WriteCellData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -37,12 +41,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.abt.common.ExcelUtil.createImageData;
 import static com.abt.wf.config.Constants.*;
 
 /**
@@ -333,6 +336,48 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         form.clearData();
         return form;
     }
+
+    public static final String RBS_TASK_MGR = "rbsMulti_managers";
+    public static final String RBS_TASK_ACC = "rbsMulti_acc";
+    public static final String RBS_TASK_FINMGR = "rbsMulti_finMgr";
+    public static final String RBS_TASK_CEO = "rbsMulti_ceo";
+    public static final String RBS_TASK_CHIEF = "rbsMulti_chief";
+    public static final String RBS_TASK_CASHIER = "rbsMulti_acct";
+
+    @Override
+    public ReimburseExportDTO exportDetail(String id) {
+        final Reimburse entity = load(id);
+        ReimburseExportDTO dto = new ReimburseExportDTO(RBS_TASK_MGR, null, null, RBS_TASK_ACC, RBS_TASK_FINMGR, RBS_TASK_CEO, RBS_TASK_CHIEF, RBS_TASK_CASHIER);
+        dto.setId(entity.getId());
+        dto.setCost(entity.getCost());
+        dto.setPaying(entity.getReserveRefund());
+        dto.setProject(entity.getProject());
+        dto.setReason(entity.getReason());
+        dto.setCreateDate(TimeUtil.toYYYY_MM_DDString(entity.getCreateDate()));
+        dto.setCreateUsername(entity.getCreateUsername());
+        dto.setDeptName(entity.getDepartmentName());
+        dto.setTeamName(entity.getTeamName());
+        dto.setVoucherNum(entity.getVoucherNum());
+        dto.setPayDate(TimeUtil.toYYYY_MM_DDString(entity.getPayDate()));
+        dto.setPayLevel(entity.getPayLevel());
+        dto.setReceiveUser(entity.getReceiveUser());
+        dto.setCompany(entity.getCompany());
+        dto.upperCase();
+        final String json = entity.getOtherFileList();
+        final List<SystemFile> fileList = JsonUtil.toObject(json, new TypeReference<List<SystemFile>>() {});
+        if (fileList != null && !fileList.isEmpty()) {
+            dto.setAttachmentNum(fileList.size());
+        }
+        //审批记录
+        final List<FlowOperationLog> logs = this.processRecord(id, SERVICE_RBS);
+        this.multiMgrProcessRecord(logs, dto);
+
+        //sig
+        createProcessRecordSig(dto);
+
+        return dto;
+    }
+
 
 }
 

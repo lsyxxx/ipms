@@ -77,7 +77,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Page<User> findUserByQuery(UserRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize());
-        final Page<EmployeeInfo> page = employeeRepository.findByQuery(requestForm.getQuery(), requestForm.isEnabled(), requestForm.getStatus(), pageable);
+        final Page<EmployeeInfo> page = employeeRepository
+                .findByQuery(requestForm.getQuery(), requestForm.isEnabled(), requestForm.getStatus(), requestForm.getDeptId(), pageable);
         WithQueryUtil.build(page.getContent());
         List<User> ul = new ArrayList<>();
         for (EmployeeInfo one : page.getContent()) {

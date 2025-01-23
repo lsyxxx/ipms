@@ -1,11 +1,14 @@
 package com.abt.testing.entity;
 
+import com.abt.sys.model.entity.CustomerInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -153,6 +156,11 @@ public class Entrust {
     @Size(max = 2000)
     @Column(name = "reportfilepath", length = 2000)
     private String reportFilePath;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "customNo", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private CustomerInfo customer;
 
     @Override
     public String toString() {

@@ -3,11 +3,14 @@ package com.abt.finance.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.model.User;
+import com.abt.common.util.TokenUtil;
 import com.abt.finance.entity.ReceivePayment;
 import com.abt.finance.entity.ReceivePaymentConfig;
 import com.abt.finance.model.ReceivePaymentRequestForm;
 import com.abt.finance.service.ReceivePaymentService;
+import com.abt.wf.model.InvoiceApplyStat;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,14 +47,14 @@ public class ReceivePaymentController {
      */
     @GetMapping("/load")
     public R<ReceivePayment> loadReceivePayment(String id) {
-        final ReceivePayment receivePayment = receivePaymentService.loadRegisterRecord(id);
+        final ReceivePayment receivePayment = receivePaymentService.loadWithAll(id);
         return R.success(receivePayment);
     }
 
     /**
      * 查询回款登记列表
      */
-    @GetMapping("/find/recpay/list")
+    @GetMapping("/page")
     public R<List<ReceivePayment>> findReceivePaymentList(ReceivePaymentRequestForm form) {
         final List<ReceivePayment> list = receivePaymentService.findByQuery(form);
         return R.success(list, list.size());
@@ -69,5 +72,18 @@ public class ReceivePaymentController {
         return R.success(users);
     }
 
+
+    @GetMapping("/find/notify")
+    public R<List<ReceivePayment>> findByNotifyUsers(ReceivePaymentRequestForm requestForm) {
+        requestForm.setNotifyUserid(TokenUtil.getUseridFromAuthToken());
+        final Page<ReceivePayment> page = receivePaymentService.findByNotifyUsers(requestForm);
+        return R.success(page.getContent(), (int) page.getTotalElements());
+    }
+
+    @PostMapping("/paying/stats")
+    public R<List<InvoiceApplyStat>> payingStats(@RequestBody ReceivePaymentRequestForm requestForm) {
+        final Page<InvoiceApplyStat> page = receivePaymentService.payingStats(requestForm);
+        return R.success(page.getContent(), (int) page.getTotalElements());
+    }
 
 }

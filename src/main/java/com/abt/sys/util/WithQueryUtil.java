@@ -1,6 +1,8 @@
 package com.abt.sys.util;
 
 import com.abt.sys.model.WithQuery;
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 
 /**
@@ -17,6 +19,14 @@ public class WithQueryUtil {
             queryList.forEach(WithQuery::afterQuery);
         }
         return queryList;
+    }
+
+
+    public static <T extends WithQuery<T>> Page<T> build(Page<T> queryPage) {
+        if (queryPage != null && !queryPage.isEmpty()) {
+            queryPage.getContent().forEach(WithQuery::afterQuery);
+        }
+        return queryPage;
     }
 
 }

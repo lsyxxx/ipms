@@ -3,6 +3,7 @@ package com.abt.wf.service;
 import com.abt.common.model.RequestForm;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.entity.WorkflowBase;
+import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.ReimburseRequestForm;
 import jakarta.servlet.http.HttpServletResponse;
 import org.camunda.bpm.engine.task.Task;
@@ -38,5 +39,17 @@ public interface BusinessService<T extends RequestForm, R extends WorkflowBase> 
 
     T createRequestForm();
 
+    /**
+     * 导出列表
+     */
     void export(T requestForm, HttpServletResponse response, String templatePath, String newFileName, Class<R> dataClass) throws IOException;
+
+    /**
+     * 导出详情
+     * @param id 业务id
+     * @return ReimburseExportDTO 报销详情导出dto
+     */
+    default ReimburseExportDTO exportDetail(String id) {
+        return null;
+    }
 }

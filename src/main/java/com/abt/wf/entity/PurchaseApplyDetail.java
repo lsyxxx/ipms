@@ -220,6 +220,7 @@ public class PurchaseApplyDetail {
         this.setAcceptResult(ACCEPT_QUALIFIED);
         this.setAcceptItems(acceptItems);
         this.setAcceptTime(LocalDateTime.now());
+        this.setAccepted(true);
 
     }
 

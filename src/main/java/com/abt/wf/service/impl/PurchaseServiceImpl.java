@@ -4,6 +4,7 @@ import com.abt.common.ExcelUtil;
 import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
+import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.IFileService;
@@ -27,6 +28,7 @@ import com.alibaba.excel.write.metadata.fill.FillConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,6 +45,7 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.abt.common.ExcelUtil.createImageData;
 import static com.abt.wf.config.Constants.*;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_PURCHASE;
 
@@ -406,36 +409,12 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         try (ExcelWriter excelWriter = EasyExcel.write(newFile).withTemplate(excelTemplate).build()) {
             WriteSheet writeSheet = EasyExcel.writerSheet().build();
             FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
-
             excelWriter.fill(list, fillConfig, writeSheet);
             excelWriter.fill(map, writeSheet);
         }
         return newFile;
     }
 
-    private WriteCellData<Void> setExcelSig(String userid) throws IOException {
-        if (StringUtils.isNotBlank(userid)) {
-            final UserSignature msig = signatureService.getSignatureByUserid(userid);
-            if (msig != null) {
-                File sf = new File(signatureService.getSignatureDir() + msig.getFileName());
-                return createImageData(sf);
-            }
-        }
-        return null;
-    }
-
-    private WriteCellData<Void> createImageData(File imageFile) throws IOException {
-        WriteCellData<Void> writeCellData = new WriteCellData<>();
-        ImageData imageData = new ImageData();
-        imageData.setImage(Files.readAllBytes(imageFile.toPath()));
-        imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
-        imageData.setTop(10);
-        imageData.setBottom(10);
-        imageData.setLeft(10);
-        imageData.setRight(10);
-        writeCellData.setImageDataList(List.of(imageData));
-        return writeCellData;
-    }
 
     @Override
     public void setBusinessId(String procId, String entityId) {
@@ -456,7 +435,14 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     @Override
     public void delete(String id) {
+        final PurchaseApplyMain main = purchaseApplyMainRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到流程(id=" + id + ")"));
         purchaseApplyMainRepository.deleteById(id);
+        //删除正在进行的流程
+        final ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().active().processInstanceId(main.getProcessInstanceId()).singleResult();
+        if (processInstance != null) {
+            runtimeService.deleteProcessInstance(processInstance.getProcessInstanceId(), "用户" + TokenUtil.getUserFromAuthToken().getName() + "手动删除流程");
+        }
+
     }
 
     @Override
