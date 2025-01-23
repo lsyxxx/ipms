@@ -2,6 +2,7 @@ package com.abt.market.entity;
 
 import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.model.AuditInfo;
+import com.abt.common.service.CommonJpaAudit;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Entrust;
 import jakarta.persistence.*;
@@ -29,7 +30,7 @@ import java.util.List;
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners(CommonJpaAuditListener.class)
-public class SettlementMain extends AuditInfo {
+public class SettlementMain extends AuditInfo implements CommonJpaAudit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -72,7 +73,7 @@ public class SettlementMain extends AuditInfo {
     /**
      * 收款公司电话
      */
-    @Column(name="tel_no", columnDefinition="VARCHAR(128)")
+    @Column(name="tel_no", columnDefinition="VARCHAR(32)")
     private String telephoneNo;
 
     /**
@@ -91,13 +92,13 @@ public class SettlementMain extends AuditInfo {
      * 本次结算总金额
      */
     @Column(name="sum_", columnDefinition="DECIMAL(10,2)")
-    private double sum;
+    private Double sum;
 
     /**
      * 是否含税
      */
     @Column(name="is_tax", columnDefinition = "BIT")
-    private boolean isTax;
+    private boolean isTax = true;
 
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "main")

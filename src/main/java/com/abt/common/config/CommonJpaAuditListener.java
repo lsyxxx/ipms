@@ -2,6 +2,7 @@ package com.abt.common.config;
 
 import com.abt.common.model.User;
 import com.abt.common.service.CommonJpaAudit;
+import com.abt.common.util.TokenUtil;
 import com.abt.sys.repository.UserRepository;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -28,17 +29,19 @@ public class CommonJpaAuditListener {
     public <T extends CommonJpaAudit> void beforePersist(T entity) {
         String createUserid = entity.getCreateUserid();
         if (StringUtils.isNotBlank(createUserid)) {
-            final User user = userRepository.getSimpleUserInfo(createUserid);
-            if (user != null) {
-                entity.setCreateUsername(user.getUsername());
-            }
+//            final User user = userRepository.getSimpleUserInfo(createUserid);
+//            if (user != null) {
+//                entity.setCreateUsername(user.getUsername());
+//            }
+            entity.setCreateUsername(TokenUtil.getUserFromAuthToken().getUsername());
         }
         String updateUserid = entity.getUpdateUserid();
         if (StringUtils.isNotBlank(updateUserid)) {
-            final User user = userRepository.getSimpleUserInfo(updateUserid);
-            if (user != null) {
-                entity.setUpdateUsername(user.getUsername());
-            }
+//            final User user = userRepository.getSimpleUserInfo(updateUserid);
+//            if (user != null) {
+//                entity.setUpdateUsername(user.getUsername());
+//            }
+            entity.setUpdateUsername(TokenUtil.getUserFromAuthToken().getUsername());
         }
     }
 
@@ -49,10 +52,11 @@ public class CommonJpaAuditListener {
     public <T extends CommonJpaAudit> void beforeUpdate(T entity) {
         String updateUserid = entity.getUpdateUserid();
         if (StringUtils.isNotBlank(updateUserid)) {
-            final User user = userRepository.getSimpleUserInfo(updateUserid);
-            if (user != null) {
-                entity.setUpdateUsername(user.getUsername());
-            }
+//            final User user = userRepository.getSimpleUserInfo(updateUserid);
+//            if (user != null) {
+//                entity.setUpdateUsername(user.getUsername());
+//            }
+            entity.setUpdateUsername(TokenUtil.getUserFromAuthToken().getUsername());
         }
     }
 

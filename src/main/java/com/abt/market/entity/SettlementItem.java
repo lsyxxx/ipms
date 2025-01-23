@@ -4,14 +4,11 @@ import com.abt.testing.entity.Entrust;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 
 /**
  * 结算单-结算项目
@@ -47,6 +44,7 @@ public class SettlementItem {
     /**
      * 检测单项id
      */
+    @Column(name="module_id")
     private String moduleId;
     /**
      * 检测项目名称
@@ -57,7 +55,7 @@ public class SettlementItem {
      * 样品数量
      */
     @Column(name="sample_num", columnDefinition="SMALLINT")
-    private Long sampleNum;
+    private Integer sampleNum;
     /**
      * 样品数量单位
      */
@@ -93,7 +91,7 @@ public class SettlementItem {
     @JoinColumn(name = "m_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private SettlementMain main;
 
-    public SettlementItem(String moduleId, String moduleName, Long sampleNum) {
+    public SettlementItem(String moduleId, String moduleName, Integer sampleNum) {
         this.moduleId = moduleId;
         this.moduleName = moduleName;
         this.sampleNum = sampleNum;
