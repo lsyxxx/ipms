@@ -1,28 +1,23 @@
 package com.abt.wf.entity;
 
-import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.abt.wf.config.Constants.KEY_MANAGER;
 
 /**
  * 采购申请单-主体
@@ -86,6 +81,13 @@ public class PurchaseApplyMain extends WorkflowBase{
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name="purchaser_check_date")
     private LocalDateTime purchaserCheckDate;
+
+    @Column(name="ceo_id")
+    private String ceo;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name="ceo_check_date")
+    private LocalDateTime ceoCheckDate;
 
     @Transient
     private String saveType;

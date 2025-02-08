@@ -45,7 +45,7 @@ public class ExcelUtil {
     /**
      * easyexcel 写入图片对象，默认margin 10
      * @param imageFile 图片文件
-     * @return WriteCellData<Void
+     * @return WriteCellData
      */
     public static WriteCellData<Void> createImageData(File imageFile) throws IOException {
         WriteCellData<Void> writeCellData = new WriteCellData<>();

@@ -15,4 +15,10 @@ public interface MaterialService {
     List<MaterialDetail> findAll();
 
     Page<MaterialDetail> findByDeptPageable(MaterialRequestForm requestForm);
+
+    /**
+     * 物资模糊查询
+     * query 关联
+     */
+    Page<MaterialDetail> findByQueryPageable(MaterialRequestForm requestForm);
 }

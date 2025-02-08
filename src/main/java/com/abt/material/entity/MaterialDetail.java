@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.math.BigDecimal;
 
@@ -14,6 +16,9 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "MaterialDetail.withMaterialType", attributeNodes = @NamedAttributeNode("materialType")),
+})
 @Table(name = "T_stockcataDetail")
 public class MaterialDetail {
     @Id
@@ -25,7 +30,7 @@ public class MaterialDetail {
     /**
      * 物品名称
      */
-    @Size(max = 50)
+    @Size(max = 128)
     @NotNull
     @Column(name = "fname", nullable = false, length = 50)
     private String name;
@@ -33,7 +38,7 @@ public class MaterialDetail {
     /**
      * 型号规格
      */
-    @Size(max = 50)
+    @Size(max = 128)
     @Column(name = "Xhgz", length = 50)
     private String specification;
 
@@ -63,7 +68,7 @@ public class MaterialDetail {
     @Size(max = 50)
     @NotNull
     @Column(name = "stockcatalogId", nullable = false, length = 50)
-    private String stockcatalogId;
+    private String materialTypeId;
 
     /**
      * 是否启用
@@ -108,6 +113,11 @@ public class MaterialDetail {
      */
     @Column(name = "deptName", length = 128)
     private String deptName;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "stockcatalogId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private MaterialType materialType;
 
 
 

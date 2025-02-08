@@ -397,12 +397,28 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         map.put("createDate", TimeUtil.toYYYY_MM_DDString(form.getCreateDate()));
         map.put("managerUpdate", TimeUtil.toYYYY_MM_DDString(form.getManagerCheckDate()));
         map.put("leaderUpdate", TimeUtil.toYYYY_MM_DDString(form.getLeaderCheckDate()));
+        map.put("purchaserUpdate", TimeUtil.toYYYY_MM_DDString(form.getPurchaserCheckDate()));
+        map.put("ceoUpdate", TimeUtil.toYYYY_MM_DDString(form.getCeoCheckDate()));
         if (form.getManagerCheckDate() != null) {
             map.put("managerSig", Objects.requireNonNullElse(setExcelSig(form.getManagerUserid()), "/"));
         }
         if (form.getLeaderCheckDate() != null) {
             map.put("leaderSig", Objects.requireNonNullElse(setExcelSig(form.getLeaderUserid()), "/"));
         }
+        if (form.getPurchaserCheckDate() != null) {
+            final WriteCellData<Void> writeCellData = setExcelSig(form.getPurchaser());
+            //设置合并单元格
+            final ImageData imageData = writeCellData.getImageDataList().get(0);
+            imageData.setRelativeFirstRowIndex(0);
+            imageData.setRelativeFirstColumnIndex(0);
+            imageData.setRelativeLastRowIndex(0);
+            imageData.setRelativeLastColumnIndex(1);
+            map.put("purchaserSig", writeCellData);
+        }
+        if (form.getCeoCheckDate() != null) {
+            map.put("ceoSig", Objects.requireNonNullElse(setExcelSig(form.getCeo()), "/"));
+        }
+
         map.put("createUserSig", setExcelSig(form.getCreateUserid()));
         map.put("total", form.getCost());
         File newFile = new File(pdfPath);
@@ -431,6 +447,12 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     public void setLeaderUser(String userid, PurchaseApplyMain form) {
         form.setLeaderUserid(userid);
         form.setLeaderCheckDate(LocalDateTime.now());
+    }
+
+    @Override
+    public void setCeoUser(String userid, PurchaseApplyMain form) {
+        form.setCeo(userid);
+        form.setCeoCheckDate(LocalDateTime.now());
     }
 
     @Override

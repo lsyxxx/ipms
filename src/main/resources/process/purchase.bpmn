@@ -68,6 +68,9 @@
     </bpmn:sequenceFlow>
     <bpmn:userTask id="Activity_14mod88" name="总经理" camunda:assignee="U20230406002">
       <bpmn:documentation>总经理审批</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${purchaseCeoListener}" event="complete" id="purchaseCeoListener" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1fxb7ul</bpmn:incoming>
       <bpmn:outgoing>Flow_0e3x75j</bpmn:outgoing>
     </bpmn:userTask>

@@ -31,7 +31,7 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     public void save(SettlementMain main) {
         final List<SettlementItem> settlementItems = main.getSettlementItems();
-        if (settlementItems != null &&  settlementItems.isEmpty()) {
+        if (settlementItems != null &&  !settlementItems.isEmpty()) {
             settlementItems.forEach(i -> {
                 i.setMain(main);
             });

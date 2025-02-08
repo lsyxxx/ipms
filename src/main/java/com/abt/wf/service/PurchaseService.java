@@ -31,6 +31,8 @@ public interface PurchaseService extends WorkFlowService<PurchaseApplyMain>, Bus
 
     void setLeaderUser(String userid, PurchaseApplyMain form);
 
+    void setCeoUser(String userid, PurchaseApplyMain form);
+
     void delete(String id);
 
     /**
