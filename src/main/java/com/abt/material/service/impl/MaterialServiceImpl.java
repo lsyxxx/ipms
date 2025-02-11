@@ -74,11 +74,5 @@ public class MaterialServiceImpl implements MaterialService {
         return new PageImpl<>(createQuery.getResultList());
     }
 
-    public void find(MaterialRequestForm requestForm) {
-
-
-
-    }
-
 
 }

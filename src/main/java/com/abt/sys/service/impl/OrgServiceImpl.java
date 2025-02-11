@@ -46,12 +46,14 @@ public class OrgServiceImpl implements OrgService {
         criteria.setCascadeId(orgRequestForm.getCascadeId());
         criteria.setStatus(orgRequestForm.getStatus());
         criteria.setName(orgRequestForm.getQuery());
+        criteria.setParentId(orgRequestForm.getParentId());
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withIgnoreNullValues() // 忽略空值
                 .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains()) // 部分匹配
                 .withMatcher("id", ExampleMatcher.GenericPropertyMatchers.exact())      // 精确匹配
                 .withMatcher("status", ExampleMatcher.GenericPropertyMatchers.exact())
                 .withMatcher("cascadeId", ExampleMatcher.GenericPropertyMatchers.contains())
+                .withMatcher("parentId", ExampleMatcher.GenericPropertyMatchers.exact())
                 ;
         Example<Org> example = Example.of(criteria, matcher);
         Sort sort = Sort.by(Sort.Direction.ASC, "cascadeId", "sortNo");

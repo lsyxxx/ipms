@@ -32,14 +32,14 @@ public class MaterialDetail {
      */
     @Size(max = 128)
     @NotNull
-    @Column(name = "fname", nullable = false, length = 50)
+    @Column(name = "fname", nullable = false, length = 128)
     private String name;
 
     /**
      * 型号规格
      */
     @Size(max = 128)
-    @Column(name = "Xhgz", length = 50)
+    @Column(name = "Xhgz", length = 128)
     private String specification;
 
     /**

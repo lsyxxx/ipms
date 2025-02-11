@@ -16,12 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class CommonJpaAuditListener {
 
-    private final UserRepository userRepository;
-
-    public CommonJpaAuditListener(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     /**
      * 创建实体前
      */
@@ -29,18 +23,10 @@ public class CommonJpaAuditListener {
     public <T extends CommonJpaAudit> void beforePersist(T entity) {
         String createUserid = entity.getCreateUserid();
         if (StringUtils.isNotBlank(createUserid)) {
-//            final User user = userRepository.getSimpleUserInfo(createUserid);
-//            if (user != null) {
-//                entity.setCreateUsername(user.getUsername());
-//            }
             entity.setCreateUsername(TokenUtil.getUserFromAuthToken().getUsername());
         }
         String updateUserid = entity.getUpdateUserid();
         if (StringUtils.isNotBlank(updateUserid)) {
-//            final User user = userRepository.getSimpleUserInfo(updateUserid);
-//            if (user != null) {
-//                entity.setUpdateUsername(user.getUsername());
-//            }
             entity.setUpdateUsername(TokenUtil.getUserFromAuthToken().getUsername());
         }
     }
@@ -52,10 +38,6 @@ public class CommonJpaAuditListener {
     public <T extends CommonJpaAudit> void beforeUpdate(T entity) {
         String updateUserid = entity.getUpdateUserid();
         if (StringUtils.isNotBlank(updateUserid)) {
-//            final User user = userRepository.getSimpleUserInfo(updateUserid);
-//            if (user != null) {
-//                entity.setUpdateUsername(user.getUsername());
-//            }
             entity.setUpdateUsername(TokenUtil.getUserFromAuthToken().getUsername());
         }
     }

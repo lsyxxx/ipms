@@ -22,4 +22,9 @@ public class OrgRequestForm extends RequestForm {
      */
     private List<String> orgIds;
 
+    /**
+     * 父节点id
+     */
+    private String parentId;
+
 }
