@@ -1,6 +1,7 @@
 package com.abt.material.repository;
 
 import com.abt.material.entity.StockOrder;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -11,8 +12,13 @@ import java.util.Optional;
 
 public interface StockOrderRepository extends JpaRepository<StockOrder, String> {
 
-    @EntityGraph(value = "StockOrder.withStock", type = EntityGraph.EntityGraphType.LOAD)
-    Optional<StockOrder> findWithStockListById(String id);
+    /**
+     * 查询所有关联的属性
+     * @param id 实体id
+     */
+    @EntityGraph(attributePaths = {"warehouse", "stockList"})
+    @Query("select s from StockOrder s where s.id = :id")
+    Optional<StockOrder> findByIdWithAllDetail(String id);
 
 
 }

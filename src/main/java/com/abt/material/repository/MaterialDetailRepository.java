@@ -3,6 +3,8 @@ package com.abt.material.repository;
 import com.abt.material.entity.MaterialDetail;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -17,5 +19,7 @@ public interface MaterialDetailRepository extends JpaRepository<MaterialDetail, 
     )
     Page<MaterialDetail> findByQueryPageable(String deptId, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"materialType"})
+    List<MaterialDetail> findAll(Sort sort);
 
 }

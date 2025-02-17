@@ -2,15 +2,15 @@ package com.abt.material.entity;
 
 import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
-import com.abt.common.entity.Category;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,6 +29,7 @@ import java.util.List;
 @Table(name = "stock_order")
 @NamedEntityGraphs({
         @NamedEntityGraph(name = "StockOrder.withStock", attributeNodes = @NamedAttributeNode("stockList")),
+        @NamedEntityGraph(name = "StockOrder.withWarehouse", attributeNodes = @NamedAttributeNode("warehouse")),
 })
 @DynamicUpdate
 @DynamicInsert
@@ -52,12 +53,26 @@ public class StockOrder extends AuditInfo implements CommonJpaAudit {
     private LocalDate orderDate;
 
     /**
-     * 入库仓库地点
+     * 仓库id
+     */
+    @Column(name="wh_id")
+    private String warehouseId;
+
+    @Column(name="wh_name", length = 200)
+    private String warehouseName;
+
+    /**
+     * 仓库地点
      */
     @NotNull(groups = {ValidateGroup.Save.class}, message = "仓库地点不能为空")
-    @Size(max = 128)
-    @Column(name="stock_loc", nullable = false, length = 128)
-    private String stockLocation;
+    @Column(name="wh_address", length = 500)
+    private String warehouseAddress;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action= NotFoundAction.IGNORE)
+    @JsonIgnore
+    @JoinColumn(name = "wh_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)  , insertable = false, updatable = false)
+    private Warehouse warehouse;
 
     /**
      * 附件json
@@ -66,13 +81,23 @@ public class StockOrder extends AuditInfo implements CommonJpaAudit {
     private String fileList;
 
     /**
+     * 入库
+     */
+    public static final int STOCK_TYPE_IN = 1;
+
+    /**
+     * 出库
+     */
+    public static final int STOCK_TYPE_OUT = 2;
+
+    /**
      * 出入库类型，出库/入库
      * 1：入库；2：出库。
      * 枚举保存在Category中
      */
-    @NotNull
+    @NotNull(message = "必须传入出入库类型")
     @Column(name="stock_type", columnDefinition = "TINYINT")
-    private int stockType = 0;
+    private Integer stockType;
 
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "stockOrder")

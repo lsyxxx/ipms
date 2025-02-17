@@ -1,6 +1,9 @@
 package com.abt.common.model;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
+
+import static com.abt.oa.OAConstants.QUERY_MODE_ALL;
 
 /**
  * client请求参数
@@ -147,4 +150,7 @@ public class RequestForm {
         return this.limit;
     }
 
+    public boolean isQueryAll() {
+        return StringUtils.isBlank(this.queryMode) || QUERY_MODE_ALL.equals(this.queryMode);
+    }
 }

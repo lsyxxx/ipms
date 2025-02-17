@@ -2,10 +2,13 @@ package com.abt.material.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
+import com.abt.material.entity.Inventory;
 import com.abt.material.entity.Stock;
 import com.abt.material.entity.StockOrder;
 import com.abt.material.entity.Warehouse;
+import com.abt.material.model.InventoryRequestForm;
 import com.abt.material.model.StockOrderRequestForm;
+import com.abt.material.model.WarehouseRequestForm;
 import com.abt.material.service.StockService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,7 +46,7 @@ public class StockController {
      */
     @GetMapping("/dtl/one")
     public R<StockOrder> stockInOrderDetail(String id) {
-        final StockOrder detail = stockService.findWithStockListByOrderId(id);
+        final StockOrder detail = stockService.findDetailsByOrderId(id);
         return R.success(detail);
     }
 
@@ -67,12 +70,31 @@ public class StockController {
         return R.success("保存成功!");
     }
 
-    @GetMapping("/wh/find/all")
-    public R<List<Warehouse>> findAllWarehouse() {
-        final List<Warehouse> list = stockService.findAllWarehouse();
+    @GetMapping("/wh/find/allBy")
+    public R<List<Warehouse>> findAllWarehouse(WarehouseRequestForm requestForm) {
+        final List<Warehouse> list = stockService.findAllWarehouseBy(requestForm);
         return R.success(list);
     }
 
+    @GetMapping("/wh/newNo")
+    public R<Long> getWarehouseSortNo() {
+        final long count = stockService.getWarehouseSortNoForNew();
+        return R.success(count);
+
+    }
+
+    @GetMapping("/wh/del")
+    public R<Object> deleteWarehouse(String id) {
+        stockService.deleteWarehouse(id);
+        return R.success("删除仓库成功!");
+    }
+
+
+    @PostMapping("/inv/latestList")
+    public R<List<Inventory>> latestInventoryList(@RequestBody InventoryRequestForm requestForm) {
+        final List<Inventory> list = stockService.latestInventories(requestForm);
+        return R.success(list);
+    }
 
 
 

@@ -96,7 +96,7 @@ public class Stock implements WithQuery<Stock> {
     private LocalDate orderDate;
 
     @Transient
-    private String stockLocation;
+    private String warehouseAddress;
 
     @Transient
     private int stockType;
@@ -121,7 +121,6 @@ public class Stock implements WithQuery<Stock> {
     public Stock afterQuery() {
         if (stockOrder != null) {
             this.orderDate = stockOrder.getOrderDate();
-            this.stockLocation = stockOrder.getStockLocation();
             this.stockType = stockOrder.getStockType();
             this.jobNumber = stockOrder.getJobNumber();
             this.username = stockOrder.getUsername();
