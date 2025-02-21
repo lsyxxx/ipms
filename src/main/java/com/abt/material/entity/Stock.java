@@ -3,6 +3,7 @@ package com.abt.material.entity;
 import com.abt.common.model.AuditInfo;
 import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -41,6 +42,22 @@ public class Stock implements WithQuery<Stock> {
     @Size(max = 64)
     @Column(name="order_id", length = 64, nullable = false)
     private String orderId;
+
+
+    /**
+     * 分类id
+     */
+    @Size(max = 50)
+    @Column(name="m_type_id", length = 50)
+    private String materialTypeId;
+
+    /**
+     * 分类名称
+     */
+    @Size(max = 50)
+    @Column(name="m_type_name", length = 50)
+    private String materialTypeName;
+    
 
     @Size(max = 64)
     @NotNull
@@ -94,7 +111,10 @@ public class Stock implements WithQuery<Stock> {
 
     @Transient
     private LocalDate orderDate;
-
+    @Transient
+    private String warehouseId;
+    @Transient
+    private String warehouseName;
     @Transient
     private String warehouseAddress;
 

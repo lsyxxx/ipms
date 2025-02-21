@@ -1,6 +1,8 @@
 package com.abt.material.repository;
 
 import com.abt.material.entity.Stock;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +20,6 @@ public interface StockRepository extends JpaRepository<Stock, String> {
             "and (:endDate is null or so.orderDate <= :endDate) " +
             "order by so.orderDate, st.materialName, so.stockType")
     Page<Stock> findByQueryPageable(String query, Integer stockType, String startDate, String endDate, Pageable pageable);
+
+    void deleteByOrderId(@NotNull @Size(max = 64) String orderId);
 }

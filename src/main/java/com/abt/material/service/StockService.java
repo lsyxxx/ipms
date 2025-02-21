@@ -1,23 +1,21 @@
 package com.abt.material.service;
 
-import com.abt.material.entity.Inventory;
-import com.abt.material.entity.Stock;
-import com.abt.material.entity.StockOrder;
-import com.abt.material.entity.Warehouse;
-import com.abt.material.model.InventoryRequestForm;
-import com.abt.material.model.StockOrderRequestForm;
-import com.abt.material.model.WarehouseRequestForm;
+import com.abt.material.entity.*;
+import com.abt.material.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.util.List;
 
 public interface StockService {
     /**
      * 出入库单
+     *
      * @param stockOrder 出入库单详情
+     * @return
      */
-    void saveStockOrder(StockOrder stockOrder);
+    StockOrder saveStockOrder(StockOrder stockOrder);
 
     StockOrder findDetailsByOrderId(String orderId);
 
@@ -39,4 +37,38 @@ public interface StockService {
     void deleteWarehouse(String id);
 
     List<Inventory> latestInventories(InventoryRequestForm requestForm);
+
+    /**
+     * 查询所有物品的库存
+     */
+    List<MaterialDetailDTO> findAllMaterialInventories(InventoryRequestForm requestForm);
+
+    /**
+     * 导入盘点库存数据
+     * 规则：
+     * 1. 必须有物品id
+     * 2. 必须有库房名称
+     * 4. 导入的数据模板为导出的库存数据，从第4行开始读取数据
+     * 5. 若存在重复的数据，则以最后一条为准
+     * 6. 可多次上传，后面的会覆盖前面的
+     *
+     * @param file  导入的文件
+     * @param order 盘点单
+     */
+    @Transactional
+    StockOrder importCheckBill(File file, StockOrder order);
+
+    void addStock(StockOrder order, MaterialDetailDTO dto);
+
+    Page<StockOrder> findStockOrderPageable(StockOrderRequestForm requestForm);
+
+    List<MaterialType> findAllMaterialType(MaterialTypeRequestForm requestForm);
+
+    @Transactional
+    void hardDeleteCheckBill(String id);
+
+    /**
+     * 校验导入盘点数据，返回错误数据及错误信息
+     */
+    void checkImportData(MaterialDetailDTO row);
 }

@@ -141,6 +141,10 @@ public class R<T> {
         return new R<>(null, ResCode.FAIL.getCode(), ResCode.FAIL.getMessage());
     }
 
+    public static<T> R<T> fail(T data, String errMsg) {
+        return new R<>(data, ResCode.BIZ_EXCEPTION.getCode(), errMsg);
+    }
+
     public static<T> R<T> fail(String errMsg, int code) {
         return new R<>(null, code, errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
     }

@@ -20,5 +20,12 @@ public interface StockOrderRepository extends JpaRepository<StockOrder, String> 
     @Query("select s from StockOrder s where s.id = :id")
     Optional<StockOrder> findByIdWithAllDetail(String id);
 
+    @Query("select so from StockOrder so " +
+            "left join fetch so.warehouse " +
+            "where 1=1 " +
+            "and (:stockType is null or so.stockType = :stockType) " +
+            "and (:startDate is null or :startDate = '' or so.orderDate >= :startDate) " +
+            "and (:endDate is null or :endDate = '' or so.orderDate <= :endDate) ")
+    Page<StockOrder> findPageable(Integer stockType, String startDate, String endDate, Pageable pageable);
 
 }

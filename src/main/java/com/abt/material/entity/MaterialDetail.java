@@ -19,7 +19,9 @@ import java.math.BigDecimal;
 @NamedEntityGraphs({
         @NamedEntityGraph(name = "MaterialDetail.withMaterialType", attributeNodes = @NamedAttributeNode("materialType")),
 })
-@Table(name = "T_stockcataDetail")
+@Table(name = "T_stockcataDetail", indexes = {
+        @Index(name = "idx_materialdetail_fname", columnList = "fname")
+})
 public class MaterialDetail {
     @Id
     @Size(max = 50)
@@ -114,7 +116,7 @@ public class MaterialDetail {
     @Column(name = "deptName", length = 128)
     private String deptName;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stockcatalogId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     @NotFound(action= NotFoundAction.IGNORE)
     private MaterialType materialType;

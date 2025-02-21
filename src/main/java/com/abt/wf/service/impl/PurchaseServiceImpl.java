@@ -369,7 +369,7 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         if (main == null) {
             throw new BusinessException("未找到采购申请单(审批编号: " + id + ")");
         }
-        final File excel = createExcel(main, pdfPath);
+        final File excel = doCreateExcel(main, pdfPath);
         return ExcelUtil.excel2Pdf(excel.getAbsolutePath(), pdfPath);
     }
 
@@ -379,14 +379,14 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         if (main == null) {
             throw new BusinessException("未找到采购申请单(审批编号: " + id + ")");
         }
-        return createExcel(main, path);
+        return doCreateExcel(main, path);
     }
 
     /**
      * 生成excel文件
      * @return 返回生成文件的路径
      */
-    public File createExcel(PurchaseApplyMain form, String pdfPath) throws IOException {
+    public File doCreateExcel(PurchaseApplyMain form, String pdfPath) throws IOException {
         //数据list
         List<PurchaseApplyDetail> list = form.getDetails();
         if (list == null) {

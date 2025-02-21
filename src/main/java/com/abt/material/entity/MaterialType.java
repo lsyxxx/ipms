@@ -35,4 +35,10 @@ public class MaterialType {
     @Column(name = "XH")
     private Integer index;
 
+    /**
+     * 是否删除
+     */
+    @Column(name="IsDel", columnDefinition = "BIT")
+    private boolean isDeleted = false;
+
 }

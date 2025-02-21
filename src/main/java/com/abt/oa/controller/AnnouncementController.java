@@ -91,6 +91,8 @@ public class AnnouncementController {
 
     @GetMapping("/find")
     public R<List<Announcement>> findAnnouncementListBy(@ModelAttribute AnnouncementRequestForm requestForm) {
+        final String userid = TokenUtil.getUseridFromAuthToken();
+        requestForm.setCreateUserid(userid);
         final Page<Announcement> list = announcementService.findBy(requestForm);
         return R.success(list.getContent(), (int) list.getTotalElements());
     }

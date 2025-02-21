@@ -80,7 +80,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .and(spec.fileTypeEqual(requestForm))
                 .and(spec.afterStartDate(requestForm))
                 .and(spec.beforeEndDate(requestForm))
-                .and(spec.statusEqual(requestForm));
+                .and(spec.statusEqual(requestForm))
+                .and(spec.creatUseridEqual(requestForm))
+                ;
         return announcementRepository.findAll(cr, page);
     }
 
@@ -383,7 +385,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             };
         }
 
-        //搜索: 状态
+        public Specification<Announcement> creatUseridEqual(AnnouncementRequestForm form) {
+            return (root, query, builder) -> {
+                if (StringUtils.isNotBlank(form.getCreateUserid())) {
+                    return builder.equal(root.get("createUserId"), form.getCreateUserid());
+                }
+                return null;
+            };
+        }
+
+            //搜索: 状态
         public Specification<Announcement> statusEqual(AnnouncementRequestForm form) {
             return (root, query, builder) -> {
                 if (StringUtils.isNotBlank(form.getState())) {

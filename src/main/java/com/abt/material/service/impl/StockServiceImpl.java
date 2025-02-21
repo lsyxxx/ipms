@@ -1,23 +1,24 @@
 package com.abt.material.service.impl;
 
 import com.abt.material.entity.*;
-import com.abt.material.model.InventoryRequestForm;
-import com.abt.material.model.StockOrderRequestForm;
-import com.abt.material.model.WarehouseRequestForm;
+import com.abt.material.listener.ImportCheckBillListener;
+import com.abt.material.model.*;
 import com.abt.material.repository.*;
 import com.abt.material.service.StockService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.util.WithQueryUtil;
+import com.alibaba.excel.EasyExcel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.abt.material.entity.StockOrder.STOCK_TYPE_IN;
-import static com.abt.material.entity.StockOrder.STOCK_TYPE_OUT;
+import static com.abt.material.entity.StockOrder.*;
 
 /**
  * 出入库
@@ -31,18 +32,20 @@ public class StockServiceImpl implements StockService {
     private final WarehouseRepository warehouseRepository;
     private final MaterialDetailRepository materialDetailRepository;
     private final InventoryRepository inventoryRepository;
+    private final MaterialTypeRepository materialTypeRepository;
 
-    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository) {
+    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository) {
         this.stockOrderRepository = stockOrderRepository;
         this.stockRepository = stockRepository;
         this.warehouseRepository = warehouseRepository;
         this.materialDetailRepository = materialDetailRepository;
         this.inventoryRepository = inventoryRepository;
+        this.materialTypeRepository = materialTypeRepository;
     }
 
     @Transactional
     @Override
-    public void saveStockOrder(StockOrder stockOrder) {
+    public StockOrder saveStockOrder(StockOrder stockOrder) {
         stockOrder = stockOrderRepository.save(stockOrder);
         List<Stock> list = new ArrayList<>();
         List<Inventory> inventories = new ArrayList<>();
@@ -50,18 +53,23 @@ public class StockServiceImpl implements StockService {
             for (Stock stock : stockOrder.getStockList()) {
                 stock.setOrderId(stockOrder.getId());
                 list.add(stock);
-
                 //库存变化
-                Inventory inv = inventoryRepository.findOneLatestInventory(stock.getMaterialId(), stockOrder.getWarehouseId())
-                        .orElse(new Inventory(stock.getMaterialId(), stockOrder.getWarehouseId()));
-                final Inventory newInv = changeInventoryQuantity(inv, stock, stockOrder.getStockType());
+                Inventory inv = new Inventory();
+                inv.setWarehouseId(stockOrder.getWarehouseId());
+                inv.setMaterialId(stock.getMaterialId());
+                if (STOCK_TYPE_CHECK != stockOrder.getStockType()) {
+                    inv = inventoryRepository.findOneLatestInventory(stock.getMaterialId(), stockOrder.getWarehouseId())
+                            .orElse(new Inventory(stock.getMaterialId(), stockOrder.getWarehouseId()));
+                }
+                Inventory newInv = changeInventoryQuantity(inv, stock, stockOrder.getStockType());
+                newInv.setOrderId(stockOrder.getId());
                 inventories.add(newInv);
             }
         }
         list = stockRepository.saveAllAndFlush(list);
         stockOrder.setStockList(list);
         inventoryRepository.saveAllAndFlush(inventories);
-
+        return stockOrder;
     }
 
     private Inventory changeInventoryQuantity(Inventory inventory, Stock stock, int stockType) {
@@ -72,6 +80,8 @@ public class StockServiceImpl implements StockService {
             newInventory.setQuantity(inventory.getQuantity() + stock.getNum());
         } else if (STOCK_TYPE_OUT == stockType) {
             newInventory.setQuantity(inventory.getQuantity() - stock.getNum());
+        } else if(STOCK_TYPE_CHECK == stockType) {
+            newInventory.setQuantity(stock.getNum());
         } else {
             log.warn("Stock type {} not supported", stockType);
         }
@@ -94,6 +104,12 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public void saveWarehouse(Warehouse warehouse) {
+        //名称不能重复
+        String name = warehouse.getName();
+        final List<Warehouse> list = warehouseRepository.findByName(name);
+        if (!list.isEmpty()) {
+            throw new BusinessException("库房名称不能重复(库房名称: " + name + " 已存在)");
+        }
         warehouseRepository.save(warehouse);
     }
 
@@ -124,15 +140,139 @@ public class StockServiceImpl implements StockService {
      */
     @Override
     public List<Inventory> latestInventories(InventoryRequestForm requestForm) {
-        String wids = null, mids = null;
-        if (requestForm.getWarehouseIds() != null) {
-            wids = String.join(",", requestForm.getWarehouseIds());
-        }
-        if (requestForm.getMaterialTypeIds() != null) {
-            mids = String.join(",", requestForm.getMaterialTypeIds());
-        }
+        buildInventoryRequestForm(requestForm);
         return WithQueryUtil.build(inventoryRepository
-                .findLatestInventory(mids, wids, Sort.by(Sort.Order.asc("warehouseId"), Sort.Order.asc("materialId"))));
+                .findLatestInventory(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds(), Sort.by(Sort.Order.asc("warehouseId"), Sort.Order.asc("materialId"))));
+    }
+
+    private InventoryRequestForm buildInventoryRequestForm(InventoryRequestForm requestForm) {
+        if (requestForm == null) {
+            requestForm = new InventoryRequestForm();
+        }
+        //查询全部
+        if (requestForm.getMaterialTypeIds() == null || requestForm.getMaterialTypeIds().isEmpty()) {
+            requestForm.setMaterialTypeIds(List.of("all"));
+        }
+        //查询全部
+        if (requestForm.getWarehouseIds() == null || requestForm.getWarehouseIds().isEmpty()) {
+            requestForm.setWarehouseIds(List.of("all"));
+        }
+        return requestForm;
+    }
+
+    @Override
+    public List<MaterialDetailDTO> findAllMaterialInventories(InventoryRequestForm requestForm) {
+        requestForm = buildInventoryRequestForm(requestForm);
+        final List<IMaterialDetailDTO> list = materialDetailRepository.findAllWithInventories(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds());
+        List<MaterialDetailDTO> dtos = new ArrayList<>(list.size());
+        for (IMaterialDetailDTO im : list) {
+            MaterialDetailDTO d = new MaterialDetailDTO();
+            d.setMaterialDetail(im.getMaterialDetail());
+            d.setMaterialType(im.getMaterialDetail().getMaterialType());
+            d.setInventory(im.getInventory());
+            d.setWarehouse(im.getWarehouse());
+            MaterialDetail dtl = im.getMaterialDetail();
+            d.setId(dtl.getId());
+            d.setName(dtl.getName());
+            d.setSpecification(dtl.getSpecification());
+            d.setUnit(dtl.getUnit());
+            MaterialType type = dtl.getMaterialType();
+            if (type != null) {
+                d.setMaterialTypeId(type.getId());
+                d.setMaterialTypeName(type.getName());
+            }
+            Warehouse wh = im.getWarehouse();
+            if (wh != null) {
+                d.setWarehouseId(wh.getId());
+                d.setWarehouseName(wh.getName());
+            }
+            if (im.getInventory() != null) {
+                d.setCurrentInventory(im.getInventory().getQuantity());
+            }
+            dtos.add(d);
+        }
+        return dtos;
+    }
+
+    @Transactional
+    @Override
+    public StockOrder importCheckBill(File file, StockOrder order) {
+        List<MaterialDetailDTO> list = new ArrayList<>();
+        List<MaterialDetailDTO> errorList = new ArrayList<>();
+        EasyExcel.read(file, MaterialDetailDTO.class, new ImportCheckBillListener(order, this, list, errorList)).sheet().headRowNumber(3).doRead();
+        order.setMaterialDetailDTOList(list);
+        order.setErrorList(errorList);
+        order.setHasError(!errorList.isEmpty());
+        return order;
+    }
+
+    @Override
+    public void addStock(StockOrder order, MaterialDetailDTO dto) {
+        order.addStock(convert(dto));
+    }
+
+    private Stock convert(MaterialDetailDTO dto) {
+        Stock stock = new Stock();
+        stock.setMaterialId(dto.getId());
+        stock.setMaterialName(dto.getName());
+        stock.setSpecification(dto.getSpecification());
+        stock.setUnit(dto.getUnit());
+        stock.setRemark(dto.getRemark());
+        stock.setNum(dto.getCheckInventory());
+        stock.setBizType("盘点库存");
+        stock.setStockType(STOCK_TYPE_CHECK);
+        stock.setMaterialTypeId(dto.getMaterialTypeId());
+        stock.setMaterialTypeName(dto.getMaterialTypeName());
+        stock.setRemark(dto.getRemark());
+
+        return stock;
+    }
+
+    @Override
+    public Page<StockOrder> findStockOrderPageable(StockOrderRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("orderDate")));
+        final Page<StockOrder> page = stockOrderRepository.findPageable(requestForm.getStockType(), requestForm.getStartDate(), requestForm.getEndDate(), pageable);
+        WithQueryUtil.build(page);
+        return page;
+    }
+
+    @Override
+    public List<MaterialType> findAllMaterialType(MaterialTypeRequestForm requestForm) {
+        return materialTypeRepository.findByQuery(requestForm.getIds(), requestForm.getName(), requestForm.getIsDeleted());
+    }
+
+    @Transactional
+    @Override
+    public void hardDeleteCheckBill(String id) {
+        //1. inventory
+        inventoryRepository.deleteByOrderId(id);
+        //2. stock order
+        stockRepository.deleteByOrderId(id);
+        stockOrderRepository.deleteById(id);
+    }
+
+
+    @Override
+    public void checkImportData(MaterialDetailDTO row) {
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.isBlank(row.getId())) {
+            sb.append("物品id不能为空;");
+        }
+        if (StringUtils.isBlank(row.getWarehouseName())) {
+            sb.append("仓库名称不能为空!");
+        }
+        if (StringUtils.isNotBlank(row.getRemark()) && row.getRemark().length() > 100) {
+            sb.append("备注信息不可超过100字");
+        }
+        if (row.getCheckInventory() == null) {
+            sb.append("盘点库存不能为空!");
+        }
+
+        if (!sb.isEmpty()) {
+            //返回row, 错误信息
+            row.setError(sb.toString());
+        }
+
     }
 
 

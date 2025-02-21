@@ -98,6 +98,15 @@ public class UserController{
         return R.success(employee);
     }
 
+    @GetMapping("/basic/user")
+    public R<User> findSimpleUserInfo(@RequestParam(required = false) String userid) {
+        if (StringUtils.isBlank(userid)) {
+            userid = TokenUtil.getUseridFromAuthToken();
+        }
+        final EmployeeInfo employee = employeeService.findUserByUserid(userid);
+        return R.success(new User(employee));
+    }
+
     @GetMapping("/org/deptusers")
     public R<List<DeptUserList>> findDeptUsers() {
         List<DeptUserList> list = orgService.getAllDeptUserList();

@@ -94,7 +94,7 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
             "left join fetch rt.tuser tu " +
             "left join fetch ActHiTaskInst ht on ht.procInstId = e.processInstanceId " +
             "where lower(ht.taskDefKey) not like '%apply%' " +
-            "and (:userid is null or :userid = '' or e.createUserid = :userid or ht.assignee = :userid) " +
+            "and (:userid is null or :userid = '' or ht.assignee = :userid) " +
             "and (ht.endTime is not null) " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +

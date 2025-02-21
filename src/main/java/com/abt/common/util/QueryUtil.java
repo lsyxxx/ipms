@@ -100,7 +100,15 @@ public class QueryUtil {
             }
         });
         return orders;
+    }
 
+    public static String inQuery(String str) {
+        final String[] arr = str.split(",");
+        List<String> list = new ArrayList<>();
+        for (String s : arr) {
+            list.add("'" + s + "'");
+        }
+        return StringUtils.join(list, ",");
     }
 
 }

@@ -15,10 +15,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Base64;
 
 /**
@@ -34,7 +31,7 @@ public class InsertSig {
 
     public static void main(String[] args) throws IOException {
 //        getImage();
-        insertOne("015", "郁永磊", "F:\\sig\\015郁永磊.png");
+        insertOne("079", "李伟", "C:\\Users\\Administrator\\Desktop\\liwei079.png");
     }
 
     public static void getImage() throws IOException {
@@ -75,21 +72,42 @@ public class InsertSig {
             }
             FileInputStream inputStream = new FileInputStream(file);
 
-            // SQL 语句
-            String sql = "INSERT INTO u_sig (id, job_number, user_name, base64, file_name) VALUES (NEWID(), ?, ?, ?, ?)";
-
-            // 使用 PreparedStatement 插入数据
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, jobNumber);
-            statement.setString(2, username);
-            statement.setString(3, base64);
-            statement.setString(4, file.getName());
-
-            int rowsInserted = statement.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("Image saved successfully!");
+            int count = 0;
+            String sql = "select count(1) from u_sig where job_number = ? and user_name = ?";
+            PreparedStatement s1 = connection.prepareStatement(sql);
+            s1.setString(1, jobNumber);
+            s1.setString(2, username);
+            final ResultSet resultSet = s1.executeQuery();
+            if (resultSet.next()) {
+                count = resultSet.getInt(1);
+                System.out.printf("已存在用户[%s, %s]的数据\n", jobNumber, username);
             }
+            if (count > 0) {
+                sql = "update u_sig set base64 = ? where job_number = ? and user_name = ?";
+                PreparedStatement s2 = connection.prepareStatement(sql);
+                s2.setString(1, base64);
+                s2.setString(2, jobNumber);
+                s2.setString(3, username);
+                final int update = s2.executeUpdate();
+                if (update > 0) {
+                    System.out.println("Image Update successfully!");
+                }
+            } else {
+                // SQL 语句
+                sql = "INSERT INTO u_sig (id, job_number, user_name, base64, file_name) VALUES (NEWID(), ?, ?, ?, ?)";
 
+                // 使用 PreparedStatement 插入数据
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, jobNumber);
+                statement.setString(2, username);
+                statement.setString(3, base64);
+                statement.setString(4, file.getName());
+
+                int rowsInserted = statement.executeUpdate();
+                if (rowsInserted > 0) {
+                    System.out.println("Image saved successfully!");
+                }
+            }
             // 关闭输入流
             inputStream.close();
         } catch (SQLException | IOException ex) {

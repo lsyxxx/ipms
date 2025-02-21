@@ -4,10 +4,13 @@ import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
 import com.abt.sys.model.WithQuery;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.math.BigDecimal;
 
@@ -20,8 +23,8 @@ import java.math.BigDecimal;
 @Table(name = "stock_inventory")
 @Entity
 @NamedEntityGraphs({
-        @NamedEntityGraph(name = "Inventory.withMaterialDetail", attributeNodes = @NamedAttributeNode("materialDetail")),
-        @NamedEntityGraph(name = "Inventory.warehouse", attributeNodes = @NamedAttributeNode("warehouse"))
+        @NamedEntityGraph(name = "Inventory.materialDetail", attributeNodes = @NamedAttributeNode("materialDetail")),
+        @NamedEntityGraph(name = "Inventory.warehouse", attributeNodes = @NamedAttributeNode("warehouse")),
 })
 @EntityListeners(CommonJpaAuditListener.class)
 @NoArgsConstructor
@@ -53,6 +56,18 @@ public class Inventory extends AuditInfo implements CommonJpaAudit, WithQuery<In
     @JoinColumn(name = "m_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private MaterialDetail materialDetail;
 
+    /**
+     * 关联的stock_order
+     */
+    @Column(name="o_id")
+    private String orderId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "o_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    @JsonIgnore
+    @NotFound(action= NotFoundAction.IGNORE)
+    private StockOrder order;
+
     @Transient
     private String materialName;
     @Transient
@@ -81,6 +96,12 @@ public class Inventory extends AuditInfo implements CommonJpaAudit, WithQuery<In
     private String warehouseName;
     @Transient
     private String warehouseAddress;
+
+    /**
+     * 原有库存
+     */
+    @Transient
+    private Integer lastInventory;
 
     public Inventory(String materialId, String warehouseId) {
         this.materialId = materialId;

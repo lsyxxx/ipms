@@ -4,8 +4,11 @@ import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
+import com.abt.material.model.MaterialDetailDTO;
+import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
@@ -18,6 +21,7 @@ import org.hibernate.annotations.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,7 +40,7 @@ import java.util.List;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners(CommonJpaAuditListener.class)
-public class StockOrder extends AuditInfo implements CommonJpaAudit {
+public class StockOrder extends AuditInfo implements CommonJpaAudit, WithQuery<StockOrder> {
 
     @Id
     @GeneratedValue(generator  = "timestampIdGenerator")
@@ -89,6 +93,10 @@ public class StockOrder extends AuditInfo implements CommonJpaAudit {
      * 出库
      */
     public static final int STOCK_TYPE_OUT = 2;
+    /**
+     * 盘点
+     */
+    public static final int STOCK_TYPE_CHECK = 3;
 
     /**
      * 出入库类型，出库/入库
@@ -99,8 +107,8 @@ public class StockOrder extends AuditInfo implements CommonJpaAudit {
     @Column(name="stock_type", columnDefinition = "TINYINT")
     private Integer stockType;
 
-
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "stockOrder")
+    @JsonIgnoreProperties({"stockList"})
     private List<Stock> stockList;
 
     /**
@@ -125,4 +133,32 @@ public class StockOrder extends AuditInfo implements CommonJpaAudit {
     @Column(name="is_del", columnDefinition = "BIT")
     private boolean isDeleted = false;
 
+    @Transient
+    private String bizType;
+
+    @Transient
+    private List<MaterialDetailDTO> materialDetailDTOList;
+
+    @Transient
+    private List<MaterialDetailDTO> errorList;
+
+    @Transient
+    private boolean hasError = false;
+
+    public void addStock(Stock stock) {
+        if (this.stockList == null) {
+            this.stockList = new ArrayList<>();
+        }
+        stockList.add(stock);
+    }
+
+    @Override
+    public StockOrder afterQuery() {
+        if (this.warehouse != null) {
+            this.warehouseId = this.warehouse.getId();
+            this.warehouseName = this.warehouse.getName();
+            this.warehouseAddress = this.warehouse.getAddress();
+        }
+        return this;
+    }
 }

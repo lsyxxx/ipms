@@ -1,6 +1,7 @@
 package com.abt.material.repository;
 
 import com.abt.material.entity.Inventory;
+import com.abt.material.entity.MaterialDetail;
 import jakarta.persistence.NamedEntityGraph;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,13 +37,13 @@ public interface InventoryRepository extends JpaRepository<Inventory, String> {
             "and i1.updateDate = (SELECT MAX(i2.updateDate) FROM Inventory i2 " +
             "                       WHERE i2.materialId = i1.materialId " +
             "                       AND i2.warehouseId = i1.warehouseId) " +
-            "and (:materialTypeIds is null or :materialTypeIds = '' or i1.materialId in (:materialTypeIds)) " +
-            "and (:warehouseIds is null or :warehouseIds = '' or i1.warehouseId in (:warehouseIds)) "
+            "and ('all' in :materialTypeIds  or i1.materialId in :materialTypeIds) " +
+            "and ('all' in :warehouseIds or i1.warehouseId in :warehouseIds) "
     )
-    List<Inventory> findLatestInventory(String materialTypeIds, String warehouseIds, Sort sort);
-
+    List<Inventory> findLatestInventory(List<String> materialTypeIds, List<String> warehouseIds, Sort sort);
 
     @EntityGraph(attributePaths = {"materialDetail", "warehouse"})
-    List<Inventory> findTopByMaterialIdAndWarehouseIdOrderByUpdateDateDesc(String materialId, String warehouseId);
+    List<Inventory> findByOrderId(String orderId);
 
+    void deleteByOrderId(String orderId);
 }
