@@ -2,12 +2,12 @@ package com.abt.salary;
 
 import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.model.UserSalaryDetail;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.enums.CellExtraTypeEnum;
-import com.alibaba.excel.event.AnalysisEventListener;
-import com.alibaba.excel.metadata.CellExtra;
-import com.alibaba.excel.support.ExcelTypeEnum;
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.context.AnalysisContext;
+import cn.idev.excel.enums.CellExtraTypeEnum;
+import cn.idev.excel.event.AnalysisEventListener;
+import cn.idev.excel.metadata.CellExtra;
+import cn.idev.excel.support.ExcelTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

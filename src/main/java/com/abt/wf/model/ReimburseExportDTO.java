@@ -1,7 +1,7 @@
 package com.abt.wf.model;
 
 import com.abt.common.util.MoneyUtil;
-import com.alibaba.excel.metadata.data.WriteCellData;
+import cn.idev.excel.metadata.data.WriteCellData;
 import lombok.*;
 
 import java.time.LocalDate;

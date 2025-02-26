@@ -15,9 +15,9 @@ import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.model.entity.TUser;
 import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.repository.TUserRepository;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.enums.CellExtraTypeEnum;
-import com.alibaba.excel.support.ExcelTypeEnum;
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.enums.CellExtraTypeEnum;
+import cn.idev.excel.support.ExcelTypeEnum;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -434,7 +434,7 @@ public class SalaryServiceImpl implements SalaryService {
         }
         //组装成UserSalaryDetail
         List<UserSalaryDetail> userSalaryDetails = new ArrayList<>();
-        final Map<String, List<SalaryCell>> map = list.stream().collect(Collectors.groupingBy(SalaryCell::getParentLabel, Collectors.toList()));
+        final Map<String, List<SalaryCell>> map = list.stream().collect(Collectors.groupingBy(item -> item.getParentLabel() == null ? "" : item.getParentLabel(), Collectors.toList()));
         map.forEach((k, v) -> {
             UserSalaryDetail us = new UserSalaryDetail();
             us.setLabel(k);

@@ -5,17 +5,16 @@ import com.abt.common.model.R;
 import com.abt.common.util.JsonUtil;
 import com.abt.material.entity.*;
 import com.abt.material.model.*;
-import com.abt.material.repository.StockOrderRepository;
 import com.abt.material.service.StockService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.util.MapUtils;
-import com.alibaba.excel.write.metadata.WriteSheet;
-import com.alibaba.excel.write.metadata.fill.FillConfig;
-import com.alibaba.excel.write.metadata.fill.FillWrapper;
+import cn.idev.excel.EasyExcel;
+import cn.idev.excel.ExcelWriter;
+import cn.idev.excel.util.MapUtils;
+import cn.idev.excel.write.metadata.WriteSheet;
+import cn.idev.excel.write.metadata.fill.FillConfig;
+import cn.idev.excel.write.metadata.fill.FillWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,10 +45,18 @@ public class StockController {
     private final StockService stockService;
     private final IFileService iFileService;
 
-    public static final String templatePath = "C:\\Users\\Administrator\\Desktop\\materials_inventory_template.xlsx";
+    @Value("${abt.stock.inv.export.template}")
+    private String templatePath;
+
+    @Value("${abt.stock.inv.alert.export.template}")
+    private String alertTemplatePath;
+
+    @Value("${abt.stock.inv.alert.export.template2}")
+    private String alertTemplatePath2;
 
     @Value("${com.abt.file.upload.save}")
     private String savedRoot;
+
 
     public StockController(StockService stockService, IFileService iFileService) {
         this.stockService = stockService;
@@ -125,8 +132,44 @@ public class StockController {
 
     @PostMapping("/inv/latestList")
     public R<List<Inventory>> latestInventoryList(@RequestBody InventoryRequestForm requestForm) {
-        final List<Inventory> list = stockService.latestInventories(requestForm);
-        return R.success(list);
+        final Page<Inventory> page = stockService.latestInventories(requestForm);
+        return R.success(page.getContent(), (int) page.getTotalElements());
+    }
+
+    /**
+     * 导出预警库存
+     */
+    @GetMapping("/inv/alert/export")
+    public void exportInventoryAlert(HttpServletResponse response,
+                                     @RequestParam(required = false, defaultValue = "") List<String> warehouseIds,
+                                     @RequestParam(required = false, defaultValue = "") List<String> materialTypeIds) throws IOException {
+
+        InventoryRequestForm inventoryRequestForm = new InventoryRequestForm();
+        inventoryRequestForm.setWarehouseIds(warehouseIds);
+        inventoryRequestForm.setMaterialTypeIds(materialTypeIds);
+        String fileName = URLEncoder.encode("inv_alert_export.xlsx", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        final List<InventoryAlert> list = stockService.findInventoryAlertList(inventoryRequestForm);
+        try (ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream(), InventoryAlert.class).autoCloseStream(Boolean.FALSE)
+                .withTemplate(templatePath).build()) {
+            WriteSheet writeSheet = EasyExcel.writerSheet(0).build();
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+            excelWriter.fill(new FillWrapper("m", list), fillConfig, writeSheet);
+            //sheet2:库房
+            final List<Warehouse> whs = stockService.findAllWarehouseBy(new WarehouseRequestForm());
+            WriteSheet sheet2 = EasyExcel.writerSheet(1).build();
+            excelWriter.fill(new FillWrapper("w", whs), sheet2);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("utf-8");
+            // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+            response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            final R<Object> fail = R.fail("预警库存导出失败!!");
+            response.getWriter().println(JsonUtil.toJson(fail));
+        }
     }
 
     /**
@@ -136,7 +179,7 @@ public class StockController {
     public void exportStockDetailAll(HttpServletResponse response,
                                      @RequestParam(required = false, defaultValue = "") List<String> warehouseIds,
                                      @RequestParam(required = false, defaultValue = "") List<String> materialTypeIds) throws IOException {
-        final InventoryRequestForm inventoryRequestForm = new InventoryRequestForm();
+        InventoryRequestForm inventoryRequestForm = new InventoryRequestForm();
         inventoryRequestForm.setWarehouseIds(warehouseIds);
         inventoryRequestForm.setMaterialTypeIds(materialTypeIds);
         final List<MaterialDetailDTO> list = stockService.findAllMaterialInventories(inventoryRequestForm);
@@ -197,6 +240,9 @@ public class StockController {
             throw new BusinessException("无导入的盘点数据，请刷新后重新导入");
         }
         StockOrder order = (StockOrder) attribute;
+        if (order.isHasError()) {
+            throw new BusinessException("导入的盘点数据有错误，请重新导入后保存");
+        }
         stockService.saveStockOrder(order);
         return R.success("保存盘点单成功!");
     }
@@ -216,6 +262,59 @@ public class StockController {
     public R<Object> deleteCheckBill(String id) {
         stockService.hardDeleteCheckBill(id);
         return R.success("已删除盘点单及库存信息");
+    }
+
+    /**
+     * 导入库存预警数据
+     */
+    @PostMapping("/inv/alert/import")
+    public R<List<InventoryAlert>> importInventoryAlert(MultipartFile file, HttpServletRequest request) {
+        SystemFile systemFile = iFileService.saveFile(file, savedRoot, "stockInvAlert", true, true);
+        File f = new File(systemFile.getFullPath());
+        final List<InventoryAlert> errorList = stockService.importInventoryAlertFile(f);
+        if (!errorList.isEmpty()) {
+            return R.fail(errorList, "导入失败! 请修改错误后重新上传!");
+        }
+        return R.success("导入成功");
+    }
+
+    /**
+     * 下载库存预警模板
+     */
+    @GetMapping("/inv/alert/download")
+    public void downloadInventoryAlertTemplate(HttpServletResponse response) throws IOException {
+        String fileName = URLEncoder.encode("inventory_alert_template.xlsx", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        final List<Warehouse> whs = stockService.findAllWarehouseBy(new WarehouseRequestForm());
+        try (ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream(), Warehouse.class).autoCloseStream(Boolean.FALSE)
+                .withTemplate(alertTemplatePath2).build()) {
+            //sheet2:库房
+            WriteSheet sheet2 = EasyExcel.writerSheet(1).build();
+            excelWriter.fill(new FillWrapper("w", whs), sheet2);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("utf-8");
+            // 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系
+            response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            final R<Object> fail = R.fail("下载库存预警模板失败!");
+            response.getWriter().println(JsonUtil.toJson(fail));
+        }
+
+    }
+
+    @GetMapping("/inv/alert/get")
+    public R<List<InventoryAlert>> getInventoryAlert(String mid) {
+        final List<InventoryAlert> list = stockService.getInventoryAlert(mid);
+        return R.success(list);
+    }
+
+    @PostMapping("/inv/alert/save")
+    public R<Object> saveInventoryAlert(List<InventoryAlert> list) {
+        stockService.saveInventoryAlertList(list);
+        return R.success("保存成功!");
     }
 
 

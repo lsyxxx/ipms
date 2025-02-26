@@ -7,13 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 public interface StockService {
     /**
      * 出入库单
      *
      * @param stockOrder 出入库单详情
-     * @return
      */
     StockOrder saveStockOrder(StockOrder stockOrder);
 
@@ -36,7 +36,7 @@ public interface StockService {
 
     void deleteWarehouse(String id);
 
-    List<Inventory> latestInventories(InventoryRequestForm requestForm);
+    Page<Inventory> latestInventories(InventoryRequestForm requestForm);
 
     /**
      * 查询所有物品的库存
@@ -60,6 +60,10 @@ public interface StockService {
 
     void addStock(StockOrder order, MaterialDetailDTO dto);
 
+    List<InventoryAlert> findInventoryAlertList(InventoryRequestForm requestForm);
+
+    Page<InventoryAlert> findInventoryAlertPageable(InventoryRequestForm requestForm);
+
     Page<StockOrder> findStockOrderPageable(StockOrderRequestForm requestForm);
 
     List<MaterialType> findAllMaterialType(MaterialTypeRequestForm requestForm);
@@ -71,4 +75,17 @@ public interface StockService {
      * 校验导入盘点数据，返回错误数据及错误信息
      */
     void checkImportData(MaterialDetailDTO row);
+
+    void saveInventoryAlert(InventoryAlert inventoryAlert);
+
+    /**
+     * 库存预警设置
+     */
+    void saveInventoryAlertList(List<InventoryAlert> list);
+
+    List<InventoryAlert> importInventoryAlertFile(File file);
+
+    void checkInventoryAlertData(InventoryAlert row, Map<String, Warehouse> whMap);
+
+    List<InventoryAlert> getInventoryAlert(String mid);
 }

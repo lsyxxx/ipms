@@ -2,12 +2,13 @@ package com.abt.material.service.impl;
 
 import com.abt.material.entity.*;
 import com.abt.material.listener.ImportCheckBillListener;
+import com.abt.material.listener.ImportInventoryAlertListener;
 import com.abt.material.model.*;
 import com.abt.material.repository.*;
 import com.abt.material.service.StockService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.util.WithQueryUtil;
-import com.alibaba.excel.EasyExcel;
+import cn.idev.excel.EasyExcel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
@@ -17,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.abt.material.entity.StockOrder.*;
 
@@ -33,14 +36,16 @@ public class StockServiceImpl implements StockService {
     private final MaterialDetailRepository materialDetailRepository;
     private final InventoryRepository inventoryRepository;
     private final MaterialTypeRepository materialTypeRepository;
+    private final InventoryAlertRepository inventoryAlertRepository;
 
-    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository) {
+    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository) {
         this.stockOrderRepository = stockOrderRepository;
         this.stockRepository = stockRepository;
         this.warehouseRepository = warehouseRepository;
         this.materialDetailRepository = materialDetailRepository;
         this.inventoryRepository = inventoryRepository;
         this.materialTypeRepository = materialTypeRepository;
+        this.inventoryAlertRepository = inventoryAlertRepository;
     }
 
     @Transactional
@@ -139,10 +144,11 @@ public class StockServiceImpl implements StockService {
      * 库存最新详情
      */
     @Override
-    public List<Inventory> latestInventories(InventoryRequestForm requestForm) {
+    public Page<Inventory> latestInventories(InventoryRequestForm requestForm) {
         buildInventoryRequestForm(requestForm);
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize(), Sort.by(Sort.Order.asc("createDate")));
         return WithQueryUtil.build(inventoryRepository
-                .findLatestInventory(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds(), Sort.by(Sort.Order.asc("warehouseId"), Sort.Order.asc("materialId"))));
+                .findLatestInventory(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds(), requestForm.getName(), pageable));
     }
 
     private InventoryRequestForm buildInventoryRequestForm(InventoryRequestForm requestForm) {
@@ -229,6 +235,19 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
+    public List<InventoryAlert> findInventoryAlertList(InventoryRequestForm requestForm) {
+        return WithQueryUtil.build(inventoryAlertRepository.findAllBy( requestForm.getWarehouseIds(), requestForm.getName()));
+    }
+
+    @Override
+    public Page<InventoryAlert> findInventoryAlertPageable(InventoryRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
+                Sort.by(Sort.Order.asc("materialType.name"), Sort.Order.asc("warehouse.name"), Sort.Order.asc("materialDetail.name")));
+        final Page<InventoryAlert> page = inventoryAlertRepository.findByQueryPageable(requestForm.getWarehouseIds(), requestForm.getName(), pageable);
+        return WithQueryUtil.build(page);
+    }
+
+    @Override
     public Page<StockOrder> findStockOrderPageable(StockOrderRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("orderDate")));
         final Page<StockOrder> page = stockOrderRepository.findPageable(requestForm.getStockType(), requestForm.getStartDate(), requestForm.getEndDate(), pageable);
@@ -256,13 +275,13 @@ public class StockServiceImpl implements StockService {
     public void checkImportData(MaterialDetailDTO row) {
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isBlank(row.getId())) {
-            sb.append("物品id不能为空;");
+            sb.append("物品id不能为空!");
         }
         if (StringUtils.isBlank(row.getWarehouseName())) {
             sb.append("仓库名称不能为空!");
         }
         if (StringUtils.isNotBlank(row.getRemark()) && row.getRemark().length() > 100) {
-            sb.append("备注信息不可超过100字");
+            sb.append("备注信息不可超过100字!");
         }
         if (row.getCheckInventory() == null) {
             sb.append("盘点库存不能为空!");
@@ -272,7 +291,52 @@ public class StockServiceImpl implements StockService {
             //返回row, 错误信息
             row.setError(sb.toString());
         }
+    }
 
+    @Override
+    public void saveInventoryAlert(InventoryAlert inventoryAlert) {
+        inventoryAlertRepository.save(inventoryAlert);
+    }
+
+    @Override
+    public void saveInventoryAlertList(List<InventoryAlert> list) {
+        inventoryAlertRepository.saveAllAndFlush(list);
+    }
+
+    @Override
+    public List<InventoryAlert> importInventoryAlertFile(File file) {
+        List<InventoryAlert> list = new ArrayList<>();
+        List<InventoryAlert> errorList = new ArrayList<>();
+        final List<Warehouse> whList = findAllWarehouseBy(new WarehouseRequestForm());
+        final Map<String, Warehouse> whMap = whList.stream().collect(Collectors.toMap(Warehouse::getName, w -> w));
+        EasyExcel.read(file, InventoryAlert.class, new ImportInventoryAlertListener(list, this, errorList, whMap)).sheet().headRowNumber(2).doRead();
+        if (!errorList.isEmpty()) {
+            return errorList;
+        } else {
+            //保存
+            inventoryAlertRepository.saveAllAndFlush(list);
+            return List.of();
+        }
+    }
+
+    @Override
+    public void checkInventoryAlertData(InventoryAlert row, Map<String, Warehouse> whMap) {
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.isBlank(row.getMaterialId())) {
+            sb.append("物料id不能为空!");
+        }
+        if (StringUtils.isNotBlank(row.getWarehouseName()) && !whMap.containsKey(row.getWarehouseName())) {
+            sb.append("库存名称不存在!");
+        }
+        if (!sb.isEmpty()) {
+            row.setErrorMsg(sb.toString());
+        }
+    }
+
+    @Override
+    public List<InventoryAlert> getInventoryAlert(String mid) {
+        List<InventoryAlert> list = inventoryAlertRepository.findById_MaterialId(mid);
+        return WithQueryUtil.build(list);
     }
 
 

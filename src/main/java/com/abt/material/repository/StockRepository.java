@@ -18,7 +18,7 @@ public interface StockRepository extends JpaRepository<Stock, String> {
             "and (:query is null or :query = '' or st.orderId like %:query% or st.materialName like %:query%) " +
             "and (:startDate is null or so.orderDate >= :startDate) " +
             "and (:endDate is null or so.orderDate <= :endDate) " +
-            "order by so.orderDate, st.materialName, so.stockType")
+            "order by so.orderDate desc, so.stockType asc, st.materialName asc")
     Page<Stock> findByQueryPageable(String query, Integer stockType, String startDate, String endDate, Pageable pageable);
 
     void deleteByOrderId(@NotNull @Size(max = 64) String orderId);

@@ -5,9 +5,9 @@ import com.abt.material.entity.Stock;
 import com.abt.material.entity.StockOrder;
 import com.abt.material.model.MaterialDetailDTO;
 import com.abt.material.service.StockService;
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.read.listener.ReadListener;
-import com.alibaba.excel.util.ListUtils;
+import cn.idev.excel.context.AnalysisContext;
+import cn.idev.excel.read.listener.ReadListener;
+import cn.idev.excel.util.ListUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -35,7 +35,6 @@ public class ImportCheckBillListener implements ReadListener<MaterialDetailDTO> 
 
     @Override
     public void invoke(MaterialDetailDTO data, AnalysisContext context) {
-        log.info("ImportCheckBillListener invoked");
         //数据校验
         stockService.checkImportData(data);
         if (data.hasError()) {

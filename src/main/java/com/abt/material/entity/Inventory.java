@@ -15,7 +15,7 @@ import org.hibernate.annotations.NotFoundAction;
 import java.math.BigDecimal;
 
 /**
- * 库存信息，不可直接修改数据。
+ * 库存信息，每次库存变化后的结果数据。不可update
  * 更新库存数据则插入一条数据
  */
 @Getter
@@ -96,6 +96,13 @@ public class Inventory extends AuditInfo implements CommonJpaAudit, WithQuery<In
     private String warehouseName;
     @Transient
     private String warehouseAddress;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "m_id", referencedColumnName = "m_id", insertable = false, updatable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT)),
+            @JoinColumn(name = "wh_id", referencedColumnName = "wh_id", insertable = false, updatable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    })
+    private InventoryAlert alert;
 
     /**
      * 原有库存
