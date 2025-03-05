@@ -148,7 +148,7 @@ public class StockServiceImpl implements StockService {
         buildInventoryRequestForm(requestForm);
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize(), Sort.by(Sort.Order.asc("createDate")));
         return WithQueryUtil.build(inventoryRepository
-                .findLatestInventory(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds(), requestForm.getName(), pageable));
+                .findLatestInventory(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds(), requestForm.getName(), requestForm.isShowAlertOnly(), pageable));
     }
 
     private InventoryRequestForm buildInventoryRequestForm(InventoryRequestForm requestForm) {
@@ -300,6 +300,8 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public void saveInventoryAlertList(List<InventoryAlert> list) {
+        //使用save默认update时，导致createDate, createUserid无数据。所以先删除
+        inventoryAlertRepository.deleteAllInBatch(list);
         inventoryAlertRepository.saveAllAndFlush(list);
     }
 

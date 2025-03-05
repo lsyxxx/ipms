@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -312,7 +313,7 @@ public class StockController {
     }
 
     @PostMapping("/inv/alert/save")
-    public R<Object> saveInventoryAlert(List<InventoryAlert> list) {
+    public R<Object> saveInventoryAlert(@RequestBody ArrayList<InventoryAlert> list) {
         stockService.saveInventoryAlertList(list);
         return R.success("保存成功!");
     }

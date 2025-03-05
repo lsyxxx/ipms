@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 @RestController
 @Slf4j
-@RequestMapping("/test/session")
+@RequestMapping("/session")
 @Tag(name = "SessionController", description = "")
 public class SessionController {
 
@@ -34,5 +34,12 @@ public class SessionController {
         R<String> r = R.success(uuid.toString(), "申请sid成功");
         r.setSid(sid);
         return r;
+    }
+
+    @GetMapping("/applyToken")
+    public R<String> applyToken(String service, HttpSession session) {
+        String token = service + UUID.randomUUID();
+        session.setAttribute(service, token);
+        return R.success(token, "Token申请成功!");
     }
 }

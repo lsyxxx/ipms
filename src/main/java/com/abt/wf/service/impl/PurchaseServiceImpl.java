@@ -13,6 +13,7 @@ import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.entity.UserSignature;
+import com.abt.wf.listener.PurchaseNameMergeHandler;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.PurchaseApplyMainRepository;
@@ -423,7 +424,7 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         map.put("total", form.getCost());
         File newFile = new File(pdfPath);
         try (ExcelWriter excelWriter = EasyExcel.write(newFile).withTemplate(excelTemplate).build()) {
-            WriteSheet writeSheet = EasyExcel.writerSheet().build();
+            WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(new PurchaseNameMergeHandler()).build();
             FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
             excelWriter.fill(list, fillConfig, writeSheet);
             excelWriter.fill(map, writeSheet);

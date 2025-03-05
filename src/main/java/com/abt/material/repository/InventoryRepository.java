@@ -33,16 +33,17 @@ public interface InventoryRepository extends JpaRepository<Inventory, String> {
     @Query("select i1 from Inventory i1 " +
             "left join fetch i1.materialDetail " +
             "left join fetch i1.warehouse " +
-            "left join fetch i1.alert " +
+            "left join fetch InventoryAlert a on i1.warehouseId =  a.id.warehouseId and i1.materialId = a.id.materialId " +
             "where 1=1" +
             "and i1.updateDate = (SELECT MAX(i2.updateDate) FROM Inventory i2 " +
             "                       WHERE i2.materialId = i1.materialId " +
             "                       AND i2.warehouseId = i1.warehouseId) " +
             "and ('all' in :materialTypeIds  or i1.materialId in :materialTypeIds) " +
             "and ('all' in :warehouseIds or i1.warehouseId in :warehouseIds) " +
+            "and (:showAlertOnly = false or i1.quantity < a.alertNum) " +
             "and (:name is null or :name = '' or i1.materialDetail.name like %:name%) "
     )
-    Page<Inventory> findLatestInventory(List<String> materialTypeIds, List<String> warehouseIds, String name, Pageable pageable);
+    Page<Inventory> findLatestInventory(List<String> materialTypeIds, List<String> warehouseIds, String name, boolean showAlertOnly, Pageable pageable);
 
     @EntityGraph(attributePaths = {"materialDetail", "warehouse"})
     List<Inventory> findByOrderId(String orderId);

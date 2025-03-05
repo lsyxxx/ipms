@@ -8,7 +8,7 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class JPushResponse {
+public class PushResponse {
     private String sendno;
     private String msg_id;
 }

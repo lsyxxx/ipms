@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 
 /**
  * 库存信息，每次库存变化后的结果数据。不可update
- * 更新库存数据则插入一条数据
+ * 每次更新库存数据则插入一条数据
  */
 @Getter
 @Setter
@@ -97,11 +97,7 @@ public class Inventory extends AuditInfo implements CommonJpaAudit, WithQuery<In
     @Transient
     private String warehouseAddress;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "m_id", referencedColumnName = "m_id", insertable = false, updatable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT)),
-            @JoinColumn(name = "wh_id", referencedColumnName = "wh_id", insertable = false, updatable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    })
+    @Transient
     private InventoryAlert alert;
 
     /**

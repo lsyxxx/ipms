@@ -86,4 +86,10 @@ public class ReceivePaymentController {
         return R.success(page.getContent(), (int) page.getTotalElements());
     }
 
+    @GetMapping("/del")
+    public R<Object> deleteRegister(String id) {
+        receivePaymentService.deleteRegister(id);
+        return R.success("删除成功!");
+    }
+
 }

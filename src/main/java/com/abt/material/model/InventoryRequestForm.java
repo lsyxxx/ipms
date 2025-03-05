@@ -17,4 +17,6 @@ public class InventoryRequestForm extends RequestForm {
     private List<String> materialTypeIds;
     private List<String> warehouseIds;
 
+    private boolean showAlertOnly = false;
+
 }

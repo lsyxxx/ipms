@@ -1,6 +1,6 @@
 package com.abt.finance.service.impl;
 
-import com.abt.app.entity.JPushRegister;
+import com.abt.app.entity.PushRegister;
 import com.abt.app.service.PushService;
 import com.abt.common.model.User;
 import com.abt.common.util.JsonUtil;
@@ -344,7 +344,7 @@ public class ReceivePaymentServiceImpl implements ReceivePaymentService {
     }
 
     private void doNotify(User user, ReceivePayment receivePayment) {
-        final List<JPushRegister> regList = pushService.findByUserid(user.getId());
+        final List<PushRegister> regList = pushService.findByUserid(user.getId());
         if (regList == null) {
             return;
         }
@@ -361,5 +361,12 @@ public class ReceivePaymentServiceImpl implements ReceivePaymentService {
                 .findByQuery(requestForm.getQuery(), requestForm.getNotifyUserid(), requestForm.getReceiveDateStart(), requestForm.getReceiveDateEnd(), pageable);
         page.getContent().forEach(ReceivePayment::simple);
         return page;
+    }
+
+    @Override
+    public void deleteRegister(String id) {
+        receivePaymentRepository.findById(id).ifPresent(receivePayment -> {
+            receivePaymentRepository.deleteById(id);
+        });
     }
 }

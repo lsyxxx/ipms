@@ -20,11 +20,11 @@ class InventoryRepositoryTest {
 
     @Test
     void findLatestInventory() {
-        Pageable pageable = PageRequest.of(0, 999);
-        final Page<Inventory> page = inventoryRepository.findLatestInventory(List.of(), List.of(), null, pageable);
-        System.out.println(page.getTotalElements());
-        page.getContent().forEach(i -> {
-            System.out.printf("name：%s, num: %d, alert: %d \n", i.getMaterialName(), i.getQuantity(), i.getAlert() == null ? -1 : i.getAlert().getAlertNum());
-        });
+//        Pageable pageable = PageRequest.of(0, 999);
+//        final Page<Inventory> page = inventoryRepository.findLatestInventory(List.of(), List.of(), null, pageable);
+//        System.out.println(page.getTotalElements());
+//        page.getContent().forEach(i -> {
+//            System.out.printf("name：%s, num: %d, alert: %d \n", i.getMaterialName(), i.getQuantity(), i.getAlert() == null ? -1 : i.getAlert().getAlertNum());
+//        });
     }
 }

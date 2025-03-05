@@ -1,8 +1,8 @@
 package com.abt.app.service.impl;
 
-import com.abt.app.entity.JPushRegister;
-import com.abt.app.entity.JPushResponse;
-import com.abt.app.respository.JPushRegisterRepository;
+import com.abt.app.entity.PushRegister;
+import com.abt.app.entity.PushResponse;
+import com.abt.app.respository.PushRegisterRepository;
 import com.abt.app.service.PushService;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.ValidateUtil;
@@ -35,9 +35,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class PushServiceImpl implements PushService {
+public class JPushServiceImpl implements PushService {
 
-    private final JPushRegisterRepository jpushRegisterRepository;
+    private final PushRegisterRepository pushRegisterRepository;
     private final EmployeeService employeeService;
     private final SysLogRepository sysLogRepository;
 
@@ -48,32 +48,33 @@ public class PushServiceImpl implements PushService {
      */
     public static final String jpush_restapi_push = "https://api.jpush.cn/v3/push";
 
-    public PushServiceImpl(JPushRegisterRepository jpushRegisterRepository, EmployeeService employeeService, SysLogRepository sysLogRepository) {
-        this.jpushRegisterRepository = jpushRegisterRepository;
+    public JPushServiceImpl(PushRegisterRepository pushRegisterRepository, EmployeeService employeeService, SysLogRepository sysLogRepository) {
+        this.pushRegisterRepository = pushRegisterRepository;
         this.employeeService = employeeService;
         this.sysLogRepository = sysLogRepository;
     }
 
+
     @Override
-    public List<JPushRegister> findByUserid(String userid) {
-        return jpushRegisterRepository.findByUserid(userid);
+    public List<PushRegister> findByUserid(String userid) {
+        return pushRegisterRepository.findByUserid(userid);
     }
 
     @Override
-    public void register(JPushRegister pushRegister) {
+    public void register(PushRegister pushRegister) {
         String userid = pushRegister.getUserid();
         final EmployeeInfo emp = employeeService.findUserByUserid(userid);
         if (emp == null) {
             throw new BusinessException("用户不存在(id=" + userid + ")");
         }
-        jpushRegisterRepository.save(pushRegister);
+        pushRegisterRepository.save(pushRegister);
     }
 
 
     @Override
     public void pushAndroid(String userid, String alert, String message, int badgeAddNum) {
         ValidateUtil.ensurePropertyNotnull(userid, "用户id");
-        final List<JPushRegister> regList = jpushRegisterRepository.findByUserid(userid);
+        final List<PushRegister> regList = pushRegisterRepository.findByUserid(userid);
         if (regList == null) {
             log.warn("用户{}未注册rid!", userid);
             return;
@@ -117,7 +118,7 @@ public class PushServiceImpl implements PushService {
             final HttpStatusCode statusCode = response.getStatusCode();
             if (statusCode.is2xxSuccessful()) {
                 String resBody = response.getBody();
-                final JPushResponse jr = JsonUtil.toObject(resBody, new TypeReference<JPushResponse>() {});
+                final PushResponse jr = JsonUtil.toObject(resBody, new TypeReference<PushResponse>() {});
                 log.info("JPush success! sendno: {}, msg_id: {}", jr.getSendno(), jr.getMsg_id());
             }
         } catch (HttpClientErrorException e) {
@@ -176,9 +177,4 @@ public class PushServiceImpl implements PushService {
         return objectMapper.writeValueAsString(rootNode);
     }
 
-    public static void main(String[] args) throws JsonProcessingException {
-        PushServiceImpl impl = new PushServiceImpl(null, null, null);
-        final String json = impl.createAndroidJPushMessage("您有待办事项-测试", "您有一条刘宋菀提交的费用报销申请待处理-测试", 1, "100d8559087c6701c7c");
-        impl.doPush(json);
-    }
 }

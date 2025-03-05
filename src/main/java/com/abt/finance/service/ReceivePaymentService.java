@@ -48,4 +48,10 @@ public interface ReceivePaymentService {
     ReceivePayment loadWithAll(String id);
 
     Page<ReceivePayment> findByNotifyUsers(ReceivePaymentRequestForm requestForm);
+
+    /**
+     * 删除一条登记记录
+     * @param id id
+     */
+    void deleteRegister(String id);
 }

@@ -4,6 +4,8 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TokenUtil;
+import com.abt.finance.entity.Invoice;
+import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
@@ -48,6 +50,8 @@ import java.util.List;
 public class ReimburseController {
 
     private final ReimburseService reimburseService;
+    private final InvoiceService invoiceService;
+
     @Value("${abt.rbs.excel.template}")
     private String excelTemplate;
 
@@ -60,8 +64,9 @@ public class ReimburseController {
     @Value("${abt.temp.dir}")
     private String tempDir;
 
-    public ReimburseController(ReimburseService reimburseService) {
+    public ReimburseController(ReimburseService reimburseService, InvoiceService invoiceService) {
         this.reimburseService = reimburseService;
+        this.invoiceService = invoiceService;
     }
 
     /**
@@ -85,6 +90,11 @@ public class ReimburseController {
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody Reimburse form) {
         setSubmitUser(form);
         form.setRbsDate(LocalDate.now());
+        //validate
+        final List<Invoice> error = invoiceService.save(form.getInvoiceList());
+        if (error != null && !error.isEmpty()) {
+            return R.fail(error, "发票号码存在错误！");
+        }
         reimburseService.apply(form);
         return R.success();
     }

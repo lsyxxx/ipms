@@ -1,8 +1,12 @@
 package com.abt.common.util;
 
+import com.abt.common.model.IToken;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.exception.InvalidTokenException;
 import com.abt.sys.model.dto.UserView;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,5 +64,32 @@ public class TokenUtil {
         return SecurityContextHolder.getContext().getAuthentication();
     }
 
+    public static void checkFormToken(HttpSession session, String service, String reqToken) {
+        if (session == null) {
+            throw new BusinessException("session超时，请刷新后再次尝试");
+        }
+        if (StringUtils.isBlank(service)) {
+            throw new BusinessException("未传入service名称");
+        }
+        final Object attribute = session.getAttribute(service);
+        if (attribute == null) {
+            throw new BusinessException(String.format("Token无效!(service=%s)", service));
+        }
+        String token = (String) attribute;
+        if (token.isEmpty() || StringUtils.isBlank(reqToken) || !reqToken.equals(token)) {
+            log.warn("token无效! user: {}, service: {}", TokenUtil.getUseridFromAuthToken(), service);
+            throw new InvalidTokenException(String.format("Token无效，请刷新后重试!(service:%s)", service));
+        }
+    }
+
+    public static void removeToken(HttpSession session, String service) {
+        if (session == null) {
+            return;
+        }
+        if (StringUtils.isBlank(service)) {
+            return;
+        }
+        session.removeAttribute(service);
+    }
 
 }

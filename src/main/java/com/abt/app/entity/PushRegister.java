@@ -16,10 +16,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "jpush_register")
+@Table(name = "push_register")
 @NoArgsConstructor
 @AllArgsConstructor
-public class JPushRegister {
+public class PushRegister {
 
     /**
      * 注册id，约等于设备唯一

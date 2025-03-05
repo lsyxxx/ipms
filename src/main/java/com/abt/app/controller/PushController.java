@@ -1,6 +1,6 @@
 package com.abt.app.controller;
 
-import com.abt.app.entity.JPushRegister;
+import com.abt.app.entity.PushRegister;
 import com.abt.app.service.PushService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
@@ -26,7 +26,7 @@ public class PushController {
     }
 
     @PostMapping("/reg")
-    public R<Object> register(@Validated({ValidateGroup.All.class}) @RequestBody JPushRegister jpushRegister) {
+    public R<Object> register(@Validated({ValidateGroup.All.class}) @RequestBody PushRegister jpushRegister) {
         pushService.register(jpushRegister);
         return R.success("用户" + jpushRegister.getUserid() + "注册成功!");
     }
