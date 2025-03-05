@@ -12,7 +12,13 @@ public interface InvoiceService {
 
     List<Invoice> save(List<Invoice> invoices);
 
+    List<Invoice> checkAndSave(List<Invoice> invoices);
+
+    boolean hasError(Invoice invoice);
+
     Invoice checkOne(Invoice invoice);
 
     List<Invoice> check(List<Invoice> list);
+
+    List<Invoice> findByRefCode(String refCode);
 }

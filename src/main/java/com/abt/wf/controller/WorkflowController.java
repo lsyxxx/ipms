@@ -9,10 +9,13 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
+import com.abt.wf.entity.CostDetail;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.ActivitiRequestForm;
+import com.abt.wf.model.CostDetailRequestForm;
 import com.abt.wf.model.UserTodo;
 import com.abt.wf.service.ActivitiService;
+import com.abt.wf.service.CostDetailService;
 import com.abt.wf.service.FlowOperationLogService;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
@@ -40,14 +43,17 @@ public class WorkflowController {
 
     private final FlowOperationLogService flowOperationLogService;
 
+    private final CostDetailService costDetailService;
+
     @Value("${com.abt.file.upload.save}")
     private String savedRoot;
 
 
-    public WorkflowController(ActivitiService activitiService, IFileService fileService, FlowOperationLogService flowOperationLogService) {
+    public WorkflowController(ActivitiService activitiService, IFileService fileService, FlowOperationLogService flowOperationLogService, CostDetailService costDetailService) {
         this.activitiService = activitiService;
         this.fileService = fileService;
         this.flowOperationLogService = flowOperationLogService;
+        this.costDetailService = costDetailService;
     }
 
     /**
@@ -168,6 +174,18 @@ public class WorkflowController {
                 });
 
         return R.success(saved, saved.size(), msg);
+    }
+
+    @PostMapping("/costdtl/save")
+    public R<Object> saveCostDetails(@RequestBody List<CostDetail> costDetails) {
+        costDetailService.save(costDetails);
+        return R.success("保存成功!");
+    }
+
+    @GetMapping("/costdtl/find")
+    public R<List<CostDetail>> findCostDetailsBy(CostDetailRequestForm requestForm) {
+        final List<CostDetail> list = costDetailService.findBy(requestForm);
+        return R.success(list);
     }
 
 }

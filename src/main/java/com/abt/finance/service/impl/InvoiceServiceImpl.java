@@ -28,6 +28,11 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<Invoice> save(List<Invoice> invoices) {
+         return invoiceRepository.saveAllAndFlush(invoices);
+    }
+
+    @Override
+    public List<Invoice> checkAndSave(List<Invoice> invoices) {
         if (invoices == null || invoices.isEmpty()) {
             return new ArrayList<>();
         }
@@ -46,8 +51,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         return errList;
     }
-
-    private boolean hasError(Invoice invoice) {
+    @Override
+    public boolean hasError(Invoice invoice) {
         return StringUtils.isNotBlank(invoice.getError());
     }
 
@@ -82,7 +87,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         prepareCheck(invoice);
         final Optional<Invoice> byId = invoiceRepository.findById(invoice.getId());
         if (byId.isPresent()) {
-            String error = "发票号码已存在!";
+            String error = "发票号码(" + invoice.getId() + ")已存在!";
             Invoice i = byId.get();
             invoice.setRefName(i.getRefName());
             invoice.setRefCode(i.getRefCode());
@@ -143,4 +148,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setError(null);
     }
 
+    @Override
+    public List<Invoice> findByRefCode(String refCode) {
+        return invoiceRepository.findByRefCode(refCode);
+    }
 }

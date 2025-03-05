@@ -20,11 +20,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new SalarySessionInterceptor())
                 .addPathPatterns("/sl/my/**");
-        registry.addInterceptor(new TokenValidateInterceptor())
-                .addPathPatterns("/invoice/check/**");
-        registry.addInterceptor(new TokenRemoveInterceptor())
-                .addPathPatterns("/wf/rbs/apply")
-                .addPathPatterns("/wf/rbs/restart");
+//        registry.addInterceptor(new TokenValidateInterceptor())
+//                .addPathPatterns("/invoice/check/**");
+//        registry.addInterceptor(new TokenRemoveInterceptor())
+//                .addPathPatterns("/wf/rbs/apply")
+//                .addPathPatterns("/wf/rbs/restart");
     }
 
 

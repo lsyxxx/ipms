@@ -196,6 +196,9 @@ public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice 
     @Transient
     private List<Invoice> invoiceList;
 
+    @Transient
+    private List<CostDetail> costDetailList;
+
     //-- 流程参数key
     public static final String KEY_COST = "cost";
     public static final String KEY_IS_LEADER = "isLeader";

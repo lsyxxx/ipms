@@ -8,12 +8,14 @@ import com.abt.finance.entity.Invoice;
 import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
+import com.abt.wf.service.CostDetailService;
 import com.abt.wf.service.ReimburseService;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
@@ -39,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,6 +54,7 @@ public class ReimburseController {
 
     private final ReimburseService reimburseService;
     private final InvoiceService invoiceService;
+    private final CostDetailService costDetailService;
 
     @Value("${abt.rbs.excel.template}")
     private String excelTemplate;
@@ -64,9 +68,10 @@ public class ReimburseController {
     @Value("${abt.temp.dir}")
     private String tempDir;
 
-    public ReimburseController(ReimburseService reimburseService, InvoiceService invoiceService) {
+    public ReimburseController(ReimburseService reimburseService, InvoiceService invoiceService, CostDetailService costDetailService) {
         this.reimburseService = reimburseService;
         this.invoiceService = invoiceService;
+        this.costDetailService = costDetailService;
     }
 
     /**
@@ -91,12 +96,24 @@ public class ReimburseController {
         setSubmitUser(form);
         form.setRbsDate(LocalDate.now());
         //validate
-        final List<Invoice> error = invoiceService.save(form.getInvoiceList());
-        if (error != null && !error.isEmpty()) {
+        final List<Invoice> invList = invoiceService.check(form.getInvoiceList());
+        List<Invoice> error = new ArrayList<>();
+        invList.forEach(invoice -> {
+            if (invoiceService.hasError(invoice)) {
+                error.add(invoice);
+            }
+        });
+        if (!error.isEmpty()) {
             return R.fail(error, "发票号码存在错误！");
         }
-        reimburseService.apply(form);
-        return R.success();
+        costDetailService.check(form.getCostDetailList(), form.getCost());
+        final Reimburse entity = reimburseService.apply(form);
+        invList.forEach(i -> i.setRefCode(entity.getId()));
+        costDetailService.save(form.getCostDetailList(), entity.getId());
+        invoiceService.save(invList);
+
+
+        return R.success(entity, "提交成功");
     }
 
     @PostMapping("/approve")

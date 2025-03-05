@@ -4,6 +4,8 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TokenUtil;
+import com.abt.finance.entity.Invoice;
+import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
@@ -14,10 +16,12 @@ import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
+import com.abt.wf.service.CostDetailService;
 import com.abt.wf.service.PayVoucherService;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.write.metadata.WriteSheet;
+import com.abt.wf.service.ReimburseService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +41,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,6 +52,9 @@ import java.util.List;
 @RequestMapping("/wf/pay")
 public class PayVoucherController {
     private final PayVoucherService payVoucherService;
+    private final InvoiceService invoiceService;
+    private final CostDetailService costDetailService;
+
     @Value("${abt.pay.excel.template}")
     private String excelTemplate;
 
@@ -59,8 +67,10 @@ public class PayVoucherController {
     @Value("${abt.temp.dir}")
     private String tempDir;
 
-    public PayVoucherController(PayVoucherService payVoucherService) {
+    public PayVoucherController(PayVoucherService payVoucherService, InvoiceService invoiceService, CostDetailService costDetailService) {
         this.payVoucherService = payVoucherService;
+        this.invoiceService = invoiceService;
+        this.costDetailService = costDetailService;
     }
 
     /**
@@ -83,7 +93,24 @@ public class PayVoucherController {
     @PostMapping("/apply")
     public R<Object> apply(@Validated(ValidateGroup.Apply.class) @RequestBody PayVoucher payVoucher) {
         setSubmitUser(payVoucher);
-        payVoucherService.apply(payVoucher);
+        //validate
+        final List<Invoice> invList = invoiceService.check(payVoucher.getInvoiceList());
+        List<Invoice> error = new ArrayList<>();
+        invList.forEach(invoice -> {
+            if (invoiceService.hasError(invoice)) {
+                error.add(invoice);
+            }
+        });
+        if (!error.isEmpty()) {
+            return R.fail(error, "发票号码存在错误！");
+        }
+        costDetailService.check(payVoucher.getCostDetailList(), payVoucher.getPayAmount().doubleValue());
+
+        //save
+        final PayVoucher entity = payVoucherService.apply(payVoucher);
+        invList.forEach(i -> i.setRefCode(entity.getId()));
+        costDetailService.save(payVoucher.getCostDetailList(), entity.getId());
+        invoiceService.save(invList);
         return R.success();
     }
 

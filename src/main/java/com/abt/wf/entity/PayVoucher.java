@@ -3,9 +3,11 @@ package com.abt.wf.entity;
 import com.abt.common.config.ValidateGroup;
 import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
+import com.abt.finance.entity.Invoice;
 import com.abt.finance.service.ICreditBook;
 import com.abt.wf.config.Constants;
 import com.abt.wf.listener.JpaWorkflowListener;
+import com.abt.wf.model.WithInvoice;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
@@ -22,6 +24,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +43,7 @@ import static com.abt.wf.config.Constants.*;
 @DynamicInsert
 @DynamicUpdate
 @AllArgsConstructor
-public class PayVoucher extends WorkflowBase implements ICreditBook {
+public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice {
     @Id
     @GeneratedValue(generator = "timestampIdGenerator")
     @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
@@ -189,13 +192,18 @@ public class PayVoucher extends WorkflowBase implements ICreditBook {
     @Column(name = "pay_acc_id", columnDefinition = "VARCHAR(128)")
     private String payAccountId;
 
-
     @Transient
     private String comment;
     @Transient
     private String decision;
     @Transient
     private Map<String, Object> variableMap = new HashMap<String, Object>();
+
+    @Transient
+    private List<Invoice> invoiceList;
+
+    @Transient
+    private List<CostDetail> costDetailList;
 
     public Map<String, Object> createVarMap() {
         this.variableMap = new HashMap<>();

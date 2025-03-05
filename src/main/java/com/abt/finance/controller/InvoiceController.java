@@ -3,6 +3,7 @@ package com.abt.finance.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.finance.entity.Invoice;
+import com.abt.finance.model.InvoiceRequestForm;
 import com.abt.finance.service.InvoiceService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -45,5 +46,11 @@ public class InvoiceController {
             return R.success("保存成功!");
         }
         return R.fail(error, "保存失败!");
+    }
+
+    @GetMapping("/find")
+    public R<List<Invoice>> findByRefCode(InvoiceRequestForm requestForm) {
+        final List<Invoice> byRefCode = invoiceService.findByRefCode(requestForm.getRefCode());
+        return R.success(byRefCode);
     }
 }
