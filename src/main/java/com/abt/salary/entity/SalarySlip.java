@@ -130,6 +130,14 @@ public class SalarySlip extends AuditInfo {
     private LocalDateTime autoCheckTime;
 
     /**
+     * 确认类型，手动/自动
+     */
+    @Column(name="check_type", columnDefinition = "VARCHAR(12)")
+    private String checkType;
+    public static final String CHECK_TYPE_AUTO = "auto";
+    public static final String CHECK_TYPE_MANUAL = "manual";
+
+    /**
      * 异常信息
      */
     @Transient
@@ -149,13 +157,6 @@ public class SalarySlip extends AuditInfo {
 
     @Transient
     private User user;
-
-    /**
-     *  擦除关联对象信息。尽量少泄露
-     */
-    public void erase() {
-//        this.employeeInfo = null;
-    }
 
     /**
      * 生成user信息，必须获取employee等对象
@@ -196,15 +197,22 @@ public class SalarySlip extends AuditInfo {
         return this;
     }
 
+    public SalarySlip send(LocalDateTime sendTime) {
+        this.isSend = true;
+        this.sendTime = sendTime;
+        return this;
+    }
+
     public SalarySlip read() {
         this.isRead = true;
         this.readTime = LocalDateTime.now();
         return this;
     }
 
-    public SalarySlip check() {
+    public SalarySlip check(String checkType) {
         this.isCheck = true;
         this.checkTime = LocalDateTime.now();
+        this.checkType = checkType;
         return this;
     }
 

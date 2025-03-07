@@ -39,7 +39,6 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     List<SalarySlip> findByJobNumberAndYearMonth(String jobNumber, String yearMonthLike);
 
     //查询所有用户未确认的(包含未自动确认的)
-    // isCheck=false/null且checkTime is null 且
-    @Query("select s from SalarySlip s where (s.isCheck is null or s.isCheck = false) and  s.checkTime is null and s.autoCheckTime is null")
+    @Query("select s from SalarySlip s where (s.isCheck is null or s.isCheck = false) and  s.checkTime is null")
     List<SalarySlip> findAllUnchecked();
 }

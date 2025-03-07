@@ -29,7 +29,7 @@ import java.util.List;
 public class R<T> {
     private T data;
     /**
-     * 业务异常代码
+     * http异常代码
      */
     private int code;
     /**
@@ -41,6 +41,11 @@ public class R<T> {
      * session id
      */
     private String sid;
+
+    /**
+     * 业务异常代码
+     */
+    private String bizCode;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -62,6 +67,14 @@ public class R<T> {
         this.data = data;
         this.code = code;
         this.msg = message;
+    }
+
+    public R(T data, int code, String message, String bizCode) {
+        super();
+        this.data = data;
+        this.code = code;
+        this.msg = message;
+        this.bizCode = bizCode;
     }
 
     public R(T data, int code, String message, int count) {
@@ -130,11 +143,15 @@ public class R<T> {
     }
 
     public static<T> R<T> success(String msg) {
-        return new R<>(null, ResCode.SUCCESS.getCode(), msg);
+        return new R<>(null, ResCode.SUCCESS.getCode(), msg, String.valueOf(ResCode.SUCCESS.getCode()));
     }
 
     public static<T> R<T> fail(String errMsg) {
         return new R<>(null, ResCode.FAIL.getCode(), errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
+    }
+
+    public static<T> R<T> fail(String errMsg, String bizCode) {
+        return new R<>(null, ResCode.FAIL.getCode(), errMsg == null ? ResCode.FAIL.getMessage() : errMsg, bizCode);
     }
 
     public static<T> R<T> fail() {

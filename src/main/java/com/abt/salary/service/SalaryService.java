@@ -11,9 +11,11 @@ import com.abt.salary.model.SalaryPreview;
 import com.abt.salary.model.UserSalaryDetail;
 import com.abt.salary.model.UserSlip;
 import jakarta.servlet.http.HttpSession;
+import org.quartz.SchedulerException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SalaryService {
@@ -78,7 +80,7 @@ public interface SalaryService {
     void readSalarySlip(String slipId);
 
     //工资条确认
-    void checkSalarySlip(String slipId);
+    void checkSalarySlip(String slipId, String checkType);
 
     /**
      *  自动确认

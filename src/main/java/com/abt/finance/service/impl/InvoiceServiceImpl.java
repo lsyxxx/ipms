@@ -152,4 +152,19 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<Invoice> findByRefCode(String refCode) {
         return invoiceRepository.findByRefCode(refCode);
     }
+
+    @Override
+    public void delete(String id) {
+        invoiceRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteByRef(String refCode, String refName) {
+        invoiceRepository.deleteByRefCodeAndRefName(refCode, refName);
+    }
+
+    @Override
+    public void delete(List<String> list) {
+        invoiceRepository.deleteAllById(list);
+    }
 }

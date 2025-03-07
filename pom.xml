@@ -169,6 +169,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/aspose-cells-21.11.jar</systemPath>
         </dependency>
+
+        <!-- 引入 Quartz 依赖-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+
     </dependencies>
     <build>
         <resources>

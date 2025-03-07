@@ -53,4 +53,22 @@ public class InvoiceController {
         final List<Invoice> byRefCode = invoiceService.findByRefCode(requestForm.getRefCode());
         return R.success(byRefCode);
     }
+
+    @GetMapping("/del/one")
+    public R<Object> deleteInvoice(String id) {
+        invoiceService.delete(id);
+        return R.success("删除成功!");
+    }
+
+    @GetMapping("/del/list")
+    public R<Object> deleteInvoiceList(List<String> list) {
+        invoiceService.delete(list);
+        return R.success("删除成功!");
+    }
+
+    @GetMapping("/del")
+    public R<Object> deleteByRefCode(String refCode, String refName) {
+        invoiceService.deleteByRef(refCode, refName);
+        return R.success("删除成功!");
+    }
 }

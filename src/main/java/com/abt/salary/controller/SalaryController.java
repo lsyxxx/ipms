@@ -3,7 +3,8 @@ package com.abt.salary.controller;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
-import com.abt.salary.entity.SalaryCell;
+import com.abt.salary.AutoCheckSalaryJob;
+import com.abt.qrtzjob.QuartzJobCreator;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
 import com.abt.salary.model.PwdForm;
@@ -17,6 +18,9 @@ import com.abt.sys.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,11 +41,15 @@ public class SalaryController {
 
     private final SalaryService salaryService;
     private final EmployeeService employeeService;
+    private final AutoCheckSalaryJob autoCheckSalaryJob;
+    private final QuartzJobCreator quartzJobCreator;
 
 
-    public SalaryController(SalaryService salaryService, EmployeeService employeeService) {
+    public SalaryController(SalaryService salaryService, EmployeeService employeeService, AutoCheckSalaryJob autoCheckSalaryJob, QuartzJobCreator quartzJobCreator) {
         this.salaryService = salaryService;
         this.employeeService = employeeService;
+        this.autoCheckSalaryJob = autoCheckSalaryJob;
+        this.quartzJobCreator = quartzJobCreator;
     }
 
 
@@ -233,17 +241,24 @@ public class SalaryController {
 
     @GetMapping("/my/check")
     public R<Object> checkSalarySlip(String id) {
-        salaryService.checkSalarySlip(id);
+        salaryService.checkSalarySlip(id, SalarySlip.CHECK_TYPE_MANUAL);
         return R.success("已确认");
     }
 
     @GetMapping("/autocheck")
-    public R<Object> autoCheck(String id) {
-//        salaryService.slipAutoCheck(id);
-//        return R.success("已确认");
-        return null;
+    public R<Object> autoCheck(LocalDateTime autoCheckTime) throws SchedulerException, ClassNotFoundException {
+        autoCheckSalaryJob.createJobAndScheduler(autoCheckTime);
+        return R.success("创建任务成功!");
     }
 
+    /**
+     * 查看部门的工资表
+     */
+    public void findDeptSlipsBy(List<String> deptIds) {
+        //1. 用户是否有权限查看
+
+        //2. 查询
+    }
 
 
     private void copyForm(SalaryMain slipForm, SalaryMain main) {

@@ -314,9 +314,11 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public void salaryImport(SalaryMain main, SalaryPreview preview) {
         //保存
+        LocalDateTime sendTime = LocalDateTime.now();
+        final LocalDateTime autoCheckTime = getAutoCheckTime(sendTime);
+        main.setAutoCheckTime(autoCheckTime);
         salaryMainRepository.save(main);
         salaryHeaderRepository.saveAll(preview.getHeader());
-
         //生成工资条
         for (List<SalaryCell> row : preview.getSlipTable()) {
             final String jobNumber = row.get(0).getJobNumber();
@@ -330,8 +332,8 @@ public class SalaryServiceImpl implements SalaryService {
                 slip.setNetPaid(new BigDecimal(netPaid));
             }
             //自动确认时间
-            slip.send();
-            this.getSlipAutoCheckTime(slip);
+            slip.send(sendTime);
+            slip.setAutoCheckTime(autoCheckTime);
             slip = salarySlipRepository.save(slip);
             for (SalaryCell cell : row) {
                 cell.setSlipId(slip.getId());
@@ -371,7 +373,6 @@ public class SalaryServiceImpl implements SalaryService {
         final List<SalarySlip> list = salarySlipRepository.findEntireDataByMainIdOrderByJobNumber(mid);
         list.forEach(i -> {
             i.user();
-            i.erase();
         });
         return list;
     }
@@ -622,9 +623,9 @@ public class SalaryServiceImpl implements SalaryService {
 
     //工资条确认
     @Override
-    public void checkSalarySlip(String slipId) {
+    public void checkSalarySlip(String slipId, String checkType) {
         final SalarySlip salarySlip = findSalarySlipEntityById(slipId);
-        salarySlip.check();
+        salarySlip.check(checkType);
         salarySlipRepository.save(salarySlip);
     }
 
@@ -650,6 +651,13 @@ public class SalaryServiceImpl implements SalaryService {
         final LocalDateTime sendTime = slip.getSendTime();
         final LocalDateTime autoCheckTime = sendTime.plusDays(getDefaultAutoCheck());
         slip.setAutoCheckTime(autoCheckTime);
+    }
+
+    public LocalDateTime getAutoCheckTime(LocalDateTime sendTime) {
+        if (sendTime == null) {
+            return null;
+        }
+        return sendTime.plusDays(getDefaultAutoCheck());
     }
 
     @Override

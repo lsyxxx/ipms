@@ -12,6 +12,8 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDateTime;
+
 import static com.abt.salary.Constants.NETPAID_COLNAME;
 
 /**
@@ -163,6 +165,9 @@ public class SalaryMain extends AuditInfo {
 
     @Transient
     private Integer feedBackCount;
+
+    @Column(name="auto_check_time")
+    private LocalDateTime autoCheckTime;
 
     /**
      * 导入数据存在异常

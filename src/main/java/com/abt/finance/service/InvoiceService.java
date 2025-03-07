@@ -21,4 +21,10 @@ public interface InvoiceService {
     List<Invoice> check(List<Invoice> list);
 
     List<Invoice> findByRefCode(String refCode);
+
+    void delete(String id);
+
+    void deleteByRef(String refCode, String refName);
+
+    void delete(List<String> list);
 }

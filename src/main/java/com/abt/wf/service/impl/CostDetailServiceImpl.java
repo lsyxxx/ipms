@@ -45,6 +45,9 @@ public class CostDetailServiceImpl implements CostDetailService {
 
     @Override
     public void check(List<CostDetail> list, double totalCost) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
         final Double computed = list.stream().map(CostDetail::getCost).reduce(0.00, (acc, cur) -> {
             if (cur == null) {
                 cur = 0.00;
