@@ -192,3 +192,7 @@ update wf_pur_main set purchaser_id = 'U20230406026' where (purchaser_id is null
 update wf_pur_dtl set final_id = 'U20230406026' where final_id is null or final_id = '';
 update wf_pur_dtl set final_name = '耿丽珍' where final_name is null or final_name = '';
 update wf_pur_dtl set accept_items = '品名、规格、等级、生产日期、有效期、成分、包装、外观、贮存、数量、合格证明、说明书、保修卡' where accept_items is null or accept_items = '';
+
+
+-- sl_main dept_mgr_chk 默认 false
+update sl_main set dept_mgr_chk = 0;

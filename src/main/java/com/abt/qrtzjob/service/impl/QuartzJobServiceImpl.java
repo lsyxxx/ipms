@@ -4,7 +4,6 @@ import com.abt.qrtzjob.QuartzJobCreator;
 import com.abt.qrtzjob.entity.QuartzJobStore;
 import com.abt.qrtzjob.repository.QuartzJobStoreRepository;
 import com.abt.qrtzjob.service.QuartzJobService;
-import org.quartz.Job;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -29,7 +28,13 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         quartzJobCreator.createScheduleJob(jobDetail, trigger, jobStore);
     }
 
+    @Override
     public void saveJobStore(QuartzJobStore quartzJobStore) {
         quartzJobStoreRepository.save(quartzJobStore);
+    }
+
+    @Override
+    public QuartzJobStore findById(String id) {
+        return quartzJobStoreRepository.findById(id).orElse(null);
     }
 }

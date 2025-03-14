@@ -12,4 +12,8 @@ public interface QuartzJobService {
      * 2. 保存Job store
      */
     void jobRegister(JobDetail jobDetail, Trigger trigger, QuartzJobStore jobStore) throws SchedulerException;
+
+    void saveJobStore(QuartzJobStore quartzJobStore);
+
+    QuartzJobStore findById(String id);
 }

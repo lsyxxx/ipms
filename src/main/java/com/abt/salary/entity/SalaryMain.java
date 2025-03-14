@@ -154,6 +154,12 @@ public class SalaryMain extends AuditInfo {
      */
     public static final int STATE_PERSIST = 2;
 
+    /**
+     * 导入的总条数
+     */
+    @Transient
+    private Integer allCount;
+
     @Transient
     private Integer sendCount;
 
@@ -168,6 +174,35 @@ public class SalaryMain extends AuditInfo {
 
     @Column(name="auto_check_time")
     private LocalDateTime autoCheckTime;
+
+    /**
+     * 是否允许部门经理审核
+     */
+    @Column(name="dept_mgr_chk", columnDefinition = "BIT")
+    private boolean isDeptManagerCheck = false;
+
+    @Transient
+    private String groupName ;
+
+    /**
+     * 领导已审批(副总/部门经理)
+     */
+    @Transient
+    private long leaderChecked;
+    /**
+     * 未审批的数量
+     */
+    @Transient
+    private long leaderUncheck;
+    /**
+     * 应该审核的数量
+     */
+    @Transient
+    private long leaderAllCheck;
+    @Transient
+    private LocalDateTime leaderCheckTime;
+
+
 
     /**
      * 导入数据存在异常

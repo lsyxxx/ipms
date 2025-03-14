@@ -1,6 +1,7 @@
 package com.abt.sys.config;
 
 import com.abt.common.entity.Company;
+import com.abt.oa.OAConstants;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.sys.repository.CustomerInfoRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,6 +69,5 @@ public class CompanyConfig {
     public Map<String, CustomerInfo> companyMap() {
         return this.companyMap;
     }
-
 
 }

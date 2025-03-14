@@ -22,4 +22,14 @@ public interface EmployeeService {
     List<EmployeeInfo> getByExample(EmployeeInfo condition);
 
     Page<User> findUserByQuery(UserRequestForm requestForm);
+
+    /**
+     * 部门经理或副总
+     */
+    List<User> findDCEOs();
+
+    /**
+     * 查询部门经理
+     */
+    List<EmployeeInfo> findDms();
 }

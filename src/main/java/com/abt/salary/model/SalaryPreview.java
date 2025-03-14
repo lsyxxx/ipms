@@ -4,7 +4,9 @@ package com.abt.salary.model;
 import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.entity.SalaryHeader;
 import com.abt.salary.entity.SalaryMain;
+import com.abt.salary.entity.SalarySlip;
 import com.abt.sys.model.entity.SystemFile;
+import com.abt.wf.entity.UserSignature;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
@@ -58,6 +60,13 @@ public class SalaryPreview {
     private List<String> fatalError = new ArrayList<>();
 
     private Map<String, List<List<SalaryCell>>> typedErrorMap = new HashMap<>();
+
+    private List<SalarySlip> slips = new ArrayList<>();
+
+    /**
+     * 审核人签名
+     */
+    private UserSignature leaderSig;
 
     private int jobNumberColumnIndex;
     private int nameColumnIndex;

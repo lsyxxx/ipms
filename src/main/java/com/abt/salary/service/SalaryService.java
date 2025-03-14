@@ -1,21 +1,15 @@
 package com.abt.salary.service;
 
 
-import com.abt.common.model.ValidationResult;
-import com.abt.salary.entity.SalaryCell;
+import com.abt.common.model.R;
 import com.abt.salary.entity.SalaryEnc;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
-import com.abt.salary.model.PwdForm;
-import com.abt.salary.model.SalaryPreview;
-import com.abt.salary.model.UserSalaryDetail;
-import com.abt.salary.model.UserSlip;
+import com.abt.salary.model.*;
 import jakarta.servlet.http.HttpSession;
-import org.quartz.SchedulerException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SalaryService {
@@ -95,4 +89,23 @@ public interface SalaryService {
     void getSlipAutoCheckTime(SalarySlip slip);
 
     void saveAllSlip(List<SalarySlip> list);
+
+    /**
+     * 根据角色查看表格
+     * @param checkAuth 用户审核工资权限
+     * @param main: salaryMain
+     */
+    SalaryPreview getSalaryCheckTable(CheckAuth checkAuth, SalaryMain main);
+
+    /**
+     * 部门/副总审核
+     *
+     * @param checkAuth 审核权限
+     * @param slids     待审核的slip id list
+     */
+    R<List<SalarySlip>> deptCheck(CheckAuth checkAuth, List<String> slids);
+
+    List<SalaryMain> findCheckList(String yearMonth, CheckAuth checkAuth);
+
+    String translateCompanyName(String code);
 }

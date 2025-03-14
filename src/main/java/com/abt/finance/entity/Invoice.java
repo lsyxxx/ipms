@@ -36,7 +36,6 @@ public class Invoice extends AuditInfo implements CommonJpaAudit {
      */
     @Id
     @NotNull(groups = {ValidateGroup.All.class}, message = "发票号码不能为空")
-    @Size(max = 20)
     private String id;
 
     /**

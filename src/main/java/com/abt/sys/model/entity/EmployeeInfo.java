@@ -1,5 +1,6 @@
 package com.abt.sys.model.entity;
 
+import com.abt.common.model.User;
 import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -348,5 +349,18 @@ public class EmployeeInfo implements WithQuery<EmployeeInfo> {
             this.department = null;
         }
         return this;
+    }
+
+    public User toUser() {
+        User u = new User();
+        u.setId(this.tUser == null ? "" : this.tUser.getId());
+        u.setUsername(this.name);
+        u.setCode(this.jobNumber);
+        u.setDeptId(this.dept);
+        u.setDeptName(this.department == null ? "" : this.department.getName());
+        u.setTeamId(this.banzhuDept);
+        u.setEmployeeId(this.id);
+        u.setPosition(this.position);
+        return u;
     }
 }

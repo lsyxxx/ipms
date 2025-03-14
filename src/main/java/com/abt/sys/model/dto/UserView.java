@@ -89,7 +89,7 @@ public class UserView implements UserDetails{
 
 
     /**
-     * TODO: 授权信息
+     * 授权信息
      */
     private Set<Role> authorities = new HashSet<>();
     /**

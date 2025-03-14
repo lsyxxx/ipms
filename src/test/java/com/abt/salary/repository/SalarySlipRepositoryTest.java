@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,4 +54,20 @@ class SalarySlipRepositoryTest {
         });
 
     }
+
+    @Test
+    void findWithSignatureByMainId() {
+        Set<String> jmSet = new HashSet<>();
+        final List<SalarySlip> list = salarySlipRepository.findWithSignatureByMainIdAndJobNumberSet("202411251732506630211", null);
+        assertNotNull(list);
+        System.out.println(list.size());
+        list.forEach(i -> {
+            System.out.printf("name：%s, sig: %s \n", i.getName(), i.getUserSignature() == null ? "" : i.getUserSignature().getFileName());
+//            System.out.printf("name: %s, emp: %s, user: %s%n",
+//                    i.getName(),
+//                    i.getEmployeeInfo() == null ? "" : i.getEmployeeInfo().getName(),
+//                    i.getUser() == null ? "" : i.getUser().getUsername());
+        });
+    }
+
 }

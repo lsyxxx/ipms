@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 
 /**
  * 表头
@@ -54,6 +56,15 @@ public class SalaryHeader {
 //    private int endRow;
 //    @Column(name="end_col")
 //    private int endColumn;
+
+    /**
+     * 若是多级表头的下级
+     */
+    @Transient
+    private List<SalaryHeader> children;
+
+    @Transient
+    private String parentLabel;
 
 
 

@@ -1,16 +1,17 @@
 package com.abt.salary.service.impl;
 
+import com.abt.common.model.R;
 import com.abt.common.util.FileUtil;
 import com.abt.common.util.ValidateUtil;
+import com.abt.oa.entity.OrgLeader;
+import com.abt.oa.service.OrgLeaderService;
 import com.abt.salary.SalaryExcelReadListener;
 import com.abt.salary.entity.*;
-import com.abt.salary.model.PwdForm;
-import com.abt.salary.model.SalaryPreview;
-import com.abt.salary.model.UserSalaryDetail;
-import com.abt.salary.model.UserSlip;
+import com.abt.salary.model.*;
 import com.abt.salary.repository.*;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.model.entity.TUser;
 import com.abt.sys.repository.EmployeeRepository;
@@ -18,11 +19,16 @@ import com.abt.sys.repository.TUserRepository;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.enums.CellExtraTypeEnum;
 import cn.idev.excel.support.ExcelTypeEnum;
+import com.abt.sys.service.EmployeeService;
+import com.abt.wf.entity.UserSignature;
+import com.abt.wf.repository.UserSignatureRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.Job;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,8 +41,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static com.abt.oa.OAConstants.*;
 import static com.abt.salary.Constants.*;
+import static com.abt.salary.entity.SalarySlip.CHECK_TYPE_MANUAL;
+import static com.abt.salary.model.CheckAuth.*;
 
 /**
   * 
@@ -52,6 +62,12 @@ public class SalaryServiceImpl implements SalaryService {
     private final SalaryEncRepository salaryEncRepository;
     private final TUserRepository tUserRepository;
     private final SalaryHeaderRepository salaryHeaderRepository;
+    private final CustomerInfo abtCompany;
+    private final CustomerInfo grdCompany;
+    private final CustomerInfo dcCompany;
+    private final OrgLeaderService orgLeaderService;
+    private final EmployeeService employeeService;
+    private final UserSignatureRepository userSignatureRepository;
 
     @Value("${com.abt.file.upload.save}")
     private String fileRoot;
@@ -69,7 +85,7 @@ public class SalaryServiceImpl implements SalaryService {
     private Integer defaultAutoCheck;
 
     public SalaryServiceImpl(EmployeeRepository employeeRepository, SalaryMainRepository salaryMainRepository,
-                             SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository, SalaryHeaderRepository salaryHeaderRepository) {
+                             SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository, SalaryHeaderRepository salaryHeaderRepository, CustomerInfo abtCompany, CustomerInfo grdCompany, CustomerInfo dcCompany, OrgLeaderService orgLeaderService, EmployeeService employeeService, UserSignatureRepository userSignatureRepository) {
         this.employeeRepository = employeeRepository;
         this.salaryMainRepository = salaryMainRepository;
         this.salaryCellRepository = salaryCellRepository;
@@ -77,6 +93,12 @@ public class SalaryServiceImpl implements SalaryService {
         this.salaryEncRepository = salaryEncRepository;
         this.tUserRepository = tUserRepository;
         this.salaryHeaderRepository = salaryHeaderRepository;
+        this.abtCompany = abtCompany;
+        this.grdCompany = grdCompany;
+        this.dcCompany = dcCompany;
+        this.orgLeaderService = orgLeaderService;
+        this.employeeService = employeeService;
+        this.userSignatureRepository = userSignatureRepository;
     }
 
     @Override
@@ -102,11 +124,6 @@ public class SalaryServiceImpl implements SalaryService {
         salaryMain.setJobNumberColumnIndex(listener.getJobNumberRawColumnIndex());
         salaryMain.setName(listener.getNameRawColumnIndex());
 
-        final int jobNumberColumnIndex = listener.getJobNumberRawColumnIndex();
-        final int netPaidColumnIndex = listener.getNetPaidRawColumnIndex();
-        log.info("=== jobNumberColumnIndex {} =======", jobNumberColumnIndex);
-        log.info("=== netPaidColumnIndex {} =======", netPaidColumnIndex);
-
         //组装preview
         SalaryPreview preview = this.buildPreview(listener, salaryMain);
         preview.setSalaryMain(salaryMain);
@@ -123,7 +140,7 @@ public class SalaryServiceImpl implements SalaryService {
         }
         //严重错误直接抛出，否则后续可能存在问题
         if (!preview.hasFatalError()) {
-            log.info("==== FATAL ERROR! {}",  preview.getFatalError());
+            log.error("==== FATAL ERROR! {}",  preview.getFatalError());
             return preview;
         }
 
@@ -178,6 +195,7 @@ public class SalaryServiceImpl implements SalaryService {
                 if (cell.getColumnIndex() == preview.getNetPaidColumnIndex()) {
                     if (StringUtils.isBlank(cell.getValue())) {
                         setRowErrorFlag(row);
+                        cell.addError(ERR_NETPAID_NULL);
                         preview.addTypedErrorRow(ERR_NETPAID_NULL, row);
                     }
                 }
@@ -193,6 +211,7 @@ public class SalaryServiceImpl implements SalaryService {
             final Optional<EmployeeInfo> emp = employees.stream().filter(i -> i.getJobNumber().equals(jobNumber) && (i.isExit() || i.salaryDisabled())).findAny();
             if (emp.isPresent()) {
                 setRowErrorFlag(row);
+                getRowInfoCell(row).addError(ERR_USER_EXIT);
                 preview.addTypedErrorRow(ERR_USER_EXIT, row);
             }
 
@@ -211,7 +230,10 @@ public class SalaryServiceImpl implements SalaryService {
         jobNumMap.forEach((k, v) -> {
             //重复
             if (v.size() > 1) {
-                v.forEach(this::setRowErrorFlag);
+                v.forEach(i -> {
+                    setRowErrorFlag(i);
+                    getRowInfoCell(i).addError(ERR_JOBNUM_DUPLICATED);
+                });
                 preview.addTypedErrorAll(ERR_JOBNUM_DUPLICATED, v);
             }
         });
@@ -221,10 +243,11 @@ public class SalaryServiceImpl implements SalaryService {
     //工号不存在
     public void checkUserContains(SalaryPreview preview, List<EmployeeInfo> employees) {
         preview.getRawTable().forEach(row -> {
-             String jobNumber = row.get(0).getJobNumber();
+            String jobNumber = row.get(0).getJobNumber();
             final boolean exists = employees.stream().anyMatch(i -> i.getJobNumber().equals(jobNumber));
             if (!exists) {
                 setRowErrorFlag(row);
+                getRowInfoCell(row).addError(ERR_JOBNUM_NOT_EXIST);
                 preview.addTypedErrorRow(ERR_JOBNUM_NOT_EXIST, row);
             }
         });
@@ -238,6 +261,7 @@ public class SalaryServiceImpl implements SalaryService {
             final boolean match = employees.stream().anyMatch(i -> i.getJobNumber().equals(jobNumber) && i.getName().equals(name) && i.getCompany().equals(preview.getGroup()));
             if (!match) {
                 setRowErrorFlag(row);
+                getRowInfoCell(row).addError(ERR_USER_NOT_FIT);
                 preview.addTypedErrorRow(ERR_USER_NOT_FIT, row);
             }
         }
@@ -249,6 +273,7 @@ public class SalaryServiceImpl implements SalaryService {
                 if (cell.getColumnIndex() == preview.getNameColumnIndex()) {
                     if (StringUtils.isBlank(cell.getValue())) {
                         setRowErrorFlag(row);
+                        cell.addError(ERR_USERNAME_NULL);
                         preview.addTypedErrorRow(ERR_USERNAME_NULL, row);
                     }
                 }
@@ -264,6 +289,7 @@ public class SalaryServiceImpl implements SalaryService {
             SalaryCell cell = row.get(0);
             if (StringUtils.isBlank(cell.getJobNumber())) {
                 setRowErrorFlag(row);
+                cell.addError(ERR_JOBNUM_NULL);
                 preview.addTypedErrorRow(ERR_JOBNUM_NULL, row);
             }
         });
@@ -280,17 +306,18 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     /**
-     * 生成可以发工资条的table
+     * 生成可以发工资条的table，所有上传的数据都形成工资条，但是有问题的不发送
      * @param rawTable 原始数据
      */
     private List<List<SalaryCell>> buildSlipTable(List<List<SalaryCell>> rawTable) {
         List<List<SalaryCell>> slipTable = new ArrayList<>();
         rawTable.forEach(row -> {
             List<SalaryCell> newRow = new ArrayList<>(row);
-            SalaryCell infoCell = getRowInfoCell(newRow);
-            if (!infoCell.isRowError()) {
-                slipTable.add(newRow);
-            }
+//            SalaryCell infoCell = getRowInfoCell(newRow);
+//            if (!infoCell.isRowError()) {
+//
+//            }
+            slipTable.add(newRow);
         });
         return slipTable;
     }
@@ -309,6 +336,19 @@ public class SalaryServiceImpl implements SalaryService {
         main.setFileName(file.getOriginalFilename());
     }
 
+    private OrgLeader createDmOrgLeader(EmployeeInfo dm) {
+        OrgLeader orgLeader = new OrgLeader();
+        orgLeader.setRole(SL_CHK_DM);
+        orgLeader.setJobNumber(dm.getJobNumber());
+        orgLeader.setName(dm.getName());
+        if (dm.getDepartment() != null) {
+            orgLeader.setDeptId(dm.getDepartment().getId());
+            orgLeader.setDeptName(dm.getDepartment().getName());
+        }
+        return orgLeader;
+    }
+
+
     //导入数据库和发送工资条到个人
     @Transactional
     @Override
@@ -319,28 +359,86 @@ public class SalaryServiceImpl implements SalaryService {
         main.setAutoCheckTime(autoCheckTime);
         salaryMainRepository.save(main);
         salaryHeaderRepository.saveAll(preview.getHeader());
+        final List<EmployeeInfo> empList = employeeRepository.findAllWithDept();
+        final Map<String, EmployeeInfo> empMap = empList.stream().collect(Collectors.toMap(EmployeeInfo::getJobNumber, e -> e));
+        //副总审核人
+        final List<OrgLeader> orgLeaders = orgLeaderService.findAll();
+        //部门经理
+        final List<EmployeeInfo> dms = employeeService.findDms();
+        dms.forEach(i -> {
+            final OrgLeader ol = createDmOrgLeader(i);
+            //部门经理可能和副总有重合的
+            final boolean exists = orgLeaders.stream().anyMatch(o -> o.getJobNumber().equals(ol.getJobNumber()) && o.getDeptId().equals(ol.getDeptId()));
+            if (!exists) {
+                orgLeaders.add(ol);
+            }
+        });
         //生成工资条
         for (List<SalaryCell> row : preview.getSlipTable()) {
-            final String jobNumber = row.get(0).getJobNumber();
-            final String name = row.get(0).getName();
-            SalarySlip slip = SalarySlip.create(main, jobNumber);
-            slip.setName(name);
-            slip.setYearMonth(main.getYearMonth());
+            final SalarySlip slip = SalarySlip.create(main, row);
+            if (StringUtils.isBlank(slip.getName())) {
+                continue;
+            }
+            final EmployeeInfo emp = empMap.get(slip.getJobNumber());
+
+            if (StringUtils.isNotBlank(slip.getDeptExcel())) {
+                //用excel中的部门查审批人
+                orgLeaders.stream().filter(i -> i.getDeptName().equals(slip.getDeptExcel())).findAny().ifPresent(i -> {
+                    if (SL_CHK_DCEO.equals(i.getRole())) {
+                        slip.setDceoName(i.getName());
+                        slip.setDceoJobNumber(i.getJobNumber());
+                    }else if (SL_CHK_DM.equals(i.getRole())) {
+                        slip.setDmJobNumber(i.getJobNumber());
+                        slip.setDmName(i.getName());
+                    }
+                });
+            } else {
+                //如果excel中没有则按emp表中查询
+                //部门经理审批人
+                if (emp != null) {
+                    if (StringUtils.isBlank(slip.getDmName())) {
+                        final List<OrgLeader> leaders = orgLeaders.stream().filter(i -> i.getDeptId().equals(emp.getDept())).toList();
+                        if (main.isDeptManagerCheck()) {
+                            final Optional<OrgLeader> first = leaders.stream().filter(i -> SL_CHK_DM.equals(i.getRole())).findFirst();
+                            if (first.isPresent()) {
+                                slip.setDmJobNumber(first.get().getJobNumber());
+                                slip.setDmName(first.get().getName());
+                            }
+                        }
+                    }
+                    if (StringUtils.isBlank(slip.getDceoName())) {
+                        final List<OrgLeader> leaders = orgLeaders.stream().filter(i -> i.getDeptId().equals(emp.getDept())).toList();
+                        //副总审批人
+                        final Optional<OrgLeader> dceoOp = leaders.stream().filter(i -> SL_CHK_DCEO.equals(i.getRole())).findFirst();
+                        if (dceoOp.isPresent()) {
+                            slip.setDceoJobNumber(dceoOp.get().getJobNumber());
+                            slip.setDceoName(dceoOp.get().getName());
+                        }
+                    }
+                }
+            }
+
             Integer idx = main.getNetPaidColumnIndex();
             String netPaid = row.get(idx).getValue();
             if (netPaid != null) {
                 slip.setNetPaid(new BigDecimal(netPaid));
             }
-            //自动确认时间
-            slip.send(sendTime);
-            slip.setAutoCheckTime(autoCheckTime);
-            slip = salarySlipRepository.save(slip);
-            for (SalaryCell cell : row) {
-                cell.setSlipId(slip.getId());
-            }
-            salaryCellRepository.saveAll(row);
-        }
+            //error
+            final SalaryCell rowInfoCell = getRowInfoCell(row);
+            slip.setError(rowInfoCell.getError());
 
+            //自动确认时间
+            if (!slip.isError()) {
+                slip.send(sendTime);
+                slip.setAutoCheckTime(autoCheckTime);
+            }
+
+            final SalarySlip saved = salarySlipRepository.save(slip);
+            for (SalaryCell cell : row) {
+                cell.setSlipId(saved.getId());
+            }
+            salaryCellRepository.saveAllAndFlush(row);
+        }
     }
 
     //根据 工资年月/工资组查看导入/发送工资条记录
@@ -349,6 +447,8 @@ public class SalaryServiceImpl implements SalaryService {
         final List<SalaryMain> list = salaryMainRepository.findByYearMonthNullable(yearMonth);
         //统计数据
         list.forEach(m -> {
+            final int allCount = salarySlipRepository.countByMainId(m.getId());
+            m.setAllCount(allCount);
             final int sendCount = salarySlipRepository.countByIsSendAndMainId(true, m.getId());
             m.setSendCount(sendCount);
             final int readCount = salarySlipRepository.countByIsReadAndMainId(true, m.getId());
@@ -371,9 +471,7 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public List<SalarySlip> findSendSlips(String mid) {
         final List<SalarySlip> list = salarySlipRepository.findEntireDataByMainIdOrderByJobNumber(mid);
-        list.forEach(i -> {
-            i.user();
-        });
+        list.forEach(SalarySlip::user);
         return list;
     }
 
@@ -637,7 +735,8 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public void slipAutoCheck(String slipId) {
         final SalarySlip slip = findSalarySlipEntityById(slipId);
-//        getSlipAutoCheckTime(slip);
+        getSlipAutoCheckTime(slip);
+        slip.check(SalarySlip.CHECK_TYPE_AUTO);
         salarySlipRepository.save(slip);
     }
 
@@ -672,5 +771,196 @@ public class SalaryServiceImpl implements SalaryService {
         }
         return this.defaultAutoCheck;
     }
+
+    public SalaryPreview getSalaryCheckTable2(CheckAuth checkAuth, SalaryMain main) {
+        String mid = main.getId();
+        SalaryPreview preview = new SalaryPreview();
+        preview.setSalaryMain(main);
+        //header
+        final List<SalaryHeader> header = salaryHeaderRepository.findByMidOrderByStartRowAscStartColumnAsc(mid);
+
+
+
+
+        return preview;
+    }
+
+    @Override
+    public SalaryPreview getSalaryCheckTable(CheckAuth checkAuth, SalaryMain main) {
+        String mid = main.getId();
+        SalaryPreview preview = new SalaryPreview();
+        preview.setSalaryMain(main);
+        //header
+        final List<SalaryHeader> header = salaryHeaderRepository.findByMidOrderByStartRowAscStartColumnAsc(mid);
+        //待审核的slip
+        final List<SalarySlip> checkSlip = findSalarySlipsByCheckAuth(checkAuth, mid);
+        //需要的sig jobNubmer
+        Set<String> allJobNumbers = checkSlip.stream()
+                .flatMap(slip -> Stream.of(
+                    slip.getDceoJobNumber(),
+                    slip.getDmJobNumber(),
+                    slip.getJobNumber()
+                ))
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+        final Map<String, String> sigMap = userSignatureRepository.findByJobNumberIn(allJobNumbers)
+                .stream().collect(Collectors.toMap(UserSignature::getJobNumber, UserSignature::getBase64));
+        for (SalarySlip slip : checkSlip) {
+            if (SL_CHK_DCEO.equals(checkAuth.getRole()) && slip.isDceoCheck()) {
+                slip.setDceoSig(sigMap.getOrDefault(slip.getDceoJobNumber(), ""));
+            }
+            if (SL_CHK_DM.equals(checkAuth.getRole()) && slip.isDmCheck()) {
+                slip.setDmSig(sigMap.getOrDefault(slip.getDmJobNumber(), ""));
+            }
+            if (slip.isForceCheck()) {
+                slip.setUserSig(sigMap.getOrDefault(slip.getUserSig(), ""));
+            }
+        }
+
+        final List<String> sids = checkSlip.stream().map(SalarySlip::getId).toList();
+        final List<SalaryCell> slCells = salaryCellRepository.findBySidList(sids);
+        //根据rowIndex转为行
+        final Map<Integer, List<SalaryCell>> groupByRow = convertRows(slCells);
+        final ArrayList<List<SalaryCell>> values = new ArrayList<>(groupByRow.values());
+//        final UserSignature checkUs = userSignatureRepository.findByJobNumber(checkAuth.getJobNumber());
+//        checkSlip.forEach(slip -> {
+//            if (SL_CHK_DCEO.equals(checkAuth.getRole())) {
+//                if (slip.isDceoCheck()) {
+//                    slip.setCurLeaderSig(checkUs.getBase64());
+//                }
+//            } else if (SL_CHK_DM.equals(checkAuth.getRole())) {
+//                if (slip.isDmCheck()) {
+//                    slip.setCurLeaderSig(checkUs.getBase64());
+//                }
+//            }
+//        });
+//        preview.setLeaderSig(checkUs);
+        preview.setHeader(this.buildMultiHeader(header));
+        preview.setSlipTable(values);
+        preview.setSlips(checkSlip);
+        return preview;
+    }
+
+    private Map<Integer, List<SalaryCell>> convertRows(List<SalaryCell> slCells) {
+        return slCells.stream().collect(
+                Collectors.groupingBy(
+                        SalaryCell::getRowIndex, LinkedHashMap::new, Collectors.toList()));
+    }
+
+    private List<SalarySlip> findSalarySlipsByCheckAuth(CheckAuth checkAuth, String mid) {
+        List<SalarySlip> slips = new ArrayList<>();
+        if (SL_CHK_DCEO.equals(checkAuth.getRole())) {
+            slips = salarySlipRepository.findByMainIdAndDceoJobNumber(mid, checkAuth.getJobNumber(), Sort.by(Sort.Order.asc("jobNumber")));
+        } else if (SL_CHK_DM.equals(checkAuth.getRole())) {
+            slips = salarySlipRepository.findByMainIdAndDmJobNumber(mid, checkAuth.getJobNumber(), Sort.by(Sort.Order.asc("jobNumber")));
+        } else if (SL_CHK_ALL.equals(checkAuth.getRole())) {
+            slips = salarySlipRepository.findByMainId(mid);
+        } else if (SL_CHK_USER.equals(checkAuth.getRole())) {
+            slips = salarySlipRepository.findByJobNumberAndMainId(checkAuth.getJobNumber(), mid);
+        }
+        return slips;
+    }
+
+
+    /**
+     * 组装多级表头，只有2级表头
+     */
+    private List<SalaryHeader> buildMultiHeader(List<SalaryHeader> headers) {
+        if (headers == null || headers.isEmpty()) {
+            return headers;
+        }
+        //二级表头
+        List<SalaryHeader> header2 = headers.stream().filter(i -> i.getStartRow() == 2).toList();
+        final List<SalaryHeader> header1 = headers.stream().filter(i -> i.getStartRow() == 1).toList();
+        //添加parentLabel
+        for (SalaryHeader h : header2) {
+            int col = h.getStartColumn();
+            header1.stream().filter(i -> i.getStartColumn() == col).findFirst().ifPresent(i -> {
+                h.setParentLabel(i.getName());
+            });
+        }
+        return header2;
+    }
+
+
+    @Override
+    public R<List<SalarySlip>> deptCheck(CheckAuth checkAuth, List<String> slids) {
+        if (slids == null || slids.isEmpty()) {
+            return R.warn("没有要审批的工资条", null);
+        }
+        final List<SalarySlip> uncheck = salarySlipRepository.findUserUncheck(slids);
+        //自己没确认默认确认
+        uncheck.stream().filter(i -> i.getJobNumber().equals(checkAuth.getJobNumber())).findFirst().ifPresent(i -> {
+            if (!i.isCheck()) {
+                i.check(CHECK_TYPE_MANUAL);
+                salarySlipRepository.save(i);
+                uncheck.remove(i);
+            }
+        });
+        if (!uncheck.isEmpty()) {
+            return R.fail(uncheck, "员工未全部确认，无法审批");
+        }
+
+        if (SL_CHK_DM.equals(checkAuth.getRole())) {
+            salarySlipRepository.updateDmChecked(checkAuth.getJobNumber(), checkAuth.getName(), LocalDateTime.now(), slids);
+        } else if (SL_CHK_DCEO.equals(checkAuth.getRole())) {
+            salarySlipRepository.updateDceoChecked(checkAuth.getJobNumber(), checkAuth.getName(), LocalDateTime.now(), slids);
+        }
+
+
+        return R.success(null, "审批成功");
+    }
+
+    @Override
+    public List<SalaryMain> findCheckList(String yearMonth, CheckAuth checkAuth) {
+        List<SalaryMain> list = new ArrayList<>();
+        final List<SalaryMain> slms = salaryMainRepository.findByYearMonthNullable(yearMonth);
+        for (SalaryMain sm : slms) {
+            //判断每个slmain是否存在要审批的
+            final List<SalarySlip> slips = findSalarySlipsByCheckAuth(checkAuth, sm.getId());
+            if (!slips.isEmpty()) {
+                long checked = 0;
+                if (SL_CHK_DM.equals(checkAuth.getRole())) {
+                    checked = slips.stream().filter(SalarySlip::isDmCheck).count();
+                } else if (SL_CHK_DCEO.equals(checkAuth.getRole())) {
+                    checked = slips.stream().filter(SalarySlip::isDceoCheck).count();
+                }
+                sm.setLeaderChecked(checked);
+                sm.setLeaderAllCheck(slips.size());
+                sm.setLeaderCheckTime(slips.get(0).getDmTime());
+                sm.setGroupName(translateCompanyName(sm.getGroup()));
+                list.add(sm);
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public String translateCompanyName(String code) {
+        return switch (code) {
+            case COMPANY_A -> abtCompany.getCustomerName();
+            case COMPANY_G -> grdCompany.getCustomerName();
+            case COMPANY_D -> dcCompany.getCustomerName();
+            default -> "";
+        };
+    }
+
+    /**
+     * 工资汇总表。ABT分部门，GRD/DC一张表不分部门
+     * 1. 不同工资不同表格
+     * 2. 按部门合计
+     */
+    public void salarySummaryTable(String mid, String company) {
+        //header
+        final List<SalaryHeader> header = salaryHeaderRepository.findByMidOrderByStartRowAscStartColumnAsc(mid);
+
+        final List<SalaryCell> cells = salaryCellRepository.findByMid(mid, Sort.by("jobNumber", "rowIndex", "columnIndex"));
+        //转行
+        final Map<Integer, List<SalaryCell>> cellMap = convertRows(cells);
+
+
+    }
+
+
 
 }

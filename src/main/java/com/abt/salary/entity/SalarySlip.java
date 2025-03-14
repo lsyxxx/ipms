@@ -1,15 +1,16 @@
 package com.abt.salary.entity;
 
+import com.abt.common.listener.JpaListStringConverter;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.wf.entity.UserSignature;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -31,9 +33,12 @@ import java.util.UUID;
         @Index(name = "idx_mid", columnList = "mid"),
         @Index(name = "idx_emp_num", columnList = "emp_num"),
 })
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "SalarySlip.withSig", attributeNodes = @NamedAttributeNode("userSignature")),
+})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @NoArgsConstructor
-public class SalarySlip extends AuditInfo {
+public class SalarySlip extends AuditInfo{
     @Id
     @Column(name = "id", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -51,6 +56,12 @@ public class SalarySlip extends AuditInfo {
     @Size(max = 32)
     @Column(name = "name_", columnDefinition = "VARCHAR(32)")
     private String name;
+
+    /**
+     * 上传的excel上的部门，可能是employee表中不同
+     */
+    @Column(name="dept_xlsx")
+    private String deptExcel;
 
     /**
      * 工资年月: yyyy-MM
@@ -138,10 +149,39 @@ public class SalarySlip extends AuditInfo {
     public static final String CHECK_TYPE_MANUAL = "manual";
 
     /**
+     * 部门审核人工号
+     */
+    @Column(name="dm_jno")
+    private String dmJobNumber;
+    @Column(name="dm_name")
+    private String dmName;
+    @Column(name="dm_time")
+    private LocalDateTime dmTime;
+    @Transient
+    private String dmSig;
+
+    /**
+     * 副总审核工号
+     */
+    @Column(name="dceo_jno")
+    private String dceoJobNumber;
+    @Column(name="dceo_name")
+    private String dceoName;
+    @Column(name="dceo_time")
+    private LocalDateTime dceoTime;
+    @Transient
+    private String dceoSig;
+
+    /**
      * 异常信息
      */
-    @Transient
-    private String error;
+    @Column(name="error_", columnDefinition = "VARCHAR(MAX)")
+    @Convert(converter = JpaListStringConverter.class)
+    private List<String> error;
+
+    public boolean isError() {
+        return error != null && !error.isEmpty();
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
@@ -157,6 +197,23 @@ public class SalarySlip extends AuditInfo {
 
     @Transient
     private User user;
+
+//    /**
+//     * 用户签名
+//     */
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "emp_num", referencedColumnName = "job_number", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+//    @NotFound(action= NotFoundAction.IGNORE)
+//    private UserSignature userSignature;
+
+    @Transient
+    private String userSig;
+
+    /**
+     * 是否需要个人确认
+     */
+    @Column(name="force_check", columnDefinition = "BIT")
+    private boolean isForceCheck;
 
     /**
      * 生成user信息，必须获取employee等对象
@@ -176,18 +233,41 @@ public class SalarySlip extends AuditInfo {
         setUser(user);
     }
 
+    public static final String LABEL_USER_CHECK = "是否确认";
+    public static final String LABEL_DEPT = "部门";
+    public static final String LABEL_NAME = "姓名";
+    public static final String LABEL_JOB_NUMBER = "工号";
+
+    private boolean translateUserCheck(String value) {
+        this.setForceCheck("是".equals(value));
+        return this.isForceCheck;
+    }
 
     /**
-     * 使用静态创建，不要使用constructor
+     * 使用静态创建，不要使用constructor。
+     * 创建时包含部门/是否确认
      * @param salaryMain 主体
-     * @param jobNumber 工号
      * @return SalarySlip
      */
-    public static SalarySlip create(SalaryMain salaryMain, String jobNumber) {
+    public static SalarySlip create(SalaryMain salaryMain, List<SalaryCell> row) {
+        if (row == null || row.isEmpty()) {
+            return null;
+        }
         SalarySlip slip = new SalarySlip();
-        slip.setId(UUID.randomUUID().toString());
+        //必须有的数据
         slip.setMainId(salaryMain.getId());
-        slip.setJobNumber(jobNumber);
+        for (SalaryCell cell : row) {
+            slip.setName(row.get(0).getName());
+            slip.setYearMonth(row.get(0).getYearMonth());
+            slip.setJobNumber(row.get(0).getJobNumber());
+            if (LABEL_DEPT.equals(cell.getLabel())) {
+                slip.setDeptExcel(cell.getValue());
+            }
+            if (LABEL_USER_CHECK.equals(cell.getLabel())) {
+                slip.translateUserCheck(cell.getValue());
+            }
+        }
+
         return slip;
     }
 
@@ -216,9 +296,14 @@ public class SalarySlip extends AuditInfo {
         return this;
     }
 
-    public SalarySlip error(String error) {
-        this.error = error;
-        return this;
+    public boolean isDmCheck() {
+        return this.dmTime != null;
     }
 
+    public boolean isDceoCheck() {
+        return this.dceoTime != null;
+    }
+
+    @Transient
+    private String curLeaderSig;
 }

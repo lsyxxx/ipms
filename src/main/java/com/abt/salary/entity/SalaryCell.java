@@ -1,6 +1,7 @@
 package com.abt.salary.entity;
 
 import com.abt.common.CommonConstants;
+import com.abt.common.listener.JpaListStringConverter;
 import com.abt.common.model.AuditInfo;
 import com.abt.sys.exception.BusinessException;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,9 +12,13 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.domain.Persistable;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +36,7 @@ import java.util.UUID;
         @Index(name = "idx_year_mon", columnList = "year_mon"),
     }
 )
-public class SalaryCell extends AuditInfo {
+public class SalaryCell extends AuditInfo implements Serializable, Persistable<String> {
     @Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -83,7 +88,7 @@ public class SalaryCell extends AuditInfo {
      * 关联用户工号
      */
     @Size(max = 255)
-    @Column(name = "emp_num", nullable = false)
+    @Column(name = "emp_num")
     private String jobNumber = "";
 
     @Size(max = 32)
@@ -118,6 +123,13 @@ public class SalaryCell extends AuditInfo {
     @Transient
     private List<String> error;
 
+    public void addError(String error) {
+        if (this.error == null) {
+            this.error = new ArrayList<>();
+        }
+        this.error.add(error);
+    }
+
     /**
      * 状态
      */
@@ -134,7 +146,7 @@ public class SalaryCell extends AuditInfo {
     }
 
     public boolean isRowError() {
-        return "error".equals(rowState);
+        return CommonConstants.ERROR.equals(rowState);
     }
 
 
@@ -188,5 +200,10 @@ public class SalaryCell extends AuditInfo {
                 ", jobNumber='" + jobNumber + '\'' +
                 ", valueType='" + valueType + '\'' +
                 "} ";
+    }
+
+    @Override
+    public boolean isNew() {
+        return StringUtils.isBlank(this.id);
     }
 }

@@ -69,6 +69,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeInfo> getByExample(EmployeeInfo condition) {
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("name", ExampleMatcher.GenericPropertyMatcher::contains)
+                .withMatcher("position", ExampleMatcher.GenericPropertyMatcher::contains)
                 .withIgnorePaths("enable", "sort");
         Example<EmployeeInfo> example = Example.of(condition, matcher);
         return WithQueryUtil.build(employeeRepository.findAll(example, Sort.by("jobNumber").ascending()));
@@ -92,6 +93,22 @@ public class EmployeeServiceImpl implements EmployeeService {
             ul.add(u);
         }
         return new PageImpl<>(ul, pageable, page.getTotalElements());
+    }
+
+
+    @Override
+    public List<User> findDCEOs() {
+        final List<EmployeeInfo> list = employeeRepository.findDCEOs();
+        List<User> ul = new ArrayList<>();
+        list.forEach(i -> {
+            ul.add(i.toUser());
+        });
+        return ul;
+    }
+
+    @Override
+    public List<EmployeeInfo> findDms() {
+        return employeeRepository.findDms();
     }
 
 }

@@ -3,24 +3,23 @@ package com.abt.salary.controller;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
+import com.abt.oa.entity.OrgLeader;
+import com.abt.oa.service.OrgLeaderService;
 import com.abt.salary.AutoCheckSalaryJob;
-import com.abt.qrtzjob.QuartzJobCreator;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
-import com.abt.salary.model.PwdForm;
-import com.abt.salary.model.SalaryPreview;
-import com.abt.salary.model.UserSalaryDetail;
-import com.abt.salary.model.UserSlip;
+import com.abt.salary.model.*;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.model.entity.Role;
+import com.abt.sys.service.CompanyService;
 import com.abt.sys.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,8 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.abt.salary.Constants.*;
+import static com.abt.salary.model.CheckAuth.*;
 
 /**
   * 
@@ -42,14 +43,16 @@ public class SalaryController {
     private final SalaryService salaryService;
     private final EmployeeService employeeService;
     private final AutoCheckSalaryJob autoCheckSalaryJob;
-    private final QuartzJobCreator quartzJobCreator;
+    private final OrgLeaderService orgLeaderService;
+    private final CompanyService companyService;
 
 
-    public SalaryController(SalaryService salaryService, EmployeeService employeeService, AutoCheckSalaryJob autoCheckSalaryJob, QuartzJobCreator quartzJobCreator) {
+    public SalaryController(SalaryService salaryService, EmployeeService employeeService, AutoCheckSalaryJob autoCheckSalaryJob, OrgLeaderService orgLeaderService, CompanyService companyService) {
         this.salaryService = salaryService;
         this.employeeService = employeeService;
         this.autoCheckSalaryJob = autoCheckSalaryJob;
-        this.quartzJobCreator = quartzJobCreator;
+        this.orgLeaderService = orgLeaderService;
+        this.companyService = companyService;
     }
 
 
@@ -254,10 +257,47 @@ public class SalaryController {
     /**
      * 查看部门的工资表
      */
-    public void findDeptSlipsBy(List<String> deptIds) {
+    @GetMapping("/chk/dept/view")
+    public R<SalaryPreview> findDeptSlipsBy(String mid) {
         //1. 用户是否有权限查看
-
+        UserView uv = TokenUtil.getUserFromAuthToken();
+        //1.3是否允许部门经理查看
+        final SalaryMain main = salaryService.findSalaryMainById(mid);
+        final String groupName = salaryService.translateCompanyName(main.getGroup());
+        main.setGroupName(groupName);
+        final CheckAuth auth = getCheckAuth(uv);
+        if (SL_CHK_DM.equals(auth.getRole()) && !main.isDeptManagerCheck()) {
+            //不允许部门经理查看
+            auth.setRole(SL_CHK_USER);
+            auth.clearDept();
+        }
+        //都没有，只能看个人的
         //2. 查询
+        final SalaryPreview prev = salaryService.getSalaryCheckTable(auth, main);
+        return R.success(prev);
+    }
+
+    @PostMapping("/chk/dept/do")
+    public R<List<SalarySlip>> deptCheck(@RequestBody List<String> slipIds) {
+        final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
+        if (!SL_CHK_DCEO.equals(auth.getRole()) && !SL_CHK_DM.equals(auth.getRole())) {
+            return R.fail("您无权审批(角色:" + auth.getRole() + ")");
+        }
+        return salaryService.deptCheck(auth, slipIds);
+    }
+
+    /**
+     * 审批记录
+     * @param yearMonth 工资年月
+     */
+    @GetMapping("/chk/list")
+    public R<List<SalaryMain>> findCheckList(String yearMonth) {
+        final CheckAuth checkAuth = getCheckAuth(TokenUtil.getUserFromAuthToken());
+        if (SL_CHK_DM.equals(checkAuth.getRole()) || SL_CHK_DCEO.equals(checkAuth.getRole())) {
+            final List<SalaryMain> slm = salaryService.findCheckList(yearMonth, checkAuth);
+            return R.success(slm);
+        }
+        return R.success(List.of());
     }
 
 
@@ -269,6 +309,39 @@ public class SalaryController {
 
     private void clearSession(HttpSession session) {
         session.removeAttribute(S_SL_PREVIEW);
+    }
+
+    /**
+     * 获取用户工资审批权限
+     * @param uv UserView
+     * @return CheckAuth 审批权限对象
+     */
+    public CheckAuth getCheckAuth(UserView uv) {
+        CheckAuth auth = new CheckAuth();
+        auth.setName(uv.getName());
+        auth.setJobNumber(uv.getEmpnum());
+        //1. 部门经理
+        final EmployeeInfo emp = employeeService.findUserByUserid(uv.getId());
+        if ("部门经理".equals(emp.getPosition())) {
+            //是否是部门经理
+            auth.setRole(SL_CHK_DM);
+            auth.addDeptId(emp.getDept());
+        }
+        //1.2副总权限
+        final List<OrgLeader> orgLeaders = orgLeaderService.findByJobNumber(uv.getEmpnum());
+        if (!orgLeaders.isEmpty()) {
+            //有副总权限，查看负责部门的
+            auth.setRole(SL_CHK_DCEO);
+            auth.clearAndSetAll(orgLeaders.stream().map(OrgLeader::getDeptId).toList());
+        }
+        //1.1 查看所有，具有查看所有的角色权限
+        final Optional<Role> op = uv.getAuthorities().stream().filter(a -> a.getId().equals("SL_CHECK_ALL")).findFirst();
+        if (op.isPresent()) {
+            auth.setRole(SL_CHK_ALL);
+            auth.clearDept();
+        }
+
+        return auth;
     }
 
 }

@@ -159,8 +159,9 @@ public class R<T> {
     }
 
     public static<T> R<T> fail(T data, String errMsg) {
-        return new R<>(data, ResCode.BIZ_EXCEPTION.getCode(), errMsg);
+        return new R<>(data, ResCode.BIZ_EXCEPTION.getIndex(), errMsg);
     }
+
 
     public static<T> R<T> fail(String errMsg, int code) {
         return new R<>(null, code, errMsg == null ? ResCode.FAIL.getMessage() : errMsg);

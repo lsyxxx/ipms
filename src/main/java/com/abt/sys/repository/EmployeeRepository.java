@@ -2,6 +2,7 @@ package com.abt.sys.repository;
 
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,7 +35,11 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
 //    @Query("SELECT e FROM EmployeeInfo e JOIN FETCH e.department where e.jobNumber = :jobNumber order by e.jobNumber")
 //    List<EmployeeInfo> findWithDeptByJobNumber(String jobNumber);
 
-    @Query("SELECT e FROM EmployeeInfo e LEFT JOIN FETCH e.department order by e.jobNumber ")
+    @Query("""
+        SELECT e FROM EmployeeInfo e 
+        LEFT JOIN Org o on e.dept = o.id 
+        order by e.jobNumber 
+""")
     List<EmployeeInfo> findAllWithDept();
 
     @Query("select e from EmployeeInfo e " +
@@ -66,5 +71,15 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
     Page<EmployeeInfo> findByQuery(String query, Boolean exist, int status, String deptId, Pageable pageable);
 
 
+    /**
+     * 副总及部门经理
+     */
+    @Query("select e from EmployeeInfo e left join Org o on o.id = e.dept  where (e.position like '%副总经理%' or e.position like '%部门经理%') and e.isExit = false order by e.jobNumber")
+    List<EmployeeInfo> findDCEOs();
 
+    /**
+     * 查询部门经理
+     */
+    @Query("select e from EmployeeInfo e left join fetch e.department where e.position = '部门经理' and e.isExit = false order by e.jobNumber")
+    List<EmployeeInfo> findDms();
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 自动确认
@@ -24,8 +25,9 @@ import java.util.List;
 public class AutoCheckSalaryJob extends AbstractJobExecutedByTimeOnce {
 
     public static final String JOB_GROUP = "salarySlip";
-    public static final String JOB_ID = "autoCheckSalaryJob";
-    public static final String TRIGGER_ID = "autoCheckSalaryTrigger";
+    public static final String JOB_ID_PREFIX = "autoCheckSalaryJob";
+    public static final String TRIGGER_ID_PREFIX = "autoCheckSalaryTrigger";
+    public static final String JOB_NAME = "AutoCheckSalaryJob";
 
     private final SalaryService salaryService;
     @Getter
@@ -61,16 +63,19 @@ public class AutoCheckSalaryJob extends AbstractJobExecutedByTimeOnce {
 
     public QuartzJobStore createJobStore() {
         QuartzJobStore qjs = new QuartzJobStore();
+        String yearMonth = "";
         if (this.startAt != null) {
+            yearMonth = this.startAt.getYear() + "_" + this.startAt.getMonthValue();
             qjs.setDescription(String.format("工资自动确认_%d年%d月%d日", this.startAt.getYear(), this.startAt.getMonthValue(), this.startAt.getDayOfMonth()));
         } else {
             qjs.setDescription("工资自动确认");
         }
+        qjs.setName(JOB_NAME + yearMonth);
         qjs.setJobClassName(this.getClass().getName());
         qjs.setGroupId(JOB_GROUP);
-        qjs.setJobId(JOB_ID);
+        qjs.setJobId(JOB_ID_PREFIX + UUID.randomUUID().toString());
         qjs.setStatus(Status.PENDING);
-        qjs.setTriggerId(TRIGGER_ID);
+        qjs.setTriggerId(TRIGGER_ID_PREFIX + UUID.randomUUID().toString());
         qjs.setStartAt(this.getStartAt());
         setQuartzJobStore(qjs);
         return qjs;

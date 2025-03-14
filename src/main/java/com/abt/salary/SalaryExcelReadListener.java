@@ -59,6 +59,11 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      */
     private int nameRawColumnIndex = EXCLUDE_IDX;
 
+    /**
+     * 部门
+     */
+    private int deptRawColumnIndex = 3;
+
 
     /**
      * 用于前端显示table
@@ -111,7 +116,6 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     }
 
     //会读取超过预期的行，比如一整行单元格都有颜色，那么读取该行会认为所有有颜色的单元格
-    //但是读取表头就是正确的
     @Override
     public void invoke(Map<Integer, String> data, AnalysisContext analysisContext) {
         //空行不读取
@@ -120,22 +124,18 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         List<SalaryCell> tableRow = new ArrayList<>();
         String jobNumber = data.getOrDefault(jobNumberRawColumnIndex , StringUtils.EMPTY);
         String name = data.getOrDefault(nameRawColumnIndex, StringUtils.EMPTY);
-        //根据表头读取数据
-//        this.mergedHeader.forEach((k, v) -> {
-//            SalaryCell cell = SalaryCell.createTemp(v, data.get(k-1), rowNum, k, mainId, jobNumber);
-//            cell.setName(name);
-//            cell.setYearMonth(yearMonth);
-//            //TODO: 父标题
-//            cell.setParentLabel("");
-//            tableRow.add(k, cell);
-//        });
+        //不能根据表头读取数据，因为表头mergeHeader()方法不会保存没有数据的表头列。若存在表头无值，但是数据行有值，那么导致缺少数据
+        //所以先手动限制列数
         data.forEach((k, v) -> {
-            //二级标题
-            String header2 = this.mergedHeader.get(k);
-            SalaryCell cell = SalaryCell.createTemp(header2, v, rowNum, k, mainId, jobNumber);
-            cell.setName(name);
-            cell.setYearMonth(yearMonth);
-            tableRow.add(cell);
+            //会读取多余的列，这里手动限制，防止无效数据太多
+            if (k < 100) {
+                //二级标题
+                String header2 = this.mergedHeader.get(k);
+                SalaryCell cell = SalaryCell.createTemp(header2, v, rowNum, k, mainId, jobNumber);
+                cell.setName(name);
+                cell.setYearMonth(yearMonth);
+                tableRow.add(cell);
+            }
         });
 
         tableList.add(tableRow);
@@ -248,16 +248,4 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         }
     }
 
-    public static void main(String[] args) {
-        SalaryExcelReadListener salaryExcelReadListener = new SalaryExcelReadListener("slm1", "2024-06");
-        EasyExcel.read(new File("C:\\Users\\Administrator\\Desktop\\salary_test.xlsx"), salaryExcelReadListener)
-                .excelType(ExcelTypeEnum.XLSX)
-                .headRowNumber(SalaryExcelReadListener.DATA_START_IDX)
-                //sheetNo从0开始
-                .extraRead(CellExtraTypeEnum.MERGE).sheet(0).doRead();
-        System.out.println(salaryExcelReadListener.getRawHeader());
-        final Map<Integer, Map<Integer, String>> map1 = salaryExcelReadListener.getRawHeader();
-        List<UserSalaryDetail> userSalaryDetails = new ArrayList<>();
-
-    }
 }

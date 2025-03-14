@@ -19,9 +19,12 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "qrtz_job_store")
 public class QuartzJobStore {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @NotNull
+    @Size(max = 512)
+    @Column(name="job_id", length = 512, nullable = false)
+    private String jobId;
 
     @NotNull
     @Column(name="name_", nullable = false)
@@ -32,13 +35,10 @@ public class QuartzJobStore {
     @Column(name="group_id", length = 512, nullable = false)
     private String groupId;
 
-    @NotNull
-    @Size(max = 512)
-    @Column(name="job_id", length = 512, nullable = false)
-    private String jobId;
+
 
     @NotNull
-    @Column(name="trigger_id)", length = 512, nullable = false)
+    @Column(name="trigger_id", length = 512, nullable = false)
     private String triggerId;
 
     @Column(name="desc_", length = 1000)
