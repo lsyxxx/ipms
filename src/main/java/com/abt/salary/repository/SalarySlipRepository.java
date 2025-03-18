@@ -1,6 +1,7 @@
 package com.abt.salary.repository;
 
 import com.abt.salary.entity.SalarySlip;
+import jakarta.persistence.NamedEntityGraph;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -37,8 +39,16 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     int countByIsCheckAndMainId(boolean isCheck, String mainId);
     int countByIsFeedBackAndMainId(boolean isFeedBack, String mainId);
 
+//    @Query("""
+//        select sl from SalarySlip sl left join EmployeeInfo e on sl.jobNumber = e.jobNumber
+//        where sl.jobNumber = :jobNumber and sl.yearMonth like %:yearMonthLike%
+//""")
     List<SalarySlip> findByJobNumberAndYearMonthContaining(String jobNumber, String yearMonthLike);
 
+//    @Query("""
+//       select sl from SalarySlip sl left join EmployeeInfo e on sl.jobNumber = e.jobNumber
+//       where sl.jobNumber = :jobNumber and sl.yearMonth like %:yearMonthLike%
+//""")
     List<SalarySlip> findByJobNumberAndYearMonth(String jobNumber, String yearMonthLike);
 
     //查询所有用户未确认的(包含未自动确认的)
@@ -68,6 +78,20 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
 """)
     void updateDceoChecked(String jm, String uname, LocalDateTime checkTime, List<String> ids);
 
+    @Transactional
+    @Modifying
+    @Query("""
+       update SalarySlip s set s.hrJobNumber = :jm, s.hrName = :uname, s.hrTime = :checkTime where s.id in :ids
+""")
+    void updateHrChecked(String jm, String uname, LocalDateTime checkTime, List<String> ids);
+
+    @Transactional
+    @Modifying
+    @Query("""
+       update SalarySlip s set s.ceoJobNumber = :jm, s.ceoName = :uname, s.ceoTime = :checkTime where s.id in :ids
+""")
+    void updateCeoCheck(String jm, String uname, LocalDateTime checkTime, List<String> ids);
+
 
     @Query(""" 
         select s from SalarySlip s where s.id in :ids and s.isCheck = false
@@ -84,4 +108,5 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
 
     int countByMainId(String mainId);
 
+    List<SalarySlip> findByMainIdIn(Collection<String> mainIds);
 }

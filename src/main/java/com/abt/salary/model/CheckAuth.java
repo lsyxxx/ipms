@@ -10,10 +10,18 @@ import java.util.List;
  */
 @Data
 public class CheckAuth {
+    /**
+     * 审批角色
+     */
     private String role = SL_CHK_USER;
+    /**
+     * 查看权限。默认查看自己的
+     */
+    private String viewAuth = SL_CHK_USER;
     private List<String> deptIds;
     private String jobNumber;
     private String name;
+    private String position;
 
     public void addDeptId(String deptId) {
         if (this.deptIds == null) {
@@ -46,4 +54,8 @@ public class CheckAuth {
     public static final String SL_CHK_DM = "dm";
     //仅看个人
     public static final String SL_CHK_USER = "user";
+
+    public static final String SL_CHK_HR = "hr";
+
+    public static final String SL_CHK_CEO = "ceo";
 }

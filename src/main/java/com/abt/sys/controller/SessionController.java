@@ -31,7 +31,7 @@ public class SessionController {
         String sid = session.getId();
         final int sessionTimeout = session.getServletContext().getSessionTimeout();
         System.out.println("session time out: " + sessionTimeout);
-        R<String> r = R.success(uuid.toString(), "申请sid成功");
+        R<String> r = R.success(uuid.toString(), "申请sessionId成功");
         r.setSid(sid);
         return r;
     }

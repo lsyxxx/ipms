@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface SalaryHeaderRepository extends JpaRepository<SalaryHeader, String> {
@@ -17,4 +18,5 @@ public interface SalaryHeaderRepository extends JpaRepository<SalaryHeader, Stri
     List<SalaryHeader> findByMidOrderByStartRowAscStartColumnAsc( String mid);
 
 
+    List<SalaryHeader> findByMidIn(Collection<String> mids);
 }

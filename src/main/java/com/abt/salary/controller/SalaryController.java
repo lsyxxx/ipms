@@ -11,6 +11,7 @@ import com.abt.salary.entity.SalarySlip;
 import com.abt.salary.model.*;
 import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.exception.InvalidTokenException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.model.entity.Role;
@@ -19,6 +20,7 @@ import com.abt.sys.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.abt.salary.Constants.*;
 import static com.abt.salary.model.CheckAuth.*;
@@ -280,7 +283,8 @@ public class SalaryController {
     @PostMapping("/chk/dept/do")
     public R<List<SalarySlip>> deptCheck(@RequestBody List<String> slipIds) {
         final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
-        if (!SL_CHK_DCEO.equals(auth.getRole()) && !SL_CHK_DM.equals(auth.getRole())) {
+        if (!SL_CHK_DCEO.equals(auth.getRole()) && !SL_CHK_DM.equals(auth.getRole())
+                && !SL_CHK_HR.equals(auth.getRole()) && !SL_CHK_CEO.equals(auth.getRole())) {
             return R.fail("您无权审批(角色:" + auth.getRole() + ")");
         }
         return salaryService.deptCheck(auth, slipIds);
@@ -293,11 +297,30 @@ public class SalaryController {
     @GetMapping("/chk/list")
     public R<List<SalaryMain>> findCheckList(String yearMonth) {
         final CheckAuth checkAuth = getCheckAuth(TokenUtil.getUserFromAuthToken());
-        if (SL_CHK_DM.equals(checkAuth.getRole()) || SL_CHK_DCEO.equals(checkAuth.getRole())) {
-            final List<SalaryMain> slm = salaryService.findCheckList(yearMonth, checkAuth);
-            return R.success(slm);
+        final List<SalaryMain> slm = salaryService.findCheckList(yearMonth, checkAuth);
+        return R.success(slm);
+    }
+
+    /**
+     * 汇总查看
+     */
+    @Secured("SL_CHECK_ALL")
+    @GetMapping("/chk/smry/list")
+    public R<List<SalaryMain>> summaryCheckList(String yearMonth) {
+        final CheckAuth checkAuth = getCheckAuth(TokenUtil.getUserFromAuthToken());
+        if (SL_CHK_ALL.equals(checkAuth.getViewAuth())) {
+            final List<SalaryMain> list = salaryService.summaryCheckList(yearMonth, checkAuth);
+            return R.success(list, "查询成功");
+        } else {
+            return R.fail(List.of(), "用户无权查看");
         }
-        return R.success(List.of());
+    }
+
+    @GetMapping("/chk/smry/view")
+    public R<List<SalaryPreview>> summaryCheckTable(String yearMonth) {
+        final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
+        final List<SalaryPreview> list = salaryService.salarySummaryList(yearMonth, auth);
+        return R.success(list);
     }
 
 
@@ -325,19 +348,27 @@ public class SalaryController {
         if ("部门经理".equals(emp.getPosition())) {
             //是否是部门经理
             auth.setRole(SL_CHK_DM);
+            auth.setViewAuth(SL_CHK_DM);
             auth.addDeptId(emp.getDept());
+        }
+        //人事角色
+        if ("人力资源".equals(emp.getPosition())) {
+            auth.setRole(SL_CHK_HR);
+            auth.setViewAuth(SL_CHK_ALL);
+            auth.clearDept();
         }
         //1.2副总权限
         final List<OrgLeader> orgLeaders = orgLeaderService.findByJobNumber(uv.getEmpnum());
         if (!orgLeaders.isEmpty()) {
             //有副总权限，查看负责部门的
             auth.setRole(SL_CHK_DCEO);
+            auth.setViewAuth(SL_CHK_DCEO);
             auth.clearAndSetAll(orgLeaders.stream().map(OrgLeader::getDeptId).toList());
         }
         //1.1 查看所有，具有查看所有的角色权限
         final Optional<Role> op = uv.getAuthorities().stream().filter(a -> a.getId().equals("SL_CHECK_ALL")).findFirst();
         if (op.isPresent()) {
-            auth.setRole(SL_CHK_ALL);
+            auth.setViewAuth(SL_CHK_ALL);
             auth.clearDept();
         }
 

@@ -108,4 +108,17 @@ public interface SalaryService {
     List<SalaryMain> findCheckList(String yearMonth, CheckAuth checkAuth);
 
     String translateCompanyName(String code);
+
+    /**
+     * 按工资年月汇总
+     * @param yearMonth 工资年月
+     */
+    List<SalaryMain> summaryCheckList(String yearMonth, CheckAuth checkAuth);
+
+    /**
+     * 工资汇总表。ABT分部门，GRD/DC一张表不分部门
+     * 1. 不同工资不同表格
+     * 2. 按部门合计
+     */
+    List<SalaryPreview> salarySummaryList(String yearMonth, CheckAuth checkAuth);
 }

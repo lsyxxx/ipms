@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface SalaryCellRepository extends JpaRepository<SalaryCell, String> {
@@ -41,4 +42,12 @@ public interface SalaryCellRepository extends JpaRepository<SalaryCell, String> 
 """)
     List<SalaryCell> findBySidList(List<String> sids);
 
+    @Query("""
+       select sc from SalaryCell sc where (:yearMonth is null or :yearMonth = '' or sc.yearMonth = :yearMonth) order by sc.yearMonth desc, sc.jobNumber asc, sc.rowIndex asc, sc.columnIndex asc
+""")
+    List<SalaryCell> findByYearMonth(String yearMonth);
+
+    List<SalaryCell> findByMidIn(Collection<String> mids);
+
+    List<SalaryCell> findByMid(@Size(max = 255) String mid);
 }

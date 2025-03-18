@@ -33,9 +33,6 @@ import java.util.UUID;
         @Index(name = "idx_mid", columnList = "mid"),
         @Index(name = "idx_emp_num", columnList = "emp_num"),
 })
-@NamedEntityGraphs({
-        @NamedEntityGraph(name = "SalarySlip.withSig", attributeNodes = @NamedAttributeNode("userSignature")),
-})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @NoArgsConstructor
 public class SalarySlip extends AuditInfo{
@@ -173,6 +170,31 @@ public class SalarySlip extends AuditInfo{
     private String dceoSig;
 
     /**
+     * 总经理审批
+     */
+    @Column(name="ceo_jno")
+    private String ceoJobNumber;
+    @Column(name="ceo_name")
+    private String ceoName;
+    @Column(name="ceo_time")
+    private LocalDateTime ceoTime;
+    @Transient
+    private String ceoSig;
+
+
+    /**
+     * 人事审批
+     */
+    @Column(name="hr_jno")
+    private String hrJobNumber;
+    @Column(name="hr_name")
+    private String hrName;
+    @Column(name="hr_time")
+    private LocalDateTime hrTime;
+    @Transient
+    private String hrSig;
+
+    /**
      * 异常信息
      */
     @Column(name="error_", columnDefinition = "VARCHAR(MAX)")
@@ -198,14 +220,9 @@ public class SalarySlip extends AuditInfo{
     @Transient
     private User user;
 
-//    /**
-//     * 用户签名
-//     */
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "emp_num", referencedColumnName = "job_number", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-//    @NotFound(action= NotFoundAction.IGNORE)
-//    private UserSignature userSignature;
-
+    /**
+     * 用户签名
+     */
     @Transient
     private String userSig;
 
@@ -302,6 +319,10 @@ public class SalarySlip extends AuditInfo{
 
     public boolean isDceoCheck() {
         return this.dceoTime != null;
+    }
+
+    public boolean isCeoCheck() {
+        return this.ceoTime != null;
     }
 
     @Transient

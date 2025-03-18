@@ -62,7 +62,6 @@ class SalarySlipRepositoryTest {
         assertNotNull(list);
         System.out.println(list.size());
         list.forEach(i -> {
-            System.out.printf("name：%s, sig: %s \n", i.getName(), i.getUserSignature() == null ? "" : i.getUserSignature().getFileName());
 //            System.out.printf("name: %s, emp: %s, user: %s%n",
 //                    i.getName(),
 //                    i.getEmployeeInfo() == null ? "" : i.getEmployeeInfo().getName(),

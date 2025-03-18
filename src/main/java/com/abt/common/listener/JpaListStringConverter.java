@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +27,9 @@ public class JpaListStringConverter implements AttributeConverter<List<String>, 
 
     @Override
     public List<String> convertToEntityAttribute(String dbData) {
+        if (dbData == null) {
+            return new ArrayList<>();
+        }
         ObjectMapper objectMapper = JsonUtil.ObjectMapper();
         try {
             return objectMapper.readValue(dbData, new TypeReference<List<String>>() {});
