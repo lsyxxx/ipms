@@ -115,10 +115,25 @@ public interface SalaryService {
      */
     List<SalaryMain> summaryCheckList(String yearMonth, CheckAuth checkAuth);
 
+    List<SlipCount> salaryCountYearMonthByCheckAuth(String yearMonth, CheckAuth checkAuth);
+
     /**
      * 工资汇总表。ABT分部门，GRD/DC一张表不分部门
      * 1. 不同工资不同表格
      * 2. 按部门合计
      */
     List<SalaryPreview> salarySummaryList(String yearMonth, CheckAuth checkAuth);
+
+    /**
+     * 更改用户工资数据
+     * 1. 已确认的不能修改
+     * 2. 不能修改的数据：姓名
+     */
+    void updateUserSalaryCell(String cellId, String value);
+
+    /**
+     * 发送工资条
+     * @param slipId
+     */
+    void sendSlipById(String slipId);
 }

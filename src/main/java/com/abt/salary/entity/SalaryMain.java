@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import static com.abt.salary.Constants.NETPAID_COLNAME;
 
 /**
- * 工资表主体，及配置
+ * 上传工资表及配置
  */
 @Getter
 @Setter
@@ -172,14 +172,42 @@ public class SalaryMain extends AuditInfo {
     @Transient
     private Integer feedBackCount;
 
+    /**
+     * 需要部门经理审批的总数
+     */
+    @Transient
+    private Integer dmAllCount;
+
+    /**
+     * 部门经理已审批的
+     */
+    @Transient
+    private Integer dmCheckCount;
+
+    @Transient
+    private Integer dceoAllCount;
+
+    @Transient
+    private Integer dceoCheckCount;
+
+    @Transient
+    private Integer hrAllCount;
+    @Transient
+    private Integer hrCheckCount;
+    @Transient
+    private Integer ceoAllCount;
+    @Transient
+    private Integer ceoCheckCount;
+
     @Column(name="auto_check_time")
     private LocalDateTime autoCheckTime;
 
     /**
      * 是否允许部门经理审核
      */
+    @Deprecated
     @Column(name="dept_mgr_chk", columnDefinition = "BIT")
-    private boolean isDeptManagerCheck = false;
+    private boolean isDeptManagerCheck = true;
 
     @Transient
     private String groupName ;

@@ -14,12 +14,15 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,11 +38,18 @@ import java.util.UUID;
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @NoArgsConstructor
+@Slf4j
 public class SalarySlip extends AuditInfo{
     @Id
     @Column(name = "id", nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    /**
+     * excel中的序号
+     */
+    @Column(name="idx_xlsx")
+    private Integer indexExcel;
 
     /**
      * 关联SalaryMain id
@@ -205,6 +215,13 @@ public class SalarySlip extends AuditInfo{
         return error != null && !error.isEmpty();
     }
 
+    public void addError(String error) {
+        if (this.error == null) {
+            this.error = new ArrayList<>();
+        }
+        this.error.add(error);
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     @NotFound(action= NotFoundAction.IGNORE)
@@ -254,9 +271,13 @@ public class SalarySlip extends AuditInfo{
     public static final String LABEL_DEPT = "部门";
     public static final String LABEL_NAME = "姓名";
     public static final String LABEL_JOB_NUMBER = "工号";
+    public static final String LABEL_INDEX = "序号";
 
+    /**
+     * 是否强制签名确认
+     */
     private boolean translateUserCheck(String value) {
-        this.setForceCheck("是".equals(value));
+        this.setForceCheck("是".equals(value) || StringUtils.isBlank(value));
         return this.isForceCheck;
     }
 
@@ -277,6 +298,13 @@ public class SalarySlip extends AuditInfo{
             slip.setName(row.get(0).getName());
             slip.setYearMonth(row.get(0).getYearMonth());
             slip.setJobNumber(row.get(0).getJobNumber());
+            if (LABEL_INDEX.equals(cell.getLabel())) {
+                try {
+                    slip.setIndexExcel(Integer.parseInt(cell.getValue()));
+                } catch (NumberFormatException e) {
+                    log.warn("NumberFormatException:", e);
+                }
+            }
             if (LABEL_DEPT.equals(cell.getLabel())) {
                 slip.setDeptExcel(cell.getValue());
             }
@@ -286,12 +314,6 @@ public class SalarySlip extends AuditInfo{
         }
 
         return slip;
-    }
-
-    public SalarySlip send() {
-        this.isSend = true;
-        this.sendTime = LocalDateTime.now();
-        return this;
     }
 
     public SalarySlip send(LocalDateTime sendTime) {
@@ -323,6 +345,24 @@ public class SalarySlip extends AuditInfo{
 
     public boolean isCeoCheck() {
         return this.ceoTime != null;
+    }
+
+    public boolean isHrCheck() {
+        return this.hrTime != null;
+    }
+
+    public boolean needDmCheck() {
+        return StringUtils.isNotBlank(this.dmJobNumber);
+    }
+
+    public boolean needDceoCheck() {
+        return StringUtils.isNotBlank(this.dceoJobNumber);
+    }
+    public boolean needHrCheck() {
+        return StringUtils.isNotBlank(this.hrJobNumber);
+    }
+    public boolean needCeoCheck() {
+        return StringUtils.isNotBlank(this.ceoJobNumber);
     }
 
     @Transient

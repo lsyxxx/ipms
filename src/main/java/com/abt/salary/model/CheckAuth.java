@@ -1,5 +1,6 @@
 package com.abt.salary.model;
 
+import com.abt.oa.entity.OrgLeader;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -22,6 +23,19 @@ public class CheckAuth {
     private String jobNumber;
     private String name;
     private String position;
+
+    public void addOrgLeaderDepts(List<OrgLeader> list) {
+        if (list == null || list.isEmpty()) {
+            this.deptIds = new ArrayList<>();
+            return;
+        }
+        if (this.deptIds == null) {
+            this.deptIds = new ArrayList<>();
+        }
+        list.forEach(orgLeader -> {
+            this.deptIds.add(orgLeader.getDeptId());
+        });
+    }
 
     public void addDeptId(String deptId) {
         if (this.deptIds == null) {

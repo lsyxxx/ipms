@@ -22,7 +22,7 @@ public enum ResCode {
     FILE_NOT_FOUND(7, HttpStatus.NOT_FOUND.value(), "文件未找到"),
     NO_FILE_UPLOAD(8, HttpStatus.OK.value(), "用户未上传文件"),
     BIZ_EXCEPTION(9000, HttpStatus.OK.value(), "业务异常"),
-    WARN(9, 9997, "Warning")
+    WARN(9997, HttpStatus.OK.value(), "Warning"),
     ;
 
     private final int index;

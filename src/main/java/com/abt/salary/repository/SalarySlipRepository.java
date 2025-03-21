@@ -1,6 +1,7 @@
 package com.abt.salary.repository;
 
 import com.abt.salary.entity.SalarySlip;
+import com.abt.salary.model.SlipCount;
 import jakarta.persistence.NamedEntityGraph;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -109,4 +110,61 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     int countByMainId(String mainId);
 
     List<SalarySlip> findByMainIdIn(Collection<String> mainIds);
+
+
+    @Query("""
+        select new com.abt.salary.model.SlipCount(ss.yearMonth, count(1), count(ss.ceoTime), count(1)-count(ss.ceoTime)) from SalarySlip ss
+        where 1=1 and (:yearMonth is null or :yearMonth = '' or ss.yearMonth = :yearMonth)
+        group by ss.yearMonth
+        order by ss.yearMonth desc
+""")
+    List<SlipCount> countCeoCheck(String yearMonth);
+
+    @Query("""
+        select new com.abt.salary.model.SlipCount(ss.yearMonth, count(1), count(ss.hrTime), count(1)-count(ss.hrTime)) from SalarySlip ss
+        where 1=1 and (:yearMonth is null or :yearMonth = '' or ss.yearMonth = :yearMonth)
+        group by ss.yearMonth
+        order by ss.yearMonth desc
+""")
+    List<SlipCount> countHrCheck(String yearMonth);
+
+    @Query("""
+        select new com.abt.salary.model.SlipCount(ss.yearMonth, count(1), count(ss.dceoTime),  count(1)-count(ss.dceoTime)) from SalarySlip ss
+        where 1=1 and (:yearMonth is null or :yearMonth = '' or ss.yearMonth = :yearMonth) and ss.dceoJobNumber = :jobNumber
+        group by ss.yearMonth
+        order by ss.yearMonth desc
+""")
+    List<SlipCount> countDceoCheck(String jobNumber, String yearMonth);
+
+    @Query("""
+        select new com.abt.salary.model.SlipCount(ss.yearMonth, count(1), count(ss.dmTime), count(1)-count(ss.dmTime)) from SalarySlip ss
+        where 1=1 and (:yearMonth is null or :yearMonth = '' or ss.yearMonth = :yearMonth) and ss.dmJobNumber = :jobNumber
+        group by ss.yearMonth
+        order by ss.yearMonth desc
+""")
+    List<SlipCount> countDmCheck(String jobNumber, String yearMonth);
+
+    @Query("""
+        select new com.abt.salary.model.SlipCount(ss.yearMonth, count(1), count(ss.isCheck), count(1)-count(ss.isCheck)) from SalarySlip ss
+        where 1=1 and (:yearMonth is null or :yearMonth = '' or ss.yearMonth = :yearMonth) and ss.jobNumber = :jobNumber
+        group by ss.yearMonth
+        order by ss.yearMonth desc
+""")
+    List<SlipCount> countUserCheck(String jobNumber, String yearMonth);
+
+    @Query("""
+        select new com.abt.salary.model.SlipCount(ss.yearMonth, count(1), 0, 0) from SalarySlip ss
+        where 1=1 and (:yearMonth is null or :yearMonth = '' or ss.yearMonth = :yearMonth)
+        group by ss.yearMonth
+        order by ss.yearMonth desc
+""")
+    List<SlipCount> countAllCheck(String yearMonth);
+
+    @Modifying
+    @Transactional
+    @Query("""
+        update SalarySlip s set s.isCheck = 0, s.checkTime = null, s.autoCheckTime = :autoCheckTime  where s.id = :slipId
+""")
+    void updateSendById(String slipId, LocalDateTime autoCheckTime);
+
 }

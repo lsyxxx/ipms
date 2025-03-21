@@ -50,4 +50,8 @@ public interface SalaryCellRepository extends JpaRepository<SalaryCell, String> 
     List<SalaryCell> findByMidIn(Collection<String> mids);
 
     List<SalaryCell> findByMid(@Size(max = 255) String mid);
+
+    @Query("update SalaryCell s set s.value = :value where s.id = :id")
+    @Modifying
+    void updateValueById(@Size(max = 255) String value, String id);
 }

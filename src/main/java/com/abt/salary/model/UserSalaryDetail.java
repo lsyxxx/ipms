@@ -21,6 +21,8 @@ public class UserSalaryDetail {
      */
     private String value = "";
 
+    private String cellId = "";
+
     /**
      * 子节点
      */

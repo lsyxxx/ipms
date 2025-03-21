@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
@@ -31,7 +32,7 @@ public class R<T> {
     /**
      * http异常代码
      */
-    private int code;
+    private int code = HttpStatus.OK.value();
     /**
      * 异常信息
      */
@@ -45,7 +46,7 @@ public class R<T> {
     /**
      * 业务异常代码
      */
-    private String bizCode;
+    private int bizCode = ResCode.SUCCESS.getIndex();
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -69,10 +70,9 @@ public class R<T> {
         this.msg = message;
     }
 
-    public R(T data, int code, String message, String bizCode) {
+    public R(T data, String message, int bizCode) {
         super();
         this.data = data;
-        this.code = code;
         this.msg = message;
         this.bizCode = bizCode;
     }
@@ -143,15 +143,11 @@ public class R<T> {
     }
 
     public static<T> R<T> success(String msg) {
-        return new R<>(null, ResCode.SUCCESS.getCode(), msg, String.valueOf(ResCode.SUCCESS.getCode()));
+        return new R<>(null, ResCode.SUCCESS.getCode(), msg);
     }
 
     public static<T> R<T> fail(String errMsg) {
         return new R<>(null, ResCode.FAIL.getCode(), errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
-    }
-
-    public static<T> R<T> fail(String errMsg, String bizCode) {
-        return new R<>(null, ResCode.FAIL.getCode(), errMsg == null ? ResCode.FAIL.getMessage() : errMsg, bizCode);
     }
 
     public static<T> R<T> fail() {
@@ -165,6 +161,13 @@ public class R<T> {
 
     public static<T> R<T> fail(String errMsg, int code) {
         return new R<>(null, code, errMsg == null ? ResCode.FAIL.getMessage() : errMsg);
+    }
+
+    /**
+     * 业务异常，返回code=200
+     */
+    public static<T> R<T> bizFail(T data, String errMsg) {
+        return new R<>(data, errMsg, ResCode.BIZ_EXCEPTION.getIndex());
     }
 
     public static<T> R<T> invalidSession() {
@@ -191,10 +194,6 @@ public class R<T> {
         return new R<>(e, ResCode.ACCESS_DENIED.getCode(), ResCode.ACCESS_DENIED.getMessage());
     }
 
-    public static R badRequest() {
-        return new R<>(null, ResCode.BAD_REQUEST.getCode(), ResCode.BAD_REQUEST.getMessage());
-    }
-
     public static R badRequest(String msg) {
         return new R<>(null, ResCode.BAD_REQUEST.getCode(), StringUtils.isBlank(msg) ? ResCode.BAD_REQUEST.getMessage() : msg);
     }
@@ -216,6 +215,10 @@ public class R<T> {
     }
 
     public static<T> R<T> warn(String message, T data) {
+        return new R<>(data, ResCode.WARN.getCode(), message);
+    }
+
+    public static<T> R<T> warn(String message) {
         return new R<>(null, ResCode.WARN.getCode(), message);
     }
 
@@ -230,7 +233,7 @@ public class R<T> {
         try {
             return JsonUtil.toJson(this);
         } catch (Exception exception) {
-            log.error("Json序列化异常 -- {}", exception);
+            log.error("Json序列化异常", exception);
             throw new BusinessException("Json序列化异常 -- " + exception.getMessage());
         }
     }

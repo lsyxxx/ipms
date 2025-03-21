@@ -53,7 +53,7 @@ public class AutoCheckSalaryJob extends AbstractJobExecutedByTimeOnce {
         List<SalarySlip> checked = new ArrayList<>();
         for (SalarySlip slip : unchecked) {
             final LocalDateTime autoCheckTime = slip.getAutoCheckTime();
-            if (autoCheckTime.isBefore(now)) {
+            if (slip.isForceCheck() && autoCheckTime.isBefore(now)) {
                 slip.check(SalarySlip.CHECK_TYPE_AUTO);
                 checked.add(slip);
             }
