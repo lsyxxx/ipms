@@ -77,6 +77,13 @@ public class UserController{
         final EmployeeInfo employee = employeeService.findByJobNumber(empnum);
         return R.success(employee);
     }
+
+    @GetMapping("/basic/loginuser")
+    public R<User> findLoginUserBasicInfo() {
+        UserView user = TokenUtil.getUserFromAuthToken();
+        final EmployeeInfo employee = employeeService.findUserByUserid(user.getId());
+        return R.success(new User(employee));
+    }
     @GetMapping("/emp/userid")
     public R<EmployeeInfo> findEmployeeInfo(String userid) {
         final EmployeeInfo employee = employeeService.findUserByUserid(userid);

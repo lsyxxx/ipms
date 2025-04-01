@@ -38,6 +38,7 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_INV = "rbsInv";
     public static final String DEF_KEY_INVOFFSET = "invOffset";
     public static final String DEF_KEY_PURCHASE = "purchase";
+    public static final String DEF_KEY_SUBCONTRACT_TEST = "sbct";
 
     public static final String SERVICE_RBS = "reimburse";
     public static final String SERVICE_TRIP = "trip";
@@ -104,6 +105,13 @@ public class WorkFlowConfig {
         });
 
         return user;
+    }
+
+    @Bean("subcontractTestingBpmnModelInstance")
+    @Order(100)
+    public BpmnModelInstance subcontractTestingBpmnModelInstance() {
+        log.info("subcontractTestingBpmnModelInstance bean init...");
+        return getBpmnModelInstanceFromMap(DEF_KEY_SUBCONTRACT_TEST);
     }
 
     @Bean("rbsBpmnModelInstance")

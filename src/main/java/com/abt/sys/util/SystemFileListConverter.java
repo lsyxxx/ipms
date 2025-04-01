@@ -1,43 +1,45 @@
-package com.abt.common.listener;
+package com.abt.sys.util;
 
 import com.abt.common.util.JsonUtil;
+import com.abt.sys.model.entity.SystemFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * jps实体中json转为List<String>类型
+ * 文件json转为实体类
  */
 @Converter
-public class JpaListStringConverter implements AttributeConverter<List<String>, String> {
+public class SystemFileListConverter implements AttributeConverter<List<SystemFile>, String> {
 
     @Override
-    public String convertToDatabaseColumn(List<String> attribute) {
+    public String convertToDatabaseColumn(List<SystemFile> attribute) {
         try {
             if (attribute == null || attribute.isEmpty()) {
                 return null;
             }
             return JsonUtil.toJson(attribute);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error while serializing List<String> to json", e);
+            throw new RuntimeException("Error while serializing SystemFile to json", e);
         }
     }
 
     @Override
-    public List<String> convertToEntityAttribute(String dbData) {
-        if (dbData == null) {
-            return new ArrayList<>();
+    public List<SystemFile> convertToEntityAttribute(String dbData) {
+        if (StringUtils.isBlank(dbData)) {
+            return null;
         }
         ObjectMapper objectMapper = JsonUtil.ObjectMapper();
         try {
-            return objectMapper.readValue(dbData, new TypeReference<List<String>>() {});
+            return objectMapper.readValue(dbData, new TypeReference<List<SystemFile>>() {});
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error while deserializing List<String> to json", e);
+            throw new RuntimeException("Error while deserializing SystemFile to json", e);
         }
     }
 }

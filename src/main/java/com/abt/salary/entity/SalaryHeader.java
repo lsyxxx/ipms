@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -65,6 +67,14 @@ public class SalaryHeader {
 
     @Transient
     private String parentLabel;
+
+    public void addChildren(List<SalaryHeader> children) {
+        if (this.children == null) {
+            this.children = new ArrayList<>();
+        }
+        this.children.addAll(children);
+        this.children.sort(Comparator.comparingInt(SalaryHeader::getStartColumn));
+    }
 
 
 

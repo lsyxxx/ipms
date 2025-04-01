@@ -40,7 +40,7 @@ public class SalaryPreview {
     private Map<Integer, Map<Integer, String>> rawHeader = new HashMap<>();
 
     /**
-     * 处理后的仅无问题，可以发放工资条的数据
+     * 工资数据-行
      */
     private List<List<SalaryCell>> slipTable = new ArrayList<>();
 

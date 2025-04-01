@@ -1,9 +1,7 @@
 package com.abt.salary.entity;
 
 import com.abt.common.CommonConstants;
-import com.abt.common.listener.JpaListStringConverter;
 import com.abt.common.model.AuditInfo;
-import com.abt.sys.exception.BusinessException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

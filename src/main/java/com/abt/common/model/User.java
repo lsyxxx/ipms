@@ -76,6 +76,7 @@ public class User implements Serializable {
         }
         this.position = user.getPosition();
         this.employeeId = user.getId();
+        this.company = user.getCompany();
     }
 
     public User(String id) {

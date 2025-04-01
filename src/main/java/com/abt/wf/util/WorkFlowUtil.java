@@ -7,6 +7,10 @@ import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.UserTaskDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.delegate.DelegateTask;
+import org.camunda.bpm.impl.juel.jakarta.el.MapELResolver;
+import org.camunda.bpm.impl.juel.jakarta.el.StandardELContext;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.*;
 import org.camunda.bpm.impl.juel.ExpressionFactoryImpl;
@@ -16,10 +20,7 @@ import org.camunda.bpm.impl.juel.SimpleContext;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.model.bpmn.impl.instance.StartEventImpl;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.abt.common.exception.MissingRequiredParameterException;
@@ -79,21 +80,25 @@ public class WorkFlowUtil {
                 }
                 //--- 暂时仅解析el表达式, 其他类型可能需要用到elResolver
                 final String text = conditionExpression.getTextContent();
-                for(Map.Entry<String, Object> entry : vars.entrySet()) {
-                    String k = entry.getKey();
-                    //判断表达式中是否包含参数。
-                    //不包含的话，exp.getValue(context) 报错：找不到property
-                    if (text.contains(k)) {
-                        Object v = entry.getValue();
-                        context.setVariable(k, factory.createValueExpression(v, v.getClass()));
-                        ValueExpression exp = factory.createValueExpression(context, conditionExpression.getTextContent(), Boolean.class);
-                        Object value = exp.getValue(context);
-                        String result = value.toString();
-                        if (Boolean.parseBoolean(result)) {
-                            return sequenceFlow.getTarget();
-                        }
-                    }
+                final boolean result = evaluateExpression(text, vars);
+                if (result) {
+                    return sequenceFlow.getTarget();
                 }
+//                for(Map.Entry<String, Object> entry : vars.entrySet()) {
+//                    String k = entry.getKey();
+//                    //判断表达式中是否包含参数。
+//                    //不包含的话，exp.getValue(context) 报错：找不到property
+//                    if (text.contains(k)) {
+//                        Object v = entry.getValue();
+//                        context.setVariable(k, factory.createValueExpression(v, v.getClass()));
+//                        ValueExpression exp = factory.createValueExpression(context, conditionExpression.getTextContent(), Boolean.class);
+//                        Object value = exp.getValue(context);
+//                        String result = value.toString();
+//                        if (Boolean.parseBoolean(result)) {
+//                            return sequenceFlow.getTarget();
+//                        }
+//                    }
+//                }
             }
         }
         return null;
@@ -182,5 +187,58 @@ public class WorkFlowUtil {
         return DECISION_REJECT.equals(decision);
     }
 
+
+    public static void main(String[] args) {
+        // 传入测试变量
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("cost", 12000);
+        variables.put("isOpen", false);
+        variables.put("isCeoCheck", false);
+
+        String expression = "${cost > 10000 || isOpen == true}";
+        boolean result = evaluateExpression(expression, variables);
+
+        System.out.println("表达式结果: " + result); // 输出: true
+    }
+
+    public static boolean evaluateExpression(String expression, Map<String, Object> variables) {
+        // 1创建 ExpressionFactory
+        ExpressionFactory factory = ExpressionFactory.newInstance();
+
+        // 2创建 ELContext 并添加变量解析器
+        StandardELContext context = new StandardELContext(factory);
+        context.addELResolver(new MapELResolver()); // 允许解析 Map 变量
+
+        // 3绑定变量到 ELContext
+        for (Map.Entry<String, Object> entry : variables.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
+            context.getVariableMapper().setVariable(entry.getKey(),
+                    factory.createValueExpression(entry.getValue(), entry.getValue().getClass()));
+        }
+
+        // 4解析表达式
+        ValueExpression valueExpression = factory.createValueExpression(context, expression, Boolean.class);
+
+        // 5计算结果并返回
+        return (Boolean) valueExpression.getValue(context);
+    }
+
+    public static String getVariable(DelegateTask delegateTask, String varName) {
+        final Object variable = delegateTask.getVariable(varName);
+        if (variable == null) {
+            return null;
+        }
+        return variable.toString();
+    }
+
+    public static String getVariable(DelegateExecution delegateExecution, String varName) {
+        final Object variable = delegateExecution.getVariable(varName);
+        if (variable == null) {
+            return null;
+        }
+        return variable.toString();
+    }
 
 }

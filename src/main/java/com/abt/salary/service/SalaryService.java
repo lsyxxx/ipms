@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SalaryService {
@@ -133,7 +134,9 @@ public interface SalaryService {
 
     /**
      * 发送工资条
+     *
      * @param slipId
+     * @return
      */
-    void sendSlipById(String slipId);
+    LocalDateTime sendSlipById(String slipId);
 }

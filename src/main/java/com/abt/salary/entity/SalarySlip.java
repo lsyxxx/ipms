@@ -367,4 +367,7 @@ public class SalarySlip extends AuditInfo{
 
     @Transient
     private String curLeaderSig;
+
+    @Transient
+    private List<SalaryCell> salaryCells;
 }

@@ -169,6 +169,20 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/aspose-cells-21.11.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>com.aspose</groupId>
+            <artifactId>aspose.pdf</artifactId>
+            <version>21.11</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/aspose-pdf-21.11.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.aspose</groupId>
+            <artifactId>aspose.word</artifactId>
+            <version>21.11</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/aspose-words-21.11-jdk17.jar</systemPath>
+        </dependency>
 
         <!-- 引入 Quartz 依赖-->
         <dependency>

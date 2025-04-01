@@ -6,7 +6,6 @@ import com.abt.common.util.ValidateUtil;
 import com.abt.oa.entity.OrgLeader;
 import com.abt.oa.service.OrgLeaderService;
 import com.abt.salary.AutoCheckSalaryJob;
-import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
 import com.abt.salary.model.*;
@@ -327,9 +326,12 @@ public class SalaryController {
     }
 
     @GetMapping("/cell/updateAndSend")
-    public void updateSalaryCellAndSend(String cellId, String value, String slipId) {
+    public R<Object> updateSalaryCellAndSend(String cellId, String value, String slipId) throws SchedulerException, ClassNotFoundException {
         salaryService.updateUserSalaryCell(cellId, value);
-        salaryService.sendSlipById(slipId);
+        final LocalDateTime autoCheckTime = salaryService.sendSlipById(slipId);
+        //自动确认
+        autoCheckSalaryJob.createJobAndScheduler(autoCheckTime);
+        return R.success("已发送工资条");
     }
 
     private void copyForm(SalaryMain slipForm, SalaryMain main) {
@@ -389,5 +391,6 @@ public class SalaryController {
 
         return auth;
     }
+
 
 }

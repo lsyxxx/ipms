@@ -102,7 +102,7 @@ public class PurchaseApplyMain extends WorkflowBase{
      * 采购总金额
      */
     @Column(name="cost_", columnDefinition = "DECIMAL(10,2)")
-    private BigDecimal cost;
+    private BigDecimal cost = BigDecimal.ZERO;
 
     /**
      * 最近验收日期。如果有多次验收，则记录最新的
@@ -137,6 +137,7 @@ public class PurchaseApplyMain extends WorkflowBase{
         this.variableMap.put(KEY_STARTER, this.getSubmitUserid());
         this.variableMap.put(KEY_MANAGER, this.getManagerUserid());
         this.variableMap.put(KEY_LEADER, this.getLeaderUserid());
+        this.variableMap.put(KEY_COST, this.getCost());
         return this.variableMap;
     }
 

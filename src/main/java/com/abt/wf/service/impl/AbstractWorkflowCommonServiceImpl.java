@@ -14,6 +14,7 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.entity.UserSignature;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
@@ -52,7 +53,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.abt.common.ExcelUtil.*;
 import static com.abt.oa.OAConstants.*;
@@ -129,7 +129,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         runtimeService.setVariable(form.getProcessInstanceId(), Constants.VAR_KEY_ENTITY, id);
 
         //-- record
-        FlowOperationLog optLog = FlowOperationLog.applyLog(form.getCreateUserid(), form.getCreateUsername(), form, applyTask, id);
+        FlowOperationLog optLog = FlowOperationLog.applyLog(entity.getCreateUserid(), entity.getCreateUsername(), form, applyTask, id);
         optLog.setTaskDefinitionKey(applyTask.getTaskDefinitionKey());
         optLog.setTaskResult(STATE_DETAIL_APPLY);
         flowOperationLogService.saveLog(optLog);
@@ -206,7 +206,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         List<FlowNode> previewList = new ArrayList<>();
         WorkFlowUtil.findActivityNodes(startEvent, previewList, vars);
         //去掉startEvent和endEvent
-        previewList = previewList.stream().filter(i -> !(i instanceof StartEvent || i instanceof EndEvent)).collect(Collectors.toList());
+        previewList = previewList.stream().filter(i -> !(i instanceof StartEvent || i instanceof EndEvent)).toList();
         List<UserTaskDTO> returnList = new ArrayList<>();
         //生成返回给前端的对象
         for (FlowNode node : previewList) {
@@ -272,7 +272,9 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
                     if (simpleUserInfo != null) {
                         child.setOperatorId(assigneeId);
                         child.setOperatorName(simpleUserInfo.getUsername());
-                        parent.setAssignee(new User(assigneeId, simpleUserInfo.getUsername()));
+                        User nu = new User(assigneeId, simpleUserInfo.getUsername());
+                        parent.setAssignee(nu);
+                        parent.setAssigneeList(List.of(nu));
                     } else {
                         log.warn("未查询到用户{}", assigneeId);
                     }
@@ -281,6 +283,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
                 //或签节点，查询候选人
                 final List<User> candidateUsers = getCandidateUsers(bpmnModelInstance, node.getId());
                 parent.setCandidateUsers(candidateUsers);
+                parent.setAssigneeList(candidateUsers);
 
             } else {
                 log.warn("流程节点未配置审批模式! -- taskDefKey: {}", parent.getTaskDefinitionKey());
@@ -777,5 +780,19 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         }
     }
 
+    public void skipEmptyUserTask(T form) {
+        final Task currentTask = taskService.createTaskQuery().processInstanceId(form.getProcessInstanceId()).active().singleResult();
+        if (currentTask == null) {
+            return;
+        }
+        final String assignee = currentTask.getAssignee();
+        if (StringUtils.isNotBlank(assignee)) {
+            return;
+        }
+        FlowOperationLog optLog = FlowOperationLog.autoPassLog(form, currentTask, getEntityId(form));
+        flowOperationLogService.saveLog(optLog);
+        taskService.complete(currentTask.getId());
+        skipEmptyUserTask(form);
+    }
 
 }

@@ -2,6 +2,7 @@ package com.abt.sys.model.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.common.model.RequestFile;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class SystemFile extends AuditInfo {
 
     private String id;

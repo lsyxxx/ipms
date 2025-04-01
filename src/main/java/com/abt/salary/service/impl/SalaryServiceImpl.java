@@ -1011,9 +1011,10 @@ public class SalaryServiceImpl implements SalaryService {
 
 
     @Override
-    public void sendSlipById(String slipId) {
+    public LocalDateTime sendSlipById(String slipId) {
         final LocalDateTime autoCheckTime = getAutoCheckTime(LocalDateTime.now());
         salarySlipRepository.updateSendById(slipId, autoCheckTime);
+        return autoCheckTime;
     }
 
 

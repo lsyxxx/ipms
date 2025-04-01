@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -51,7 +52,8 @@ public interface SalaryCellRepository extends JpaRepository<SalaryCell, String> 
 
     List<SalaryCell> findByMid(@Size(max = 255) String mid);
 
+    @Transactional
     @Query("update SalaryCell s set s.value = :value where s.id = :id")
     @Modifying
-    void updateValueById(@Size(max = 255) String value, String id);
+    Integer updateValueById(@Size(max = 255) String value, String id);
 }

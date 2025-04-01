@@ -6,6 +6,7 @@ import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.entity.FlowOperationLog;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.task.Task;
 
 import java.util.List;
@@ -109,4 +110,7 @@ public interface WorkFlowService<T> {
     default T clearBizProcessData(T form) {
         return form;
     }
+
+    void skipEmptyUserTask(T form);
+
 }

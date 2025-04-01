@@ -163,8 +163,8 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     @Modifying
     @Transactional
     @Query("""
-        update SalarySlip s set s.isCheck = 0, s.checkTime = null, s.autoCheckTime = :autoCheckTime  where s.id = :slipId
+        update SalarySlip s set s.isCheck = false, s.checkTime = null, s.autoCheckTime = :autoCheckTime  where s.id = :slipId
 """)
-    void updateSendById(String slipId, LocalDateTime autoCheckTime);
+    Integer updateSendById(String slipId, LocalDateTime autoCheckTime);
 
 }

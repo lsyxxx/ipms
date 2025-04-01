@@ -14,6 +14,10 @@ public class Constants {
     public static final String VAR_KEY_ENTITY = "entityId";
     public static final String VAR_KEY_STARTER= "starter";
     public static final String VAR_KEY_DESC = "desc";
+    //每个task的审批结果
+    public static final String VAR_KEY_DECISION = "decision";
+    //整个流程的审批结果
+    public static final String VAR_KEY_APPR_RESULT = "approvalResult";
     /**
      * 删除状态: 撤销，删除
      */
@@ -127,6 +131,7 @@ public class Constants {
     public static final String SERVICE_LOAN = "借款单";
     public static final String SERVICE_INV_OFFSET = "发票冲账单";
     public static final String SERVICE_PURCHASE = "采购申请";
+    public static final String SERVICE_SUBCONTRACT_TESTING = "外送检测";
 
 
     public static final String TRANSPORTATION_AIRPLANE = "飞机";
@@ -147,6 +152,7 @@ public class Constants {
     public static final String KEY_MANAGER1 = "manager1";
     public static final String KEY_MANAGER2 = "manager2";
     public static final String KEY_SERVICE = "service";
+    public static final String KEY_CEO_CHECK = "ceoCheck";
 
     //--- setting
     public static final String SETTING_TYPE_RBS_COPY = "rbsDefaultCopy";
@@ -157,6 +163,7 @@ public class Constants {
     public static final String  SAVE_SERVICE_LOAN = "loan";
     public static final String  SAVE_SERVICE_INV = "inv";
     public static final String  SAVE_SERVICE_INVOFFSET = "invoffset";
+    public static final String  SAVE_SERVICE_SBCT = "sbct";
 
     public static final String NODE_ACC = "会计审批";
     public static final String NODE_FI_MGR = "财务总监";
@@ -176,6 +183,8 @@ public class Constants {
                 return SAVE_SERVICE_PAY;
             case DEF_KEY_LOAN:
                 return SAVE_SERVICE_LOAN;
+            case DEF_KEY_SUBCONTRACT_TEST:
+                return SAVE_SERVICE_SBCT;
             default:
                 throw new BusinessException("流程定义不存在(" + processDefinitionKey + ")");
         }

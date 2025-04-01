@@ -2,6 +2,9 @@ package com.abt.common.model;
 
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import static com.abt.oa.OAConstants.QUERY_MODE_ALL;
 
@@ -152,5 +155,9 @@ public class RequestForm {
 
     public boolean isQueryAll() {
         return StringUtils.isBlank(this.queryMode) || QUERY_MODE_ALL.equals(this.queryMode);
+    }
+
+    public Pageable createDefaultPageable() {
+        return PageRequest.of(this.jpaPage(), this.getLimit(), Sort.by(Sort.Order.desc("createDate")));
     }
 }
