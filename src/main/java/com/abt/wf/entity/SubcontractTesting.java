@@ -186,6 +186,8 @@ public class SubcontractTesting extends WorkflowBase {
         this.variableMap.put(KEY_COST, this.getCost());
         this.variableMap.put(KEY_SERVICE, SERVICE_SUBCONTRACT_TESTING);
         this.variableMap.put(KEY_IS_OPEN_CONTRACT, this.isOpenContract);
+        this.variableMap.put(KEY_NOTIFY_USERS, this.notifyUsers);
+
 
         return this.variableMap;
     }

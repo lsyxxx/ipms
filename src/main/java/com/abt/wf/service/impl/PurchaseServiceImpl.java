@@ -130,26 +130,6 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         return this.simpleProcessRecord(entityId, serviceName, main.getProcessInstanceId());
     }
 
-//    /**
-//     * 自动跳过审批人为空的节点
-//     * @param form 当前form
-//     */
-//    @Override
-//    public void skipEmptyUserTask(PurchaseApplyMain form) {
-//        final Task currentTask = taskService.createTaskQuery().processInstanceId(form.getProcessInstanceId()).active().singleResult();
-//        if (currentTask == null) {
-//            return;
-//        }
-//        final String assignee = currentTask.getAssignee();
-//        if (StringUtils.isNotBlank(assignee)) {
-//            return;
-//        }
-//        FlowOperationLog optLog = FlowOperationLog.autoPassLog(form, currentTask, form.getId());
-//        flowOperationLogService.saveLog(optLog);
-//        taskService.complete(currentTask.getId());
-//        skipEmptyUserTask(form);
-//    }
-
     @Override
     void setApprovalResult(PurchaseApplyMain form, PurchaseApplyMain entity) {
         entity.setDecision(form.getDecision());
@@ -191,6 +171,16 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         final PurchaseApplyMain main = purchaseApplyMainRepository.findByIdWithDetails(entityId);
         if (main == null) {
             throw new BusinessException("未查询到采购申请(id=" + entityId + ")");
+        }
+        final List<PurchaseApplyDetail> details = main.getDetails();
+
+        if (details != null && !details.isEmpty()) {
+            details.sort((a, b) -> {
+                if (a.getSortNo() == null || b.getSortNo() == null) {
+                    return 0;
+                }
+                return a.getSortNo().compareTo(b.getSortNo());
+            });
         }
         setActiveTask(main);
         return main;

@@ -14,6 +14,9 @@ public class SystemConstants {
     public static final String SYSMSG_TYPE_ID_COPY = "COPY_MSG";
     public static final String SYSMSG_TYPE_NAME_COPY = "抄送";
 
+    public static final String SYSMSG_TYPE_ID_TIP = "TIP_MSG";
+    public static final String SYSMSG_TYPE_NAME_TIP = "提醒";
+
 
     public static final Integer STATUS_DEL = 9;
     public static final Integer STATUS_UNREAD = 0;

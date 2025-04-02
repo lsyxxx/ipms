@@ -1,11 +1,17 @@
 package com.abt.sys.service.impl;
 
 import com.abt.sys.config.SystemConstants;
+import com.abt.sys.model.dto.SystemMessageRequestForm;
 import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.repository.SystemMessageRepository;
 import com.abt.sys.service.SystemMessageService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_ID_COPY;
+import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_NAME_TIP;
 
 /**
  *
@@ -23,7 +29,6 @@ public class SystemMessageServiceImpl implements SystemMessageService {
 
     @Override
     public void sendMessage(SystemMessage message) {
-        log.info("--- 抄送: {} ", message.toString());
         systemMessageRepository.save(message);
     }
 
@@ -34,7 +39,7 @@ public class SystemMessageServiceImpl implements SystemMessageService {
     public SystemMessage createDefaultCopyMessage(String toId, String toName, String href, String content, String service) {
         SystemMessage copyMessage = new SystemMessage();
         copyMessage.setTypeId(SystemConstants.SYSMSG_TYPE_NAME_COPY);
-        copyMessage.setTypeName(SystemConstants.SYSMSG_TYPE_ID_COPY);
+        copyMessage.setTypeName(SYSMSG_TYPE_ID_COPY);
         copyMessage.setFromId(SystemConstants.SYSTEM_USER_ID);
         copyMessage.setFromName(SystemConstants.SYSTEM_USER_NAME);
         copyMessage.setToId(toId);
@@ -45,8 +50,28 @@ public class SystemMessageServiceImpl implements SystemMessageService {
         return copyMessage;
     }
 
-    //获取用户的所有抄送信息
-    public void findUserCopySystemMessagesAll(String userid) {
-        systemMessageRepository.findByToIdOrderByUpdateTimeDesc(userid);
+    @Override
+    public Page<SystemMessage> findUserSystemMessagesAllPageable(SystemMessageRequestForm requestForm) {
+        Pageable page = requestForm.createDefaultPageableWithoutSorting();
+        return systemMessageRepository.findAllByToIdAndTypeIdsAndIsRead(requestForm.getToId(),
+                requestForm.buildTypeIds(),
+                requestForm.getIsRead(),
+                page
+        );
+    }
+
+    @Override
+    public SystemMessage createSystemMessage(String toId, String toName, String href, String content, String service) {
+        SystemMessage msg = new SystemMessage();
+        msg.setTypeId(SystemConstants.SYSMSG_TYPE_ID_TIP);
+        msg.setTypeName(SYSMSG_TYPE_NAME_TIP);
+        msg.setFromId(SystemConstants.SYSTEM_USER_ID);
+        msg.setFromName(SystemConstants.SYSTEM_USER_NAME);
+        msg.setToId(toId);
+        msg.setToName(toName);
+        msg.setHref(href);
+        msg.setContent(content);
+        msg.setService(service);
+        return msg;
     }
 }

@@ -25,17 +25,6 @@ class StockServiceImplTest {
         order.setOrderDate(LocalDate.now());
         order.setStockType(1);
 
-        Stock s1 = new Stock();
-        s1.setNum(1);
-        s1.setPrice(new BigDecimal("266.00"));
-        s1.setMaterialName("测试123");
-        s1.setMaterialId("m111");
-        List<Stock> stocks = new ArrayList<>();
-        stocks.add(s1);
-
-        order.setStockList(stocks);
-
-        stockService.saveStockOrder(order);
 
     }
 

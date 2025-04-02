@@ -175,7 +175,7 @@ public class Loan extends WorkflowBase implements ICreditBook {
         variableMap.put(KEY_STARTER, this.getSubmitUserid());
         variableMap.put(KEY_STARTER_NAME, this.getSubmitUsername());
         variableMap.put(KEY_COST, this.getLoanAmount());
-        variableMap.put(KEY_SERVICE, "借款申请");
+        variableMap.put(KEY_SERVICE, SERVICE_LOAN);
         if (StringUtils.isBlank(this.getManagers())) {
             variableMap.put(KEY_MANAGER, List.of());
         } else {

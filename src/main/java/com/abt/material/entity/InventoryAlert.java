@@ -52,8 +52,8 @@ public class InventoryAlert extends AuditInfo implements CommonJpaAudit, WithQue
      * 预警数量
      */
     @ExcelProperty(index = 5)
-    @Column(name="alert_num")
-    private int alertNum;
+    @Column(name="alert_num", columnDefinition = "DECIMAL(9,2)")
+    private Double alertNum;
     @ExcelProperty(index = 6)
     @Transient
     private String materialId;

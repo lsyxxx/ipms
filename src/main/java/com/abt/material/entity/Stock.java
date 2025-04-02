@@ -74,8 +74,8 @@ public class Stock implements WithQuery<Stock> {
     private String specification;
 
     @NotNull
-    @Column(name = "num", nullable = false)
-    private Integer num;
+    @Column(name = "num", nullable = false, columnDefinition = "decimal(9,2)")
+    private Double num;
 
     @Size(max = 50)
     @Column(name = "unit", length = 50)

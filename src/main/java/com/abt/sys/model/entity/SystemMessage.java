@@ -21,6 +21,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
+import static com.abt.wf.config.Constants.DECISION_PASS;
+import static com.abt.wf.config.Constants.DECISION_REJECT;
+
 
 /**
  * 原有的SystemMessage
@@ -132,6 +135,16 @@ public class SystemMessage {
      */
     @Column(name="Service")
     private String service;
+
+    @Column(name="MsgResult")
+    private String msgResult;
+
+    //抄送
+    public static final String MSG_RESULT_COPY = "copy";
+    //审批通过
+    public static final String MSG_RESULT_PASS = DECISION_PASS;
+    //审批拒绝
+    public static final String MSG_RESULT_REJECT = DECISION_REJECT;
 
     /**
      * 接收用户已删除

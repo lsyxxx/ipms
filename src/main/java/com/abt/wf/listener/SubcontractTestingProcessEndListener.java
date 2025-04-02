@@ -30,8 +30,8 @@ public class SubcontractTestingProcessEndListener implements ExecutionListener {
 
     @Override
     public void notify(DelegateExecution execution) throws Exception {
-        String entityId = WorkFlowUtil.getVariable(execution, Constants.VAR_KEY_ENTITY);
-        final String approvalResult = WorkFlowUtil.getVariable(execution, VAR_KEY_APPR_RESULT);
+        String entityId = WorkFlowUtil.getStringVariable(execution, Constants.VAR_KEY_ENTITY);
+        final String approvalResult = WorkFlowUtil.getStringVariable(execution, VAR_KEY_APPR_RESULT);
         if (StringUtils.isBlank(entityId)) {
             log.error("流程参数中未保存业务实体id! 流程实例id: {}", execution.getProcessInstanceId());
         } else {

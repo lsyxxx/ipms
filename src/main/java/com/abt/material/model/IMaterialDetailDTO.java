@@ -17,7 +17,7 @@ public interface IMaterialDetailDTO {
     BigDecimal getPrice();
     String getUsage();
     String getRemark();
-    Integer getCurrentInventory();
+    Double getCurrentInventory();
     String getWarehouseId();
     String getWarehouseName();
 

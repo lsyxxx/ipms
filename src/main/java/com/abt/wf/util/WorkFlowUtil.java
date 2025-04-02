@@ -225,7 +225,7 @@ public class WorkFlowUtil {
         return (Boolean) valueExpression.getValue(context);
     }
 
-    public static String getVariable(DelegateTask delegateTask, String varName) {
+    public static String getStringVariable(DelegateTask delegateTask, String varName) {
         final Object variable = delegateTask.getVariable(varName);
         if (variable == null) {
             return null;
@@ -233,12 +233,16 @@ public class WorkFlowUtil {
         return variable.toString();
     }
 
-    public static String getVariable(DelegateExecution delegateExecution, String varName) {
+    public static String getStringVariable(DelegateExecution delegateExecution, String varName) {
         final Object variable = delegateExecution.getVariable(varName);
         if (variable == null) {
             return null;
         }
         return variable.toString();
+    }
+
+    public static String getProcessDefinitionKey(DelegateTask delegateTask) {
+        return delegateTask.getProcessDefinitionId().split(":")[0];
     }
 
 }

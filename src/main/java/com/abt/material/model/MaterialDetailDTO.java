@@ -34,9 +34,9 @@ public class MaterialDetailDTO implements IMaterialDetailDTO {
      * 当前库存
      */
     @ExcelProperty(index = 5)
-    private Integer currentInventory;
+    private Double currentInventory;
     @ExcelProperty(index = 6)
-    private Integer checkInventory;
+    private Double checkInventory;
     @ExcelProperty(index = 7)
     private String id;
     @ExcelProperty(index = 8)

@@ -146,7 +146,7 @@ public class StockServiceImpl implements StockService {
     @Override
     public Page<Inventory> latestInventories(InventoryRequestForm requestForm) {
         buildInventoryRequestForm(requestForm);
-        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize(), Sort.by(Sort.Order.asc("createDate")));
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize());
         return WithQueryUtil.build(inventoryRepository
                 .findLatestInventory(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds(), requestForm.getName(), requestForm.isShowAlertOnly(), pageable));
     }

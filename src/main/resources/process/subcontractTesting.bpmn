@@ -3,7 +3,7 @@
   <bpmn:process id="sbct" name="外送申请审批" isExecutable="true" camunda:historyTimeToLive="999">
     <bpmn:extensionElements>
       <camunda:executionListener delegateExpression="${subcontractTestingProcessEndListener}" event="end" />
-      <camunda:executionListener delegateExpression="${webMessagePushListener}" event="end" />
+      <camunda:executionListener delegateExpression="${carbonCopyNotifyListener}" event="end" />
     </bpmn:extensionElements>
     <bpmn:startEvent id="StartEvent_1" name="开始" camunda:formRef="" camunda:formRefBinding="latest" camunda:initiator="starter">
       <bpmn:extensionElements />

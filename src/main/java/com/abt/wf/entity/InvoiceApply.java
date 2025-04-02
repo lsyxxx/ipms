@@ -223,6 +223,7 @@ public class InvoiceApply extends WorkflowBase {
         } else {
             variableMap.put(KEY_MANAGER, List.of(this.getManagers().split(",")));
         }
+        variableMap.put(KEY_SERVICE, SERVICE_INV);
 
         return this.variableMap;
     }

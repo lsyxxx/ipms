@@ -153,6 +153,7 @@ public class Constants {
     public static final String KEY_MANAGER2 = "manager2";
     public static final String KEY_SERVICE = "service";
     public static final String KEY_CEO_CHECK = "ceoCheck";
+    public static final String KEY_NOTIFY_USERS = "notifyUsers";
 
     //--- setting
     public static final String SETTING_TYPE_RBS_COPY = "rbsDefaultCopy";

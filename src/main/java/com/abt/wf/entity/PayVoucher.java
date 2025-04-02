@@ -210,7 +210,7 @@ public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice
         variableMap.put(KEY_STARTER, this.getSubmitUserid());
         variableMap.put(KEY_STARTER_NAME, this.getSubmitUsername());
         variableMap.put(KEY_COST, this.getPayAmount().doubleValue());
-        variableMap.put(KEY_SERVICE, "支付申请");
+        variableMap.put(KEY_SERVICE, SERVICE_PAY);
         if (StringUtils.isBlank(this.getManagers())) {
             variableMap.put(KEY_MANAGER, List.of());
         } else {

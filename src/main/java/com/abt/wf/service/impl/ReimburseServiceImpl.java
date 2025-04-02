@@ -6,7 +6,9 @@ import com.abt.common.model.ValidationResult;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
+import com.abt.finance.entity.Invoice;
 import com.abt.finance.service.CreditBookService;
+import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
@@ -66,6 +68,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     private final CreditAndDebitBook<Reimburse> creditAndDebitBook;
     private final CreditBookService creditBookService;
+    private final InvoiceService invoiceService;
 
     private List<User> copyList;
 
@@ -76,7 +79,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, ReimburseRepository reimburseRepository,
-                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService, CreditAndDebitBook<Reimburse> creditAndDebitBook, CreditBookService creditBookService) {
+                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService, CreditAndDebitBook<Reimburse> creditAndDebitBook, CreditBookService creditBookService, InvoiceService invoiceService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService,signatureService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
@@ -91,6 +94,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.signatureService = signatureService;
         this.creditAndDebitBook = creditAndDebitBook;
         this.creditBookService = creditBookService;
+        this.invoiceService = invoiceService;
     }
 
 
@@ -112,6 +116,12 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     @Override
     void rejectHandler(Reimburse form, Task task) {
         this.commonRejectHandler(form, task, form.getComment(), form.getId());
+        //删除发票
+        try {
+            invoiceService.deleteByRef(form.getId(), getServiceName());
+        } catch (Exception e) {
+            log.error("删除发票失败! Cause: " + e.getMessage(), e);
+        }
     }
 
     @Override

@@ -38,6 +38,12 @@ public class PurchaseApplyDetail {
     private String id;
 
     /**
+     * 序号
+     */
+    @Column(name="dtl_sno")
+    private Integer sortNo;
+
+    /**
      * 关联物品id
      */
     @Column(name="dtl_id")

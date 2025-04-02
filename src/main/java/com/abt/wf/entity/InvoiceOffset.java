@@ -140,6 +140,7 @@ public class InvoiceOffset extends WorkflowBase {
         } else {
             variableMap.put(KEY_MANAGER, List.of(this.getManagers().split(",")));
         }
+        variableMap.put(KEY_SERVICE, SERVICE_INV_OFFSET);
         return this.variableMap;
     }
 

@@ -98,6 +98,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         //set
         this.setApprovalResult(form, entity);
         Task task = beforeApprove(entity, form.getSubmitUserid(), decision);
+        taskService.setVariable(task.getId(), VAR_KEY_DECISION, decision);
         if (WorkFlowUtil.isPass(decision)) {
             passHandler(entity, task);
         } else if (WorkFlowUtil.isReject(decision)) {

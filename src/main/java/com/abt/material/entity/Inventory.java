@@ -43,8 +43,8 @@ public class Inventory extends AuditInfo implements CommonJpaAudit, WithQuery<In
     /**
      * 当前库存数量
      */
-    @Column(name="quantity_")
-    private int quantity;
+    @Column(name="quantity_", columnDefinition = "DECIMAL(9,2)")
+    private Double quantity;
 
     /**
      * 仓库id

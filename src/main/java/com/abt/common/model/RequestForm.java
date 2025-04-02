@@ -160,4 +160,8 @@ public class RequestForm {
     public Pageable createDefaultPageable() {
         return PageRequest.of(this.jpaPage(), this.getLimit(), Sort.by(Sort.Order.desc("createDate")));
     }
+
+    public Pageable createDefaultPageableWithoutSorting() {
+        return PageRequest.of(this.jpaPage(), this.getLimit());
+    }
 }
