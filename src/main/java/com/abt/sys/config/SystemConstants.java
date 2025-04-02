@@ -12,7 +12,7 @@ public class SystemConstants {
      * 抄送信息类型
      */
     public static final String SYSMSG_TYPE_ID_COPY = "COPY_MSG";
-    public static final String SYSMSG_TYPE_NAME_COPY = "抄送消息";
+    public static final String SYSMSG_TYPE_NAME_COPY = "抄送";
 
 
     public static final Integer STATUS_DEL = 9;

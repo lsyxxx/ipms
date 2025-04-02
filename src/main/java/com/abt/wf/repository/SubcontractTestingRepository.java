@@ -96,4 +96,17 @@ public interface SubcontractTestingRepository extends JpaRepository<SubcontractT
             "AND (:endDate IS NULL OR e.createDate <= :endDate) " +
             "order by e.updateDate desc ")
     List<SubcontractTesting> findUserTodoList(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, String taskDefKey);
+
+
+    @Query("select count(e) from SubcontractTesting e " +
+            "left join e.currentTask rt " +
+            "where (rt.assignee = :userid) " +
+            "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey)" +
+            "and (:query IS NULL OR :query = '' " +
+            "   or e.id like %:query% " +
+            "   or e.subcontractCompanyName like %:query% " +
+            "   or e.createUsername like %:query%" +
+            "   ) "
+    )
+    int countTodoByQuery(String userid, String query, String taskDefKey);
 }

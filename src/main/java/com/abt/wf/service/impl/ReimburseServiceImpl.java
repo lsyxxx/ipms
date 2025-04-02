@@ -8,15 +8,12 @@ import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.service.CreditBookService;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.entity.FlowSetting;
 import com.abt.sys.model.entity.SystemFile;
-import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
-import com.abt.wf.entity.UserSignature;
 import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -24,7 +21,6 @@ import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.ReimburseService;
 import com.abt.wf.service.SignatureService;
-import cn.idev.excel.metadata.data.WriteCellData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -40,12 +36,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.abt.common.ExcelUtil.createImageData;
 import static com.abt.wf.config.Constants.*;
 
 /**
@@ -61,7 +55,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final TaskService taskService;
     private final FlowOperationLogService flowOperationLogService;
     private final UserService userService;
-    private final FlowSettingRepository flowSettingRepository;
 
     private final ReimburseRepository reimburseRepository;
     private final BpmnModelInstance rbsBpmnModelInstance;
@@ -82,7 +75,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private String urlPrefix;
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
-                                FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository, ReimburseRepository reimburseRepository,
+                                FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, ReimburseRepository reimburseRepository,
                                 @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService, CreditAndDebitBook<Reimburse> creditAndDebitBook, CreditBookService creditBookService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService,signatureService);
         this.identityService = identityService;
@@ -91,7 +84,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.taskService = taskService;
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
-        this.flowSettingRepository = flowSettingRepository;
         this.reimburseRepository = reimburseRepository;
         this.rbsBpmnModelInstance = rbsBpmnModelInstance;
         this.fileService = fileService;
@@ -276,9 +268,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     @Override
     public List<UserTaskDTO> preview(Reimburse form) {
-        final List<FlowSetting> list = flowSettingRepository.findByTypeOrderByKeyAsc(SETTING_TYPE_RBS_COPY);
-        List<String> strList = list.stream().map(FlowSetting::getValue).toList();
-        return this.commonPreview(form, createVariableMap(form), rbsBpmnModelInstance, strList);
+        return this.commonPreview(form, createVariableMap(form), rbsBpmnModelInstance, List.of());
     }
 
     @Override

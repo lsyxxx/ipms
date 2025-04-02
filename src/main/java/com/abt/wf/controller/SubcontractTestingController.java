@@ -139,6 +139,13 @@ public class SubcontractTestingController {
         return R.success(processRecord, processRecord.size());
     }
 
+    @GetMapping("/todo/count")
+    public R<Integer> countTodo(@ModelAttribute SubcontractTestingRequestForm requestForm) {
+        setTokenUser(requestForm);
+        final int count = subcontractTestingService.countMyTodo(requestForm);
+        return R.success(count, "查询成功");
+    }
+
     @GetMapping("/export")
     public void export(SubcontractTestingRequestForm requestForm, HttpServletResponse response) throws IOException {
 //        try {

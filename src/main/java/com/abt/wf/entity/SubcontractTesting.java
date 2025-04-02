@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.common.listener.JpaListStringConverter;
+import com.abt.common.listener.JpaListUserConverter;
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
@@ -149,6 +150,13 @@ public class SubcontractTesting extends WorkflowBase {
     private String remarks; // 备注
 
     /**
+     * 抄送人
+     */
+    @Convert(converter = JpaListUserConverter.class)
+    @Column(name="notify_users", columnDefinition = "VARCHAR(MAX)")
+    private List<User> notifyUsers;
+
+    /**
      * 业务归属, abt/grd/dc
      */
     @Column(name="company_", length = 32)
@@ -164,6 +172,8 @@ public class SubcontractTesting extends WorkflowBase {
     private String decision;
     @Transient
     private String comment;
+    
+    
 
     public static final String KEY_IS_OPEN_CONTRACT = "isOpenContract";
 

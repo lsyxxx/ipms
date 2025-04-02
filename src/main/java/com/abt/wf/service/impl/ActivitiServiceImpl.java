@@ -136,7 +136,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 
     @Override
     public List<User> findDefaultCopyUsers() {
-        return workFlowConfig.workflowDefaultCopy();
+        return List.of();
     }
 
 

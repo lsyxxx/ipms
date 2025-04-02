@@ -6,13 +6,11 @@ import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
-import com.abt.wf.entity.UserSignature;
 import com.abt.wf.listener.PurchaseNameMergeHandler;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -42,11 +40,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static com.abt.common.ExcelUtil.createImageData;
 import static com.abt.wf.config.Constants.*;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_PURCHASE;
 
@@ -62,7 +58,6 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     private final TaskService taskService;
     private final FlowOperationLogService flowOperationLogService;
     private final UserService userService;
-    private final FlowSettingRepository flowSettingRepository;
 
     private final BpmnModelInstance purchaseBpmnModelInstance;
 
@@ -84,7 +79,7 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     public PurchaseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService,
                                TaskService taskService, FlowOperationLogService flowOperationLogService,
-                               @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository,
+                               @Qualifier("sqlServerUserService") UserService userService,
                                BpmnModelInstance purchaseBpmnModelInstance,
                                IFileService fileService, HistoryService historyService, SignatureService signatureService,
                                PurchaseApplyMainRepository purchaseApplyMainRepository) {
@@ -96,7 +91,6 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         this.taskService = taskService;
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
-        this.flowSettingRepository = flowSettingRepository;
         this.purchaseBpmnModelInstance = purchaseBpmnModelInstance;
         this.fileService = fileService;
         this.historyService = historyService;

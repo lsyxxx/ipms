@@ -4,29 +4,22 @@ import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.repository.FlowSettingRepository;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
-import com.abt.wf.entity.PayVoucher;
 import com.abt.wf.entity.SubcontractTesting;
 import com.abt.wf.model.SubcontractTestingRequestForm;
 import com.abt.wf.model.UserTaskDTO;
-import com.abt.wf.repository.ReimburseRepository;
 import com.abt.wf.repository.SubcontractTestingRepository;
-import com.abt.wf.service.BusinessService;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.SignatureService;
 import com.abt.wf.service.SubcontractTestingService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -49,7 +42,6 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
     private final TaskService taskService;
     private final FlowOperationLogService flowOperationLogService;
     private final UserService userService;
-    private final FlowSettingRepository flowSettingRepository;
 
     private final BpmnModelInstance subcontractTestingBpmnModelInstance;
 
@@ -64,7 +56,7 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
     public SubcontractTestingServiceImpl(IdentityService identityService, RepositoryService repositoryService,
                                          RuntimeService runtimeService, TaskService taskService,
                                          FlowOperationLogService flowOperationLogService,
-                                         @Qualifier("sqlServerUserService") UserService userService, FlowSettingRepository flowSettingRepository,
+                                         @Qualifier("sqlServerUserService") UserService userService,
                                          @Qualifier("subcontractTestingBpmnModelInstance")BpmnModelInstance subcontractTestingBpmnModelInstance, IFileService fileService, HistoryService historyService,
                                          SignatureService signatureService,
                                          SubcontractTestingRepository subcontractTestingRepository) {
@@ -76,7 +68,6 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
         this.taskService = taskService;
         this.flowOperationLogService = flowOperationLogService;
         this.userService = userService;
-        this.flowSettingRepository = flowSettingRepository;
         this.subcontractTestingBpmnModelInstance = subcontractTestingBpmnModelInstance;
         this.fileService = fileService;
         this.historyService = historyService;
@@ -145,12 +136,12 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
 
     @Override
     public int countMyTodo(SubcontractTestingRequestForm form) {
-        return 0;
+        return subcontractTestingRepository.countTodoByQuery(form.getUserid(), form.getQuery(), form.getTaskDefKey());
     }
 
     @Override
     public int countMyTodoByRequestForm(RequestForm requestForm) {
-        return 0;
+        return subcontractTestingRepository.countTodoByQuery(requestForm.getUserid(), requestForm.getQuery(), requestForm.getTaskDefKey());
     }
 
     @Override

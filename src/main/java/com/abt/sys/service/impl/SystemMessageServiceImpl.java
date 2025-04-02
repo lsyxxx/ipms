@@ -14,7 +14,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class SystemMessageServiceImpl implements SystemMessageService {
 
-    private SystemMessageRepository systemMessageRepository;
+    private final SystemMessageRepository systemMessageRepository;
+
+    public SystemMessageServiceImpl(SystemMessageRepository systemMessageRepository) {
+        this.systemMessageRepository = systemMessageRepository;
+    }
 
 
     @Override

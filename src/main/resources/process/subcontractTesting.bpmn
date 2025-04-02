@@ -3,12 +3,13 @@
   <bpmn:process id="sbct" name="外送申请审批" isExecutable="true" camunda:historyTimeToLive="999">
     <bpmn:extensionElements>
       <camunda:executionListener delegateExpression="${subcontractTestingProcessEndListener}" event="end" />
+      <camunda:executionListener delegateExpression="${webMessagePushListener}" event="end" />
     </bpmn:extensionElements>
     <bpmn:startEvent id="StartEvent_1" name="开始" camunda:formRef="" camunda:formRefBinding="latest" camunda:initiator="starter">
       <bpmn:extensionElements />
       <bpmn:outgoing>Flow_03u6xa8</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="st_dm" name="部门主管" camunda:assignee="${st_dm_userid}" >
+    <bpmn:userTask id="st_dm" name="部门主管" camunda:assignee="${st_dm_userid}">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
@@ -19,7 +20,7 @@
       <bpmn:incoming>Flow_02ev364</bpmn:incoming>
       <bpmn:outgoing>Flow_12x4hqt</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="st_dceo" name="业务副总" camunda:assignee="${st_dceo_userid}" >
+    <bpmn:userTask id="st_dceo" name="业务副总" camunda:assignee="${st_dceo_userid}">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
@@ -69,7 +70,7 @@
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_03u6xa8" sourceRef="StartEvent_1" targetRef="st_apply" />
     <bpmn:sequenceFlow id="Flow_02ev364" sourceRef="st_apply" targetRef="st_dm" />
-    <bpmn:sequenceFlow id="Flow_1vmrico" name="外送金额小于等于1000元或非开口合同" sourceRef="st_dceo" targetRef="Event_037tjjt">
+    <bpmn:sequenceFlow id="Flow_1vmrico" name="外送金额小于等于1000元且非开口合同" sourceRef="st_dceo" targetRef="Event_037tjjt">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!(cost &gt; 10000 || isOpenContract == true)}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_12x4hqt" sourceRef="st_dm" targetRef="st_dceo" />
@@ -100,9 +101,9 @@
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_037tjjt_di" bpmnElement="Event_037tjjt">
-        <dc:Bounds x="1152" y="162" width="36" height="36" />
+        <dc:Bounds x="1222" y="162" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1198" y="173" width="22" height="14" />
+          <dc:Bounds x="1268" y="173" width="22" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1cd8z8h" bpmnElement="st_chief">
@@ -124,10 +125,10 @@
       <bpmndi:BPMNEdge id="Flow_1vmrico_di" bpmnElement="Flow_1vmrico">
         <di:waypoint x="610" y="140" />
         <di:waypoint x="610" y="80" />
-        <di:waypoint x="1170" y="80" />
-        <di:waypoint x="1170" y="162" />
+        <di:waypoint x="1240" y="80" />
+        <di:waypoint x="1240" y="162" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="848" y="62" width="88" height="40" />
+          <dc:Bounds x="883" y="62" width="88" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_12x4hqt_di" bpmnElement="Flow_12x4hqt">
@@ -144,7 +145,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_02884ti_di" bpmnElement="Flow_02884ti">
         <di:waypoint x="1010" y="180" />
-        <di:waypoint x="1152" y="180" />
+        <di:waypoint x="1222" y="180" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
