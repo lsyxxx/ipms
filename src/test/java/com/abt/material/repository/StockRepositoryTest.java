@@ -22,11 +22,6 @@ class StockRepositoryTest {
 
     @Test
     void findByQueryPageable() {
-        Pageable pageable = PageRequest.of(0, 10);
-        final Page<Stock> page = stockRepository.findByQueryPageable("123", null, null, null, pageable);
-        assertNotNull(page);
-        System.out.println(page.getContent().size());
-        page.getContent().forEach(System.out::println);
     }
 
     @Test

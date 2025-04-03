@@ -1,14 +1,19 @@
 package com.abt.sys.service.impl;
 
+import com.abt.common.util.TimeUtil;
 import com.abt.sys.config.SystemConstants;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.SystemMessageRequestForm;
 import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.repository.SystemMessageRepository;
 import com.abt.sys.service.SystemMessageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_ID_COPY;
 import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_NAME_TIP;
@@ -53,11 +58,21 @@ public class SystemMessageServiceImpl implements SystemMessageService {
     @Override
     public Page<SystemMessage> findUserSystemMessagesAllPageable(SystemMessageRequestForm requestForm) {
         Pageable page = requestForm.createDefaultPageableWithoutSorting();
-        return systemMessageRepository.findAllByToIdAndTypeIdsAndIsRead(requestForm.getToId(),
+        return systemMessageRepository.findAllBy(requestForm.getToId(),
                 requestForm.buildTypeIds(),
-                requestForm.getIsRead(),
+                requestForm.getToStatus(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()),
+                TimeUtil.toLocalDateTime(requestForm.getEndDate()),
                 page
         );
+    }
+
+    @Override
+    public void readOne(String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("未传入消息id(" + id + " )");
+        }
+        systemMessageRepository.updateReadById(LocalDateTime.now(), id);
     }
 
     @Override
@@ -73,5 +88,10 @@ public class SystemMessageServiceImpl implements SystemMessageService {
         msg.setContent(content);
         msg.setService(service);
         return msg;
+    }
+
+    @Override
+    public void readAll(String toId) {
+        systemMessageRepository.updateReadAllByToId(toId, LocalDateTime.now());
     }
 }

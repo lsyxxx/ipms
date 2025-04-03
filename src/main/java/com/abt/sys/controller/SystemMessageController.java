@@ -7,10 +7,7 @@ import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.service.SystemMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,7 +30,19 @@ public class SystemMessageController {
         requestForm.setToId(TokenUtil.getUseridFromAuthToken());
         final Page<SystemMessage> page = systemMessageService.findUserSystemMessagesAllPageable(requestForm);
         return R.success(page.getContent(), (int)page.getTotalElements(), "查询成功!");
+    }
 
+    @GetMapping("/read/all")
+    public R<Object> setReadAll() {
+        systemMessageService.readAll(TokenUtil.getUseridFromAuthToken());
+        return R.success(String.format("用户[%s]消息已全部设置已读", TokenUtil.getUseridFromAuthToken()));
+    }
+
+
+    @GetMapping("/read/{id}")
+    public R<Object> readOne(@PathVariable   String id) {
+        systemMessageService.readOne(id);
+        return R.success("消息已读!");
     }
 
 }

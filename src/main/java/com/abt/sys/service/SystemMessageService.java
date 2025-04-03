@@ -16,8 +16,12 @@ public interface SystemMessageService {
     //获取用户的所有抄送信息
     Page<SystemMessage> findUserSystemMessagesAllPageable(SystemMessageRequestForm requestForm);
 
+    void readOne(String id);
+
     /**
      * 提醒消息
      */
     SystemMessage createSystemMessage(String toId, String toName, String href, String content, String service);
+
+    void readAll(String toId);
 }

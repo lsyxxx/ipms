@@ -139,6 +139,12 @@ public class SystemMessage {
     @Column(name="MsgResult")
     private String msgResult;
 
+    /**
+     * 单据编号/业务实体id
+     */
+    @Column(name="entity_id")
+    private String entityId;
+
     //抄送
     public static final String MSG_RESULT_COPY = "copy";
     //审批通过

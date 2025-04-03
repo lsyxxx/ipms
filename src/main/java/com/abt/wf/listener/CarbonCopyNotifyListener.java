@@ -54,6 +54,7 @@ public class CarbonCopyNotifyListener implements TaskListener {
             }
 
             List<User> notifyUsers = (List<User>) obj;
+            String entityId = WorkFlowUtil.getStringVariable(delegateTask, VAR_KEY_ENTITY);
             String defKey = WorkFlowUtil.getProcessDefinitionKey(delegateTask);
             //获取抄送人
             for (User user : notifyUsers) {

@@ -89,8 +89,8 @@ public class StockController {
      * 出入库产品明细表
      * @param requestForm 查询条件
      */
-    @GetMapping("/dtl/table")
-    public R<List<Stock>> findStockList(StockOrderRequestForm requestForm) {
+    @PostMapping("/dtl/table")
+    public R<List<Stock>> findStockList(@RequestBody StockOrderRequestForm requestForm) {
         final Page<Stock> page = stockService.findStocksByQueryPageable(requestForm);
         return R.success(page.getContent(), (int) page.getTotalElements());
     }

@@ -48,6 +48,7 @@ public class ApprovalResultListener implements TaskListener {
             }
             String processDefinitionKey = WorkFlowUtil.getProcessDefinitionKey(delegateTask);
             final String starter = WorkFlowUtil.getStringVariable(delegateTask, KEY_STARTER);
+            String entityId = WorkFlowUtil.getStringVariable(delegateTask, VAR_KEY_ENTITY);
             User startUser;
             if (StringUtils.isBlank(starter)) {
                 return;
@@ -55,12 +56,13 @@ public class ApprovalResultListener implements TaskListener {
             startUser = userService.getSimpleUserInfo(starter);
             String service = WorkFlowUtil.getStringVariable(delegateTask, KEY_SERVICE);
             final SystemMessage msg = systemMessageService.createSystemMessage(startUser.getId(), startUser.getUsername(), "", "", processDefinitionKey);
+            msg.setEntityId(entityId);
             if (DECISION_PASS.equals(decision)) {
-                String content = String.format("您的%s申请已由%s审批通过", service, toUser.getUsername());
+                String content = String.format("您的%s流程(单据编号:%s)已由%s审批通过", service, entityId, toUser.getUsername());
                 msg.setContent(content);
                 msg.setMsgResult(SystemMessage.MSG_RESULT_PASS);
             } else if (DECISION_REJECT.equals(decision)) {
-                String content = String.format("您的%s申请已由%s审批拒绝", service, toUser.getUsername());
+                String content = String.format("您的%s流程(单据编号:%s)已由%s审批拒绝", service, entityId, toUser.getUsername());
                 msg.setContent(content);
                 msg.setMsgResult(SystemMessage.MSG_RESULT_REJECT);
             }

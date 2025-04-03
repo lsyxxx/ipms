@@ -101,7 +101,8 @@ public class StockServiceImpl implements StockService {
     @Override
     public Page<Stock> findStocksByQueryPageable(StockOrderRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize());
-        final Page<Stock> page = stockRepository.findByQueryPageable(requestForm.getQuery(), requestForm.getStockType(), requestForm.getStartDate(), requestForm.getEndDate(), pageable);
+        requestForm.buildForm();
+        final Page<Stock> page = stockRepository.findByQueryPageable(requestForm.getQuery(), requestForm.getStockType(), requestForm.getWarehouseIds(), requestForm.getStartDate(), requestForm.getEndDate(), pageable);
         WithQueryUtil.build(page);
         return page;
     }

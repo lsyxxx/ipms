@@ -14,7 +14,7 @@ import java.util.List;
 public class SystemMessageRequestForm extends RequestForm {
     private List<String> typeIds;
     private String toId;
-    private Boolean isRead;
+    private Integer toStatus;
 
     public List<String> buildTypeIds() {
         if (this.typeIds == null || this.typeIds.isEmpty()) {

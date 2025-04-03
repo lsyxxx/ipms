@@ -145,6 +145,8 @@ public class Stock implements WithQuery<Stock> {
             this.jobNumber = stockOrder.getJobNumber();
             this.username = stockOrder.getUsername();
             this.deptName = stockOrder.getDeptName();
+            this.warehouseId = stockOrder.getWarehouseId();
+            this.warehouseName = stockOrder.getWarehouseName();
         }
 
         return this;

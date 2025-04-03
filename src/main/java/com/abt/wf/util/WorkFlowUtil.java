@@ -228,7 +228,7 @@ public class WorkFlowUtil {
     public static String getStringVariable(DelegateTask delegateTask, String varName) {
         final Object variable = delegateTask.getVariable(varName);
         if (variable == null) {
-            return null;
+            return "";
         }
         return variable.toString();
     }
@@ -236,7 +236,7 @@ public class WorkFlowUtil {
     public static String getStringVariable(DelegateExecution delegateExecution, String varName) {
         final Object variable = delegateExecution.getVariable(varName);
         if (variable == null) {
-            return null;
+            return "";
         }
         return variable.toString();
     }

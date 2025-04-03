@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.abt.wf.config.Constants.KEY_SERVICE;
+import static com.abt.wf.config.Constants.SERVICE_PURCHASE;
+
 
 /**
  * 采购申请单-主体
@@ -138,6 +141,7 @@ public class PurchaseApplyMain extends WorkflowBase{
         this.variableMap.put(KEY_MANAGER, this.getManagerUserid());
         this.variableMap.put(KEY_LEADER, this.getLeaderUserid());
         this.variableMap.put(KEY_COST, this.getCost());
+        this.variableMap.put(KEY_SERVICE, SERVICE_PURCHASE);
         return this.variableMap;
     }
 

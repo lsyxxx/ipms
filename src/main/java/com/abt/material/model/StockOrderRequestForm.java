@@ -4,6 +4,8 @@ import com.abt.common.model.RequestForm;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  *
  */
@@ -13,5 +15,11 @@ public class StockOrderRequestForm extends RequestForm {
 
     private Integer stockType;
 
-    private String warehouseIdStr;
+    private List<String> warehouseIds;
+
+    public void buildForm() {
+        if (this.warehouseIds == null || this.warehouseIds.isEmpty()) {
+            this.warehouseIds = List.of("all");
+        }
+    }
 }
