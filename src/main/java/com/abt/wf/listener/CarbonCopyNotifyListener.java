@@ -58,7 +58,7 @@ public class CarbonCopyNotifyListener implements TaskListener {
             String defKey = WorkFlowUtil.getProcessDefinitionKey(delegateTask);
             //获取抄送人
             for (User user : notifyUsers) {
-                String content = String.format("[抄送]: %s%s审批流程已完成，请查看", uname, defKey);
+                String content = String.format("%s%s审批流程已完成，请查看", uname, defKey);
                 final SystemMessage copyMsg = systemMessageService.createDefaultCopyMessage(user.getId(), user.getUsername(), "", content, defKey);
                 copyMsg.setTitle("抄送提醒");
                 systemMessageService.sendMessage(copyMsg);

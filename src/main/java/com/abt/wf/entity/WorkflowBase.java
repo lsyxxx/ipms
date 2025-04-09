@@ -166,4 +166,9 @@ public class WorkflowBase extends AuditInfo {
         return List.of(this.getCopy().split(","));
     }
 
+    public void setProcessEnd() {
+        this.endTime = LocalDateTime.now();
+        this.isFinished = true;
+    }
+
 }

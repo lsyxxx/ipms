@@ -9,6 +9,8 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 /**
  * 款项支付单流程结束
  */
@@ -35,10 +37,8 @@ public class PayVoucherProcessEndListener implements ExecutionListener {
                 payVoucher.setBusinessState(Constants.STATE_DETAIL_PASS);
                 payVoucher.setProcessState("COMPLETED");
             }
-            payVoucher.setFinished(true);
+            payVoucher.setProcessEnd();
             payVoucherService.saveEntity(payVoucher);
-            //抄送TODO;
-
             //资金流出记录，只有流程结束且通过的才记录
             if ("COMPLETED".equals(payVoucher.getProcessState())
                     && Constants.STATE_DETAIL_PASS.equals(payVoucher.getBusinessState())

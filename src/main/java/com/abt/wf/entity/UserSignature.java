@@ -3,13 +3,17 @@ package com.abt.wf.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "u_sig")
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserSignature {
     @Id
     @Size(max = 255)

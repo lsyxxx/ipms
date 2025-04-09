@@ -34,7 +34,7 @@ public class InvoiceOffsetProcessEndListener implements ExecutionListener {
                 invoiceOffset.setBusinessState(Constants.STATE_DETAIL_PASS);
                 invoiceOffset.setProcessState("COMPLETED");
             }
-            invoiceOffset.setFinished(true);
+            invoiceOffset.setProcessEnd();
             invoiceOffsetService.saveEntity(invoiceOffset);
         }
     }

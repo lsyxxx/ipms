@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
@@ -16,6 +17,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 /**
@@ -134,6 +136,12 @@ public class Stock implements WithQuery<Stock> {
     @Column(name="biz_type")
     private String bizType;
 
+    @Transient
+    private String usage;
+
+    @Transient
+    private Double inventory;
+
     /**
      * 添加stockOrder信息
      */
@@ -147,6 +155,13 @@ public class Stock implements WithQuery<Stock> {
             this.deptName = stockOrder.getDeptName();
             this.warehouseId = stockOrder.getWarehouseId();
             this.warehouseName = stockOrder.getWarehouseName();
+            this.usage = "";
+            if (this.remark != null) {
+                this.usage = this.remark + "。";
+            }
+            if (StringUtils.isNotBlank(stockOrder.getRemark())) {
+                this.usage = this.usage + " " + stockOrder.getRemark();
+            }
         }
 
         return this;

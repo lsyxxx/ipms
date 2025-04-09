@@ -13,6 +13,8 @@ import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 /**
  * 采购流程结束监听
  */
@@ -49,7 +51,7 @@ public class PurchaseApplyProcessEndListener implements ExecutionListener {
                     pur.setBusinessState(Constants.STATE_DETAIL_PASS);
                     pur.setProcessState("COMPLETED");
                 }
-                pur.setFinished(true);
+                pur.setProcessEnd();
                 purchaseService.saveEntity(pur);
 
             } catch (Exception e) {

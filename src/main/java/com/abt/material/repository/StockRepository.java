@@ -17,11 +17,13 @@ public interface StockRepository extends JpaRepository<Stock, String> {
             "left join fetch StockOrder so on st.orderId = so.id " +
             "where (:stockType is null or so.stockType = :stockType) " +
             "and (:query is null or :query = '' or st.orderId like %:query% or st.materialName like %:query%) " +
+            "and (:materialTypeName is null or :materialTypeName = '' or st.materialTypeName like %:materialTypeName%) " +
             "and ('all' in :warehouseIds or so.warehouseId in :warehouseIds) " +
             "and (:startDate is null or so.orderDate >= :startDate) " +
             "and (:endDate is null or so.orderDate <= :endDate) " +
             "order by so.orderDate desc, so.stockType asc, st.materialName asc")
-    Page<Stock> findByQueryPageable(String query, Integer stockType, List<String> warehouseIds, String startDate, String endDate, Pageable pageable);
+    Page<Stock> findByQueryPageable(String query, Integer stockType, List<String> warehouseIds, String materialTypeName, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     void deleteByOrderId(@NotNull @Size(max = 64) String orderId);
+
 }

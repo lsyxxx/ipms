@@ -33,7 +33,7 @@ public interface MaterialDetailRepository extends JpaRepository<MaterialDetail, 
             "left join Inventory i on m.id = i.materialId " +
             "left join Warehouse w on w.id = i.warehouseId " +
             "where 1=1 " +
-            "and (i.updateDate = (select max(i2.updateDate) from Inventory i2 where i2.materialId = m.id) or i.updateDate is null) " +
+            "and (i.updateDate = (select max(i2.updateDate) from Inventory i2 where i2.materialId = i.materialId and i2.warehouseId = i.warehouseId) or i.updateDate is null) " +
             "and ('all' in :materialTypeIds or  m.materialTypeId in :materialTypeIds) " +
             "and ('all' in :warehouseIds or w.id in :warehouseIds) " +
             "order by m.materialTypeId, m.name, i.warehouseId")

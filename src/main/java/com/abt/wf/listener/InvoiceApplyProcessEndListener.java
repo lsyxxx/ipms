@@ -35,7 +35,7 @@ public class InvoiceApplyProcessEndListener implements ExecutionListener {
                     invoiceApply.setBusinessState(Constants.STATE_DETAIL_PASS);
                     invoiceApply.setProcessState("COMPLETED");
                 }
-                invoiceApply.setFinished(true);
+                invoiceApply.setProcessEnd();
                 invoiceApplyService.saveEntity(invoiceApply);
             } catch (BusinessException e) {
                 log.warn("业务异常: ", e);

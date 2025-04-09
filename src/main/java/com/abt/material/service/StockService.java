@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -88,4 +89,9 @@ public interface StockService {
     void checkInventoryAlertData(InventoryAlert row, Map<String, Warehouse> whMap);
 
     List<InventoryAlert> getInventoryAlert(String mid);
+
+    /**
+     * 礼品类本周/本月的出入库明细
+     */
+    StockSummaryTable inventoryGiftDetails(LocalDate startDate, LocalDate endDate, StockSummaryTable table);
 }

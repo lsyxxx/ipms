@@ -53,9 +53,8 @@ public class ReimburseProcessEndListener implements ExecutionListener {
                     rbs.setBusinessState(Constants.STATE_DETAIL_PASS);
                     rbs.setProcessState("COMPLETED");
                 }
-                rbs.setFinished(true);
+                rbs.setProcessEnd();
                 reimburseService.saveEntity(rbs);
-                //抄送:
 
                 //资金流出记录，只有流程结束且通过的才记录
                 if ("COMPLETED".equals(rbs.getProcessState())

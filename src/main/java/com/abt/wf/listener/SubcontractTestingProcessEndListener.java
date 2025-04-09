@@ -45,7 +45,7 @@ public class SubcontractTestingProcessEndListener implements ExecutionListener {
                 log.warn("Unknown approval result: {}", approvalResult);
             }
             entity.setProcessState("COMPLETED");
-            entity.setFinished(true);
+            entity.setProcessEnd();
             subcontractTestingService.saveEntity(entity);
         }
     }

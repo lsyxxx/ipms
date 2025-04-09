@@ -2,6 +2,7 @@ package com.abt.material.service.impl;
 
 import com.abt.material.entity.Stock;
 import com.abt.material.entity.StockOrder;
+import com.abt.material.model.StockSummaryTable;
 import com.abt.material.service.StockService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ class StockServiceImplTest {
     @Test
     void saveStockOrder() {
         StockOrder order = new StockOrder();
-        order.setOrderDate(LocalDate.now());
         order.setStockType(1);
 
 
@@ -30,5 +30,10 @@ class StockServiceImplTest {
 
     @Test
     void findByOrderId() {
+    }
+
+    @Test
+    void inventoryGiftDetails() {
+        stockService.inventoryGiftDetails(LocalDate.of(2025, 3, 1), LocalDate.of(2025, 4, 3), new StockSummaryTable());
     }
 }

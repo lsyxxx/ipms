@@ -72,20 +72,20 @@ public class Agreement implements CommonJpaAudit {
     @Size(max = 50)
     @Column(name = "JCompanyId", length = 50)
     @NotNull(message = "甲方不能为空", groups = {ValidateGroup.Save.class})
-    private String jCompanyId;
+    private String JCompanyId;
 
     @Transient
     private String jCompanyName;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "jCompanyId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    private CustomerInfo jCompany;
+    @JoinColumn(name = "JCompanyId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    private CustomerInfo JCompany;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "yCompanyId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    private CustomerInfo yCompany;
+    @JoinColumn(name = "YCompanyId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    private CustomerInfo YCompany;
 
 
     /**
@@ -94,7 +94,7 @@ public class Agreement implements CommonJpaAudit {
     @Size(max = 50)
     @Column(name = "YCompanyId", length = 50)
     @NotNull(message = "乙方不能为空", groups = {ValidateGroup.Save.class})
-    private String yCompanyId;
+    private String YCompanyId;
 
     @Transient
     private String yCompanyName;
@@ -399,8 +399,6 @@ public class Agreement implements CommonJpaAudit {
                 ", agreementCode='" + agreementCode + '\'' +
                 ", agreementType='" + agreementType + '\'' +
                 ", agreementName='" + agreementName + '\'' +
-                ", jCompanyId='" + jCompanyId + '\'' +
-                ", yCompanyId='" + yCompanyId + '\'' +
                 '}';
     }
 

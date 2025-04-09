@@ -1,5 +1,7 @@
  package com.abt.material.service.impl;
 
+import com.abt.common.model.Pair;
+import com.abt.common.util.TimeUtil;
 import com.abt.material.entity.*;
 import com.abt.material.listener.ImportCheckBillListener;
 import com.abt.material.listener.ImportInventoryAlertListener;
@@ -9,6 +11,8 @@ import com.abt.material.service.StockService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.util.WithQueryUtil;
 import cn.idev.excel.EasyExcel;
+import com.abt.wf.model.PurchaseSummaryAmount;
+import com.abt.wf.repository.PurchaseApplyDetailRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
@@ -16,14 +20,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.abt.material.entity.StockOrder.*;
+import static java.util.stream.Collectors.collectingAndThen;
 
-/**
+ /**
  * 出入库
  */
 @Service
@@ -37,8 +41,10 @@ public class StockServiceImpl implements StockService {
     private final InventoryRepository inventoryRepository;
     private final MaterialTypeRepository materialTypeRepository;
     private final InventoryAlertRepository inventoryAlertRepository;
+    private final PurchaseApplyDetailRepository purchaseApplyDetailRepository;
 
-    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository) {
+
+    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository, PurchaseApplyDetailRepository purchaseApplyDetailRepository) {
         this.stockOrderRepository = stockOrderRepository;
         this.stockRepository = stockRepository;
         this.warehouseRepository = warehouseRepository;
@@ -46,6 +52,7 @@ public class StockServiceImpl implements StockService {
         this.inventoryRepository = inventoryRepository;
         this.materialTypeRepository = materialTypeRepository;
         this.inventoryAlertRepository = inventoryAlertRepository;
+        this.purchaseApplyDetailRepository = purchaseApplyDetailRepository;
     }
 
     @Transactional
@@ -87,6 +94,9 @@ public class StockServiceImpl implements StockService {
             newInventory.setQuantity(inventory.getQuantity() - stock.getNum());
         } else if(STOCK_TYPE_CHECK == stockType) {
             newInventory.setQuantity(stock.getNum());
+//            //盘点单的inv日期是用户选择的盘点日期，而不是当前录入的日期
+//            newInventory.setCreateDate(stock.getOrderDate().atStartOfDay());
+//            newInventory.setUpdateDate(stock.getOrderDate().atStartOfDay());
         } else {
             log.warn("Stock type {} not supported", stockType);
         }
@@ -102,7 +112,13 @@ public class StockServiceImpl implements StockService {
     public Page<Stock> findStocksByQueryPageable(StockOrderRequestForm requestForm) {
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getSize());
         requestForm.buildForm();
-        final Page<Stock> page = stockRepository.findByQueryPageable(requestForm.getQuery(), requestForm.getStockType(), requestForm.getWarehouseIds(), requestForm.getStartDate(), requestForm.getEndDate(), pageable);
+        final Page<Stock> page = stockRepository.findByQueryPageable(requestForm.getQuery(),
+                requestForm.getStockType(),
+                requestForm.getWarehouseIds(),
+                null,
+                TimeUtil.toLocalDate(requestForm.getStartDate()),
+                TimeUtil.toLocalDate(requestForm.getEndDate()),
+                pageable);
         WithQueryUtil.build(page);
         return page;
     }
@@ -168,7 +184,7 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public List<MaterialDetailDTO> findAllMaterialInventories(InventoryRequestForm requestForm) {
+    public List<MaterialDetailDTO>  findAllMaterialInventories(InventoryRequestForm requestForm) {
         requestForm = buildInventoryRequestForm(requestForm);
         final List<IMaterialDetailDTO> list = materialDetailRepository.findAllWithInventories(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds());
         List<MaterialDetailDTO> dtos = new ArrayList<>(list.size());
@@ -342,5 +358,84 @@ public class StockServiceImpl implements StockService {
         return WithQueryUtil.build(list);
     }
 
+    /**
+     * 礼品类合计采购金额，需审批通过，物品类型为“礼品类”
+     * @param startDate 统计开始日期（根据
+     * @param endDate 统计结束日期
+     * @return list
+     */
+    public List<PurchaseSummaryAmount> summaryPurchaseGiftTotalAmount(LocalDate startDate, LocalDate endDate) {
+        return purchaseApplyDetailRepository.summaryGiftTotalAmount(GIFT_TYPE, startDate, endDate);
+    }
+
+    //延安库房
+    public static final String WH_GIFT_YANAN = "c04c456a-7cc2-475a-8449-b8a3c18d7784";
+    //西安库房
+    public static final String WH_GIFT_XIAN = "44746bb0-30dd-48ad-a57d-de1e160bf1d4";
+    //成都库房
+    public static final String WH_GIFT_CHENGDU = "fe4ef039-65fb-4d94-858a-d8683971ba53";
+
+    public static final String GIFT_TYPE = "礼品类";
+
+    @Override
+    public StockSummaryTable inventoryGiftDetails(LocalDate startDate, LocalDate endDate, StockSummaryTable table) {
+        List<Stock> stockList = new ArrayList<>();
+        StockOrderRequestForm requestForm = new StockOrderRequestForm();
+        Pageable pageable = PageRequest.of(0, 9999);
+        requestForm.buildForm();
+        final Page<Stock> page1 = stockRepository.findByQueryPageable(null,
+                1,
+                requestForm.getWarehouseIds(),
+                GIFT_TYPE,
+                startDate,
+                endDate,
+                pageable);
+        stockList.addAll(WithQueryUtil.build(page1.getContent()));
+        final Page<Stock> page2 = stockRepository.findByQueryPageable(null,
+                2,
+                requestForm.getWarehouseIds(),
+                GIFT_TYPE,
+                startDate,
+                endDate,
+                pageable);
+        stockList.addAll(WithQueryUtil.build(page2.getContent()));
+        //剩余库存(endDate前最近日期的库存，不包含endDate)
+        final ArrayList<Stock> distinctList = stockList.stream().collect(collectingAndThen(
+                Collectors.toCollection(() -> new TreeSet<>(
+                        Comparator.comparing(obj -> obj.getMaterialId() + "#" + obj.getWarehouseId())
+                )),
+                ArrayList::new
+        ));
+
+        Map<String, Inventory> invMap = new HashMap<>();
+
+        for (Stock stock : distinctList) {
+            final Inventory inv = inventoryRepository.findNearestBefore(endDate, stock.getMaterialId(), stock.getWarehouseId());
+            invMap.put(stock.getMaterialId() + "#" + stock.getWarehouseId(), inv);
+        }
+        for (Stock stock : stockList) {
+            final Inventory inv = invMap.get(stock.getMaterialId() + "#" + stock.getWarehouseId());
+            if (inv != null) {
+                stock.setInventory(inv.getQuantity());
+            }
+        }
+
+        Comparator<Stock> comparator = new Comparator<Stock>() {
+            @Override
+            public int compare(Stock o1, Stock o2) {
+                return o1.getMaterialId().compareTo(o2.getMaterialId());
+            }
+        };
+
+        //库房
+        final List<Stock> yanan = stockList.stream().filter(i -> WH_GIFT_YANAN.equals(i.getWarehouseId())).sorted(comparator).toList();
+        final List<Stock> xian = stockList.stream().filter(i -> WH_GIFT_XIAN.equals(i.getWarehouseId())).sorted(comparator).toList();
+        final List<Stock> chengdu = stockList.stream().filter(i -> WH_GIFT_CHENGDU.equals(i.getWarehouseId())).sorted(comparator).toList();
+
+        table.setXianStockDetails(xian);
+        table.setYananStockDetails(yanan);
+        table.setChengduStockDetails(chengdu);
+        return table;
+    }
 
 }

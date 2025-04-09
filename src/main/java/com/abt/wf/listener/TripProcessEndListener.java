@@ -37,7 +37,7 @@ public class TripProcessEndListener implements ExecutionListener {
                     main.setBusinessState(Constants.STATE_DETAIL_PASS);
                     main.setProcessState("COMPLETED");
                 }
-                main.setFinished(true);
+                main.setProcessEnd();
                 tripService.saveEntity(main);
             } catch (BusinessException e) {
                 log.warn("业务异常: ", e);

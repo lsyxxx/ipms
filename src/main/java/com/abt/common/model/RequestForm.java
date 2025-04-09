@@ -65,10 +65,12 @@ public class RequestForm {
      * 开始日期
      */
     private String startDate;
+    private LocalDate localStartDate;
     /**
      * 结束日期;
      */
     private String endDate;
+    private LocalDate localEndDate;
     private String createUserid;
 
     private boolean enabled;
