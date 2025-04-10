@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,7 +55,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, String> {
 
 
     @Query(value = """
-        select top 1 * from stock_inventory where m_id = :materialId and wh_id = :whid and create_date < :endDate  order by create_date desc
+        select top 1 * from stock_inventory where m_id = :materialId and wh_id = :whid and create_date <= :endDate  order by create_date desc
 """, nativeQuery = true)
     Inventory findNearestBefore(LocalDate endDate, String materialId, String whid);
 }

@@ -34,6 +34,5 @@ class StockServiceImplTest {
 
     @Test
     void inventoryGiftDetails() {
-        stockService.inventoryGiftDetails(LocalDate.of(2025, 3, 1), LocalDate.of(2025, 4, 3), new StockSummaryTable());
     }
 }

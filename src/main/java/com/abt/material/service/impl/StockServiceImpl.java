@@ -1,6 +1,5 @@
  package com.abt.material.service.impl;
 
-import com.abt.common.model.Pair;
 import com.abt.common.util.TimeUtil;
 import com.abt.material.entity.*;
 import com.abt.material.listener.ImportCheckBillListener;
@@ -84,19 +83,20 @@ public class StockServiceImpl implements StockService {
         return stockOrder;
     }
 
+    private Double getQuantity(Double quantity) {
+        return quantity == null ? 0 : quantity;
+    }
+
     private Inventory changeInventoryQuantity(Inventory inventory, Stock stock, int stockType) {
         Inventory newInventory = new Inventory();
         newInventory.setMaterialId(inventory.getMaterialId());
         newInventory.setWarehouseId(inventory.getWarehouseId());
         if (STOCK_TYPE_IN == stockType) {
-            newInventory.setQuantity(inventory.getQuantity() + stock.getNum());
+            newInventory.setQuantity(getQuantity(inventory.getQuantity()) + stock.getNum());
         } else if (STOCK_TYPE_OUT == stockType) {
-            newInventory.setQuantity(inventory.getQuantity() - stock.getNum());
+            newInventory.setQuantity(getQuantity(inventory.getQuantity()) - stock.getNum());
         } else if(STOCK_TYPE_CHECK == stockType) {
             newInventory.setQuantity(stock.getNum());
-//            //盘点单的inv日期是用户选择的盘点日期，而不是当前录入的日期
-//            newInventory.setCreateDate(stock.getOrderDate().atStartOfDay());
-//            newInventory.setUpdateDate(stock.getOrderDate().atStartOfDay());
         } else {
             log.warn("Stock type {} not supported", stockType);
         }
@@ -358,12 +358,7 @@ public class StockServiceImpl implements StockService {
         return WithQueryUtil.build(list);
     }
 
-    /**
-     * 礼品类合计采购金额，需审批通过，物品类型为“礼品类”
-     * @param startDate 统计开始日期（根据
-     * @param endDate 统计结束日期
-     * @return list
-     */
+    @Override
     public List<PurchaseSummaryAmount> summaryPurchaseGiftTotalAmount(LocalDate startDate, LocalDate endDate) {
         return purchaseApplyDetailRepository.summaryGiftTotalAmount(GIFT_TYPE, startDate, endDate);
     }

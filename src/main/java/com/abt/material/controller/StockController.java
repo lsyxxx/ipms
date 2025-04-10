@@ -15,6 +15,7 @@ import cn.idev.excel.util.MapUtils;
 import cn.idev.excel.write.metadata.WriteSheet;
 import cn.idev.excel.write.metadata.fill.FillConfig;
 import cn.idev.excel.write.metadata.fill.FillWrapper;
+import com.abt.wf.model.PurchaseSummaryAmount;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +32,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -318,6 +323,36 @@ public class StockController {
         return R.success("保存成功!");
     }
 
+
+    /**
+     * 周报汇总
+     */
+    @GetMapping("/summary/week")
+    public R<StockSummaryTable> weekSummary(Integer flag) {
+        LocalDate now = LocalDate.now();
+        //本周
+        LocalDate monday = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate sunday = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        if (flag == 1) {
+            //上周
+            monday = monday.minusWeeks(1);
+            sunday = sunday.minusWeeks(1);
+        }
+        StockSummaryTable table = new StockSummaryTable();
+        final List<PurchaseSummaryAmount> list = stockService.summaryPurchaseGiftTotalAmount(monday, sunday);
+        table.setPurchaseSummaryAmountList(list);
+        stockService.inventoryGiftDetails(monday, sunday, table);
+        return R.success(table);
+
+    }
+
+    public static void main(String[] args) {
+        LocalDate now = LocalDate.now();
+        System.out.println(now.getDayOfWeek());
+        LocalDate monday = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate sunday = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        System.out.println(sunday.atTime(LocalTime.MAX));
+    }
 
 
 }

@@ -46,6 +46,11 @@ public class PurchaseSummaryAmount {
      */
     private String unit;
 
+    /**
+     * 单价
+     */
+    private BigDecimal price;
+
 
 
 

@@ -2,11 +2,13 @@ package com.abt.material.service;
 
 import com.abt.material.entity.*;
 import com.abt.material.model.*;
+import com.abt.wf.model.PurchaseSummaryAmount;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +91,14 @@ public interface StockService {
     void checkInventoryAlertData(InventoryAlert row, Map<String, Warehouse> whMap);
 
     List<InventoryAlert> getInventoryAlert(String mid);
+
+    /**
+     * 礼品类合计采购金额，需审批通过，物品类型为“礼品类”
+     * @param startDate 统计开始日期（根据
+     * @param endDate 统计结束日期
+     * @return list
+     */
+    List<PurchaseSummaryAmount> summaryPurchaseGiftTotalAmount(LocalDate startDate, LocalDate endDate);
 
     /**
      * 礼品类本周/本月的出入库明细

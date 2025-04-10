@@ -135,12 +135,14 @@ public class Stock implements WithQuery<Stock> {
      */
     @Column(name="biz_type")
     private String bizType;
-
-    @Transient
-    private String usage;
+    @Column(name="usage_")
+    private String usage = "";
 
     @Transient
     private Double inventory;
+
+    @Transient
+    private String orderRemark;
 
     /**
      * 添加stockOrder信息
@@ -155,13 +157,7 @@ public class Stock implements WithQuery<Stock> {
             this.deptName = stockOrder.getDeptName();
             this.warehouseId = stockOrder.getWarehouseId();
             this.warehouseName = stockOrder.getWarehouseName();
-            this.usage = "";
-            if (this.remark != null) {
-                this.usage = this.remark + "。";
-            }
-            if (StringUtils.isNotBlank(stockOrder.getRemark())) {
-                this.usage = this.usage + " " + stockOrder.getRemark();
-            }
+            this.orderRemark = stockOrder.getRemark();
         }
 
         return this;
