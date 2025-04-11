@@ -1,6 +1,7 @@
 package com.abt.material.repository;
 
 import com.abt.material.entity.Stock;
+import com.abt.material.model.StockQuantitySummary;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
@@ -26,5 +27,18 @@ public interface StockRepository extends JpaRepository<Stock, String> {
     Page<Stock> findByQueryPageable(String query, Integer stockType, List<String> warehouseIds, String materialTypeName, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     void deleteByOrderId(@NotNull @Size(max = 64) String orderId);
+
+
+    @Query("""
+       select new com.abt.material.model.StockQuantitySummary(st.materialName, st.specification, st.unit, sum(st.num), so.stockType, so.warehouseId, so.warehouseName)
+       from Stock st
+       left join fetch StockOrder so on st.orderId = so.id
+       where so.stockType = :stockType
+       and st.materialTypeName like '%礼品类%'
+       and (:startDate is null or so.orderDate >= :startDate)
+       and (:endDate is null or so.orderDate <= :endDate)
+       group by st.materialName, st.specification, st.unit, so.stockType, so.warehouseId, so.warehouseName
+""")
+    List<StockQuantitySummary> summaryGiftQuantity(Integer stockType, LocalDate startDate, LocalDate endDate);
 
 }

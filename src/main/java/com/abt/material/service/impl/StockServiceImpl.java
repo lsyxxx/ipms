@@ -433,4 +433,12 @@ public class StockServiceImpl implements StockService {
         return table;
     }
 
+    @Override
+    public void stockSummary(LocalDate startDate, LocalDate endDate, StockSummaryTable table) {
+        final List<StockQuantitySummary> stockIn = stockRepository.summaryGiftQuantity(STOCK_TYPE_IN, startDate, endDate);
+        final List<StockQuantitySummary> stockOut = stockRepository.summaryGiftQuantity(STOCK_TYPE_OUT, startDate, endDate);
+        table.setStockInSummary(stockIn);
+        table.setStockOutSummary(stockOut);
+    }
+
 }

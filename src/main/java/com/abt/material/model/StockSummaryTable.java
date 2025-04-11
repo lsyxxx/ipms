@@ -33,4 +33,18 @@ public class StockSummaryTable {
      * 成都出入明细
      */
     private List<Stock> chengduStockDetails;
+
+    /**
+     * 入库汇总
+     */
+    private List<StockQuantitySummary> stockInSummary;
+    /**
+     * 出库汇总
+     */
+    private List<StockQuantitySummary> stockOutSummary;
+
+    /**
+     * 年度采购汇总
+     */
+    private List<PurchaseSummaryAmount> yearSummary;
 }

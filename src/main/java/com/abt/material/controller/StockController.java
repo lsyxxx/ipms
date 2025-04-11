@@ -32,10 +32,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
@@ -343,15 +341,35 @@ public class StockController {
         table.setPurchaseSummaryAmountList(list);
         stockService.inventoryGiftDetails(monday, sunday, table);
         return R.success(table);
+    }
 
+    /**
+     * 月报汇总
+     * @param yearMonth yyyy-mm 年月
+     */
+    @GetMapping("/summary/month")
+    public R<StockSummaryTable> monthSummary(String yearMonth) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        YearMonth ym = YearMonth.parse(yearMonth, formatter);
+        LocalDate startDate = ym.atDay(1);
+        LocalDate endDate = ym.atEndOfMonth();
+        StockSummaryTable table = new StockSummaryTable();
+        //月
+        final List<PurchaseSummaryAmount> list = stockService.summaryPurchaseGiftTotalAmount(startDate, endDate);
+        table.setPurchaseSummaryAmountList(list);
+        //年
+        final List<PurchaseSummaryAmount> yearSummary = stockService.summaryPurchaseGiftTotalAmount(LocalDate.of(ym.getYear(), 1, 1), LocalDate.now());
+        table.setYearSummary(yearSummary);
+        stockService.stockSummary(startDate, endDate, table);
+        return R.success(table);
     }
 
     public static void main(String[] args) {
-        LocalDate now = LocalDate.now();
-        System.out.println(now.getDayOfWeek());
-        LocalDate monday = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate sunday = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-        System.out.println(sunday.atTime(LocalTime.MAX));
+        String yearMonth = "2025-02";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        YearMonth ym = YearMonth.parse(yearMonth, formatter);
+        System.out.println(ym.atDay(1).toString());
+        System.out.println(ym.atEndOfMonth().toString());
     }
 
 

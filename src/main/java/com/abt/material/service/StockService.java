@@ -104,4 +104,11 @@ public interface StockService {
      * 礼品类本周/本月的出入库明细
      */
     StockSummaryTable inventoryGiftDetails(LocalDate startDate, LocalDate endDate, StockSummaryTable table);
+
+    /**
+      * 汇总出入库情况
+      * @param startDate 开始日期（包含）
+      * @param endDate 结束日期（包含）
+      */
+    void stockSummary(LocalDate startDate, LocalDate endDate, StockSummaryTable table);
 }

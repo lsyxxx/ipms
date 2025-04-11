@@ -2,6 +2,7 @@ package com.abt.material.repository;
 
 import com.abt.material.entity.Stock;
 import com.abt.material.entity.StockOrder;
+import com.abt.material.model.StockQuantitySummary;
 import org.camunda.feel.syntaxtree.In;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,4 +39,13 @@ class StockRepositoryTest {
         stockOrderRepository.save(stockOrder);
     }
 
+    @Test
+    void summaryQuantity() {
+        final List<StockQuantitySummary> summary = stockRepository.summaryGiftQuantity(1, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 5, 1));
+        assertNotNull(summary);
+        for (StockQuantitySummary s : summary) {
+            System.out.printf("name: %s(%s), unit: %s, stockType: %d, quantity: %s, wh: %s\n",
+                    s.getName(), s.getSpecification(), s.getUnit(), s.getStockType(), String.valueOf(s.getQuantity()), s.getWarehouseName());
+        }
+    }
 }
