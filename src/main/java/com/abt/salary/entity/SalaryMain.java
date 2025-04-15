@@ -203,11 +203,10 @@ public class SalaryMain extends AuditInfo {
     private LocalDateTime autoCheckTime;
 
     /**
-     * 是否允许部门经理审核
+     * 是否允许部门经理审核，默认不审批
      */
-    @Deprecated
     @Column(name="dept_mgr_chk", columnDefinition = "BIT")
-    private boolean isDeptManagerCheck = true;
+    private boolean isDeptManagerCheck = false;
 
     @Transient
     private String groupName ;

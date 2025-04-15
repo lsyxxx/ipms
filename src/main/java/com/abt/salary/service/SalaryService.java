@@ -9,6 +9,7 @@ import com.abt.salary.model.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -135,8 +136,19 @@ public interface SalaryService {
     /**
      * 发送工资条
      *
-     * @param slipId
-     * @return
+     * @param slipId 工资条id
+     * @return LocalDateTime 发送时间
      */
     LocalDateTime sendSlipById(String slipId);
+
+    /**
+     * 导出审核过的excel(带签名)
+     *
+     * @param company   完整的公司名称
+     * @param yearMonth 工资年月
+     * @param checkAuth 权限
+     * @param mid       工资main id
+     * @return
+     */
+    String createCheckExcel(String company, String yearMonth, CheckAuth checkAuth, String mid) throws IOException;
 }

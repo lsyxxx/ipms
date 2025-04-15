@@ -26,14 +26,17 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.util.IOUtils;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -82,6 +85,23 @@ public class SalaryServiceImpl implements SalaryService {
      */
     @Value("${sl.my.autocheck}")
     private Integer defaultAutoCheck;
+
+
+    /**
+     * 签名地址
+     */
+    @Value("${abt.sig.dir}")
+    private String sigDir;
+
+    /**
+     * 生成导出文件的地址
+     */
+    @Value("${abt.sl.check}")
+    private String checkExcelDir;
+
+
+
+
 
     public SalaryServiceImpl(EmployeeRepository employeeRepository, SalaryMainRepository salaryMainRepository,
                              SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository, SalaryHeaderRepository salaryHeaderRepository, CustomerInfo abtCompany, CustomerInfo grdCompany, CustomerInfo dcCompany, OrgLeaderService orgLeaderService,  UserSignatureRepository userSignatureRepository) {
@@ -340,7 +360,7 @@ public class SalaryServiceImpl implements SalaryService {
     /**
      * 将各级审批人填入slip中
      */
-    public void setSalarySlipCheckLeaders(SalarySlip slip, List<OrgLeader> leaders) {
+    public void setSalarySlipCheckLeaders(SalaryMain main, SalarySlip slip, List<OrgLeader> leaders) {
         if (slip == null) {
             return;
         }
@@ -348,7 +368,7 @@ public class SalaryServiceImpl implements SalaryService {
         final Map<String, OrgLeader> map = leaders.stream()
                 .filter(i -> StringUtils.isBlank(i.getDeptId()) || i.getDeptName().equals(deptExcel))
                 .collect(Collectors.toMap(OrgLeader::getRole, i -> i));
-        if (map.get(SL_CHK_DM) != null) {
+        if (map.get(SL_CHK_DM) != null && main.isDeptManagerCheck()) {
             slip.setDmJobNumber(map.get(SL_CHK_DM).getJobNumber());
             slip.setDmName(map.get(SL_CHK_DM).getName());
         }
@@ -384,7 +404,7 @@ public class SalaryServiceImpl implements SalaryService {
             if (StringUtils.isBlank(slip.getName())) {
                 continue;
             }
-            setSalarySlipCheckLeaders(slip, orgLeaders);
+            setSalarySlipCheckLeaders(main, slip, orgLeaders);
 
             Integer idx = main.getNetPaidColumnIndex();
             String netPaid = row.get(idx).getValue();
@@ -759,9 +779,11 @@ public class SalaryServiceImpl implements SalaryService {
         //需要的sig jobNubmer
         Set<String> allJobNumbers = checkSlip.stream()
                 .flatMap(slip -> Stream.of(
-                    slip.getDceoJobNumber(),
-                    slip.getDmJobNumber(),
-                    slip.getJobNumber()
+                        slip.getDceoJobNumber(),
+                        slip.getDmJobNumber(),
+                        slip.getJobNumber(),
+                        slip.getCeoJobNumber(),
+                        slip.getHrJobNumber()
                 ))
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.toSet());
@@ -1017,8 +1039,276 @@ public class SalaryServiceImpl implements SalaryService {
         return autoCheckTime;
     }
 
+    public void exportSalaryCheckExcel() {
+
+    }
+
+    /**
+     * 根据序号排序行
+     * @param table table
+     */
+    private List<List<SalaryCell>> sortRows(final List<List<SalaryCell>> table) {
+        List<List<SalaryCell>> newTable = new ArrayList<>(table);
+        // 按“序号”列的值排序
+        newTable.sort((row1, row2) -> {
+            // 获取每行的“序号”单元格的值
+            String serial1 = getSerialNumber(row1);
+            String serial2 = getSerialNumber(row2);
+
+            // 将字符串转换为整数进行比较
+            try {
+                int num1 = Integer.parseInt(serial1);
+                int num2 = Integer.parseInt(serial2);
+                return Integer.compare(num1, num2);
+            } catch (NumberFormatException e) {
+                // 如果转换失败，返回0（或根据需求处理）
+                return 0;
+            }
+        });
+
+        return newTable;
+    }
+
+    private String getSerialNumber(List<SalaryCell> row) {
+        for (SalaryCell cell : row) {
+            if ("序号".equals(cell.getLabel())) {
+                return cell.getValue();
+            }
+        }
+        return "0"; // 默认值，假设没有找到序号
+    }
+
+    @Override
+    public String createCheckExcel(String company, String yearMonth, CheckAuth checkAuth, String mid) throws IOException {
+        String fullCompany = "";
+        if ("ABT".equalsIgnoreCase(company)) {
+            fullCompany = abtCompany.getCustomerName();
+        } else if ("GRD".equalsIgnoreCase(company)) {
+            fullCompany = grdCompany.getCustomerName();
+        } else if ("DC".equalsIgnoreCase(company)) {
+            fullCompany = dcCompany.getCustomerName();
+        } else {
+            throw new BusinessException("未知的工资分组: " + company);
+        }
+        final SalaryMain main = findSalaryMainById(mid);
+        final SalaryPreview preview = getSalaryCheckTable(checkAuth, main);
+        //1. 获取数据
+        final List<SalaryHeader> headers = salaryHeaderRepository.findByMidOrderByStartRowAscStartColumnAsc(preview.getSalaryMain().getId());
+        List<SalaryHeader> header2 = headers.stream().filter(h -> h.getStartRow() == 2).collect(Collectors.toCollection(ArrayList::new));
+        List<SalaryHeader> header1 = headers.stream().filter(h -> h.getStartRow() == 1).collect(Collectors.toCollection(ArrayList::new));
+        addSignatureColumn(header1);
+        addSignatureColumn(header2);
+        List<UserSignature> us = userSignatureRepository.findAllUserSignatures();
+        Map<String, UserSignature> usMap = us.stream().collect(Collectors.toMap(UserSignature::getJobNumber, i -> i));
+
+        //2. 创建excel
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet("ABT");
+
+            //---- 首行标题
+            Row row0 = sheet.createRow(0);
+            Cell titleCell = row0.createCell(0);
+            titleCell.setCellValue(fullCompany + "工资表(" + yearMonth + ")");
+            CellStyle titleStyle = workbook.createCellStyle();
+            // 设置字体
+            Font font = workbook.createFont();
+            font.setFontHeightInPoints((short) 16); // 字体大小
+            font.setBold(true);                     // 加粗
+            titleStyle.setFont(font);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);       // 居中
+            titleStyle.setVerticalAlignment(VerticalAlignment.CENTER); // 垂直居中
+            titleStyle.setLocked(true);
+            // 应用样式
+            titleCell.setCellStyle(titleStyle);
+
+            // 计算excel总列数
+            int totalColumns = Math.max(header1.size(), header2.size());
+            // 添加签名列的数量
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, totalColumns));
+
+            //---- 表头
+            CellStyle headerStyle = createCellStyle(workbook);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setLocked(true);
+            //写入表头
+            Row row1 = sheet.createRow(1);
+            Row row2 = sheet.createRow(2);
+            for (int c = 0; c < totalColumns; c++) {
+                Cell c1 = row1.createCell(c);
+                c1.setCellValue(header1.get(c).getName());
+                c1.setCellStyle(headerStyle);
+                Cell c2 = row2.createCell(c);
+                c2.setCellValue(header2.get(c).getName());
+                c2.setCellStyle(headerStyle);
+            }
+            //上下行合并，合并表头
+            for(int i = 0; i < totalColumns; i++) {
+                String n1 = row1.getCell(i).getStringCellValue();
+                String n2 = row2.getCell(i).getStringCellValue();
+                if (cn.idev.excel.util.StringUtils.equals(n1, n2)) {
+                    //表头一样合并
+                    sheet.addMergedRegion(new CellRangeAddress(1, 2, i, i));
+                }
+            }
+
+            //------ 写入数据
+            final List<List<SalaryCell>> cells = preview.getSlipTable();
+            final List<List<SalaryCell>> table = sortRows(cells);
+            final List<SalarySlip> slips = preview.getSlips();
+            final Map<String, SalarySlip> slipMap = slips.stream().collect(Collectors.toMap(SalarySlip::getJobNumber, i -> i));
+//            写入excel
+            final UserSignature empty = new UserSignature();
+            CellStyle dataStyle = createCellStyle(workbook);
+            int colMax = 0;
+            for(int r = 0; r < table.size(); r++) {
+                Row row = sheet.createRow(r + 3);
+                List<SalaryCell> data = table.get(r);
+                String jobNumber = data.get(0).getJobNumber();
+                for (int c = 0; c < data.size(); c++) {
+                    Cell cell = row.createCell(c);
+                    final SalaryCell sc = data.get(c);
+                    cell.setCellValue(sc.getValue());
+                    cell.setCellStyle(dataStyle);
+                }
+//                签名列
+//                个人
+                SalarySlip slip = slipMap.get(jobNumber);
+                UserSignature userSig = usMap.get(jobNumber);
+                int col = data.size() ;
+                colMax = Math.max(colMax, col);
+                if (userSig != null && slip.isForceCheck()) {
+                    insertImage(sigDir + userSig.getFileName(), workbook, sheet, row, col,r + 3);
+                }
+                col = col + 1;
+                //副总
+                if (StringUtils.isNotBlank(slip.getDceoJobNumber()) && slip.isDceoCheck()) {
+                    UserSignature dceoSig = usMap.getOrDefault(slip.getDceoJobNumber(), empty);
+                    insertImage(sigDir + dceoSig.getFileName(), workbook, sheet, row, col,r + 3);
+                }
+                col = col + 1;
+                //人事
+                if (StringUtils.isNotBlank(slip.getHrJobNumber()) && slip.isHrCheck()) {
+                    UserSignature hrSig = usMap.getOrDefault(slip.getHrJobNumber(), empty);
+                    insertImage(sigDir + hrSig.getFileName(), workbook, sheet, row, col,r + 3);
+                }
+
+                col = col + 1;
+                //总经理
+                if (StringUtils.isNotBlank(slip.getCeoJobNumber()) && slip.isCeoCheck()) {
+                    UserSignature ceoSig = usMap.getOrDefault(slip.getCeoJobNumber(), empty);
+                    insertImage(sigDir + ceoSig.getFileName(), workbook, sheet, row, col,r + 3);
+                }
+            }
+            //---- 设置列宽
+            //序号，姓名，工号
+            sheet.setColumnWidth(0, 4 * 256);
+            sheet.setColumnWidth(1, 6 * 256);
+            sheet.setColumnWidth(2, 4 * 256);
+            //部门
+            sheet.setColumnWidth(3, 12 * 256);
+            //岗位
+            sheet.setColumnWidth(4, 14 * 256);
+            //其他数据(不含图片)
+            for (int c = 5; c < colMax; c++) {
+                sheet.setColumnWidth(c, 8 * 256);
+            }
+            //保存excel
+            String excelName = checkExcelDir +  company + yearMonth + ".xlsx";
+
+            // 锁定结构（防止添加/删除 sheet）
+            // 设置允许的操作：允许格式化列（隐藏列需要这个权限）
+            sheet.enableLocking();
+            sheet.lockDeleteColumns(true);
+            sheet.lockDeleteRows(true);
+            sheet.lockInsertColumns(true);
+            sheet.lockInsertRows(true);
+            sheet.lockSort(true);
+            sheet.lockAutoFilter(true);
+            sheet.lockFormatCells(true);
+            sheet.lockFormatRows(true);
+            sheet.lockFormatColumns(false); // 允许格式化列（可以隐藏）
+            sheet.protectSheet("readonly123");
+//            workbook.lockStructure();
+            workbook.setWorkbookPassword("readonly123", null); // 设置保护密码
+
+            // 输出文件
+            try (FileOutputStream fos = new FileOutputStream(excelName)) {
+                workbook.write(fos);
+            }
+
+            return excelName;
+        }
+
+    }
+
+    private void addSignatureColumn(List<SalaryHeader> header) {
+        header.add(new SalaryHeader("个人签名"));
+        header.add(new SalaryHeader("副总审核"));
+        header.add(new SalaryHeader("人事审核"));
+        header.add(new SalaryHeader("总经理审核"));
+    }
+
+    CellStyle createCellStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBottomBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
+        style.setBorderTop(BorderStyle.THIN);
+        style.setTopBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setLeftBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
+        style.setBorderRight(BorderStyle.THIN);
+        style.setRightBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
+        style.setWrapText(true);
+
+        Font font = workbook.createFont();
+        font.setFontHeightInPoints((short) 10); // 字体大小
+        style.setFont(font);
+        return style;
+    }
 
 
+    /**
+     * 插入excel图片，固定高度，宽度
+     * @param imagePath 图片路径
+     * @param workbook workbook
+     * @param sheet sheet
+     * @param row row
+     * @param colIndex 插入的单元格col
+     * @param rowIndex 插入的单元各row
+     * @throws IOException
+     */
+    private void insertImage(String imagePath, XSSFWorkbook workbook, XSSFSheet sheet, Row row, int colIndex, int rowIndex) {
+        try {
+            FileInputStream imageStream = new FileInputStream(imagePath);
+            byte[] imageBytes = IOUtils.toByteArray(imageStream);
+            int pictureIdx = workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_JPEG);
+            imageStream.close();
+            // 创建绘图工具
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+
+            // 设置单元格的行高和列宽（注意：列宽单位为1/256字符宽度，行高单位为磅）
+            sheet.setColumnWidth(colIndex, 10 * 256); // 10个字符宽
+            row.setHeightInPoints(20); // 30磅高
+
+            // 创建锚点，将图片锚定到单元格
+            XSSFClientAnchor anchor = new XSSFClientAnchor();
+            anchor.setCol1(colIndex);
+            anchor.setRow1(rowIndex);
+            anchor.setCol2(colIndex + 1);
+            anchor.setRow2(rowIndex + 1);
+
+            // 插入图片并获取图片对象
+            final XSSFPicture pic = drawing.createPicture(anchor, pictureIdx);
+            //调整图片占单元格的大小，1就是100%
+            pic.resize(1);
+        } catch (Exception e) {
+            log.error("User signature not found: " + imagePath, e);
+        }
+
+    }
 
 
 

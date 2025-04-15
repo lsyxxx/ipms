@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
@@ -350,6 +351,9 @@ public class StockController {
     @GetMapping("/summary/month")
     public R<StockSummaryTable> monthSummary(String yearMonth) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        if (StringUtils.isBlank(yearMonth)) {
+            yearMonth = LocalDate.now().format(formatter);
+        }
         YearMonth ym = YearMonth.parse(yearMonth, formatter);
         LocalDate startDate = ym.atDay(1);
         LocalDate endDate = ym.atEndOfMonth();
@@ -358,18 +362,10 @@ public class StockController {
         final List<PurchaseSummaryAmount> list = stockService.summaryPurchaseGiftTotalAmount(startDate, endDate);
         table.setPurchaseSummaryAmountList(list);
         //年
-        final List<PurchaseSummaryAmount> yearSummary = stockService.summaryPurchaseGiftTotalAmount(LocalDate.of(ym.getYear(), 1, 1), LocalDate.now());
+        final List<PurchaseSummaryAmount> yearSummary = stockService.summaryPurchaseGiftTotalAmount(LocalDate.of(ym.getYear(), 1, 1), endDate);
         table.setYearSummary(yearSummary);
         stockService.stockSummary(startDate, endDate, table);
         return R.success(table);
-    }
-
-    public static void main(String[] args) {
-        String yearMonth = "2025-02";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-        YearMonth ym = YearMonth.parse(yearMonth, formatter);
-        System.out.println(ym.atDay(1).toString());
-        System.out.println(ym.atEndOfMonth().toString());
     }
 
 

@@ -85,6 +85,7 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or FUNCTION('STR', e.sum) like %:query% " +
+            "   or e.createUsername like %:query% " +
             "   or e.reason like %:query%) " +
             "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL OR e.createDate <= :endDate) ")
@@ -98,6 +99,7 @@ public interface TripMainRepository extends JpaRepository<TripMain, String> {
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or FUNCTION('STR', e.sum) like %:query% " +
+            "   or e.createUsername like %:query% " +
             "   or e.reason like %:query%) " +
             "AND (:startDate IS NULL OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL OR e.createDate <= :endDate) ")

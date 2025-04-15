@@ -73,7 +73,7 @@ public class AutoCheckSalaryJob extends AbstractJobExecutedByTimeOnce {
         qjs.setName(JOB_NAME + yearMonth);
         qjs.setJobClassName(this.getClass().getName());
         qjs.setGroupId(JOB_GROUP);
-        qjs.setJobId(JOB_ID_PREFIX + UUID.randomUUID().toString());
+        qjs.setId(JOB_ID_PREFIX + UUID.randomUUID().toString());
         qjs.setStatus(Status.PENDING);
         qjs.setTriggerId(TRIGGER_ID_PREFIX + UUID.randomUUID().toString());
         qjs.setStartAt(this.getStartAt());

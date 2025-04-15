@@ -53,6 +53,9 @@ public class SalaryHeader {
     @Column(name="start_col")
     private int startColumn;
 
+    @Transient
+    private int endColumn;
+
     //结束单元格(如果是合并的）
 //    @Column(name = "end_row")
 //    private int endRow;
@@ -68,11 +71,26 @@ public class SalaryHeader {
     @Transient
     private String parentLabel;
 
+    @Transient
+    private SalaryHeader parent;
+
+    public SalaryHeader(String name) {
+        this.name = name;
+    }
+
     public void addChildren(List<SalaryHeader> children) {
         if (this.children == null) {
             this.children = new ArrayList<>();
         }
         this.children.addAll(children);
+        this.children.sort(Comparator.comparingInt(SalaryHeader::getStartColumn));
+    }
+
+    public void addChild(SalaryHeader child) {
+        if (this.children == null) {
+            this.children = new ArrayList<>();
+        }
+        this.children.add(child);
         this.children.sort(Comparator.comparingInt(SalaryHeader::getStartColumn));
     }
 

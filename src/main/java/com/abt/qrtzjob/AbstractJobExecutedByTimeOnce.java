@@ -33,8 +33,8 @@ public abstract class AbstractJobExecutedByTimeOnce implements Job {
             throw new BusinessException("QuartzJobStore for " + this.getClass().getName() + " is null");
         }
         final Class<?> clz = Class.forName(quartzJobStore.getJobClassName());
-        final JobDetail jobDetail = QuartzJobCreator.createSimpleJobDetail((Class<? extends Job>) clz, quartzJobStore.getJobId(), quartzJobStore.getGroupId());
-        final Trigger trigger = QuartzJobCreator.createTriggerExecuteOnce(quartzJobStore.getStartAt(), quartzJobStore.getJobId(), quartzJobStore.getGroupId());
+        final JobDetail jobDetail = QuartzJobCreator.createSimpleJobDetail((Class<? extends Job>) clz, quartzJobStore.getId(), quartzJobStore.getGroupId());
+        final Trigger trigger = QuartzJobCreator.createTriggerExecuteOnce(quartzJobStore.getStartAt(), quartzJobStore.getTriggerId(), quartzJobStore.getGroupId());
         quartzJobService.jobRegister(jobDetail, trigger, this.quartzJobStore);
     }
 

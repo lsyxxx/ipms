@@ -23,8 +23,8 @@ public class QuartzJobStore {
     @Id
     @NotNull
     @Size(max = 512)
-    @Column(name="job_id", length = 512, nullable = false)
-    private String jobId;
+    @Column(name="id", length = 512, nullable = false)
+    private String id;
 
     @NotNull
     @Column(name="name_", nullable = false)

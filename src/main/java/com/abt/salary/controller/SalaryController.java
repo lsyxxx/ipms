@@ -47,6 +47,9 @@ public class SalaryController {
     private final AutoCheckSalaryJob autoCheckSalaryJob;
     private final OrgLeaderService orgLeaderService;
 
+    //导出工资审批表权限
+    public static final String ROLE_CHECK_EXPORT = "SL_EXPORT_CHECK";
+
 
     public SalaryController(SalaryService salaryService, EmployeeService employeeService, AutoCheckSalaryJob autoCheckSalaryJob, OrgLeaderService orgLeaderService) {
         this.salaryService = salaryService;
@@ -332,6 +335,42 @@ public class SalaryController {
         //自动确认
         autoCheckSalaryJob.createJobAndScheduler(autoCheckTime);
         return R.success("已发送工资条");
+    }
+
+
+    /**
+     * 导出审批表
+     * @param yearMonth 工资年月
+     * @param company 工资分组
+     * @param mid mainId
+     */
+    @Secured(ROLE_CHECK_EXPORT)
+    @GetMapping("/chk/smry/export")
+    public Object exportCheckExcel(String yearMonth, String company, String mid) {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        CheckAuth checkAuth = getCheckAuth(user);
+        try {
+            final String excelFile = salaryService.createCheckExcel(company, yearMonth, checkAuth, mid);
+            return R.success(excelFile, "导出成功!");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            String msg = "工资审核导出失败!" + e.getMessage();
+            throw new BusinessException(msg);
+        }
+    }
+
+
+    @GetMapping("/chk/smry/exportAuth")
+    public R<Boolean> checkExportAuth() {
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        if (user.getAuthorities() != null) {
+            for (Role role : user.getAuthorities()) {
+                if (ROLE_CHECK_EXPORT.equals(role.getAuthority())) {
+                    return R.success(true, "允许导出");
+                }
+            }
+        }
+        return R.success(false, "无导出权限");
     }
 
     private void copyForm(SalaryMain slipForm, SalaryMain main) {

@@ -17,11 +17,19 @@ import com.aspose.cells.SaveFormat;
 import com.aspose.cells.Workbook;
 import com.aspose.cells.Worksheet;
 import com.aspose.cells.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.WorkbookUtil;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
+import org.quartz.Job;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,6 +47,8 @@ class SalaryServiceImplTest {
 
     @Autowired
     private SalaryHeaderRepository salaryHeaderRepository;
+    @Autowired
+    private Job job;
 
     @Test
     void testPreview() {
@@ -58,7 +68,7 @@ class SalaryServiceImplTest {
         checkAuth.setRole(CheckAuth.SL_CHK_HR);
         checkAuth.setViewAuth(CheckAuth.SL_CHK_HR);
         checkAuth.setJobNumber("112");
-        final SalaryMain main = salaryService.findSalaryMainById("202503191742366140031");
+        final SalaryMain main = salaryService.findSalaryMainById("202503251742884518489");
         return salaryService.getSalaryCheckTable(checkAuth, main);
     }
 
@@ -77,10 +87,6 @@ class SalaryServiceImplTest {
         return header1;
     }
 
-    void buildTable(SalaryPreview preview) {
-
-    }
-
     List<SalaryHeader> buildSignatureHeader(int startCol) {
         List<SalaryHeader> header = new ArrayList<>();
         SalaryHeader h1 = new SalaryHeader();
@@ -92,30 +98,32 @@ class SalaryServiceImplTest {
         return header;
     }
 
+    Map<String, UserSignature> getSignatureMap() {
+        final List<UserSignature> list = userSignatureRepository.findAllUserSignatures();
+        return list.stream().collect(Collectors.toMap(UserSignature::getJobNumber, us -> us));
+    }
+
     @Test
     void createExcel() throws Exception {
         final SalaryPreview preview = getData();
 
         final List<SalaryHeader> header1 = buildHeader1(preview.getSalaryMain().getId());
         //添加签名header
-
-        
-
         Workbook workbook = new Workbook();
         Worksheet worksheet = workbook.getWorksheets().get(0);
 
-        // 设置A3纸张大小和横向
-        worksheet.getPageSetup().setPaperSize(PaperSizeType.PAPER_A_3);
-        worksheet.getPageSetup().setOrientation(PageOrientationType.LANDSCAPE);
-
-        // 设置页边距（单位：英寸）
-        worksheet.getPageSetup().setLeftMargin(0.2);
-        worksheet.getPageSetup().setRightMargin(0.2);
-        worksheet.getPageSetup().setTopMargin(0.2);
-        worksheet.getPageSetup().setBottomMargin(0.2);
-
-        // 设置适应一页宽度
-        worksheet.getPageSetup().setFitToPagesWide(1);
+//        // 设置A3纸张大小和横向
+//        worksheet.getPageSetup().setPaperSize(PaperSizeType.PAPER_A_3);
+//        worksheet.getPageSetup().setOrientation(PageOrientationType.LANDSCAPE);
+//
+//        // 设置页边距（单位：英寸）
+//        worksheet.getPageSetup().setLeftMargin(0.2);
+//        worksheet.getPageSetup().setRightMargin(0.2);
+//        worksheet.getPageSetup().setTopMargin(0.2);
+//        worksheet.getPageSetup().setBottomMargin(0.2);
+//
+//        // 设置适应一页宽度
+//        worksheet.getPageSetup().setFitToPagesWide(1);
 
         // 添加标题
         Cell titleCell = worksheet.getCells().get(0, 0);
@@ -137,7 +145,7 @@ class SalaryServiceImplTest {
         }
         
         // 添加签名列的数量
-        int signatureColumnsCount = 5; // 个人签名、部门签名、副总签名、人事签名、总经理签名
+        int signatureColumnsCount = 4; // 个人签名、副总签名、人事签名、总经理签名
         totalColumns += signatureColumnsCount;
         
         // 合并标题单元格
@@ -156,7 +164,10 @@ class SalaryServiceImplTest {
         
         // 添加表头
         int colIndex = 0;
-        
+
+        //签名
+        final Map<String, UserSignature> sigMap = getSignatureMap();
+
         // 按照header1的顺序添加表头，排除"负责人签字"和"是否确认"列
         for (SalaryHeader h1 : header1) {
             // 跳过"负责人签字"和"是否确认"列
@@ -204,13 +215,14 @@ class SalaryServiceImplTest {
         }
         
         // 在所有数据列之后添加签名列
-        String[] signatureColumns = {"个人签名", "部门签名", "副总签名", "人事签名", "总经理签名"};
+        String[] signatureColumns = {"个人签名", "副总签名", "人事签名", "总经理签名"};
+
         for (String signName : signatureColumns) {
             Cell cell = worksheet.getCells().get(1, colIndex);
             cell.setValue(signName);
             cell.setStyle(headerStyle);
             
-            // 合并行
+            // 表头合并行
             worksheet.getCells().merge(1, colIndex, 2, 1);
             colIndex++;
         }
@@ -223,10 +235,15 @@ class SalaryServiceImplTest {
         //         .map(SalaryCell::getValue)
         //         .orElse("")));
 
+        //插入数据
         for (int rowIndex = 0; rowIndex < dataRows.size(); rowIndex++) {
             List<SalaryCell> row = dataRows.get(rowIndex);
             int dataCellIndex = 0;
-            
+            int ri = rowIndex + 3;
+            //设置行高
+            System.out.println("row: " + rowIndex);
+            worksheet.getCells().setRowHeightPixel(rowIndex, 30);
+
             for (int cellIndex = 0; cellIndex < row.size(); cellIndex++) {
                 SalaryCell salaryCell = row.get(cellIndex);
                 
@@ -235,7 +252,7 @@ class SalaryServiceImplTest {
                     continue;
                 }
                 
-                Cell cell = worksheet.getCells().get(rowIndex + 3, dataCellIndex);
+                Cell cell = worksheet.getCells().get(ri, dataCellIndex);
                 cell.setValue(salaryCell.getValue());
                 
                 // 设置数据单元格边框
@@ -251,7 +268,11 @@ class SalaryServiceImplTest {
             
             // 添加签名单元格
             for (int i = 0; i < signatureColumns.length; i++) {
-                Cell signCell = worksheet.getCells().get(rowIndex + 3, dataCellIndex + i);
+                int ci = dataCellIndex + i;
+                Cell signCell = worksheet.getCells().get(ri, ci);
+
+                //设置图片单元格列宽
+                worksheet.getCells().setColumnWidthPixel(rowIndex, 105);
                 
                 // 设置单元格边框和样式
                 Style style = signCell.getStyle();
@@ -260,38 +281,41 @@ class SalaryServiceImplTest {
                 style.setBorder(BorderType.LEFT_BORDER, CellBorderType.THIN, Color.getLightGray());
                 style.setBorder(BorderType.RIGHT_BORDER, CellBorderType.THIN, Color.getLightGray());
                 signCell.setStyle(style);
+
+                //{"个人签名", "副总签名", "人事签名", "总经理签名"};
                 
                 // 为第一列（个人签名）添加签名图片
-//                if (i == 0) {
-//                    // 获取员工工号
-//                    String jobNumber = row.stream()
-//                        .filter(cell -> "工号".equals(cell.getName()))
-//                        .findFirst()
-//                        .map(SalaryCell::getValue)
-//                        .orElse("");
-//
-//                    if (!jobNumber.isEmpty()) {
-//                        try {
-//                            // 尝试获取签名图片
-//                            var signature = userSignatureRepository.findByJobNumber(jobNumber);
-//                            if (signature != null && signature.getSignature() != null) {
-//                                // 添加签名图片
-//                                int pictureIndex = worksheet.getPictures().add(rowIndex + 3, dataCellIndex + i,
-//                                    signature.getSignature());
-//                                Picture picture = worksheet.getPictures().get(pictureIndex);
-//                                picture.setHeightScale(0.8);
-//                                picture.setWidthScale(0.8);
-//                            }
-//                        } catch (Exception e) {
-//                            // 忽略签名添加失败的情况
-//                        }
-//                    }
-//                }
+                if (i == 0) {
+                    // 获取员工工号
+                    String jobNumber = "";
+                    final Optional<SalaryCell> op = row.stream().filter(cell -> "工号".equals(cell.getLabel())).findFirst();
+                    if (op.isPresent()) {
+                        jobNumber = op.get().getValue();
+                    }
+
+                    if (!jobNumber.isEmpty()) {
+                        final UserSignature signature = sigMap.get(jobNumber);
+                        if (signature != null) {
+                            final String fileName = signature.getFileName();
+                            //拼接地址
+                            String path = "F:\\sig\\" + fileName;
+                            File file = new File(path);
+                            if (file.exists()) {
+                                System.out.println("sig fileName: " + fileName);
+                                int picIdx = worksheet.getPictures().add(ri, ci, path);
+                                Picture picture = worksheet.getPictures().get(picIdx);
+                                picture.setPlacement(PlacementType.MOVE_AND_SIZE); // 图片跟随单元格移动和调整
+                                picture.setHeight(worksheet.getCells().getRowHeightPixel(rowIndex));  // 设置高度
+                                picture.setWidth(worksheet.getCells().getColumnWidthPixel(colIndex)); // 设置宽度
+                            }
+                        }
+                    }
+                }
             }
         }
 
         // 自动调整列宽
-        worksheet.autoFitColumns();
+//        worksheet.autoFitColumns();
 
         // 保存文件
         workbook.save("C:\\Users\\Administrator\\Desktop\\salary_table.xlsx", SaveFormat.XLSX);
@@ -379,6 +403,7 @@ class SalaryServiceImplTest {
 //        PdfSaveOptions saveOptions = new PdfSaveOptions();
 //        document.save("C:\\Users\\Administrator\\Desktop\\sl_test.pdf", saveOptions);
 //    }
+
 
 
 }
