@@ -4,6 +4,8 @@ import com.abt.sys.model.dto.SystemMessageRequestForm;
 import com.abt.sys.model.entity.SystemMessage;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 public interface SystemMessageService {
 
     /**
@@ -24,4 +26,6 @@ public interface SystemMessageService {
     SystemMessage createSystemMessage(String toId, String toName, String href, String content, String service);
 
     void readAll(String toId);
+
+    void sendAll(List<SystemMessage> list);
 }

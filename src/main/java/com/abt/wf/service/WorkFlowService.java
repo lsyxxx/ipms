@@ -113,4 +113,13 @@ public interface WorkFlowService<T> {
 
     void skipEmptyUserTask(T form);
 
+    /**
+     * 转办：a转到b
+     */
+    void delegateTask(T form, String toUserid, String comment, String decision);
+
+    /**
+     * 处理转办，处理后回到转办前的节点
+     */
+    void resolveTask(T form);
 }

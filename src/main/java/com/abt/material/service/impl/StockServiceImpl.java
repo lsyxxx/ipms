@@ -441,4 +441,5 @@ public class StockServiceImpl implements StockService {
         table.setStockOutSummary(stockOut);
     }
 
+
 }

@@ -31,7 +31,11 @@ public class InsertSig {
 
     public static void main(String[] args) throws IOException {
 //        getImage();
-        insertOne("079", "李伟", "C:\\Users\\Administrator\\Desktop\\liwei079.png");
+        insertOne("192", "臧文娟", "F:\\sig\\NEW\\192臧文娟.png");
+//        insertOne("189", "呼婧", "F:\\sig\\NEW\\呼婧签名 - 副本.png");
+//        insertOne("187", "石雨洁", "F:\\sig\\NEW\\石雨洁 - 副本.png");
+//        insertOne("188", "吴桃", "F:\\sig\\NEW\\吴桃 - 副本.png");
+//        insertOne("191", "", "F:\\sig\\NEW\\吴桃 - 副本.png");
     }
 
     public static void getImage() throws IOException {

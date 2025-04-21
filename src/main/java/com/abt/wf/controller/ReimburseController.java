@@ -8,7 +8,6 @@ import com.abt.finance.entity.Invoice;
 import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
-import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
@@ -221,6 +220,28 @@ public class ReimburseController {
             return new ResponseEntity<>(e.getMessage().getBytes(), HttpStatus.EXPECTATION_FAILED);
         }
     }
+
+    /**
+     * 转交任务
+     */
+    @GetMapping("/task/delegate")
+    public R<Object> delegateTask(@RequestBody Reimburse form) {
+        setSubmitUser(form);
+        reimburseService.delegateTask(form, form.getDelegateUser(), form.getComment(), form.getDecision());
+        return R.success(String.format("已将任务转交给%s", form.getDelegateUser()));
+    }
+
+    /**
+     * 处理转办任务
+     */
+    @PostMapping("/task/resovle")
+    public R<Object> resolveTask(@RequestBody Reimburse form) {
+        setSubmitUser(form);
+        reimburseService.resolveTask(form);
+        return R.success("已处理转办任务");
+    }
+
+
 
     public void setTokenUser(ReimburseRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();

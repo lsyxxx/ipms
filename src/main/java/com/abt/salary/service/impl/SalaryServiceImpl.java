@@ -13,12 +13,14 @@ import com.abt.salary.service.SalaryService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.model.entity.TUser;
 import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.repository.TUserRepository;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.enums.CellExtraTypeEnum;
 import cn.idev.excel.support.ExcelTypeEnum;
+import com.abt.sys.service.SystemMessageService;
 import com.abt.wf.entity.UserSignature;
 import com.abt.wf.repository.UserSignatureRepository;
 import jakarta.servlet.http.HttpSession;
@@ -38,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,6 +73,7 @@ public class SalaryServiceImpl implements SalaryService {
     private final CustomerInfo dcCompany;
     private final OrgLeaderService orgLeaderService;
     private final UserSignatureRepository userSignatureRepository;
+    private final SystemMessageService systemMessageService;
 
     @Value("${com.abt.file.upload.save}")
     private String fileRoot;
@@ -104,7 +108,7 @@ public class SalaryServiceImpl implements SalaryService {
 
 
     public SalaryServiceImpl(EmployeeRepository employeeRepository, SalaryMainRepository salaryMainRepository,
-                             SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository, SalaryHeaderRepository salaryHeaderRepository, CustomerInfo abtCompany, CustomerInfo grdCompany, CustomerInfo dcCompany, OrgLeaderService orgLeaderService,  UserSignatureRepository userSignatureRepository) {
+                             SalaryCellRepository salaryCellRepository, SalarySlipRepository salarySlipRepository, SalaryEncRepository salaryEncRepository, TUserRepository tUserRepository, SalaryHeaderRepository salaryHeaderRepository, CustomerInfo abtCompany, CustomerInfo grdCompany, CustomerInfo dcCompany, OrgLeaderService orgLeaderService, UserSignatureRepository userSignatureRepository, SystemMessageService systemMessageService) {
         this.employeeRepository = employeeRepository;
         this.salaryMainRepository = salaryMainRepository;
         this.salaryCellRepository = salaryCellRepository;
@@ -117,6 +121,7 @@ public class SalaryServiceImpl implements SalaryService {
         this.dcCompany = dcCompany;
         this.orgLeaderService = orgLeaderService;
         this.userSignatureRepository = userSignatureRepository;
+        this.systemMessageService = systemMessageService;
     }
 
     @Override
@@ -398,7 +403,10 @@ public class SalaryServiceImpl implements SalaryService {
         main = salaryMainRepository.save(main);
         salaryHeaderRepository.saveAll(preview.getHeader());
         final List<OrgLeader> orgLeaders = findSalaryLeaders();
+        Set<String> chks = new HashSet<>();
+        Set<String> users = new HashSet<>();
         //生成工资条
+        List<SalarySlip> slips = new ArrayList<>();
         for (List<SalaryCell> row : preview.getSlipTable()) {
             final SalarySlip slip = SalarySlip.create(main, row);
             if (StringUtils.isBlank(slip.getName())) {
@@ -422,12 +430,58 @@ public class SalaryServiceImpl implements SalaryService {
             }
 
             final SalarySlip saved = salarySlipRepository.save(slip);
+            slips.add(saved);
+            //个人消息
+            users.add(slip.getJobNumber());
+            //审批
+            if (StringUtils.isNotBlank(slip.getDceoJobNumber())) {
+                chks.add(slip.getDceoJobNumber());
+            }
+            if (StringUtils.isNotBlank(slip.getDmJobNumber())) {
+                chks.add(slip.getDmJobNumber());
+            }
+            if (StringUtils.isNotBlank(slip.getCeoJobNumber())) {
+                chks.add(slip.getCeoJobNumber());
+            }
+            if (StringUtils.isNotBlank(slip.getHrJobNumber())) {
+                chks.add(slip.getHrJobNumber());
+            }
             for (SalaryCell cell : row) {
                 cell.setSlipId(saved.getId());
             }
+            //防止空单元格
+            row.removeIf(cell -> StringUtils.isBlank(cell.getParentLabel()) && StringUtils.isBlank(cell.getLabel()) && StringUtils.isBlank(cell.getValue()));
             salaryCellRepository.saveAllAndFlush(row);
         }
+
+        try {
+            //发送消息，失败不影响其他的
+            final List<SystemMessage> umsgs = createMsgs(users, "/sl/my/index", "您的工资条已发放，请及时查看并确认");
+            final List<SystemMessage> cmsgs = createMsgs(chks, "/sl/chk/smry/list", "本月工资表已生成，请审核");
+            cmsgs.addAll(umsgs);
+            systemMessageService.sendAll(cmsgs);
+        } catch (Exception e) {
+            log.error("发送消息失败" + e.getMessage(), e);
+        }
+
+        preview.setSlips(slips);
+
     }
+
+    private List<SystemMessage> createMsgs(Set<String> jnos, String href, String content) {
+        final List<TUser> users = tUserRepository.findAllByEmpnumIn(jnos);
+        Map<String, TUser> map = users.stream().collect(Collectors.toMap(TUser::getEmpnum, u -> u));
+        List<SystemMessage> systemMessages = new ArrayList<>();
+        for(String jno : jnos) {
+            TUser u = map.get(jno);
+            if (u != null) {
+                final SystemMessage msg = systemMessageService.createSystemMessage(u.getId(), u.getName(), href, content, "salaryCheck");
+                systemMessages.add(msg);
+            }
+        }
+        return systemMessages;
+    }
+
 
     private void salaryMainCount(SalaryMain main) {
         final List<SalarySlip> slips = salarySlipRepository.findByMainId(main.getId());
@@ -861,35 +915,43 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
 
+    /**
+     * 审批限制
+     * @param checkAuth 审核权限
+     * @param slids     待审核的slip id list
+     */
     @Override
     public R<List<SalarySlip>> deptCheck(CheckAuth checkAuth, List<String> slids) {
         if (slids == null || slids.isEmpty()) {
             return R.warn("没有要审批的工资条", null);
         }
         final List<SalarySlip> slips = salarySlipRepository.findAllById(slids);
-
         //判断逐级确认
         Set<SalarySlip> errList = new HashSet<>();
-        for (SalarySlip s : slips) {
-            if (s.isForceCheck() && !s.isCheck()) {
-                s.addError("员工未确认");
-                errList.add(s);
-            }
-            if (SL_CHK_DM.equals(checkAuth.getRole())) {
-                continue;
-            }
-            if (StringUtils.isNotBlank(s.getDmJobNumber()) && !s.isDmCheck()) {
-                s.addError("部门经理未确认");
-                errList.add(s);
-            }
-            if (SL_CHK_DCEO.equals(checkAuth.getRole())) {
-                continue;
-            }
-            if (StringUtils.isNotBlank(s.getDceoJobNumber()) && !s.isDceoCheck()) {
-                s.addError("副总经理未确认");
-                errList.add(s);
+        //人事审批不用限制，其他领导审批必须员工先确认
+        if (!SL_CHK_HR.equals(checkAuth.getRole())) {
+            for (SalarySlip s : slips) {
+                if (s.isForceCheck() && !s.isCheck()) {
+                    s.addError("员工未确认");
+                    errList.add(s);
+                }
+                if (SL_CHK_DM.equals(checkAuth.getRole())) {
+                    continue;
+                }
+                if (StringUtils.isNotBlank(s.getDmJobNumber()) && !s.isDmCheck()) {
+                    s.addError("部门经理未确认");
+                    errList.add(s);
+                }
+//            if (SL_CHK_DCEO.equals(checkAuth.getRole())) {
+//                continue;
+//            }
+//            if (StringUtils.isNotBlank(s.getDceoJobNumber()) && !s.isDceoCheck()) {
+//                s.addError("副总经理未确认");
+//                errList.add(s);
+//            }
             }
         }
+
         if (!errList.isEmpty()) {
             return R.bizFail(new ArrayList<>(errList), "审批失败");
         }
@@ -1177,7 +1239,7 @@ public class SalaryServiceImpl implements SalaryService {
                 UserSignature userSig = usMap.get(jobNumber);
                 int col = data.size() ;
                 colMax = Math.max(colMax, col);
-                if (userSig != null && slip.isForceCheck()) {
+                if (slip.isForceCheck() && userSig != null && slip.isCheck()) {
                     insertImage(sigDir + userSig.getFileName(), workbook, sheet, row, col,r + 3);
                 }
                 col = col + 1;
@@ -1201,6 +1263,21 @@ public class SalaryServiceImpl implements SalaryService {
                 }
             }
             //---- 设置列宽
+            //合计行
+            Row sumRow = sheet.createRow(table.size() + 3);
+            //合计
+            Cell c0 = sumRow.createCell(0);
+            c0.setCellValue("合计");
+            c0.setCellStyle(dataStyle);
+            final List<BigDecimal> sums = sumEachColumn(table, colMax);
+            for (int c = 1; c < colMax; c++) {
+                Cell cell = sumRow.createCell(c);
+                cell.setCellValue(sums.get(c).toString());
+                cell.setCellStyle(dataStyle);
+            }
+            //合计合并单元格
+            sheet.addMergedRegion(new CellRangeAddress(sumRow.getRowNum(), sumRow.getRowNum(), 0, 4));
+
             //序号，姓名，工号
             sheet.setColumnWidth(0, 4 * 256);
             sheet.setColumnWidth(1, 6 * 256);
@@ -1210,27 +1287,28 @@ public class SalaryServiceImpl implements SalaryService {
             //岗位
             sheet.setColumnWidth(4, 14 * 256);
             //其他数据(不含图片)
+            //设置宽度
             for (int c = 5; c < colMax; c++) {
                 sheet.setColumnWidth(c, 8 * 256);
             }
+
             //保存excel
             String excelName = checkExcelDir +  company + yearMonth + ".xlsx";
 
             // 锁定结构（防止添加/删除 sheet）
             // 设置允许的操作：允许格式化列（隐藏列需要这个权限）
-            sheet.enableLocking();
-            sheet.lockDeleteColumns(true);
-            sheet.lockDeleteRows(true);
-            sheet.lockInsertColumns(true);
-            sheet.lockInsertRows(true);
-            sheet.lockSort(true);
-            sheet.lockAutoFilter(true);
-            sheet.lockFormatCells(true);
-            sheet.lockFormatRows(true);
-            sheet.lockFormatColumns(false); // 允许格式化列（可以隐藏）
-            sheet.protectSheet("readonly123");
-//            workbook.lockStructure();
-            workbook.setWorkbookPassword("readonly123", null); // 设置保护密码
+//            sheet.enableLocking();
+//            sheet.lockDeleteColumns(true);
+//            sheet.lockDeleteRows(true);
+//            sheet.lockInsertColumns(true);
+//            sheet.lockInsertRows(true);
+//            sheet.lockSort(true);
+//            sheet.lockAutoFilter(true);
+//            sheet.lockFormatCells(true);
+//            sheet.lockFormatRows(true);
+//            sheet.lockFormatColumns(false); // 允许格式化列（可以隐藏）
+//            sheet.protectSheet("readonly123");
+//            workbook.setWorkbookPassword("readonly123", null); // 设置保护密码
 
             // 输出文件
             try (FileOutputStream fos = new FileOutputStream(excelName)) {
@@ -1240,6 +1318,24 @@ public class SalaryServiceImpl implements SalaryService {
             return excelName;
         }
 
+    }
+
+    //导出excel合计行
+    public List<BigDecimal> sumEachColumn(List<List<SalaryCell>> table, int maxCol) {
+        List<BigDecimal> columnSums = new ArrayList<>(Collections.nCopies(maxCol, BigDecimal.ZERO));
+        for (List<SalaryCell> row : table) {
+            for (int i = 5; i < maxCol; i++) {
+                String value = row.get(i).getValue();
+                try {
+                    BigDecimal d2 = columnSums.get(i);
+                    BigDecimal d1 = new BigDecimal(value);
+                    columnSums.set(i, d2.add(d1).setScale(2, RoundingMode.FLOOR));
+                } catch (Exception e) {
+                    log.error("非数字，无法合计--" + e.getMessage(), e);
+                }
+            }
+        }
+        return columnSums;
     }
 
     private void addSignatureColumn(List<SalaryHeader> header) {
@@ -1310,6 +1406,10 @@ public class SalaryServiceImpl implements SalaryService {
 
     }
 
+    public static void main(String[] args) {
+        String s = "jjj";
+        System.out.println(new BigDecimal(s));
+    }
 
 
 }

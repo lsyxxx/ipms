@@ -14,10 +14,10 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
-import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.entity.UserSignature;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
+import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
@@ -795,5 +795,41 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         taskService.complete(currentTask.getId());
         skipEmptyUserTask(form);
     }
+
+//    /**
+//     * 换审批人
+//     * @param newAssignee 新的审批人
+//     * @param oldAssignee 原审批人
+//     * @param comment 原审批人转办评论
+//     * @param task 当前task
+//     */
+//    public void setTaskAssignee(String newAssignee, String oldAssignee, String comment,  Task task) {
+//        taskService.setAssignee(newAssignee, task.getId());
+//    }
+
+    @Override
+    public void delegateTask(T form, String toUserid, String comment, String decision) {
+        final Task currentTask = taskService.createTaskQuery().processInstanceId(form.getProcessInstanceId()).active().singleResult();
+        form.setBusinessState(STATE_DETAIL_ACTIVE);
+        taskService.delegateTask(currentTask.getId(), toUserid); // 委托任务
+        FlowOperationLog log = FlowOperationLog.create(form.getSubmitUserid(), form.getSubmitUsername(), form);
+        log.setAction(ActionEnum.ASSIGN.name());
+        log.setComment(comment);
+        if (StringUtils.isNotBlank(decision)) {
+            log.setTaskResult(WorkFlowUtil.decisionTranslate(decision));
+        }
+        flowOperationLogService.saveLog(log);
+    }
+
+    @Override
+    public void resolveTask(T form) {
+        final Task currentTask = taskService.createTaskQuery().processInstanceId(form.getProcessInstanceId()).active().singleResult();
+        taskService.resolveTask(currentTask.getId());
+        this.approve(form);
+
+    }
+
+
+
 
 }

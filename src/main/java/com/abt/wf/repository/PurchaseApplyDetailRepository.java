@@ -13,7 +13,7 @@ public interface PurchaseApplyDetailRepository extends JpaRepository<PurchaseApp
 
 
     @Query("""
-    select new com.abt.wf.model.PurchaseSummaryAmount(sum(dtl.cost), sum(dtl.currentQuantity), dtl.detailId, dtl.name, dtl.specification, dtl.unit, dtl.price) from PurchaseApplyDetail dtl
+    select new com.abt.wf.model.PurchaseSummaryAmount(sum(dtl.cost), sum(dtl.currentQuantity), dtl.detailId, md.name, md.specification, md.unit, dtl.price) from PurchaseApplyDetail dtl
     join dtl.main main
     left join MaterialDetail md on dtl.detailId = md.id
     left join MaterialType mt on md.materialTypeId = mt.id
@@ -21,7 +21,7 @@ public interface PurchaseApplyDetailRepository extends JpaRepository<PurchaseApp
     and (:typeName is null or :typeName = '' or mt.name like %:typeName%)
     and (:startDate is null or CAST(main.endTime AS LocalDate) >= :startDate)
     and (:endDate is null or CAST(main.endTime AS LocalDate) <= :endDate)
-    group by dtl.detailId, dtl.name, dtl.specification, dtl.unit, dtl.price
+    group by dtl.detailId, md.name, md.specification, md.unit, dtl.price
 """)
     List<PurchaseSummaryAmount> summaryGiftTotalAmount(String typeName, LocalDate startDate, LocalDate endDate);
 

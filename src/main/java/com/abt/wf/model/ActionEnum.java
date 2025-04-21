@@ -12,6 +12,7 @@ public enum ActionEnum {
     REVOKE("撤回"),
     DELETE("删除"),
     COPY("抄送"),
+    ASSIGN("转交"),
     AUTOPASS("系统自动通过")
     ;
     private String action;

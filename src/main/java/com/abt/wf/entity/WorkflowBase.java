@@ -156,6 +156,12 @@ public class WorkflowBase extends AuditInfo {
     @Transient
     private String checkItemJson;
 
+    /**
+     * 转办用户
+     */
+    @Transient
+    private String delegateUser;
+
     @Transient
     private List<String> briefDesc;
 

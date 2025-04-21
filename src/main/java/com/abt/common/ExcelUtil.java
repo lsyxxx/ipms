@@ -73,4 +73,18 @@ public class ExcelUtil {
         return writeCellData;
     }
 
+    /**
+     * 获取excel的列字母
+     * @param columnIndex 从0开始
+     */
+    public static String getColumnLetter(int columnIndex) {
+        StringBuilder sb = new StringBuilder();
+        columnIndex = columnIndex + 1;
+        while (columnIndex >= 0) {
+            sb.insert(0, (char) ('A' + columnIndex % 26));
+            columnIndex = columnIndex / 26 - 1;
+        }
+        return sb.toString();
+    }
+
 }

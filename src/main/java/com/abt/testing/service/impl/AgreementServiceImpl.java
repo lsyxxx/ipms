@@ -218,7 +218,7 @@ public class AgreementServiceImpl implements AgreementService {
                 if (search == null || search.isEmpty()) {
                     return null;
                 }
-                Join<Agreement, CustomerInfo> customerJoin = root.join("jCompany", JoinType.LEFT);
+                Join<Agreement, CustomerInfo> customerJoin = root.join("JCompany", JoinType.LEFT);
                 return builder.like(customerJoin.get("customerName"), like(search));
             };
         }

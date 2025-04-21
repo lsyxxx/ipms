@@ -3,6 +3,7 @@ package com.abt.salary.controller;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
+import com.abt.oa.AttendanceUtil;
 import com.abt.oa.entity.OrgLeader;
 import com.abt.oa.service.OrgLeaderService;
 import com.abt.salary.AutoCheckSalaryJob;
@@ -25,7 +26,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -430,6 +433,7 @@ public class SalaryController {
 
         return auth;
     }
+
 
 
 }

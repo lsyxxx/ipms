@@ -11,20 +11,6 @@ import java.time.Month;
 public class AttendanceUtil {
 
     /**
-     * 计算当前时间所属考勤月
-     * @param startDay 考勤开始日，如26
-     * @return 1-13：13表示跨年
-     */
-    public static Month currentAttendanceMonth(int startDay) {
-        final LocalDate now = LocalDate.now();
-        LocalDate startDate = LocalDate.of(now.getYear(), now.getMonth(), startDay);
-        if (now.isBefore(startDate)) {
-            return now.getMonth();
-        }
-        return now.getMonth().plus(1);
-    }
-
-    /**
      * 当前日期的考勤月的开始日期
      */
     public static LocalDate currentStartDate(int startDay) {

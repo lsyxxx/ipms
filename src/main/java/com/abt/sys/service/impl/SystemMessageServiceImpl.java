@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_ID_COPY;
 import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_NAME_TIP;
@@ -93,5 +94,10 @@ public class SystemMessageServiceImpl implements SystemMessageService {
     @Override
     public void readAll(String toId) {
         systemMessageRepository.updateReadAllByToId(toId, LocalDateTime.now());
+    }
+
+    @Override
+    public void sendAll(List<SystemMessage> list) {
+        systemMessageRepository.saveAll(list);
     }
 }

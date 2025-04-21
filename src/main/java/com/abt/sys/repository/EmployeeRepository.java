@@ -2,6 +2,7 @@ package com.abt.sys.repository;
 
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -82,4 +83,6 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
      */
     @Query("select e from EmployeeInfo e left join fetch e.department where e.position = '部门经理' and e.isExit = false order by e.jobNumber")
     List<EmployeeInfo> findDms();
+
+    long countByJobNumber(@Size(max = 255) @NotNull String jobNumber);
 }

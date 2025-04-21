@@ -8,6 +8,7 @@ import com.abt.salary.entity.SalarySlip;
 import com.abt.salary.service.SalaryService;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
 /**
  * 自动确认
  */
+@Slf4j
 @Component
 //不能并发执行同一个(identity相同)任务
 @DisallowConcurrentExecution
@@ -48,12 +50,13 @@ public class AutoCheckSalaryJob extends AbstractJobExecutedByTimeOnce {
 
     @Override
     public void execute(JobExecutionContext context) {
+        log.info("AutoCheckSalaryJob start");
         final List<SalarySlip> unchecked = salaryService.findSalarySlipUnchecked();
         LocalDateTime now = LocalDateTime.now();
         List<SalarySlip> checked = new ArrayList<>();
         for (SalarySlip slip : unchecked) {
             final LocalDateTime autoCheckTime = slip.getAutoCheckTime();
-            if (slip.isForceCheck() && autoCheckTime.isBefore(now)) {
+            if (slip.isSend() && (autoCheckTime.isBefore(now) || autoCheckTime.isEqual(now))) {
                 slip.check(SalarySlip.CHECK_TYPE_AUTO);
                 checked.add(slip);
             }
