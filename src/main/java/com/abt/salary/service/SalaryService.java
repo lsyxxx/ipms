@@ -24,6 +24,12 @@ public interface SalaryService {
 
     void saveExcelFile(MultipartFile file, SalaryMain main);
 
+    /**
+     * 根据工资年月查询
+     * @param mid sl_main id
+     */
+    List<DeptSummary> getDeptSummaryTableByMainId(String mid);
+
     //导入数据库和发送工资条到个人
     void salaryImport(SalaryMain main, SalaryPreview preview);
 
@@ -148,7 +154,14 @@ public interface SalaryService {
      * @param yearMonth 工资年月
      * @param checkAuth 权限
      * @param mid       工资main id
-     * @return
      */
     String createCheckExcel(String company, String yearMonth, CheckAuth checkAuth, String mid) throws IOException;
+
+    /**
+     * 工资年汇总表，获取当年所有sl_main
+     * @param year 年份
+     */
+    List<SalaryMain> findAllSalaryMainByYearLike(String year);
+
+    void ceoCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth);
 }

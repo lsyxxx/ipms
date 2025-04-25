@@ -71,6 +71,10 @@ public class SalaryPreview {
     private int jobNumberColumnIndex;
     private int nameColumnIndex;
     private int netPaidColumnIndex;
+    private int empCostColumnIndex;
+    private Integer sumEmp;
+    private Double sumCost;
+    private Double sumNetPaid;
 
     public boolean hasFatalError() {
         return fatalError.isEmpty();

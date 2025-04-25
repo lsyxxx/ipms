@@ -17,6 +17,7 @@ public class Constants {
     public static final String NETPAID_COLNAME = "本月实发工资";
     public static final String JOBNUMBER_COLNAME = "工号";
     public static final String NAME_COLNAME = "姓名";
+    public static final String EMP_COST_NAME = "用工成本";
 
     /**
      * 表示不存在行/列

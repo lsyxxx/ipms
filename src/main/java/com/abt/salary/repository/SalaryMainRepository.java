@@ -16,4 +16,9 @@ public interface SalaryMainRepository extends JpaRepository<SalaryMain, String> 
     List<SalaryMain> findByYearMonthNullable(@Param("yearMonth") String yearMonth);
 
     List<SalaryMain> findByYearMonthAndGroup(String yearMonth, String group);
+
+    @Query("""
+    select m from SalaryMain m where m.yearMonth like %:year% order by m.yearMonth
+""")
+    List<SalaryMain> findByYear(String year);
 }

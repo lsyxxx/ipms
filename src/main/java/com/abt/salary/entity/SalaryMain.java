@@ -12,6 +12,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static com.abt.salary.Constants.NETPAID_COLNAME;
@@ -106,6 +107,9 @@ public class SalaryMain extends AuditInfo {
     @Column(name="col_idx_jobnum", columnDefinition="TINYINT", nullable = false)
     private Integer jobNumberColumnIndex;
 
+    @Column(name="col_idx_empcost", columnDefinition = "TINYINT", nullable = false)
+    private Integer empCostColumnIndex;
+
     /**
      * 姓名列号 0-based
      */
@@ -137,6 +141,25 @@ public class SalaryMain extends AuditInfo {
      */
     @Column(name="state_", columnDefinition="TINYINT")
     private int state = STATE_TEMP;
+
+
+    /**
+     * 人数合计
+     */
+    @Column(name="sum_emp", columnDefinition = "INT")
+    private Integer sumEmp;
+
+    /**
+     * 用工成本合计
+     */
+    @Column(name="sum_cost", columnDefinition = "decimal(10,2)")
+    private Double sumCost;
+
+    /**
+     * 实发工资合计
+     */
+    @Column(name="sum_net_paid", columnDefinition = "decimal(10,2)")
+    private Double sumNetPaid;
 
     /**
      * 数据存在异常

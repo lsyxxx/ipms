@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.*;
 
 import static com.abt.salary.Constants.*;
@@ -58,6 +59,11 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
      * 姓名 列号 0-based
      */
     private int nameRawColumnIndex = EXCLUDE_IDX;
+
+    /**
+     * 用工成本
+     */
+    private int empCostColumnIndex = EXCLUDE_IDX;
 
     /**
      * 部门
@@ -107,6 +113,21 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
     Map<Integer, Map<Integer, String>> rawTable = new HashMap<>();
 
     /**
+     * 人数合计
+     */
+    private int sumEmp = 0;
+
+    /**
+     * 用工成本合计
+     */
+    private BigDecimal sumCost = BigDecimal.ZERO;
+
+    /**
+     * 本月实发工资合计
+     */
+    private BigDecimal sumNetPaid = BigDecimal.ZERO;
+
+    /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
     public SalaryExcelReadListener(String mainId, String yearMonth) {
@@ -124,6 +145,11 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         List<SalaryCell> tableRow = new ArrayList<>();
         String jobNumber = data.getOrDefault(jobNumberRawColumnIndex , StringUtils.EMPTY);
         String name = data.getOrDefault(nameRawColumnIndex, StringUtils.EMPTY);
+        String cost = data.getOrDefault(empCostColumnIndex, StringUtils.EMPTY);
+        sumCost = add(cost, sumCost);
+        String netPaid = data.getOrDefault(netPaidRawColumnIndex, StringUtils.EMPTY);
+        sumNetPaid = add(netPaid, sumNetPaid);
+        sumEmp = sumEmp + 1;
         //不能根据表头读取数据，因为表头mergeHeader()方法不会保存没有数据的表头列。若存在表头无值，但是数据行有值，那么导致缺少数据
         //所以先手动限制列数
         data.forEach((k, v) -> {
@@ -146,6 +172,16 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
         log.info("doAfterAllAnalysed...");
         this.extraCellList.forEach(i -> divideAndFulfilMergedCell(i, this.rawTable));
         fulfilParentLabel();
+    }
+
+    private BigDecimal add(String value, BigDecimal start) {
+        try {
+            BigDecimal v = new BigDecimal(value);
+            return start.add(v);
+        } catch (Exception e) {
+            log.error("无法转为数字类型" + e.getMessage());
+        }
+        return start;
     }
 
     /**
@@ -192,6 +228,8 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
                 this.jobNumberRawColumnIndex = k;
             } else if (NAME_COLNAME.equals(v)) {
                 this.nameRawColumnIndex = k;
+            } else if (EMP_COST_NAME.equals(v)) {
+                this.empCostColumnIndex = k;
             }
         });
     }
@@ -206,6 +244,10 @@ public class SalaryExcelReadListener extends AnalysisEventListener<Map<Integer, 
 
     public boolean includeName() {
         return this.nameRawColumnIndex > 0;
+    }
+
+    public boolean includeEmpCost() {
+        return this.empCostColumnIndex > 0;
     }
 
 

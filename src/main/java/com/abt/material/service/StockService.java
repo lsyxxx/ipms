@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -111,4 +110,6 @@ public interface StockService {
       * @param endDate 结束日期（包含）
       */
     void stockSummary(LocalDate startDate, LocalDate endDate, StockSummaryTable table);
+
+    String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws Exception;
 }

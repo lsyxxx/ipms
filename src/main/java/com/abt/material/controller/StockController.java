@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,8 +68,6 @@ public class StockController {
         this.stockService = stockService;
         this.iFileService = iFileService;
     }
-
-
 
 
     /**
@@ -327,20 +326,20 @@ public class StockController {
      * 周报汇总
      */
     @GetMapping("/summary/week")
-    public R<StockSummaryTable> weekSummary(Integer flag) {
-        LocalDate now = LocalDate.now();
-        //本周
-        LocalDate monday = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate sunday = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-        if (flag == 1) {
-            //上周
-            monday = monday.minusWeeks(1);
-            sunday = sunday.minusWeeks(1);
+    public R<StockSummaryTable> weekSummary(@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+                                            @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+        if (startDate == null) {
+            LocalDate now = LocalDate.now();
+            startDate = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        }
+        if (endDate == null) {
+            LocalDate now = LocalDate.now();
+            endDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
         }
         StockSummaryTable table = new StockSummaryTable();
-        final List<PurchaseSummaryAmount> list = stockService.summaryPurchaseGiftTotalAmount(monday, sunday);
+        final List<PurchaseSummaryAmount> list = stockService.summaryPurchaseGiftTotalAmount(startDate, endDate);
         table.setPurchaseSummaryAmountList(list);
-        stockService.inventoryGiftDetails(monday, sunday, table);
+        stockService.inventoryGiftDetails(startDate, endDate, table);
         return R.success(table);
     }
 
@@ -366,6 +365,26 @@ public class StockController {
         table.setYearSummary(yearSummary);
         stockService.stockSummary(startDate, endDate, table);
         return R.success(table);
+    }
+
+
+    @GetMapping("/export/week")
+    public R<String> exportWeekSummary(@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate, @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) throws Exception {
+        if (startDate == null) {
+            LocalDate now = LocalDate.now();
+            startDate = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        }
+        if (endDate == null) {
+            LocalDate now = LocalDate.now();
+            endDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        }
+
+        StockSummaryTable table = new StockSummaryTable();
+        final List<PurchaseSummaryAmount> list = stockService.summaryPurchaseGiftTotalAmount(startDate, endDate);
+        table.setPurchaseSummaryAmountList(list);
+        stockService.inventoryGiftDetails(startDate, endDate, table);
+        final String path = stockService.createExcelWeek(table, startDate, endDate);
+        return R.success(path, "导出成功!");
     }
 
 

@@ -196,3 +196,65 @@ update wf_pur_dtl set accept_items = '品名、规格、等级、生产日期、
 
 -- sl_main dept_mgr_chk 默认 true
 update sl_main set dept_mgr_chk = 1;
+
+
+-- 修改wf_pur_dtl 错误的物品资料
+update wf_pur_dtl set dtl_id='68c98032-6d87-4de6-a7c3-64f13e8b3c89',name_=N'汉中仙毫2-149.55',spec_='125g',unit_=N'盒'
+where id = '5c491a92-e729-4a56-acfa-1101f4d566dc';
+update wf_pur_dtl set dtl_id='82c24d63-cdec-4512-817a-393b5204344b',name_=N'汉中仙毫1-245.00',spec_='125g',unit_=N'盒'
+where id = 'fbe6351d-4c39-4bf0-98b5-f8bc4c4a197d';
+update wf_pur_dtl set dtl_id='51901809-7ba1-42f0-9c25-f590cff5ca93',name_=N'茅台-飞天茅台',spec_='500ml',unit_=N'瓶'
+where id = '72b2e15c-e6a9-4384-8114-61f5d9e66d2d';
+update wf_pur_dtl set dtl_id='44fc728e-9bcb-4d7a-93b2-5124e6f49f7f',name_=N'五粮液-第八代',spec_='500ml',unit_=N'瓶'
+where id = '450ef2af-3329-4bdc-b007-92b04a4e11dc';
+update wf_pur_dtl set dtl_id='e144f5a4-4463-4965-af5c-8ba71bac3596',name_=N'中华细支',spec_=N'200支',unit_=N'条'
+where id = '5b2c82b8-2d10-49b9-a45c-8c26fb075d33';
+update wf_pur_dtl set dtl_id='51901809-7ba1-42f0-9c25-f590cff5ca93',name_=N'茅台-飞天茅台',spec_='500ml',unit_=N'瓶'
+where id = 'b33afcde-b344-4f44-97a4-6671e9d32359';
+update wf_pur_dtl set dtl_id='51901809-7ba1-42f0-9c25-f590cff5ca93',name_=N'茅台-飞天茅台',spec_='500ml',unit_=N'瓶'
+where id = 'e228d15d-4c02-4a43-af57-0d0d9936115b';
+update wf_pur_dtl set dtl_id='51901809-7ba1-42f0-9c25-f590cff5ca93',name_=N'茅台-飞天茅台',spec_='500ml',unit_=N'瓶'
+where id = '4dcb69bc-d838-47c9-89f6-3fb2b87d82c1';
+update wf_pur_dtl set dtl_id='e144f5a4-4463-4965-af5c-8ba71bac3596',name_=N'中华细支',spec_=N'200支',unit_=N'条'
+where id = '7367fce0-8c11-4d9a-95b9-e65cd29738dd';
+
+-- 修改stock_dtl 物品资料
+update stock_dtl set material_id = '44fc728e-9bcb-4d7a-93b2-5124e6f49f7f',material_name = N'五粮液-第八代',xhgz = '500ml',unit = N'瓶'
+where id = '63e8d3e8-5a64-4faa-a435-b3fce41b2447';
+update stock_dtl set material_id = '82c24d63-cdec-4512-817a-393b5204344b',material_name = N'汉中仙毫1-245.00',xhgz = '125g',unit = N'盒'
+where id = '5afd5896-3471-4349-a790-106339a63584';
+update stock_dtl set material_id = '51901809-7ba1-42f0-9c25-f590cff5ca93',material_name = N'茅台-飞天茅台',xhgz = '500ml',unit = N'瓶'
+where id = 'afc71c70-e833-434d-a070-031060586ebe';
+update stock_dtl set material_id = '51901809-7ba1-42f0-9c25-f590cff5ca93',material_name = N'茅台-飞天茅台',xhgz = '500ml',unit = N'瓶'
+where id = '8aa5ca56-5a34-43a4-87a6-ef834043a163';
+update stock_dtl set material_id = '51901809-7ba1-42f0-9c25-f590cff5ca93',material_name = N'茅台-飞天茅台',xhgz = '500ml',unit = N'瓶'
+where id = 'ab42121e-a506-423b-878b-e47dd40dabc2';
+update stock_dtl set material_id = '51901809-7ba1-42f0-9c25-f590cff5ca93',material_name = N'茅台-飞天茅台',xhgz = '500ml',unit = N'瓶'
+where id = '23378a47-febe-4ab8-bbb8-d624c4f1665f';
+update stock_dtl set material_id = '51901809-7ba1-42f0-9c25-f590cff5ca93',material_name = N'茅台-飞天茅台',xhgz = '500ml',unit = N'瓶'
+where id = '9f67ad8d-8a40-42d2-9fbc-71d37507ded8';
+update stock_dtl set material_id = '51901809-7ba1-42f0-9c25-f590cff5ca93',material_name = N'茅台-飞天茅台',xhgz = '500ml',unit = N'瓶'
+where id = '29ef7bcd-7ac4-4831-a58f-f124d038b621';
+
+
+-- 修改stock_inventory 的错误m_id
+update stock_inventory set m_id = '44fc728e-9bcb-4d7a-93b2-5124e6f49f7f' where id = 'fdb154e7-b4c3-40a3-b8e5-b3af74fc7768';
+update stock_inventory set m_id = '82c24d63-cdec-4512-817a-393b5204344b' where id = '65201182-0926-487e-b174-9b4882effade';
+update stock_inventory set m_id = '51901809-7ba1-42f0-9c25-f590cff5ca93' where id = '8df59b0c-c330-42ac-af75-9fd5ffe844f1';
+update stock_inventory set m_id = '51901809-7ba1-42f0-9c25-f590cff5ca93' where id = '03cb6192-13b3-4a82-b85f-c56ce62c1504';
+update stock_inventory set m_id = '51901809-7ba1-42f0-9c25-f590cff5ca93' where id = '962fa7e0-47fd-4851-b8a7-614d4851a573';
+update stock_inventory set m_id = '51901809-7ba1-42f0-9c25-f590cff5ca93' where id = '76b125f2-dcad-472b-9d9b-40ce6acce37a';
+update stock_inventory set m_id = '51901809-7ba1-42f0-9c25-f590cff5ca93' where id = '93f23610-09c8-472b-8fdb-f5e383ec84f1';
+update stock_inventory set m_id = '51901809-7ba1-42f0-9c25-f590cff5ca93' where id = '9aa97a6f-b0f0-4a98-a66d-27c50dfbb91a';
+
+
+--修改错误的库存
+--茅台
+update stock_inventory set quantity_ = 73  where id = 'b17253b6-aee4-434e-8eb5-40b8a8e2bc64';
+
+
+--删除多余物品资料
+delete from T_stockcataDetail where id = 'e29eaa94-e771-4ecb-b0e2-cf8e238dbcf7';
+delete from T_stockcataDetail where id = 'ea935b3c-4319-420c-b505-8acf8413be1c';
+delete from T_stockcataDetail where id = '4fb2285e-b8c2-413c-9693-21595d5128bd';
+delete from T_stockcataDetail where id = '9b478930-1da4-4e46-a449-b1cab66dfbde';

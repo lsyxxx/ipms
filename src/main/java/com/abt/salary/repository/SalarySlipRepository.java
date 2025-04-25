@@ -3,6 +3,7 @@ package com.abt.salary.repository;
 import com.abt.salary.entity.SalarySlip;
 import com.abt.salary.model.SlipCount;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.Transient;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -166,5 +167,15 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
         update SalarySlip s set s.isCheck = false, s.checkTime = null, s.autoCheckTime = :autoCheckTime  where s.id = :slipId
 """)
     Integer updateSendById(String slipId, LocalDateTime autoCheckTime);
+
+    List<SalarySlip> findByYearMonth(String yearMonth);
+
+    @Modifying
+    @Transactional
+    @Query("""
+        update SalarySlip s set s.ceoTime = :checkTime where s.yearMonth = :yearMonth and (s.ceoJobNumber is not null or TRIM(s.ceoJobNumber) <> '')
+""")
+    void ceoCheckByYearMonth(String yearMonth, LocalDateTime checkTime);
+
 
 }

@@ -127,6 +127,12 @@ public class SalarySlip extends AuditInfo{
     private BigDecimal netPaid;
 
     /**
+     * 用工成本
+     */
+    @Column(name="emp_cost", columnDefinition = "DECIMAL(10,2)")
+    private BigDecimal empCost;
+
+    /**
      * 反馈
      */
     @Column(name="is_feedback", columnDefinition="BIT")

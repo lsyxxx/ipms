@@ -1,5 +1,10 @@
- package com.abt.material.service.impl;
+package com.abt.material.service.impl;
 
+import cn.idev.excel.ExcelWriter;
+import cn.idev.excel.FastExcel;
+import cn.idev.excel.write.metadata.WriteSheet;
+import cn.idev.excel.write.metadata.fill.FillConfig;
+import cn.idev.excel.write.metadata.fill.FillWrapper;
 import com.abt.common.util.TimeUtil;
 import com.abt.material.entity.*;
 import com.abt.material.listener.ImportCheckBillListener;
@@ -12,21 +17,33 @@ import com.abt.sys.util.WithQueryUtil;
 import cn.idev.excel.EasyExcel;
 import com.abt.wf.model.PurchaseSummaryAmount;
 import com.abt.wf.repository.PurchaseApplyDetailRepository;
+import com.aspose.cells.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.Entry;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.abt.material.entity.StockOrder.*;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
- /**
+/**
  * 出入库
  */
 @Service
@@ -41,6 +58,12 @@ public class StockServiceImpl implements StockService {
     private final MaterialTypeRepository materialTypeRepository;
     private final InventoryAlertRepository inventoryAlertRepository;
     private final PurchaseApplyDetailRepository purchaseApplyDetailRepository;
+
+    @Value("${abt.stock.export.week.template}")
+    private String stockWeekTemplate;
+
+    @Value("${abt.stock.export.week.path}")
+    private String stockWeekFilePath;
 
 
     public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository, PurchaseApplyDetailRepository purchaseApplyDetailRepository) {
@@ -95,7 +118,7 @@ public class StockServiceImpl implements StockService {
             newInventory.setQuantity(getQuantity(inventory.getQuantity()) + stock.getNum());
         } else if (STOCK_TYPE_OUT == stockType) {
             newInventory.setQuantity(getQuantity(inventory.getQuantity()) - stock.getNum());
-        } else if(STOCK_TYPE_CHECK == stockType) {
+        } else if (STOCK_TYPE_CHECK == stockType) {
             newInventory.setQuantity(stock.getNum());
         } else {
             log.warn("Stock type {} not supported", stockType);
@@ -184,7 +207,7 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public List<MaterialDetailDTO>  findAllMaterialInventories(InventoryRequestForm requestForm) {
+    public List<MaterialDetailDTO> findAllMaterialInventories(InventoryRequestForm requestForm) {
         requestForm = buildInventoryRequestForm(requestForm);
         final List<IMaterialDetailDTO> list = materialDetailRepository.findAllWithInventories(requestForm.getMaterialTypeIds(), requestForm.getWarehouseIds());
         List<MaterialDetailDTO> dtos = new ArrayList<>(list.size());
@@ -253,7 +276,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public List<InventoryAlert> findInventoryAlertList(InventoryRequestForm requestForm) {
-        return WithQueryUtil.build(inventoryAlertRepository.findAllBy( requestForm.getWarehouseIds(), requestForm.getName()));
+        return WithQueryUtil.build(inventoryAlertRepository.findAllBy(requestForm.getWarehouseIds(), requestForm.getName()));
     }
 
     @Override
@@ -415,12 +438,10 @@ public class StockServiceImpl implements StockService {
             }
         }
 
-        Comparator<Stock> comparator = new Comparator<Stock>() {
-            @Override
-            public int compare(Stock o1, Stock o2) {
-                return o1.getMaterialId().compareTo(o2.getMaterialId());
-            }
-        };
+        Comparator<Stock> comparator = Comparator.comparing(Stock::getMaterialName)
+                .thenComparing(Stock::getSpecification)
+                .thenComparing(Stock::getUnit)
+                .thenComparing(Stock::getOrderDate);
 
         //库房
         final List<Stock> yanan = stockList.stream().filter(i -> WH_GIFT_YANAN.equals(i.getWarehouseId())).sorted(comparator).toList();
@@ -439,6 +460,376 @@ public class StockServiceImpl implements StockService {
         final List<StockQuantitySummary> stockOut = stockRepository.summaryGiftQuantity(STOCK_TYPE_OUT, startDate, endDate);
         table.setStockInSummary(stockIn);
         table.setStockOutSummary(stockOut);
+    }
+
+    @Override
+    public String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws Exception {
+        Workbook workbook = new Workbook(stockWeekTemplate);
+        Worksheet sheet = workbook.getWorksheets().get(0);
+        //日期行
+        sheet.getCells().get(1, 0).putValue(TimeUtil.toYYYY_MM_DDString(startDate) + "至" + TimeUtil.toYYYY_MM_DDString(endDate));
+        Style dataStyle = dataStyle(workbook);
+        //西安礼品表
+        createStockTable(getStockGiftRow(sheet, XIAN_COMMENT),
+                summaryTable.getXianStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList(),
+                sheet, dataStyle);
+        //延安
+        createStockTable(getStockGiftRow(sheet, YANAN_COMMENT),
+                summaryTable.getYananStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList(),
+                sheet, dataStyle);
+        //成都
+        createStockTable(getStockGiftRow(sheet, CHENGDU_COMMENT),
+                summaryTable.getChengduStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList(),
+                sheet, dataStyle);
+        //采购
+        int purRow = getStockGiftRow(sheet, PURCHASE_COMMENT);
+        createPurchaseTable(purRow, summaryTable.getPurchaseSummaryAmountList(), sheet, dataStyle);
+        //合计
+        int sumRow = getStockGiftRow(sheet, PURCHASE_SUM_COMMENT);
+        final BigDecimal purSum = sumPurchases(summaryTable.getPurchaseSummaryAmountList());
+        sheet.getCells().get(sumRow, 4).putValue(purSum.setScale(2, RoundingMode.FLOOR).toString());
+        String path = stockWeekFilePath + System.currentTimeMillis() + ".xlsx";
+        workbook.save(path);
+        return path;
+    }
+
+    public static final String XIAN_COMMENT = "xian_gift";
+    public static final String YANAN_COMMENT = "yanan_gift";
+    public static final String CHENGDU_COMMENT = "chengdu_gift";
+    public static final String PURCHASE_COMMENT = "purchase_gift";
+    public static final String PURCHASE_SUM_COMMENT = "purchase_sum";
+
+    private int getStockGiftRow(Worksheet sheet, String flag) {
+        CommentCollection comments = sheet.getComments();
+        for (int i = 0; i < comments.getCount(); i++) {
+            Comment comment = comments.get(i);
+            //note: Administrator:\nxian_gift
+            final String note = comment.getNote();
+            if (note.contains(XIAN_COMMENT) && XIAN_COMMENT.equals(flag)) {
+                //西安礼品表
+                return comment.getRow();
+            } else if (note.contains(YANAN_COMMENT) && YANAN_COMMENT.equals(flag)) {
+                return comment.getRow();
+            } else if (note.contains(CHENGDU_COMMENT) && CHENGDU_COMMENT.equals(flag)) {
+                return comment.getRow();
+            } else if (note.contains(PURCHASE_COMMENT) && PURCHASE_COMMENT.equals(flag)) {
+                return comment.getRow();
+            } else if (note.contains(PURCHASE_SUM_COMMENT) && PURCHASE_SUM_COMMENT.equals(flag)) {
+                return comment.getRow();
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 生成采购表格
+     * @param headerRow 标题行
+     * @param list 数据
+     * @param sheet sheet
+     */
+    private void createPurchaseTable(int headerRow, List<PurchaseSummaryAmount> list, Worksheet sheet, Style dataStyle) {
+        Cells cells = sheet.getCells();
+        int dataRow = headerRow + 1;
+        if (list.isEmpty()) {
+            createEmpty("本周无采购", dataRow, cells, sheet.getWorkbook());
+        } else {
+            for (int r = 0; r < list.size(); r++, dataRow++) {
+                cells.insertRow(dataRow);
+                PurchaseSummaryAmount ps = list.get(r);
+                cells.get(dataRow, 0).putValue(ps.getName());
+                cells.get(dataRow, 0).setStyle(dataStyle);
+                cells.get(dataRow, 1).putValue(ps.getQuantity());
+                cells.get(dataRow, 1).setStyle(dataStyle);
+                cells.get(dataRow, 2).putValue(ps.getUnit());
+                cells.get(dataRow, 2).setStyle(dataStyle);
+                cells.get(dataRow, 3).putValue(ps.getPrice().setScale(2, RoundingMode.FLOOR).toString());
+                cells.get(dataRow, 3).setStyle(dataStyle);
+                //总价合并
+                cells.merge(dataRow, 4, 1, 2);
+                cells.get(dataRow, 4).putValue(ps.getTotalAmount().setScale(2, RoundingMode.FLOOR).toString());
+                cells.get(dataRow, 4).setStyle(dataStyle);
+                cells.get(dataRow, 5).setStyle(dataStyle);
+                cells.getRows().get(dataRow).setHeight(35);
+            }
+        }
+    }
+
+    private Style dataStyle(Workbook workbook) {
+        Style style = createCommonStyle(workbook);
+        style.getFont().setSize(10);
+        style.getFont().setColor(Color.getBlack());
+        return style;
+    }
+
+    private void createEmpty(String emptyStr, int row, Cells cells, Workbook workbook) {
+        cells.insertRow(row);
+        cells.get(row, 0).putValue(emptyStr);
+        cells.getRows().get(row).setHeight(30);
+        //样式
+        Style style = createCommonStyle(workbook);
+        // 设置字体
+        style.getFont().setName("SimSun");
+        style.getFont().setSize(10);
+        style.getFont().setColor(Color.getDarkGray());
+        cells.get(row, 0).setStyle(style);
+        cells.get(row, 1).setStyle(style);
+        cells.get(row, 2).setStyle(style);
+        cells.get(row, 3).setStyle(style);
+        cells.get(row, 4).setStyle(style);
+        cells.get(row, 5).setStyle(style);
+        cells.merge(row, 0, 1, 6);
+    }
+
+    private Style createCommonStyle(Workbook workbook) {
+        Style style = workbook.createStyle();
+        style.setBorder(BorderType.TOP_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.BOTTOM_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.LEFT_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.RIGHT_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.getFont().setName("SimSun");
+        style.setHorizontalAlignment(TextAlignmentType.CENTER);
+        style.setVerticalAlignment(TextAlignmentType.CENTER);
+        style.setTextWrapped(true);
+        return style;
+    }
+
+    /**
+     * 生成礼品表格
+     * @param headerRow 标题行
+     * @param list 数据
+     * @param worksheet worksheet
+     */
+    private void createStockTable(int headerRow, List<Stock> list, Worksheet worksheet, Style style) {
+        list = formatExcelData(list);
+        int dataRow = headerRow + 1;
+        final Map<String, List<Stock>> map = list.stream()
+                .collect(Collectors.groupingBy(
+                        item -> item.getName() + "|" + item.getSpecification() + "|" + item.getUnit(), // 组合键
+                        TreeMap::new,
+                        Collectors.toList()));
+        Cells cells = worksheet.getCells();
+        if (list.isEmpty()) {
+            createEmpty("本周无出入库", dataRow, cells, worksheet.getWorkbook());
+        } else {
+            int start = dataRow;
+            Style redStyle = dataStyle(worksheet.getWorkbook());
+            redStyle.getFont().setBold(true);
+            redStyle.getFont().setColor(Color.getRed());
+            Style greenStyle = dataStyle(worksheet.getWorkbook());
+            greenStyle.getFont().setBold(true);
+            greenStyle.getFont().setColor(Color.getGreen());
+            for(Map.Entry<String, List<Stock>> entry : map.entrySet()) {
+                List<Stock> vlist = entry.getValue();
+                //按日期排序
+                vlist.sort(Comparator.comparing(Stock::getOrderDate));
+                for (int r = 0; r < vlist.size(); r++) {
+                    Stock stock = vlist.get(r);
+                    dataRow = start + r;
+                    insertStockRow(stock, dataRow, cells, style, redStyle, greenStyle);
+                    //行高35
+                    worksheet.getCells().getRows().get(dataRow).setHeight(35);
+                }
+                //合并单元格
+                if (vlist.size() > 1) {
+                    int mergedRow = vlist.size();
+                    //名称，第一列
+                    cells.merge(start, 0, mergedRow, 1);
+                    //库存，第六列
+                    cells.merge(start, 5, mergedRow, 1);
+                }
+                start = start + vlist.size();
+            }
+        }
+//        createDivideRow(dataRow + 1, cells);
+    }
+
+    private void insertStockRow(Stock stock, int curRowIdx, Cells cells, Style style, Style redStyle, Style greenStyle) {
+        cells.insertRow(curRowIdx);
+        cells.get(curRowIdx, 0).putValue(stock.getName());
+        cells.get(curRowIdx, 0).setStyle(style);
+        cells.get(curRowIdx, 1).putValue(stock.getQuantityStr());
+        if (STOCK_TYPE_IN == stock.getStockType()) {
+            cells.get(curRowIdx, 1).setStyle(greenStyle);
+        } else if (STOCK_TYPE_OUT == stock.getStockType()) {
+            cells.get(curRowIdx, 1).setStyle(redStyle);
+        } else {
+            cells.get(curRowIdx, 1).setStyle(style);
+        }
+        cells.get(curRowIdx, 2).putValue(stock.getUsername());
+        cells.get(curRowIdx, 2).setStyle(style);
+        cells.get(curRowIdx, 3).putValue(stock.getUsage());
+        cells.get(curRowIdx, 3).setStyle(style);
+        cells.get(curRowIdx, 4).putValue(stock.getOrderDateStr());
+        cells.get(curRowIdx, 4).setStyle(style);
+        cells.get(curRowIdx, 5).putValue(stock.getInventoryStr());
+        cells.get(curRowIdx, 5).setStyle(style);
+    }
+
+    //使用easyexcel导出，合并有问题
+//    @Override
+//    public String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws IOException {
+//        String path = stockWeekFilePath + System.currentTimeMillis() + ".xlsx";
+//        int dataRow = 4;
+//        List<CellRangeAddress> mergedRegions = new ArrayList<>();
+//        //表格数据
+//        final List<Stock> xianStockDetails = summaryTable.getXianStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
+//        formatExcelData(xianStockDetails);
+////        mergedRegions.addAll(mergeData(xianStockDetails, dataRow, NAME_COL));
+////        mergedRegions.addAll(mergeData(xianStockDetails, dataRow, STOCK_COL));
+//        final List<Stock> yananStockDetails = summaryTable.getYananStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
+//        formatExcelData(yananStockDetails);
+//        dataRow = dataRow + xianStockDetails.size() + 2;
+////        mergedRegions.addAll(mergeData(yananStockDetails, dataRow, NAME_COL));
+////        mergedRegions.addAll(mergeData(yananStockDetails, dataRow, STOCK_COL));
+//        dataRow = dataRow + yananStockDetails.size() + 2;
+//        final List<Stock> chengduStockDetails = summaryTable.getChengduStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
+//        formatExcelData(chengduStockDetails);
+////        mergedRegions.addAll(mergeData(chengduStockDetails, dataRow, NAME_COL));
+////        mergedRegions.addAll(mergeData(chengduStockDetails, dataRow, STOCK_COL));
+//        final List<PurchaseSummaryAmount> purchaseSummaryAmountList = summaryTable.getPurchaseSummaryAmountList();
+//        purchaseSummaryAmountList.sort(
+//                Comparator.comparing(PurchaseSummaryAmount::getName)
+//                        .thenComparing(PurchaseSummaryAmount::getSpecification)
+//                        .thenComparing(PurchaseSummaryAmount::getUnit)
+//                        .thenComparing(PurchaseSummaryAmount::getPrice)
+//        );
+//        for (PurchaseSummaryAmount psa : purchaseSummaryAmountList) {
+//            if (StringUtils.isNotBlank(psa.getSpecification())) {
+//                psa.setName(String.format("%s(%s)", psa.getName(), psa.getSpecification()));
+//            }
+//        }
+//        final BigDecimal sumPurchase = sumPurchases(purchaseSummaryAmountList);
+//        int purchaseRow = 4;
+//        purchaseRow = addRow(purchaseRow, xianStockDetails) + 2;
+//        purchaseRow = addRow(purchaseRow, yananStockDetails) + 2;
+//        purchaseRow = addRow(purchaseRow, chengduStockDetails) + 2;
+//        if (!purchaseSummaryAmountList.isEmpty()) {
+//            purchaseRow = purchaseRow + 1;
+//        }
+//        try (ExcelWriter writer = FastExcel.write(path).withTemplate(this.stockWeekTemplate)
+//                .registerWriteHandler(new CellMergeHandler(purchaseRow))
+//                .build()) {
+//            WriteSheet writeSheet = FastExcel.writerSheet().build();
+//            FillConfig fillConfig = FillConfig.builder().build();
+//            fillConfig.setForceNewRow(true);
+//            writer.fill(new FillWrapper("xian", xianStockDetails), fillConfig, writeSheet);
+//            writer.fill(new FillWrapper("yanan", yananStockDetails), fillConfig, writeSheet);
+//            writer.fill(new FillWrapper("chengdu", chengduStockDetails), fillConfig, writeSheet);
+//            writer.fill(new FillWrapper("purchases", purchaseSummaryAmountList), fillConfig, writeSheet);
+//            Map<String, Object> map = new HashMap<>();
+//            map.put("startDate", TimeUtil.toYYYY_MM_DDString(startDate));
+//            map.put("endDate", TimeUtil.toYYYY_MM_DDString(endDate));
+//            map.put("purchaseAmount", sumPurchase.setScale(2, RoundingMode.FLOOR));
+//            writer.fill(map, writeSheet);
+//        }
+//        return path;
+//    }
+
+    private BigDecimal sumPurchases(List<PurchaseSummaryAmount> list) {
+        return list.stream().map(PurchaseSummaryAmount::getTotalAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private List<CellRangeAddress> mergeData(List<Stock> list, int startRowIdx, int colIdx) {
+        List<CellRangeAddress> mergedCells = new ArrayList<>();
+        if (list == null || list.isEmpty()) {
+            return mergedCells;
+        }
+        final LinkedHashMap<String, List<Stock>> map = list.stream().collect(Collectors.groupingBy(Stock::getMaterialId, LinkedHashMap::new, Collectors.toList()));
+        for (Map.Entry<String, List<Stock>> entry : map.entrySet()) {
+            List<Stock> v = entry.getValue();
+            v.sort(Comparator.comparing(Stock::getOrderDate));
+            if (!v.isEmpty() && v.size() > 1) {
+                int mergedRows = v.size();
+                CellRangeAddress cra = new CellRangeAddress(startRowIdx, startRowIdx + mergedRows - 1, colIdx, colIdx);
+                mergedCells.add(cra);
+            }
+            startRowIdx = startRowIdx + v.size();
+
+        }
+        return mergedCells;
+    }
+
+    //使用aspose生成， 问题1：数据源（列表）没数据，不会清除模板中的占位符。 2. 合并问题
+//    @Override
+//    public String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws Exception {
+//        Workbook workbook = new Workbook(stockWeekTemplate);
+//        WorkbookDesigner designer = new WorkbookDesigner();
+//        designer.setWorkbook(workbook); // 加载模板 Excel
+//        //表格数据
+//        List<Stock> xianStockDetails = summaryTable.getXianStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
+//        xianStockDetails = formatExcelData(xianStockDetails);
+//        List<Stock> yananStockDetails = summaryTable.getYananStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
+//        yananStockDetails = formatExcelData(yananStockDetails);
+//        List<Stock> chengduStockDetails = summaryTable.getChengduStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
+//        chengduStockDetails = formatExcelData(chengduStockDetails);
+//        List<PurchaseSummaryAmount> purchaseSummaryAmountList = summaryTable.getPurchaseSummaryAmountList();
+//        for (PurchaseSummaryAmount psa : purchaseSummaryAmountList) {
+//            if (StringUtils.isNotBlank(psa.getSpecification())) {
+//                psa.setName(String.format("%s(%s)", psa.getName(), psa.getSpecification()));
+//            }
+//        }
+//        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
+//        designer.setDataSource("startDate", startDate.format(dateFormatter));
+//        designer.setDataSource("endDate", endDate.format(dateFormatter));
+//        designer.setDataSource("xian", xianStockDetails);
+//        designer.setDataSource("yanan", yananStockDetails);
+//        designer.setDataSource("chengdu", chengduStockDetails);
+//        designer.setDataSource("purchases", purchaseSummaryAmountList);
+//        designer.process(true);
+//        String path = stockWeekFilePath + System.currentTimeMillis() + ".xlsx";
+//        designer.getWorkbook().save(path);
+//        return path;
+//    }
+
+
+    public List<Stock> formatExcelData(List<Stock> list) {
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+        for (Stock stock : list) {
+            //名称
+            if (StringUtils.isNotBlank(stock.getSpecification())) {
+                String spec = String.format("(%s)", stock.getSpecification());
+                stock.setName(String.format("%s\n%s", stock.getMaterialName(), spec));
+            }
+            //使用人
+            if (StringUtils.isNotBlank(stock.getDeptName())) {
+                stock.setUsername(String.format("%s\n(%s)", stock.getUsername(), stock.getDeptName()));
+            }
+            //用途
+            String bizType = "";
+            if (StringUtils.isNotBlank(stock.getBizType())) {
+                bizType = String.format("(%s)", stock.getBizType());
+            }
+            final String str = Stream.of(stock.getUsage(), stock.getRemark(), stock.getOrderRemark()).filter(StringUtils::isNotBlank).collect(Collectors.joining(";"));
+            stock.setUsage(bizType + str);
+            //数量
+            final int stockType = stock.getStockType();
+            switch (stockType) {
+                case STOCK_TYPE_IN -> stock.setQuantityStr("+" + formatDouble(stock.getNum()) + stock.getUnit());
+                case STOCK_TYPE_OUT -> stock.setQuantityStr("-" + formatDouble(stock.getNum()) + stock.getUnit());
+                default -> stock.setQuantityStr(stock.getNum() + stock.getUnit());
+            }
+            //日期
+            if (stock.getOrderDate() != null) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M月dd日");
+                stock.setOrderDateStr(stock.getOrderDate().format(formatter));
+            }
+            //库存
+            if (stock.getInventory() != null) {
+                stock.setInventoryStr(formatDouble(stock.getInventory()) + stock.getUnit());
+            }
+        }
+        return list;
+    }
+
+    private static String formatDouble(Double value) {
+        // 检查是否为整数（小数部分为 0）
+        if (value == Math.floor(value) && !Double.isInfinite(value)) {
+            return String.format("%.0f", value); // 格式化为整数
+        } else {
+            return String.valueOf(value); // 保留原有小数位
+        }
     }
 
 

@@ -3,7 +3,6 @@ package com.abt.salary.controller;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
-import com.abt.oa.AttendanceUtil;
 import com.abt.oa.entity.OrgLeader;
 import com.abt.oa.service.OrgLeaderService;
 import com.abt.salary.AutoCheckSalaryJob;
@@ -21,17 +20,15 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.SchedulerException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.Year;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.abt.salary.Constants.*;
@@ -88,9 +85,10 @@ public class SalaryController {
         clearSession(session);
         final SalaryMain salaryMain = salaryService.createSalaryMain(file, yearMonth, group, sheetNo);
         final SalaryPreview salaryPreview = salaryService.extractAndValidate(file.getInputStream(), salaryMain);
-        salaryService.saveExcelFile(file, salaryPreview.getSalaryMain());
-        session.setAttribute(S_SL_PREVIEW, salaryPreview);
-
+        if (salaryPreview.getFatalError().isEmpty()) {
+            salaryService.saveExcelFile(file, salaryPreview.getSalaryMain());
+            session.setAttribute(S_SL_PREVIEW, salaryPreview);
+        }
         return R.success(salaryPreview);
     }
 
@@ -98,7 +96,7 @@ public class SalaryController {
     public R<Object> importDb(@ModelAttribute SalaryMain slipForm, HttpServletRequest request) throws SchedulerException, ClassNotFoundException {
         HttpSession session = request.getSession();
         if (session == null) {
-            throw new BusinessException("会话失效，请刷新后重新进入");
+            throw new BusinessException("会话失效，请刷新后重新进入并上传");
         }
         //校验
         SalaryPreview salaryPreview = (SalaryPreview) session.getAttribute(S_SL_PREVIEW);
@@ -284,6 +282,10 @@ public class SalaryController {
         return R.success(prev);
     }
 
+    /**
+     * 根据各部门的slip id审核
+     * @param slipIds 待审核的slipId
+     */
     @PostMapping("/chk/dept/do")
     public R<List<SalarySlip>> deptCheck(@RequestBody List<String> slipIds) {
         final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
@@ -292,6 +294,21 @@ public class SalaryController {
             return R.fail("您无权审批(角色:" + auth.getRole() + ")");
         }
         return salaryService.deptCheck(auth, slipIds);
+    }
+
+    /**
+     * 审核当月所有的
+     * @param yearMonth 工资年月yyyy-MM
+     */
+    @GetMapping("/chk/ym")
+    public R<Object> checkAllByYearMonth(@DateTimeFormat(pattern = "yyyy-MM") String yearMonth) {
+        final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
+        if (SL_CHK_CEO.equals(auth.getRole())) {
+            salaryService.ceoCheckAllByYearMonth(yearMonth, auth);
+            return R.success(String.format("%s工资已全部审批", yearMonth));
+        } else {
+            throw new BusinessException("您无权进行全部审批");
+        }
     }
 
     /**
@@ -374,6 +391,32 @@ public class SalaryController {
             }
         }
         return R.success(false, "无导出权限");
+    }
+
+    @GetMapping("/chk/smry/year")
+    public R<List<SalaryMain>> getAllSalaryMainByYear(@RequestParam(required = false) String year) {
+        if (StringUtils.isBlank(year)) {
+            year = Year.now().getValue() + "";
+        }
+        final List<SalaryMain> list = salaryService.findAllSalaryMainByYearLike(year);
+        return R.success(list, "查询成功");
+    }
+
+    @GetMapping("/chk/smry/dept")
+    public R<Map<String, List<DeptSummary>>> getDeptSummaryTable(@RequestParam @DateTimeFormat(pattern = "yyyy-MM") String yearMonth) {
+        final List<SalaryMain> mainList = salaryService.findAllSalaryMainByYearLike(yearMonth);
+        Map<String, List<DeptSummary>> map = new HashMap<>();
+        for (SalaryMain main : mainList) {
+            final List<DeptSummary> list = salaryService.getDeptSummaryTableByMainId(main.getId());
+            map.put(main.getGroup(), list);
+        }
+        return R.success(map);
+    }
+
+    @GetMapping("/chk/auth")
+    public R<CheckAuth> getCheckAuth() {
+        final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
+        return R.success(auth);
     }
 
     private void copyForm(SalaryMain slipForm, SalaryMain main) {

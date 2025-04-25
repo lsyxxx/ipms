@@ -53,6 +53,7 @@ import static com.abt.salary.Constants.*;
 import static com.abt.salary.entity.SalarySlip.LABEL_NAME;
 import static com.abt.salary.entity.SalarySlip.LABEL_USER_CHECK;
 import static com.abt.salary.model.CheckAuth.*;
+import static java.util.stream.Collectors.toList;
 
 /**
   * 
@@ -103,7 +104,11 @@ public class SalaryServiceImpl implements SalaryService {
     @Value("${abt.sl.check}")
     private String checkExcelDir;
 
+    @Value("${abt.sl.slip.url}")
+    private String userSlipUrl;
 
+    @Value("${abt.sl.chk.url}")
+    private String checkListUrl;
 
 
 
@@ -146,6 +151,7 @@ public class SalaryServiceImpl implements SalaryService {
         salaryMain.setNetPaidColumnIndex(listener.getNetPaidRawColumnIndex());
         salaryMain.setJobNumberColumnIndex(listener.getJobNumberRawColumnIndex());
         salaryMain.setName(listener.getNameRawColumnIndex());
+        salaryMain.setEmpCostColumnIndex(listener.getEmpCostColumnIndex());
 
         //组装preview
         SalaryPreview preview = this.buildPreview(listener, salaryMain);
@@ -161,6 +167,9 @@ public class SalaryServiceImpl implements SalaryService {
         if (!listener.includeNetPaid()) {
             preview.addFatalError("严重错误:表头中没有\"本月实发工资\"，请修改工资表后重新上传");
         }
+        if (!listener.includeEmpCost()) {
+            preview.addFatalError("严重错误:表头中没有\"用工成本\"，请修改工资表后重新上传");
+        }
         //严重错误直接抛出，否则后续可能存在问题
         if (!preview.hasFatalError()) {
             log.error("==== FATAL ERROR! {}",  preview.getFatalError());
@@ -170,6 +179,15 @@ public class SalaryServiceImpl implements SalaryService {
         preview.setJobNumberColumnIndex(listener.getJobNumberRawColumnIndex());
         preview.setNetPaidColumnIndex(listener.getNetPaidRawColumnIndex());
         preview.setNameColumnIndex(listener.getNameRawColumnIndex());
+        preview.setEmpCostColumnIndex(listener.getEmpCostColumnIndex());
+        //合计数据
+        salaryMain.setSumEmp(listener.getSumEmp());
+        salaryMain.setSumCost(listener.getSumCost().setScale(2, RoundingMode.FLOOR).doubleValue());
+        salaryMain.setSumNetPaid(listener.getSumNetPaid().setScale(2, RoundingMode.FLOOR).doubleValue());
+
+        preview.setSumEmp(listener.getSumEmp());
+        preview.setSumCost(listener.getSumCost().setScale(2, RoundingMode.FLOOR).doubleValue());
+        preview.setSumNetPaid(listener.getSumNetPaid().setScale(2, RoundingMode.FLOOR).doubleValue());
 
         //-- 校验人员信息:目的是保证工资条正确发放
         //0. 所有人员工号是否都存在
@@ -208,6 +226,9 @@ public class SalaryServiceImpl implements SalaryService {
         preview.setNameColumnIndex(listener.getNameRawColumnIndex());
         preview.setNetPaidColumnIndex(listener.getNetPaidRawColumnIndex());
         preview.setJobNumberColumnIndex(listener.getJobNumberRawColumnIndex());
+        preview.setSumEmp(listener.getSumEmp());
+        preview.setSumCost(listener.getSumCost().setScale(2, RoundingMode.FLOOR).doubleValue());
+        preview.setSumNetPaid(listener.getSumNetPaid().setScale(2, RoundingMode.FLOOR).doubleValue());
         preview.buildHeader(listener.getRawHeader(), main.getId());
         return preview;
     }
@@ -391,6 +412,34 @@ public class SalaryServiceImpl implements SalaryService {
         }
     }
 
+    public void findSalaryMainByYearMonth(String yearMonth) {
+        //验证yearMonth
+
+    }
+
+
+    @Override
+    public List<DeptSummary> getDeptSummaryTableByMainId(String mid) {
+        List<DeptSummary> list = new ArrayList<>();
+        final List<SalarySlip> slips = salarySlipRepository.findByMainId(mid);
+        final Map<String, List<SalarySlip>> map = slips.stream().collect(Collectors.groupingBy(SalarySlip::getDeptExcel, toList()));
+        for (Map.Entry<String, List<SalarySlip>> entry : map.entrySet()) {
+            final String deptExcel = entry.getKey();
+            final List<SalarySlip> slipList = entry.getValue();
+            DeptSummary ds = new DeptSummary();
+            ds.setDeptName(deptExcel);
+            ds.setSumEmp(slipList.size());
+            final BigDecimal sumCost = slipList.stream().map(SalarySlip::getEmpCost).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+            ds.setSumCost(sumCost);
+            final BigDecimal sumNetPaid = slipList.stream().map(SalarySlip::getNetPaid).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+            ds.setSumNetPaid(sumNetPaid);
+            ds.setIndex(slipList.stream().map(SalarySlip::getIndexExcel).filter(Objects::nonNull).min(Integer::compareTo).orElse(0));
+            list.add(ds);
+        }
+        list.sort(Comparator.comparing(DeptSummary::getIndex));
+        return list;
+    }
+
 
     //导入数据库和发送工资条到个人
     @Transactional
@@ -418,6 +467,13 @@ public class SalaryServiceImpl implements SalaryService {
             String netPaid = row.get(idx).getValue();
             if (netPaid != null) {
                 slip.setNetPaid(new BigDecimal(netPaid));
+            }
+            idx = main.getEmpCostColumnIndex();
+            if (idx != null) {
+                String empCost = row.get(idx).getValue();
+                if (empCost != null) {
+                    slip.setEmpCost(new BigDecimal(empCost));
+                }
             }
             //error
             final SalaryCell rowInfoCell = getRowInfoCell(row);
@@ -456,8 +512,8 @@ public class SalaryServiceImpl implements SalaryService {
 
         try {
             //发送消息，失败不影响其他的
-            final List<SystemMessage> umsgs = createMsgs(users, "/sl/my/index", "您的工资条已发放，请及时查看并确认");
-            final List<SystemMessage> cmsgs = createMsgs(chks, "/sl/chk/smry/list", "本月工资表已生成，请审核");
+            final List<SystemMessage> umsgs = createMsgs(users, userSlipUrl, "您的工资条已发放，请及时查看并确认");
+            final List<SystemMessage> cmsgs = createMsgs(chks, checkListUrl, "本月工资表已生成，请审核");
             cmsgs.addAll(umsgs);
             systemMessageService.sendAll(cmsgs);
         } catch (Exception e) {
@@ -588,7 +644,7 @@ public class SalaryServiceImpl implements SalaryService {
         }
         //组装成UserSalaryDetail
         List<UserSalaryDetail> userSalaryDetails = new ArrayList<>();
-        final Map<String, List<SalaryCell>> map = list.stream().collect(Collectors.groupingBy(item -> item.getParentLabel() == null ? "" : item.getParentLabel(), Collectors.toList()));
+        final Map<String, List<SalaryCell>> map = list.stream().collect(Collectors.groupingBy(item -> item.getParentLabel() == null ? "" : item.getParentLabel(), toList()));
         map.forEach((k, v) -> {
             UserSalaryDetail us = new UserSalaryDetail();
             us.setLabel(k);
@@ -876,7 +932,7 @@ public class SalaryServiceImpl implements SalaryService {
     private Map<Integer, List<SalaryCell>> convertRows(List<SalaryCell> slCells) {
         return slCells.stream().collect(
                 Collectors.groupingBy(
-                        SalaryCell::getRowIndex, LinkedHashMap::new, Collectors.toList()));
+                        SalaryCell::getRowIndex, LinkedHashMap::new, toList()));
     }
 
     private List<SalarySlip> findSalarySlipsByCheckAuth(CheckAuth checkAuth, String mid) {
@@ -1010,7 +1066,7 @@ public class SalaryServiceImpl implements SalaryService {
     public List<SalaryMain> summaryCheckList(String yearMonth, CheckAuth checkAuth) {
         List<SalaryMain> list = new ArrayList<>();
         final List<SalaryMain> slms = salaryMainRepository.findByYearMonthNullable(yearMonth);
-        final Map<String, List<SalaryMain>> smMap = slms.stream().collect(Collectors.groupingBy(SalaryMain::getYearMonth, Collectors.toList()));
+        final Map<String, List<SalaryMain>> smMap = slms.stream().collect(Collectors.groupingBy(SalaryMain::getYearMonth, toList()));
         for(Map.Entry<String, List<SalaryMain>> entry : smMap.entrySet()) {
             SalaryMain sm = new SalaryMain();
             sm.setYearMonth(entry.getKey());
@@ -1101,10 +1157,6 @@ public class SalaryServiceImpl implements SalaryService {
         return autoCheckTime;
     }
 
-    public void exportSalaryCheckExcel() {
-
-    }
-
     /**
      * 根据序号排序行
      * @param table table
@@ -1165,7 +1217,7 @@ public class SalaryServiceImpl implements SalaryService {
 
         //2. 创建excel
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
-            XSSFSheet sheet = workbook.createSheet("ABT");
+            XSSFSheet sheet = workbook.createSheet();
 
             //---- 首行标题
             Row row0 = sheet.createRow(0);
@@ -1239,7 +1291,7 @@ public class SalaryServiceImpl implements SalaryService {
                 UserSignature userSig = usMap.get(jobNumber);
                 int col = data.size() ;
                 colMax = Math.max(colMax, col);
-                if (slip.isForceCheck() && userSig != null && slip.isCheck()) {
+                if (userSig != null && slip.isCheck()) {
                     insertImage(sigDir + userSig.getFileName(), workbook, sheet, row, col,r + 3);
                 }
                 col = col + 1;
@@ -1297,18 +1349,18 @@ public class SalaryServiceImpl implements SalaryService {
 
             // 锁定结构（防止添加/删除 sheet）
             // 设置允许的操作：允许格式化列（隐藏列需要这个权限）
-//            sheet.enableLocking();
-//            sheet.lockDeleteColumns(true);
-//            sheet.lockDeleteRows(true);
-//            sheet.lockInsertColumns(true);
-//            sheet.lockInsertRows(true);
-//            sheet.lockSort(true);
-//            sheet.lockAutoFilter(true);
-//            sheet.lockFormatCells(true);
-//            sheet.lockFormatRows(true);
-//            sheet.lockFormatColumns(false); // 允许格式化列（可以隐藏）
-//            sheet.protectSheet("readonly123");
-//            workbook.setWorkbookPassword("readonly123", null); // 设置保护密码
+            sheet.enableLocking();
+            sheet.lockDeleteColumns(true);
+            sheet.lockDeleteRows(true);
+            sheet.lockInsertColumns(true);
+            sheet.lockInsertRows(true);
+            sheet.lockSort(true);
+            sheet.lockAutoFilter(true);
+            sheet.lockFormatCells(true);
+            sheet.lockFormatRows(true);
+            sheet.lockFormatColumns(false); // 允许格式化列（可以隐藏）
+            sheet.protectSheet("readonly123");
+            workbook.setWorkbookPassword("readonly123", null); // 设置保护密码
 
             // 输出文件
             try (FileOutputStream fos = new FileOutputStream(excelName)) {
@@ -1365,6 +1417,10 @@ public class SalaryServiceImpl implements SalaryService {
         return style;
     }
 
+    @Override
+    public List<SalaryMain> findAllSalaryMainByYearLike(String year) {
+        return salaryMainRepository.findByYear(year);
+    }
 
     /**
      * 插入excel图片，固定高度，宽度
@@ -1374,7 +1430,6 @@ public class SalaryServiceImpl implements SalaryService {
      * @param row row
      * @param colIndex 插入的单元格col
      * @param rowIndex 插入的单元各row
-     * @throws IOException
      */
     private void insertImage(String imagePath, XSSFWorkbook workbook, XSSFSheet sheet, Row row, int colIndex, int rowIndex) {
         try {
@@ -1403,13 +1458,14 @@ public class SalaryServiceImpl implements SalaryService {
         } catch (Exception e) {
             log.error("User signature not found: " + imagePath, e);
         }
-
     }
 
-    public static void main(String[] args) {
-        String s = "jjj";
-        System.out.println(new BigDecimal(s));
+    @Override
+    public void ceoCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth) {
+        if (StringUtils.isBlank(yearMonth)) {
+            throw new BusinessException("工资年月未知");
+        }
+        salarySlipRepository.ceoCheckByYearMonth(yearMonth, LocalDateTime.now());
     }
-
 
 }

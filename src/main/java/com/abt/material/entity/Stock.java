@@ -142,8 +142,17 @@ public class Stock implements WithQuery<Stock> {
     private Double inventory;
 
     @Transient
+    private String inventoryStr;
+
+    @Transient
     private String orderRemark;
 
+    @Transient
+    private String name;
+    @Transient
+    private String quantityStr;
+    @Transient
+    private String orderDateStr;
     /**
      * 添加stockOrder信息
      */
