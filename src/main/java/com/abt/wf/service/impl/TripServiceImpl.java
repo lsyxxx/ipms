@@ -274,7 +274,7 @@ public class TripServiceImpl extends AbstractWorkflowCommonServiceImpl<TripMain,
     public TripMain getEntityWithCurrentTask(String id) {
         UserView user = TokenUtil.getUserFromAuthToken();
         final TripMain main = this.load(id);
-        buildActiveTask(main);
+        setActiveTask(main);
         main.setApproveUser(user.getId().equals(main.getCurrentTaskAssigneeId()));
         return main;
     }

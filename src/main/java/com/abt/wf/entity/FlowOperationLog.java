@@ -3,6 +3,7 @@ package com.abt.wf.entity;
 import com.abt.common.util.TimeUtil;
 import com.abt.wf.config.Constants;
 import com.abt.wf.model.ActionEnum;
+import com.abt.wf.util.WorkFlowUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.poi.ss.formula.functions.T;
 import org.camunda.bpm.engine.task.Task;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -156,6 +158,24 @@ public class FlowOperationLog {
         return optLog;
     }
 
+    public static FlowOperationLog assignLog(String operatorId, String operatorName, WorkflowBase form, Task task, String entityId, String comment, String decision) {
+        FlowOperationLog optLog = FlowOperationLog.create(operatorId, operatorName, form);
+        optLog.setEntityId(entityId);
+        optLog.setTaskInstanceId(task.getId());
+        optLog.setTaskName(task.getName() + "(转交)");
+        optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
+        optLog.setTaskEndTime(LocalDateTime.now());
+        optLog.setAction(ActionEnum.ASSIGN.name());
+        optLog.setComment(comment);
+        if (WorkFlowUtil.isPass(decision)) {
+            optLog.setTaskResult(STATE_DETAIL_PASS);
+        } else {
+            optLog.setTaskResult(STATE_DETAIL_REJECT);
+        }
+
+        return optLog;
+    }
+
 
 
     /**
@@ -182,7 +202,8 @@ public class FlowOperationLog {
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         optLog.setTaskEndTime(LocalDateTime.now());
-        optLog.setAction(ActionEnum.PASS.name());
+        optLog.setAction(ActionEnum.APPROVE.name());
+        optLog.setTaskResult(STATE_DETAIL_PASS);
         return optLog;
     }
 
@@ -195,7 +216,8 @@ public class FlowOperationLog {
         optLog.setTaskName(task.getName());
         optLog.setTaskStartTime(TimeUtil.from(task.getCreateTime()));
         optLog.setTaskEndTime(LocalDateTime.now());
-        optLog.setAction(ActionEnum.REJECT.name());
+        optLog.setAction(ActionEnum.APPROVE.name());
+        optLog.setTaskResult(STATE_DETAIL_REJECT);
         return optLog;
     }
 

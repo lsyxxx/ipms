@@ -85,4 +85,5 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
     List<EmployeeInfo> findDms();
 
     long countByJobNumber(@Size(max = 255) @NotNull String jobNumber);
+
 }

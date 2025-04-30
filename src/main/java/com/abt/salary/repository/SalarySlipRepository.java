@@ -161,13 +161,6 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
 """)
     List<SlipCount> countAllCheck(String yearMonth);
 
-    @Modifying
-    @Transactional
-    @Query("""
-        update SalarySlip s set s.isCheck = false, s.checkTime = null, s.autoCheckTime = :autoCheckTime  where s.id = :slipId
-""")
-    Integer updateSendById(String slipId, LocalDateTime autoCheckTime);
-
     List<SalarySlip> findByYearMonth(String yearMonth);
 
     @Modifying
@@ -177,5 +170,24 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
 """)
     void ceoCheckByYearMonth(String yearMonth, LocalDateTime checkTime);
 
+    @Modifying
+    @Transactional
+    @Query("""
+    update SalarySlip s set s.isCheck = true, s.checkTime = :checkTime, s.checkType = 'manual'
+    where s.yearMonth = :yearMonth and s.isCheck = false and s.isForceCheck = true
+""")
+    void updateAllUnchecked(LocalDateTime checkTime, String yearMonth);
 
+    @Modifying
+    @Transactional
+    @Query("""
+        update SalarySlip s set s.isCheck = false, s.checkTime = null, s.autoCheckTime = :autoCheckTime  where s.id = :slipId
+""")
+    Integer updateSendById(String slipId, LocalDateTime autoCheckTime);
+
+
+    @Query("""
+    select s from SalarySlip s where s.isCheck = false and s.isForceCheck = true and s.mainId = :mainId
+""")
+    List<SalarySlip> findUncheckByMainId(String mainId);
 }

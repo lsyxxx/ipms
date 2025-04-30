@@ -2,11 +2,19 @@ package com.abt.sys.service.impl;
 
 import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.model.User;
+import com.abt.common.util.QueryUtil;
+import com.abt.sys.model.dto.EmployeeInfoRequestForm;
 import com.abt.sys.model.dto.UserRequestForm;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.model.entity.Org;
 import com.abt.sys.repository.EmployeeRepository;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
+import com.abt.wf.entity.UserSignature;
+import com.abt.wf.model.EmployeeSignatureDTO;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -21,10 +29,12 @@ import java.util.List;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final EntityManager entityManager;
 
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EntityManager entityManager) {
         this.employeeRepository = employeeRepository;
+        this.entityManager = entityManager;
     }
 
 
@@ -109,6 +119,54 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeInfo> findDms() {
         return employeeRepository.findDms();
+    }
+
+
+    @Override
+    public List<EmployeeSignatureDTO> findWithSignature(EmployeeInfoRequestForm requestForm) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<EmployeeSignatureDTO> selectQuery = cb.createQuery(EmployeeSignatureDTO.class);
+        Root<EmployeeInfo> root = selectQuery.from(EmployeeInfo.class);
+        final Join<EmployeeInfo, UserSignature> sigJoin = root.join("userSignature", JoinType.LEFT);
+        final Join<EmployeeInfo, Org> orgJoin = root.join("department", JoinType.LEFT);
+        List<Predicate> predicates = new ArrayList<>();
+        if (StringUtils.isNotBlank(requestForm.getJobNumber())) {
+            predicates.add(cb.like(root.get("jobNumber"), QueryUtil.like(requestForm.getJobNumber())));
+        }
+        if (StringUtils.isNotBlank(requestForm.getUsername())) {
+            predicates.add(cb.like(root.get("name"), QueryUtil.like(requestForm.getUsername())));
+        }
+        if (requestForm.getIsExit() != null) {
+            predicates.add(cb.equal(root.get("isExit"), requestForm.getIsExit()));
+        }
+        if (StringUtils.isNotBlank(requestForm.getDeptId())) {
+            predicates.add(cb.equal(root.get("dept"), requestForm.getDeptId()));
+        }
+        if (requestForm.getHasSig() != null) {
+            if (requestForm.getHasSig()) {
+                predicates.add(cb.isNotNull(sigJoin.get("fileName")));
+            } else {
+                predicates.add(cb.isNull(sigJoin.get("fileName")));
+            }
+        }
+        selectQuery.where(cb.and(predicates.toArray(new Predicate[0])));
+        selectQuery.orderBy(cb.asc(root.get("jobNumber")));
+
+        selectQuery.select(cb.construct(EmployeeSignatureDTO.class
+                , root.get("name")
+                , root.get("jobNumber")
+                , root.get("company")
+                , root.get("dept")
+                , root.get("position")
+                , orgJoin.get("name")
+                , sigJoin.get("id")
+                , sigJoin.get("fileName")
+                )
+        );
+
+
+        return entityManager.createQuery(selectQuery).getResultList();
+
     }
 
 }

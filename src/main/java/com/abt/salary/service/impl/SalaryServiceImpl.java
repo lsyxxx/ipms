@@ -1468,4 +1468,51 @@ public class SalaryServiceImpl implements SalaryService {
         salarySlipRepository.ceoCheckByYearMonth(yearMonth, LocalDateTime.now());
     }
 
+    @Override
+    public SalaryMain recalculateSalaryMainSumData(String mid) {
+        SalaryMain sm = findSalaryMainById(mid);
+        //empCost
+        final Integer empCostColumnIndex = sm.getEmpCostColumnIndex();
+
+        if (empCostColumnIndex != null) {
+            //获取cells计算
+            final List<SalaryCell> cells = salaryCellRepository.findByColumnIndexAndMidOrderByRowIndex(empCostColumnIndex, mid);
+            sm.setSumCost(sumDoubleValue(cells));
+        }
+        //netPaid
+        final Integer netPaidColumnIndex = sm.getNetPaidColumnIndex();
+        if (netPaidColumnIndex != null) {
+            final List<SalaryCell> cells = salaryCellRepository.findByColumnIndexAndMidOrderByRowIndex(netPaidColumnIndex, mid);
+            sumDoubleValue(cells);
+        }
+        sm = salaryMainRepository.save(sm);
+        return sm;
+
+    }
+
+    public Double sumDoubleValue(List<SalaryCell> cells) {
+        return cells.stream().filter(c -> StringUtils.isNotBlank(c.getValue())).map(c -> {
+            try {
+                return new BigDecimal(c.getValue());
+            } catch (Exception e) {
+                log.error(String.format("%s无法转为数字", c.getValue()), e);
+                return BigDecimal.ZERO;
+            }
+        }).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue();
+    }
+
+
+    @Override
+    public void adminUserCheck(String yearMonth) {
+        if (StringUtils.isBlank(yearMonth)) {
+            throw new BusinessException("工资年月为传入");
+        }
+        salarySlipRepository.updateAllUnchecked(LocalDateTime.now(), yearMonth);
+    }
+
+    @Override
+    public List<SalarySlip> findUncheckUserSlipsByMainId(String mainId) {
+        return salarySlipRepository.findUncheckByMainId(mainId);
+    }
+
 }

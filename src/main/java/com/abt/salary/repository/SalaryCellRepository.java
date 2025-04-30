@@ -1,6 +1,7 @@
 package com.abt.salary.repository;
 
 import com.abt.salary.entity.SalaryCell;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -56,4 +57,6 @@ public interface SalaryCellRepository extends JpaRepository<SalaryCell, String> 
     @Query("update SalaryCell s set s.value = :value where s.id = :id")
     @Modifying
     Integer updateValueById(@Size(max = 255) String value, String id);
+
+    List<SalaryCell> findByColumnIndexAndMidOrderByRowIndex(@NotNull Integer columnIndex, @Size(max = 255) String mid);
 }

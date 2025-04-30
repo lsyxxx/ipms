@@ -1,19 +1,18 @@
 package com.abt.qrtzjob.service;
 
-import com.abt.qrtzjob.entity.QuartzJobStore;
-import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 
 public interface QuartzJobService {
     /**
-     * 注册一个任务
-     * 1. 注册quartz job scheduler
-     * 2. 保存Job store
+     * 创建定时任务
+     * @param salarySlipId 工资条ID
+     * @param executeTime 执行时间
      */
-    void jobRegister(JobDetail jobDetail, Trigger trigger, QuartzJobStore jobStore) throws SchedulerException;
+    void createSalaryAutoConfirmJob(String salarySlipId, LocalDateTime executeTime) throws SchedulerException;
 
-    void saveJobStore(QuartzJobStore quartzJobStore);
-
-    QuartzJobStore findById(String id);
+    List<String> listPendingJobs() throws SchedulerException;
 }

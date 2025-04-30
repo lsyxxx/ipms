@@ -121,5 +121,5 @@ public interface WorkFlowService<T> {
     /**
      * 处理转办，处理后回到转办前的节点
      */
-    void resolveTask(T form);
+    void resolveTask(T form, String comment, String decision);
 }

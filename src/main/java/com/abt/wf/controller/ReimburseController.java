@@ -225,19 +225,24 @@ public class ReimburseController {
      * 转交任务
      */
     @GetMapping("/task/delegate")
-    public R<Object> delegateTask(@RequestBody Reimburse form) {
-        setSubmitUser(form);
-        reimburseService.delegateTask(form, form.getDelegateUser(), form.getComment(), form.getDecision());
-        return R.success(String.format("已将任务转交给%s", form.getDelegateUser()));
+    public R<Object> delegateTask(String entityId, String comment, String decision, String toUserid) {
+        final Reimburse entity = reimburseService.load(entityId);
+        setSubmitUser(entity);
+        entity.setComment(comment);
+        entity.setDecision(decision);
+        entity.setDelegateUser(toUserid);
+        reimburseService.delegateTask(entity, entity.getDelegateUser(), entity.getComment(), entity.getDecision());
+        return R.success(String.format("已将任务转交给%s", entity.getDelegateUser()));
     }
 
     /**
      * 处理转办任务
      */
-    @PostMapping("/task/resovle")
-    public R<Object> resolveTask(@RequestBody Reimburse form) {
+    @GetMapping("/task/resolve")
+    public R<Object> resolveTask(String entityId, String comment, String decision) {
+        final Reimburse form = reimburseService.load(entityId);
         setSubmitUser(form);
-        reimburseService.resolveTask(form);
+        reimburseService.resolveTask(form, comment, decision);
         return R.success("已处理转办任务");
     }
 

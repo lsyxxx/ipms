@@ -1,7 +1,5 @@
 package com.abt.salary.service.impl;
 
-import com.abt.salary.AutoCheckSalaryJob;
-import com.abt.qrtzjob.QuartzJobCreator;
 import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.entity.SalaryHeader;
 import com.abt.salary.entity.SalaryMain;
@@ -17,11 +15,6 @@ import com.aspose.cells.SaveFormat;
 import com.aspose.cells.Workbook;
 import com.aspose.cells.Worksheet;
 import com.aspose.cells.*;
-import org.apache.commons.io.FileUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.ss.util.WorkbookUtil;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 import org.quartz.Job;
 import org.quartz.SchedulerException;
@@ -29,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,10 +30,6 @@ class SalaryServiceImplTest {
 
     @Autowired
     private SalaryService salaryService;
-    @Autowired
-    private AutoCheckSalaryJob autoCheckSalaryJob;
-    @Autowired
-    private QuartzJobCreator quartzJobCreator;
     @Autowired
     private UserSignatureRepository userSignatureRepository;
 

@@ -1,5 +1,6 @@
 package com.abt.wf.entity;
 
+import com.abt.sys.model.entity.EmployeeInfo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -40,5 +41,14 @@ public class UserSignature {
     @Lob
     @Column(name = "base64")
     private String base64;
+
+    @Transient
+    private String deptName;
+    @Transient
+    private String deptId;
+    @Transient
+    private String company;
+    @Transient
+    private String position;
 
 }

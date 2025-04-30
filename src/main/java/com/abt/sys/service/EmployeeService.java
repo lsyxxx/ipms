@@ -1,8 +1,10 @@
 package com.abt.sys.service;
 
 import com.abt.common.model.User;
+import com.abt.sys.model.dto.EmployeeInfoRequestForm;
 import com.abt.sys.model.dto.UserRequestForm;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.wf.model.EmployeeSignatureDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -32,4 +34,6 @@ public interface EmployeeService {
      * 查询部门经理
      */
     List<EmployeeInfo> findDms();
+
+    List<EmployeeSignatureDTO> findWithSignature(EmployeeInfoRequestForm requestForm);
 }

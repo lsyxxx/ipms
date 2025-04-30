@@ -6,6 +6,7 @@ import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.service.CreditBookService;
 import com.abt.finance.service.ICreditBook;
+import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
@@ -64,11 +65,11 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     private final IFileService fileService;
     private final HistoryService historyService;
     private final CreditBookService creditBookService;
-
+    private final InvoiceService invoiceService;
 
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                  @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository, SignatureService signatureService,
-                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, CreditAndDebitBook<PayVoucher> creditAndDebitBook, IFileService fileService, HistoryService historyService, CreditBookService creditBookService) {
+                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, CreditAndDebitBook<PayVoucher> creditAndDebitBook, IFileService fileService, HistoryService historyService, CreditBookService creditBookService, InvoiceService invoiceService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
         this.flowOperationLogService = flowOperationLogService;
@@ -83,6 +84,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.fileService = fileService;
         this.historyService = historyService;
         this.creditBookService = creditBookService;
+        this.invoiceService = invoiceService;
     }
 
     @Override
@@ -138,6 +140,12 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     @Override
     void rejectHandler(PayVoucher form, Task task) {
         this.commonRejectHandler(form, task, form.getComment(), form.getId());
+        //删除发票
+        try {
+            invoiceService.deleteByRef(form.getId(), getServiceName());
+        } catch (Exception e) {
+            log.error("删除发票失败! Cause: " + e.getMessage(), e);
+        }
     }
 
     @Override

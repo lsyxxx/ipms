@@ -23,19 +23,19 @@ import java.util.List;
 public class UserSignatureServiceImpl implements UserSignatureService {
 
     private final UserSignatureRepository userSignatureRepository;
-    private final EmployeeRepository employeeRepository;
 
     private String sigDir;
 
-    public UserSignatureServiceImpl(UserSignatureRepository userSignatureRepository, EmployeeRepository employeeRepository) {
+    public UserSignatureServiceImpl(UserSignatureRepository userSignatureRepository) {
         this.userSignatureRepository = userSignatureRepository;
-        this.employeeRepository = employeeRepository;
     }
 
     @Override
     public List<UserSignature> getAllUserSignatures() {
         return userSignatureRepository.findAllUserSignatures();
     }
+
+
 
 
     @Override

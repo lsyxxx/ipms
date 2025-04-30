@@ -2,6 +2,7 @@ package com.abt.sys.model.entity;
 
 import com.abt.common.model.User;
 import com.abt.sys.model.WithQuery;
+import com.abt.wf.entity.UserSignature;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -32,7 +33,12 @@ import java.time.LocalDateTime;
         @NamedEntityGraph(
                 name = "Employee.withTUser",
                 attributeNodes = @NamedAttributeNode("tUser")
-        )
+        ),
+        @NamedEntityGraph(
+                name = "Employee.withSignature",
+                attributeNodes = @NamedAttributeNode("userSignature")
+        ),
+
 })
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class EmployeeInfo implements WithQuery<EmployeeInfo> {
@@ -307,6 +313,11 @@ public class EmployeeInfo implements WithQuery<EmployeeInfo> {
     @NotFound(action= NotFoundAction.IGNORE)
     private TUser tUser;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "jobNumber", referencedColumnName = "job_number", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
+    @NotFound(action= NotFoundAction.IGNORE)
+    private UserSignature userSignature;
+
     public EmployeeInfo(EmployeeInfo e, String userid) {
         this.id = e.id;
         this.userid = userid;
@@ -335,7 +346,7 @@ public class EmployeeInfo implements WithQuery<EmployeeInfo> {
                 ", name='" + name + '\'' +
                 ", dept='" + dept + '\'' +
                 ", sex='" + sex + '\'' +
-                ", userid='" + userid + '\'' +
+//                ", userid='" + userid + '\'' +
                 '}';
     }
     @Override

@@ -164,4 +164,17 @@ public interface SalaryService {
     List<SalaryMain> findAllSalaryMainByYearLike(String year);
 
     void ceoCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth);
+
+    /**
+     * 重新计算main中的统计数据
+     */
+    SalaryMain recalculateSalaryMainSumData(String mid);
+
+    /**
+     * 手动个人确认，防止自动确认无效
+     * 仅确认未确认的
+     */
+    void adminUserCheck(String yearMonth);
+
+    List<SalarySlip> findUncheckUserSlipsByMainId(String mainId);
 }

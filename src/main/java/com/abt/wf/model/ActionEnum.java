@@ -7,6 +7,7 @@ import lombok.Getter;
 public enum ActionEnum {
 
     APPLY("申请"),
+    APPROVE("审批"),
     PASS("同意"),
     REJECT("拒绝"),
     REVOKE("撤回"),

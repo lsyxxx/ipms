@@ -5,7 +5,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
 import com.abt.oa.entity.OrgLeader;
 import com.abt.oa.service.OrgLeaderService;
-import com.abt.salary.AutoCheckSalaryJob;
+import com.abt.qrtzjob.service.QuartzJobService;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
 import com.abt.salary.model.*;
@@ -44,18 +44,18 @@ public class SalaryController {
 
     private final SalaryService salaryService;
     private final EmployeeService employeeService;
-    private final AutoCheckSalaryJob autoCheckSalaryJob;
     private final OrgLeaderService orgLeaderService;
+    private final QuartzJobService quartzJobService;
 
     //导出工资审批表权限
     public static final String ROLE_CHECK_EXPORT = "SL_EXPORT_CHECK";
 
 
-    public SalaryController(SalaryService salaryService, EmployeeService employeeService, AutoCheckSalaryJob autoCheckSalaryJob, OrgLeaderService orgLeaderService) {
+    public SalaryController(SalaryService salaryService, EmployeeService employeeService, OrgLeaderService orgLeaderService, QuartzJobService quartzJobService) {
         this.salaryService = salaryService;
         this.employeeService = employeeService;
-        this.autoCheckSalaryJob = autoCheckSalaryJob;
         this.orgLeaderService = orgLeaderService;
+        this.quartzJobService = quartzJobService;
     }
 
 
@@ -106,8 +106,7 @@ public class SalaryController {
         SalaryMain main = salaryPreview.getSalaryMain();
         copyForm(slipForm, main);
         salaryService.salaryImport(salaryPreview.getSalaryMain(), salaryPreview);
-        autoCheckSalaryJob.createJobAndScheduler(main.getAutoCheckTime());
-        return R.success("发送成功!");
+        return R.success(salaryPreview, "导入工资表成功!");
     }
 
     /**
@@ -253,10 +252,26 @@ public class SalaryController {
         return R.success("已确认");
     }
 
-    @GetMapping("/autocheck")
-    public R<Object> autoCheck(LocalDateTime autoCheckTime) throws SchedulerException, ClassNotFoundException {
-        autoCheckSalaryJob.createJobAndScheduler(autoCheckTime);
-        return R.success("创建任务成功!");
+    @GetMapping("/autocheck/mid")
+    public R<Object> autoCheckByMainId(LocalDateTime autoCheckTime, String mid) throws SchedulerException, ClassNotFoundException {
+        final List<SalarySlip> slips = salaryService.findUncheckUserSlipsByMainId(mid);
+        List<String> error = new ArrayList<>();
+        if (!slips.isEmpty()) {
+            slips.forEach(s -> {
+                try {
+                    quartzJobService.createSalaryAutoConfirmJob(s.getId(), LocalDateTime.now());
+                } catch (SchedulerException e) {
+                    log.error(e.getMessage(), e);
+                    error.add(String.format("用户[%s]工资条自动确认未创建", s.getName()));
+                }
+            });
+        }
+        if (!error.isEmpty()) {
+            return R.bizFail(error, "工资条自动确认任务创建");
+        } else {
+            return R.success("工资条自动确认任务创建成功");
+        }
+
     }
 
     /**
@@ -303,7 +318,7 @@ public class SalaryController {
     @GetMapping("/chk/ym")
     public R<Object> checkAllByYearMonth(@DateTimeFormat(pattern = "yyyy-MM") String yearMonth) {
         final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
-        if (SL_CHK_CEO.equals(auth.getRole())) {
+        if (SL_CHK_CEO.equals(auth.getRole()) || SL_CHK_HR.equals(auth.getRole())) {
             salaryService.ceoCheckAllByYearMonth(yearMonth, auth);
             return R.success(String.format("%s工资已全部审批", yearMonth));
         } else {
@@ -349,11 +364,12 @@ public class SalaryController {
     }
 
     @GetMapping("/cell/updateAndSend")
-    public R<Object> updateSalaryCellAndSend(String cellId, String value, String slipId) throws SchedulerException, ClassNotFoundException {
+    public R<Object> updateSalaryCellAndSend(String cellId, String value, String slipId, String mid) throws SchedulerException, ClassNotFoundException {
         salaryService.updateUserSalaryCell(cellId, value);
+        //重新计算并保存
+        final SalaryMain sm = salaryService.recalculateSalaryMainSumData(mid);
         final LocalDateTime autoCheckTime = salaryService.sendSlipById(slipId);
-        //自动确认
-        autoCheckSalaryJob.createJobAndScheduler(autoCheckTime);
+        //自动确认-- 个人单独确认
         return R.success("已发送工资条");
     }
 
@@ -417,6 +433,17 @@ public class SalaryController {
     public R<CheckAuth> getCheckAuth() {
         final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
         return R.success(auth);
+    }
+
+    /**
+     * 管理员手动确认
+     * @param yearMonth 工资年月
+     */
+    @Secured(ROLE_CHECK_EXPORT)
+    @GetMapping("/chk/admin/user")
+    public R<Object> adminUserCheck(String yearMonth) {
+        salaryService.adminUserCheck(yearMonth);
+        return R.success("已确认");
     }
 
     private void copyForm(SalaryMain slipForm, SalaryMain main) {

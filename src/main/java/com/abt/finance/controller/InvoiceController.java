@@ -66,7 +66,7 @@ public class InvoiceController {
         return R.success("删除成功!");
     }
 
-    @GetMapping("/del")
+    @GetMapping("/del/ref")
     public R<Object> deleteByRefCode(String refCode, String refName) {
         invoiceService.deleteByRef(refCode, refName);
         return R.success("删除成功!");

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.*;
+import org.camunda.bpm.engine.task.DelegationState;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -161,6 +162,16 @@ public class WorkflowBase extends AuditInfo {
      */
     @Transient
     private String delegateUser;
+
+    @Transient
+    private DelegationState delegateState;
+
+    /**
+     * 当前任务是被转办的
+     */
+    public boolean isCurrentTaskDelegated() {
+        return DelegationState.PENDING.equals(delegateState);
+    }
 
     @Transient
     private List<String> briefDesc;

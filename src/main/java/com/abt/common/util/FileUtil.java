@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  *
@@ -44,7 +45,7 @@ public class FileUtil {
      * @param originalFileName 原文件名，带后缀
      */
     public static String rename(String originalFileName) {
-        return TimeUtil.idGenerator() + "." + getFileExtension(originalFileName);
+        return UUID.randomUUID() + "." + getFileExtension(originalFileName);
     }
 
 
@@ -98,6 +99,7 @@ public class FileUtil {
         if (isRename) {
             fileName = rename(fileName);
         }
+
         File dest = new File(directory, fileName);
         try {
             file.transferTo(dest);

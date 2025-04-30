@@ -30,7 +30,6 @@ public class TimeUtil {
     /**
      * 根据当前时间生成ID
      * yyyyMMdd+timestamp
-     * @return
      */
     public static String idGenerator() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -39,6 +38,10 @@ public class TimeUtil {
 
     public static LocalDateTime from(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    public static Date to(LocalDateTime date) {
+        return Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
     }
 
 

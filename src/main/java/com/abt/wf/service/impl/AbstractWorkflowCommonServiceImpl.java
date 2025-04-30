@@ -512,6 +512,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
             entity.setCurrentTaskName(task.getName());
             entity.setCurrentTaskDefId(task.getTaskDefinitionKey());
             entity.setCurrentTaskStartTime(TimeUtil.from(task.getCreateTime()));
+            entity.setDelegateState(task.getDelegationState());
             final User user = userService.getSimpleUserInfo(task.getAssignee());
             if (user != null) {
                 entity.setCurrentTaskAssigneeName(user.getUsername());
@@ -812,21 +813,20 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         final Task currentTask = taskService.createTaskQuery().processInstanceId(form.getProcessInstanceId()).active().singleResult();
         form.setBusinessState(STATE_DETAIL_ACTIVE);
         taskService.delegateTask(currentTask.getId(), toUserid); // 委托任务
-        FlowOperationLog log = FlowOperationLog.create(form.getSubmitUserid(), form.getSubmitUsername(), form);
-        log.setAction(ActionEnum.ASSIGN.name());
-        log.setComment(comment);
-        if (StringUtils.isNotBlank(decision)) {
-            log.setTaskResult(WorkFlowUtil.decisionTranslate(decision));
-        }
+        saveAssignLog(form, currentTask, comment, decision);
+    }
+
+    private void saveAssignLog(T form, Task task, String comment, String decision) {
+        FlowOperationLog log = FlowOperationLog.assignLog(form.getSubmitUserid(), form.getSubmitUsername(), form, task, getEntityId(form), comment, decision);
         flowOperationLogService.saveLog(log);
     }
 
     @Override
-    public void resolveTask(T form) {
+    public void resolveTask(T form, String comment, String decision) {
         final Task currentTask = taskService.createTaskQuery().processInstanceId(form.getProcessInstanceId()).active().singleResult();
         taskService.resolveTask(currentTask.getId());
-        this.approve(form);
-
+        //记录
+        saveAssignLog(form, currentTask, comment, decision);
     }
 
 

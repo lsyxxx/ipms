@@ -1,9 +1,13 @@
 package com.abt.sys.service.impl;
 
+import com.abt.sys.model.dto.EmployeeInfoRequestForm;
 import com.abt.sys.model.entity.Employee;
 import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.util.WithQueryUtil;
+import com.abt.wf.entity.UserSignature;
+import com.abt.wf.model.EmployeeSignatureDTO;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,5 +39,20 @@ class EmployeeServiceImplTest {
         EmployeeInfo emp = employeeService.findByJobNumber("9999");
         emp = WithQueryUtil.build(emp);
         System.out.println(emp);
+    }
+
+    @Test
+    void findWithSignature() {
+        final EmployeeInfoRequestForm requestForm = new EmployeeInfoRequestForm();
+        requestForm.setPage(1);
+        requestForm.setLimit(40);
+        requestForm.setIsExit(true);
+        final List<EmployeeSignatureDTO> usigs = employeeService.findWithSignature(requestForm);
+        Assertions.assertNotNull(usigs);
+        System.out.println(usigs.size());
+        for (EmployeeSignatureDTO usig : usigs) {
+            System.out.printf("[%s, %s], fileName: %s \n", usig.getName(), usig.getJobNumber(), usig.getFileName());
+        }
+
     }
 }

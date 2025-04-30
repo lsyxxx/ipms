@@ -23,7 +23,7 @@ public class FlowOperationLogServiceImpl implements FlowOperationLogService {
 
     @Override
     public List<FlowOperationLog> findLogsByEntityId(String entityId) {
-        return flowOperationLogRepository.findByEntityIdOrderByTaskStartTimeAsc(entityId);
+        return flowOperationLogRepository.findByEntityIdOrderByTaskEndTimeAsc(entityId);
     }
 
     @Override

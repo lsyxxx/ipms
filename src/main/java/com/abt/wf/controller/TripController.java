@@ -48,6 +48,31 @@ public class TripController {
         this.tripService = tripService;
     }
 
+    /**
+     * 转交任务
+     */
+    @GetMapping("/task/delegate")
+    public R<Object> delegateTask(String entityId, String comment, String decision, String toUserid) {
+        final TripMain entity = tripService.load(entityId);
+        setSubmitUser(entity);
+        entity.setComment(comment);
+        entity.setDecision(decision);
+        entity.setDelegateUser(toUserid);
+        tripService.delegateTask(entity, entity.getDelegateUser(), entity.getComment(), entity.getDecision());
+        return R.success(String.format("已将任务转交给%s", entity.getDelegateUser()));
+    }
+
+    /**
+     * 处理转办任务
+     */
+    @GetMapping("/task/resolve")
+    public R<Object> resolveTask(String entityId, String comment, String decision) {
+        final TripMain form = tripService.load(entityId);
+        setSubmitUser(form);
+        tripService.resolveTask(form, comment, decision);
+        return R.success("已处理转办任务");
+    }
+
 
     /**
      * 撤销一个流程
