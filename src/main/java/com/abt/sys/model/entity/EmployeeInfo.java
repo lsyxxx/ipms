@@ -34,11 +34,6 @@ import java.time.LocalDateTime;
                 name = "Employee.withTUser",
                 attributeNodes = @NamedAttributeNode("tUser")
         ),
-        @NamedEntityGraph(
-                name = "Employee.withSignature",
-                attributeNodes = @NamedAttributeNode("userSignature")
-        ),
-
 })
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class EmployeeInfo implements WithQuery<EmployeeInfo> {

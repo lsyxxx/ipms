@@ -1,8 +1,10 @@
 package com.abt.wf.repository;
 
 import com.abt.wf.entity.UserSignature;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,4 +24,6 @@ public interface UserSignatureRepository extends JpaRepository<UserSignature, St
 """)
     List<UserSignature> findAllUserSignatures();
 
+    @Transactional
+    void deleteByJobNumber(@Size(max = 255) String jobNumber);
 }

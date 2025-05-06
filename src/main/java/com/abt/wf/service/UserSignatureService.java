@@ -10,7 +10,17 @@ public interface UserSignatureService {
     //根据员工表查询员工的us
     List<UserSignature> getAllUserSignatures();
 
-    UserSignature saveSignature(String jobNumber, String username, String path) throws IOException;
+    String createFilePath(String fileName);
 
-    String saveFile(MultipartFile file, String jobNumber, String username) throws IOException;
+    UserSignature saveSignature(String jobNumber, String username, String company) throws IOException;
+
+    UserSignature saveSignature(UserSignature us, String fullPath) throws IOException;
+
+    String saveFile(MultipartFile file, String jobNumber, String username, String company) throws IOException;
+
+    UserSignature findByJobNumber(String jobNumber);
+
+    void deleteUserSignatureByJobNumber(String jobNumber);
+
+    void saveOrUpdate(UserSignature us);
 }

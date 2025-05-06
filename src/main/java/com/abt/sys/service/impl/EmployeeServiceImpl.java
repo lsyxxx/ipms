@@ -13,7 +13,6 @@ import com.abt.sys.util.WithQueryUtil;
 import com.abt.wf.entity.UserSignature;
 import com.abt.wf.model.EmployeeSignatureDTO;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.*;
@@ -141,6 +140,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         if (StringUtils.isNotBlank(requestForm.getDeptId())) {
             predicates.add(cb.equal(root.get("dept"), requestForm.getDeptId()));
+        }
+        if (StringUtils.isNotBlank(requestForm.getCompany())) {
+            predicates.add(cb.equal(root.get("company"), requestForm.getCompany()));
         }
         if (requestForm.getHasSig() != null) {
             if (requestForm.getHasSig()) {

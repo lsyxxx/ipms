@@ -2,6 +2,7 @@ package com.abt.sys.repository;
 
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.wf.model.EmployeeSignatureDTO;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;

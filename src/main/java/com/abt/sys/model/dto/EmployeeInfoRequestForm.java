@@ -28,4 +28,6 @@ public class EmployeeInfoRequestForm extends RequestForm {
      */
     private Boolean hasSig;
 
+    private String company;
+
 }

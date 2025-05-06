@@ -107,7 +107,7 @@ public class SalaryMain extends AuditInfo {
     @Column(name="col_idx_jobnum", columnDefinition="TINYINT", nullable = false)
     private Integer jobNumberColumnIndex;
 
-    @Column(name="col_idx_empcost", columnDefinition = "TINYINT", nullable = false)
+    @Column(name="col_idx_empcost", columnDefinition = "TINYINT")
     private Integer empCostColumnIndex;
 
     /**

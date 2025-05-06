@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Entity
@@ -50,5 +52,21 @@ public class UserSignature {
     private String company;
     @Transient
     private String position;
+
+    public UserSignature(String id, String jobNumber, String userName, String fileName, String userId, String base64) {
+        this.id = id;
+        this.jobNumber = jobNumber;
+        this.userName = userName;
+        this.fileName = fileName;
+        this.userId = userId;
+        this.base64 = base64;
+    }
+
+
+    public static UserSignature create() {
+        UserSignature us =new UserSignature();
+        us.setId(UUID.randomUUID().toString());
+        return us;
+    }
 
 }
