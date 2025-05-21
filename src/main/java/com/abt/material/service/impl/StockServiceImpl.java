@@ -81,28 +81,25 @@ public class StockServiceImpl implements StockService {
     @Override
     public StockOrder saveStockOrder(StockOrder stockOrder) {
         stockOrder = stockOrderRepository.save(stockOrder);
-        List<Stock> list = new ArrayList<>();
-        List<Inventory> inventories = new ArrayList<>();
         if (stockOrder.getStockList() != null) {
             for (Stock stock : stockOrder.getStockList()) {
                 stock.setOrderId(stockOrder.getId());
-                list.add(stock);
                 //库存变化
                 Inventory inv = new Inventory();
                 inv.setWarehouseId(stockOrder.getWarehouseId());
                 inv.setMaterialId(stock.getMaterialId());
                 if (STOCK_TYPE_CHECK != stockOrder.getStockType()) {
+                    //当前库存
                     inv = inventoryRepository.findOneLatestInventory(stock.getMaterialId(), stockOrder.getWarehouseId())
                             .orElse(new Inventory(stock.getMaterialId(), stockOrder.getWarehouseId()));
                 }
                 Inventory newInv = changeInventoryQuantity(inv, stock, stockOrder.getStockType());
                 newInv.setOrderId(stockOrder.getId());
-                inventories.add(newInv);
+                //必须每次单独保存
+                inventoryRepository.saveAndFlush(newInv);
+                stockRepository.saveAndFlush(stock);
             }
         }
-        list = stockRepository.saveAllAndFlush(list);
-        stockOrder.setStockList(list);
-        inventoryRepository.saveAllAndFlush(inventories);
         return stockOrder;
     }
 
