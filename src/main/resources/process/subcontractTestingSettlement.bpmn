@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1vmu5hf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.30.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.22.0">
+  <bpmn:process id="sbctstl" name="外送结算审批" isExecutable="true" camunda:historyTimeToLive="999">
+    <bpmn:extensionElements>
+      <camunda:executionListener delegateExpression="${subcontractTestingSettlementProcessEndListener}" event="end" />
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartEvent_1" name="开始" camunda:formRef="" camunda:formRefBinding="latest" camunda:initiator="starter">
+      <bpmn:extensionElements />
+      <bpmn:outgoing>Flow_03u6xa8</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="st_stl_dm" name="部门主管" camunda:assignee="${st_stl_dm_userid}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="5" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_02ev364</bpmn:incoming>
+      <bpmn:outgoing>Flow_12x4hqt</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="st_stl_dceo" name="业务副总" camunda:assignee="${st_stl_dceo_userid}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="5" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_12x4hqt</bpmn:incoming>
+      <bpmn:outgoing>Flow_151n9dh</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_037tjjt" name="结束">
+      <bpmn:incoming>Flow_151n9dh</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="st_stl_apply" name="外送结算申请">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="taskType" value="apply" />
+          <camunda:property name="selectUserType" value="1" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_03u6xa8</bpmn:incoming>
+      <bpmn:outgoing>Flow_02ev364</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_03u6xa8" sourceRef="StartEvent_1" targetRef="st_stl_apply" />
+    <bpmn:sequenceFlow id="Flow_02ev364" sourceRef="st_stl_apply" targetRef="st_stl_dm" />
+    <bpmn:sequenceFlow id="Flow_12x4hqt" sourceRef="st_stl_dm" targetRef="st_stl_dceo" />
+    <bpmn:sequenceFlow id="Flow_151n9dh" sourceRef="st_stl_dceo" targetRef="Event_037tjjt" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="sbctstl">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="160" y="145" width="22" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0csv0jx_di" bpmnElement="st_stl_dm">
+        <dc:Bounds x="570" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1exnzvh" bpmnElement="st_stl_dceo">
+        <dc:Bounds x="860" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_037tjjt_di" bpmnElement="Event_037tjjt">
+        <dc:Bounds x="1222" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1268" y="113" width="22" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1suiyw0_di" bpmnElement="st_stl_apply">
+        <dc:Bounds x="240" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_03u6xa8_di" bpmnElement="Flow_03u6xa8">
+        <di:waypoint x="188" y="120" />
+        <di:waypoint x="240" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02ev364_di" bpmnElement="Flow_02ev364">
+        <di:waypoint x="340" y="120" />
+        <di:waypoint x="570" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12x4hqt_di" bpmnElement="Flow_12x4hqt">
+        <di:waypoint x="670" y="120" />
+        <di:waypoint x="860" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_151n9dh_di" bpmnElement="Flow_151n9dh">
+        <di:waypoint x="960" y="120" />
+        <di:waypoint x="1222" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

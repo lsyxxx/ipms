@@ -57,14 +57,12 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final TaskService taskService;
     private final FlowOperationLogService flowOperationLogService;
     private final UserService userService;
+    private final IFileService fileService;
+    private final HistoryService historyService;
+    private final SignatureService signatureService;
 
     private final ReimburseRepository reimburseRepository;
     private final BpmnModelInstance rbsBpmnModelInstance;
-
-    private final IFileService fileService;
-
-    private final HistoryService historyService;
-    private final SignatureService signatureService;
 
     private final CreditAndDebitBook<Reimburse> creditAndDebitBook;
     private final CreditBookService creditBookService;

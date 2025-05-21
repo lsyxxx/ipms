@@ -318,12 +318,14 @@ public class SalaryController {
     @GetMapping("/chk/ym")
     public R<Object> checkAllByYearMonth(@DateTimeFormat(pattern = "yyyy-MM") String yearMonth) {
         final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
-        if (SL_CHK_CEO.equals(auth.getRole()) || SL_CHK_HR.equals(auth.getRole())) {
+        if (SL_CHK_CEO.equals(auth.getRole())) {
             salaryService.ceoCheckAllByYearMonth(yearMonth, auth);
-            return R.success(String.format("%s工资已全部审批", yearMonth));
-        } else {
+        } else if (SL_CHK_HR.equals(auth.getRole())) {
+            salaryService.hrCheckAllByYearMonth(yearMonth, auth);
+        }else {
             throw new BusinessException("您无权进行全部审批");
         }
+        return R.success(String.format("%s工资已全部审批", yearMonth));
     }
 
     /**
@@ -414,7 +416,16 @@ public class SalaryController {
         if (StringUtils.isBlank(year)) {
             year = Year.now().getValue() + "";
         }
+        CheckAuth checkAuth = getCheckAuth(TokenUtil.getUserFromAuthToken());
         final List<SalaryMain> list = salaryService.findAllSalaryMainByYearLike(year);
+        for (SalaryMain salaryMain : list) {
+            if (SL_CHK_CEO.equals(checkAuth.getRole())) {
+                final SlipCount slipCount = salaryService.ceoSlipCount(salaryMain.getId());
+                salaryMain.setSlipCount(slipCount);
+            } else if (SL_CHK_HR.equals(checkAuth.getRole())) {
+                salaryMain.setSlipCount(salaryService.hrSlipCount(salaryMain.getId()));
+            }
+        }
         return R.success(list, "查询成功");
     }
 

@@ -422,6 +422,7 @@ public class SalaryServiceImpl implements SalaryService {
     public List<DeptSummary> getDeptSummaryTableByMainId(String mid) {
         List<DeptSummary> list = new ArrayList<>();
         final List<SalarySlip> slips = salarySlipRepository.findByMainId(mid);
+        //deptExcel可能为空
         final Map<String, List<SalarySlip>> map = slips.stream().collect(Collectors.groupingBy(SalarySlip::getDeptExcel, toList()));
         for (Map.Entry<String, List<SalarySlip>> entry : map.entrySet()) {
             final String deptExcel = entry.getKey();
@@ -1469,6 +1470,14 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
+    public void hrCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth) {
+        if (StringUtils.isBlank(yearMonth)) {
+            throw new BusinessException("工资年月未知");
+        }
+        salarySlipRepository.hrCheckByYearMonth(yearMonth, LocalDateTime.now());
+    }
+
+    @Override
     public SalaryMain recalculateSalaryMainSumData(String mid) {
         SalaryMain sm = findSalaryMainById(mid);
         //empCost
@@ -1505,7 +1514,7 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public void adminUserCheck(String yearMonth) {
         if (StringUtils.isBlank(yearMonth)) {
-            throw new BusinessException("工资年月为传入");
+            throw new BusinessException("工资年月未传入");
         }
         salarySlipRepository.updateAllUnchecked(LocalDateTime.now(), yearMonth);
     }
@@ -1513,6 +1522,16 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public List<SalarySlip> findUncheckUserSlipsByMainId(String mainId) {
         return salarySlipRepository.findUncheckByMainId(mainId);
+    }
+
+    @Override
+    public SlipCount ceoSlipCount(String mid) {
+        return salarySlipRepository.ceoSlipCount(mid);
+    }
+
+    @Override
+    public SlipCount hrSlipCount(String mid) {
+        return salarySlipRepository.hrSlipCount(mid);
     }
 
 }

@@ -7,7 +7,9 @@ import com.abt.sys.service.UserService;
 import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.DelegateTask;
+import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.camunda.bpm.engine.delegate.TaskListener;
 import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +25,7 @@ import static com.abt.wf.config.Constants.*;
  */
 @Component
 @Slf4j
-public class CarbonCopyNotifyListener implements TaskListener {
+public class CarbonCopyNotifyListener implements ExecutionListener {
 
     private final SystemMessageService systemMessageService;
     private final UserService userService;
@@ -34,18 +36,18 @@ public class CarbonCopyNotifyListener implements TaskListener {
     }
 
     @Override
-    public void notify(DelegateTask delegateTask) {
+    public void notify(DelegateExecution execution) throws Exception {
         try {
-            final Object obj = delegateTask.getVariable(KEY_NOTIFY_USERS);
+            final Object obj = execution.getVariable(KEY_NOTIFY_USERS);
             if (obj == null) {
                 return;
             }
-            final String result = WorkFlowUtil.getStringVariable(delegateTask, VAR_KEY_APPR_RESULT);
+            final String result = WorkFlowUtil.getStringVariable(execution, VAR_KEY_APPR_RESULT);
             if (StringUtils.isNotBlank(result) || DECISION_REJECT.equals(result)) {
                 //被拒绝的不抄送
                 return;
             }
-            final String starter = WorkFlowUtil.getStringVariable(delegateTask, KEY_STARTER);
+            final String starter = WorkFlowUtil.getStringVariable(execution, KEY_STARTER);
             User su;
             String uname = "";
             if (StringUtils.isNotBlank(starter)) {
@@ -54,8 +56,8 @@ public class CarbonCopyNotifyListener implements TaskListener {
             }
 
             List<User> notifyUsers = (List<User>) obj;
-            String entityId = WorkFlowUtil.getStringVariable(delegateTask, VAR_KEY_ENTITY);
-            String defKey = WorkFlowUtil.getProcessDefinitionKey(delegateTask);
+            String entityId = WorkFlowUtil.getStringVariable(execution, VAR_KEY_ENTITY);
+            String defKey = WorkFlowUtil.getProcessDefinitionKey(execution);
             //获取抄送人
             for (User user : notifyUsers) {
                 String content = String.format("%s%s审批流程已完成，请查看", uname, defKey);

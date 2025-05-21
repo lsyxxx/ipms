@@ -3,6 +3,7 @@ package com.abt.wf.util;
 import com.abt.common.model.User;
 import com.abt.sys.exception.BusinessException;
 import com.abt.wf.config.Constants;
+import com.abt.wf.entity.SubcontractTestingSettlementMain;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.model.ReimburseForm;
 import com.abt.wf.model.UserTaskDTO;
@@ -187,20 +188,6 @@ public class WorkFlowUtil {
         return DECISION_REJECT.equals(decision);
     }
 
-
-    public static void main(String[] args) {
-        // 传入测试变量
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("cost", 12000);
-        variables.put("isOpen", false);
-        variables.put("isCeoCheck", false);
-
-        String expression = "${cost > 10000 || isOpen == true}";
-        boolean result = evaluateExpression(expression, variables);
-
-        System.out.println("表达式结果: " + result); // 输出: true
-    }
-
     public static boolean evaluateExpression(String expression, Map<String, Object> variables) {
         // 1创建 ExpressionFactory
         ExpressionFactory factory = ExpressionFactory.newInstance();
@@ -243,6 +230,10 @@ public class WorkFlowUtil {
 
     public static String getProcessDefinitionKey(DelegateTask delegateTask) {
         return delegateTask.getProcessDefinitionId().split(":")[0];
+    }
+
+    public static String getProcessDefinitionKey(DelegateExecution delegateExecution) {
+        return delegateExecution.getProcessDefinitionId().split(":")[0];
     }
 
 }

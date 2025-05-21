@@ -52,6 +52,8 @@ public class Constants {
     public static final String STATE_DETAIL_ALL = "全部";
     public static final String STATE_DETAIL_REJECT = "已拒绝";
     public static final String STATE_DETAIL_PASS = "已通过";
+    //作为异常结束结果
+    public static final String STATE_DETAIL_ERR_END = "异常结束";
     public static final String STATE_DETAIL_REVOKE = "已撤销";
     public static final String STATE_DETAIL_DELETE = "已删除";
     public static final String STATE_DETAIL_AUTOPASS = "自动跳过";
@@ -132,6 +134,7 @@ public class Constants {
     public static final String SERVICE_INV_OFFSET = "发票冲账单";
     public static final String SERVICE_PURCHASE = "采购申请";
     public static final String SERVICE_SUBCONTRACT_TESTING = "外送检测";
+    public static final String SERVICE_SBCT_STL = "外送检测结算";
 
 
     public static final String TRANSPORTATION_AIRPLANE = "飞机";
@@ -165,6 +168,7 @@ public class Constants {
     public static final String  SAVE_SERVICE_INV = "inv";
     public static final String  SAVE_SERVICE_INVOFFSET = "invoffset";
     public static final String  SAVE_SERVICE_SBCT = "sbct";
+    public static final String  SAVE_SERVICE_SBCT_STL = "sbctstl";
 
     public static final String NODE_ACC = "会计审批";
     public static final String NODE_FI_MGR = "财务总监";
@@ -184,8 +188,10 @@ public class Constants {
                 return SAVE_SERVICE_PAY;
             case DEF_KEY_LOAN:
                 return SAVE_SERVICE_LOAN;
-            case DEF_KEY_SUBCONTRACT_TEST:
+            case DEF_KEY_SBCT:
                 return SAVE_SERVICE_SBCT;
+            case DEF_KEY_SBCT_STL:
+                return SAVE_SERVICE_SBCT_STL;
             default:
                 throw new BusinessException("流程定义不存在(" + processDefinitionKey + ")");
         }
@@ -215,4 +221,8 @@ public class Constants {
      * 推送
      */
     public static final String PUSH_TODO_TEMPLATE = "您有一条%s提交的%s待审批，请及时处理";
+
+    public static final String SBCT_SAMPLE_TYPE_ROCK = "岩心";
+    public static final String SBCT_SAMPLE_TYPE_GAS = "气样";
+    public static final String SBCT_SAMPLE_TYPE_CHM = "化学品";
 }

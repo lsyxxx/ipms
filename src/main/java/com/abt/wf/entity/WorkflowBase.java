@@ -28,7 +28,7 @@ import java.util.List;
 @MappedSuperclass
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners(JpaWorkflowListener.class)
-public class WorkflowBase extends AuditInfo {
+public class WorkflowBase  extends AuditInfo {
     //-- process
     @Column(name="proc_def_key", columnDefinition="NVARCHAR(64)")
     private String processDefinitionKey;

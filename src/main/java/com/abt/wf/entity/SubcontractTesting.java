@@ -23,11 +23,12 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
 import static com.abt.wf.config.Constants.*;
+import static com.abt.wf.entity.PurchaseApplyMain.KEY_LEADER;
 
 /**
  * 外送检测
  */
-@Table(name = "wf_subcontract_testing")
+@Table(name = "wf_sbct")
 @Entity
 @Getter
 @Setter
@@ -172,8 +173,10 @@ public class SubcontractTesting extends WorkflowBase {
     private String decision;
     @Transient
     private String comment;
-    
-    
+
+
+    @OneToMany(mappedBy = "main")
+    private List<SubcontractTestingSample> sampleList;
 
     public static final String KEY_IS_OPEN_CONTRACT = "isOpenContract";
 
@@ -187,8 +190,6 @@ public class SubcontractTesting extends WorkflowBase {
         this.variableMap.put(KEY_SERVICE, SERVICE_SUBCONTRACT_TESTING);
         this.variableMap.put(KEY_IS_OPEN_CONTRACT, this.isOpenContract);
         this.variableMap.put(KEY_NOTIFY_USERS, this.notifyUsers);
-
-
         return this.variableMap;
     }
 }

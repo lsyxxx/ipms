@@ -173,6 +173,13 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     @Modifying
     @Transactional
     @Query("""
+        update SalarySlip s set s.hrTime = :checkTime where s.yearMonth = :yearMonth and (s.hrJobNumber is not null or TRIM(s.hrJobNumber) <> '')
+""")
+    void hrCheckByYearMonth(String yearMonth, LocalDateTime checkTime);
+
+    @Modifying
+    @Transactional
+    @Query("""
     update SalarySlip s set s.isCheck = true, s.checkTime = :checkTime, s.checkType = 'manual'
     where s.yearMonth = :yearMonth and s.isCheck = false and s.isForceCheck = true
 """)
@@ -190,4 +197,16 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     select s from SalarySlip s where s.isCheck = false and s.isForceCheck = true and s.mainId = :mainId
 """)
     List<SalarySlip> findUncheckByMainId(String mainId);
+
+    @Query("""
+    select new com.abt.salary.model.SlipCount('', count(1), count(s.ceoTime), (count(s.ceoJobNumber)-count(s.ceoTime))) 
+    from SalarySlip s 
+    where s.mainId = :mainId
+""")
+    SlipCount ceoSlipCount(String mainId);
+
+    @Query("""
+    select new com.abt.salary.model.SlipCount('', count(s.hrJobNumber), count(s.hrTime), (count(s.hrJobNumber)-count(s.hrTime))) from SalarySlip s where s.mainId = :mainId 
+""")
+    SlipCount hrSlipCount(String mainId);
 }

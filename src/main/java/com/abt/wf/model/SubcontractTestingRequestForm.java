@@ -10,4 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SubcontractTestingRequestForm extends RequestForm {
+    private String id;
+    private String subcontractCompanyName;
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static com.abt.oa.OAConstants.QUERY_MODE_ALL;
 
@@ -167,5 +168,19 @@ public class RequestForm {
 
     public Pageable createDefaultPageableWithoutSorting() {
         return PageRequest.of(this.jpaPage(), this.getLimit());
+    }
+
+    /**
+     * 日期的开始时间
+     */
+    public LocalDateTime toLocalStartTime() {
+        return this.localStartDate == null ? null : this.localStartDate.atStartOfDay();
+    }
+
+    /**
+     * localEndDate 后一天的开始
+     */
+    public LocalDateTime toLocalEndTime() {
+        return this.localEndDate == null ? null : this.localEndDate.plusDays(1).atStartOfDay();
     }
 }

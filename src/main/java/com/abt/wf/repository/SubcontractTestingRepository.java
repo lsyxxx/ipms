@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface SubcontractTestingRepository extends JpaRepository<SubcontractTesting, String> {
 
@@ -109,4 +110,14 @@ public interface SubcontractTestingRepository extends JpaRepository<SubcontractT
             "   ) "
     )
     int countTodoByQuery(String userid, String query, String taskDefKey);
+
+    @Query("""
+        select e from SubcontractTesting e left join fetch e.sampleList where e.id = :id
+""")
+    Optional<SubcontractTesting> findWithSampleList(String id);
+
+    @Query("""
+    select distinct e.subcontractCompanyName from SubcontractTesting e
+""")
+    List<String> findAllSubcontractCompanies();
 }

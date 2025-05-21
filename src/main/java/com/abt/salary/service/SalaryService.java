@@ -165,6 +165,8 @@ public interface SalaryService {
 
     void ceoCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth);
 
+    void hrCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth);
+
     /**
      * 重新计算main中的统计数据
      */
@@ -177,4 +179,11 @@ public interface SalaryService {
     void adminUserCheck(String yearMonth);
 
     List<SalarySlip> findUncheckUserSlipsByMainId(String mainId);
+
+    /**
+     * 每个月审核人数合计
+     */
+    SlipCount ceoSlipCount(String mid);
+
+    SlipCount hrSlipCount(String mid);
 }

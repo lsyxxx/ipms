@@ -2,6 +2,7 @@ package com.abt.salary.entity;
 
 import com.abt.common.model.AuditInfo;
 import com.abt.common.util.TimeUtil;
+import com.abt.salary.model.SlipCount;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -252,7 +253,8 @@ public class SalaryMain extends AuditInfo {
     @Transient
     private LocalDateTime leaderCheckTime;
 
-
+    @Transient
+    private SlipCount slipCount;
 
     /**
      * 导入数据存在异常

@@ -1,16 +1,20 @@
 package com.abt.wf.service.impl;
 
+import cn.idev.excel.FastExcel;
 import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.SubcontractTesting;
+import com.abt.wf.entity.SubcontractTestingSample;
 import com.abt.wf.model.SubcontractTestingRequestForm;
+import com.abt.wf.model.TaskCheckUser;
 import com.abt.wf.model.UserTaskDTO;
+import com.abt.wf.projection.SubcontractTestingSettlementDetailProjection;
 import com.abt.wf.repository.SubcontractTestingRepository;
+import com.abt.wf.repository.SubcontractTestingSampleRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.SignatureService;
 import com.abt.wf.service.SubcontractTestingService;
@@ -19,22 +23,25 @@ import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import static com.abt.wf.config.Constants.SERVICE_SUBCONTRACT_TESTING;
-import static com.abt.wf.config.Constants.VAR_KEY_APPR_RESULT;
-import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_SUBCONTRACT_TEST;
+import static com.abt.wf.config.Constants.*;
+import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_SBCT;
 
 /**
  *
  */
-@Service(DEF_KEY_SUBCONTRACT_TEST)
+@Service(DEF_KEY_SBCT)
 public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonServiceImpl<SubcontractTesting, SubcontractTestingRequestForm> implements SubcontractTestingService{
 
     private final IdentityService identityService;
@@ -53,14 +60,25 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
 
 
     private final SubcontractTestingRepository subcontractTestingRepository;
+    private final SubcontractTestingSampleRepository subcontractTestingSampleRepository;
+
+
+    @Value("${abt.wf.sbct.rock.template}")
+    private String rockSampleListTemplate;
+
+    @Value("${abt.wf.sbct.fluid.template}")
+    private String fluidSampleListTemplate;
+
+    @Value("${abt.wf.sbct.export.dir}")
+    private String sampleListExportDir;
 
     public SubcontractTestingServiceImpl(IdentityService identityService, RepositoryService repositoryService,
                                          RuntimeService runtimeService, TaskService taskService,
                                          FlowOperationLogService flowOperationLogService,
                                          @Qualifier("sqlServerUserService") UserService userService,
-                                         @Qualifier("subcontractTestingBpmnModelInstance")BpmnModelInstance subcontractTestingBpmnModelInstance, IFileService fileService, HistoryService historyService,
+                                         @Qualifier("sbctBpmnModelInstance")BpmnModelInstance subcontractTestingBpmnModelInstance, IFileService fileService, HistoryService historyService,
                                          SignatureService signatureService,
-                                         SubcontractTestingRepository subcontractTestingRepository) {
+                                         SubcontractTestingRepository subcontractTestingRepository, SubcontractTestingSampleRepository subcontractTestingSampleRepository) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
 
         this.identityService = identityService;
@@ -74,17 +92,35 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
         this.historyService = historyService;
         this.signatureService = signatureService;
         this.subcontractTestingRepository = subcontractTestingRepository;
+        this.subcontractTestingSampleRepository = subcontractTestingSampleRepository;
     }
 
 
+    @Transactional
     @Override
     public SubcontractTesting saveEntity(SubcontractTesting entity) {
-        return subcontractTestingRepository.save(entity);
+        final SubcontractTesting saved = subcontractTestingRepository.save(entity);
+        final List<SubcontractTestingSample> sampleList = entity.getSampleList();
+        if (sampleList != null && sampleList.size() > 0) {
+            sampleList.forEach(sample -> {
+                sample.setMid(saved.getId());
+            });
+            final List<SubcontractTestingSample> list = subcontractTestingSampleRepository.saveAll(sampleList);
+            saved.setSampleList(list);
+        }
+        return saved;
     }
 
     @Override
     public SubcontractTesting load(String entityId) {
         final SubcontractTesting entity = subcontractTestingRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到外送申请(id=" + entityId + ")"));
+        setActiveTask(entity);
+        return entity;
+    }
+
+    @Override
+    public SubcontractTesting loadWithSampleList(String entityId) {
+        final SubcontractTesting entity = subcontractTestingRepository.findWithSampleList(entityId).orElseThrow(() -> new BusinessException("未查询到外送申请(id=" + entityId + ")"));
         setActiveTask(entity);
         return entity;
     }
@@ -258,4 +294,31 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
     public List<String> createBriefDesc(SubcontractTesting entity) {
         return List.of();
     }
+
+    @Override
+    public String exportSampleList(String id) {
+        final SubcontractTesting main = loadWithSampleList(id);
+        List<SubcontractTestingSample> list = main.getSampleList();
+        list.sort(Comparator.comparing(SubcontractTestingSample::getNewSampleNo));
+        String template = "";
+        if (SBCT_SAMPLE_TYPE_ROCK.equals(main.getSampleType())) {
+            template = rockSampleListTemplate;
+        } else if (SBCT_SAMPLE_TYPE_GAS.equals(main.getSampleType())) {
+            template = fluidSampleListTemplate;
+        }
+        String fileName = sampleListExportDir + System.currentTimeMillis() + ".xlsx";
+        FastExcel.write(fileName).withTemplate(template).sheet().doFill(list);
+        return fileName;
+    }
+
+    @Override
+    public List<String> findAllApplySubcontractCompany() {
+        return subcontractTestingRepository.findAllSubcontractCompanies();
+    }
+
+    @Override
+    public List<SubcontractTestingSettlementDetailProjection> findDetails(SubcontractTestingRequestForm requestForm) {
+        return subcontractTestingSampleRepository.findDetailsBy(requestForm.getUserid(), requestForm.getSubcontractCompanyName());
+    }
+
 }

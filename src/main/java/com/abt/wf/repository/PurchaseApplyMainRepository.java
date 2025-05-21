@@ -66,7 +66,7 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
     @Query("select count(e) from PurchaseApplyMain e " +
             "left join e.currentTask rt " +
             "where (rt.assignee = :userid) " +
-            "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey)" +
+            "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey) " +
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or e.createUsername like %:query%" +

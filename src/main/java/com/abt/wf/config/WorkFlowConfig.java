@@ -33,7 +33,8 @@ public class WorkFlowConfig {
     public static final String DEF_KEY_INV = "rbsInv";
     public static final String DEF_KEY_INVOFFSET = "invOffset";
     public static final String DEF_KEY_PURCHASE = "purchase";
-    public static final String DEF_KEY_SUBCONTRACT_TEST = "sbct";
+    public static final String DEF_KEY_SBCT = "sbct";
+    public static final String DEF_KEY_SBCT_STL = "sbctstl";
 
     public static final String SERVICE_RBS = "reimburse";
     public static final String SERVICE_TRIP = "trip";
@@ -69,13 +70,6 @@ public class WorkFlowConfig {
     public Map<String, ProcessDefinition> processDefinitionMap() {
         log.info("processDefinitionMap bean init...");
         return this.processDefinitionMap;
-    }
-
-    @Bean("subcontractTestingBpmnModelInstance")
-    @Order(100)
-    public BpmnModelInstance subcontractTestingBpmnModelInstance() {
-        log.info("subcontractTestingBpmnModelInstance bean init...");
-        return getBpmnModelInstanceFromMap(DEF_KEY_SUBCONTRACT_TEST);
     }
 
     @Bean("rbsBpmnModelInstance")
@@ -126,6 +120,20 @@ public class WorkFlowConfig {
         log.info("purchaseBpmnModelInstance bean init...");
         return getBpmnModelInstanceFromMap(DEF_KEY_PURCHASE);
     }
+
+    @Bean("sbctBpmnModelInstance")
+    @Order(100)
+    public BpmnModelInstance sbctBpmnModelInstance() {
+        log.info("sbctBpmnModelInstance bean init...");
+        return getBpmnModelInstanceFromMap(DEF_KEY_SBCT);
+    }
+    @Bean("sbctStlBpmnModelInstance")
+    @Order(100)
+    public BpmnModelInstance sbctStlBpmnModelInstance() {
+        log.info("sbctStlBpmnModelInstance bean init...");
+        return getBpmnModelInstanceFromMap(DEF_KEY_SBCT_STL);
+    }
+
 
     private BpmnModelInstance getBpmnModelInstanceFromMap(String defKey) {
         ProcessDefinition definition = this.processDefinitionMap.get(defKey);
