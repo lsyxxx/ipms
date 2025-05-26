@@ -275,7 +275,10 @@ public class SubcontractTestingSettlementServiceImpl extends AbstractWorkflowCom
         );
     }
 
-    @Override
+    /**
+     * 读取业务，包含详情及当前任务
+     * @param id 业务id
+     */
     public SubcontractTestingSettlementMain loadEntireEntity(String id) {
         final SubcontractTestingSettlementMain entity = subcontractTestingSettlementMainRepository.findWithDetails(id);
         if (entity == null) {
@@ -287,7 +290,6 @@ public class SubcontractTestingSettlementServiceImpl extends AbstractWorkflowCom
                 .thenComparing(SubcontractTestingSettlementDetail::getCheckModuleName, 
                               Comparator.nullsLast(String::compareTo)));
         }
-        setActiveTask(entity);
         return entity;
     }
 }

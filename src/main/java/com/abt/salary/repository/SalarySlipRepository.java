@@ -209,4 +209,11 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     select new com.abt.salary.model.SlipCount('', count(s.hrJobNumber), count(s.hrTime), (count(s.hrJobNumber)-count(s.hrTime))) from SalarySlip s where s.mainId = :mainId 
 """)
     SlipCount hrSlipCount(String mainId);
+
+    @Query("""
+    select new com.abt.salary.model.SlipCount('', count(s.dceoJobNumber), count(s.dceoTime), (count(s.dceoJobNumber)-count(s.dceoTime))) from SalarySlip s 
+    where s.mainId = :mainId
+    and s.dceoJobNumber = :jobNumber
+""")
+    SlipCount dceoSlipCount(String mainId, String jobNumber);
 }

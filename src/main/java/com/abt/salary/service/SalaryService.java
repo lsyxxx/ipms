@@ -123,7 +123,7 @@ public interface SalaryService {
      */
     List<SalaryMain> summaryCheckList(String yearMonth, CheckAuth checkAuth);
 
-    List<SlipCount> salaryCountYearMonthByCheckAuth(String yearMonth, CheckAuth checkAuth);
+//    List<SlipCount> salaryCountYearMonthByCheckAuth(String yearMonth, CheckAuth checkAuth);
 
     /**
      * 工资汇总表。ABT分部门，GRD/DC一张表不分部门
@@ -186,4 +186,6 @@ public interface SalaryService {
     SlipCount ceoSlipCount(String mid);
 
     SlipCount hrSlipCount(String mid);
+
+    SlipCount dceoSlipCount(String mid, CheckAuth checkAuth);
 }

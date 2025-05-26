@@ -107,8 +107,11 @@ public class SalaryServiceImpl implements SalaryService {
     @Value("${abt.sl.slip.url}")
     private String userSlipUrl;
 
-    @Value("${abt.sl.chk.url}")
-    private String checkListUrl;
+    @Value("${abt.sl.chk.dept.url}")
+    private String deptCheckUrl;
+
+    @Value("${abt.sl.chk.smry.url}")
+    private String summaryCheckUr;
 
 
 
@@ -455,6 +458,7 @@ public class SalaryServiceImpl implements SalaryService {
         final List<OrgLeader> orgLeaders = findSalaryLeaders();
         Set<String> chks = new HashSet<>();
         Set<String> users = new HashSet<>();
+        Set<String> smryChks = new HashSet<>();
         //生成工资条
         List<SalarySlip> slips = new ArrayList<>();
         for (List<SalaryCell> row : preview.getSlipTable()) {
@@ -498,10 +502,10 @@ public class SalaryServiceImpl implements SalaryService {
                 chks.add(slip.getDmJobNumber());
             }
             if (StringUtils.isNotBlank(slip.getCeoJobNumber())) {
-                chks.add(slip.getCeoJobNumber());
+                smryChks.add(slip.getCeoJobNumber());
             }
             if (StringUtils.isNotBlank(slip.getHrJobNumber())) {
-                chks.add(slip.getHrJobNumber());
+                smryChks.add(slip.getHrJobNumber());
             }
             for (SalaryCell cell : row) {
                 cell.setSlipId(saved.getId());
@@ -514,8 +518,12 @@ public class SalaryServiceImpl implements SalaryService {
         try {
             //发送消息，失败不影响其他的
             final List<SystemMessage> umsgs = createMsgs(users, userSlipUrl, "您的工资条已发放，请及时查看并确认");
-            final List<SystemMessage> cmsgs = createMsgs(chks, checkListUrl, "本月工资表已生成，请审核");
+            //部门审核
+            final List<SystemMessage> cmsgs = createMsgs(chks, deptCheckUrl, "本月工资表已生成，请审核");
+            //汇总审核
+            final List<SystemMessage> smrys = createMsgs(smryChks, summaryCheckUr, "本月工资表已生成，请审核");
             cmsgs.addAll(umsgs);
+            cmsgs.addAll(smrys);
             systemMessageService.sendAll(cmsgs);
         } catch (Exception e) {
             log.error("发送消息失败" + e.getMessage(), e);
@@ -1084,25 +1092,27 @@ public class SalaryServiceImpl implements SalaryService {
         return list;
     }
 
-    @Override
-    public List<SlipCount> salaryCountYearMonthByCheckAuth(String yearMonth, CheckAuth checkAuth) {
-        if (SL_CHK_CEO.equals(checkAuth.getViewAuth())) {
-            return salarySlipRepository.countCeoCheck(yearMonth);
-        } else if (SL_CHK_DCEO.equals(checkAuth.getViewAuth())) {
-            return salarySlipRepository.countDceoCheck(checkAuth.getJobNumber(), yearMonth);
-        } else if (SL_CHK_DM.equals(checkAuth.getViewAuth())) {
-            return salarySlipRepository.countDmCheck(checkAuth.getJobNumber(), yearMonth);
-        } else if (SL_CHK_HR.equals(checkAuth.getViewAuth())) {
-            return salarySlipRepository.countHrCheck(yearMonth);
-        } else if (SL_CHK_USER.equals(checkAuth.getViewAuth())) {
-            return salarySlipRepository.countUserCheck(checkAuth.getJobNumber(), yearMonth);
-        } else if (SL_CHK_ALL.equals(checkAuth.getViewAuth())) {
-            return salarySlipRepository.countAllCheck(yearMonth);
-        } else {
-            log.warn("未知的工资查看权限{}", checkAuth.getViewAuth());
-            return List.of();
-        }
-    }
+//    public List<SlipCount> salaryCountYearMonthByCheckAuth(String yearMonth, CheckAuth checkAuth) {
+//        if (SL_CHK_CEO.equals(checkAuth.getViewAuth())) {
+//            return salarySlipRepository.countCeoCheck(yearMonth);
+//        } else if (SL_CHK_DCEO.equals(checkAuth.getViewAuth())) {
+//            return salarySlipRepository.countDceoCheck(checkAuth.getJobNumber(), yearMonth);
+//        } else if (SL_CHK_DM.equals(checkAuth.getViewAuth())) {
+//            return salarySlipRepository.countDmCheck(checkAuth.getJobNumber(), yearMonth);
+//        } else if (SL_CHK_HR.equals(checkAuth.getViewAuth())) {
+//            return salarySlipRepository.countHrCheck(yearMonth);
+//        } else if (SL_CHK_USER.equals(checkAuth.getViewAuth())) {
+//            return salarySlipRepository.countUserCheck(checkAuth.getJobNumber(), yearMonth);
+//        } else if (SL_CHK_ALL.equals(checkAuth.getViewAuth())) {
+//            return salarySlipRepository.countAllCheck(yearMonth);
+//        } else {
+//            log.warn("未知的工资查看权限{}", checkAuth.getViewAuth());
+//            return List.of();
+//        }
+//    }
+
+
+
 
     @Override
     public List<SalaryPreview> salarySummaryList(String yearMonth, CheckAuth checkAuth) {
@@ -1532,6 +1542,13 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public SlipCount hrSlipCount(String mid) {
         return salarySlipRepository.hrSlipCount(mid);
+    }
+
+    @Override
+    public SlipCount dceoSlipCount(String mid, CheckAuth checkAuth) {
+        final String jobNumber = checkAuth.getJobNumber();
+        return salarySlipRepository.dceoSlipCount(mid, jobNumber);
+
     }
 
 }

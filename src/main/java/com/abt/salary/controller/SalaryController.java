@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.*;
@@ -340,16 +341,22 @@ public class SalaryController {
     }
 
     /**
-     * 汇总查看
+     * 部门汇总查看
      */
     @GetMapping("/chk/smry/list")
-    public R<List<SlipCount>> summaryCheckList(String yearMonth) {
-        if (StringUtils.isEmpty(yearMonth)) {
-            throw new BusinessException("请选择工资发放年月");
+    public R<List<SlipCount>> summaryCheckList(String year) {
+        if (StringUtils.isEmpty(year)) {
+            year = String.valueOf(LocalDate.now().getYear());
         }
         final CheckAuth checkAuth = getCheckAuth(TokenUtil.getUserFromAuthToken());
-        final List<SlipCount> list = salaryService.salaryCountYearMonthByCheckAuth(yearMonth, checkAuth);
-        return R.success(list);
+        final List<SalaryMain> list = salaryService.findAllSalaryMainByYearLike(year);
+        List<SlipCount> slipCounts = new ArrayList<>();
+        for (SalaryMain sm : list) {
+            final SlipCount slipCount = salaryService.dceoSlipCount(sm.getId(), checkAuth);
+            slipCount.setYearMonth(sm.getYearMonth());
+            slipCounts.add(slipCount);
+        }
+        return R.success(slipCounts);
     }
 
     @GetMapping("/chk/smry/view")
