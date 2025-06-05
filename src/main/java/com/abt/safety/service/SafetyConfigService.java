@@ -8,14 +8,14 @@ import com.abt.safety.model.SafetyFormRequestForm;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
-public interface SafetyService {
+public interface SafetyConfigService {
 
     /**
      * 获取安全检查项目配置列表
      * @param requestForm
      * @return
      */
-    Page<SafetyItem> getSafetyItemConfigList(SafeItemRequestForm requestForm);
+    Page<SafetyItem> getSafetyItemConfigPage(SafeItemRequestForm requestForm);
 
     boolean validateDuplicateSafetyItemName(String name);
 
@@ -64,8 +64,6 @@ public interface SafetyService {
 
     /**
      * 读取检查表单，包含关联的项目
-     *
-     * @return
      */
     SafetyForm loadSafetyFormWithItems(String id);
 
@@ -73,9 +71,9 @@ public interface SafetyService {
 
     Page<SafetyForm> findByQueryPageable(SafetyFormRequestForm requestForm);
 
-    boolean checkSafetyFormLocationExists(String location, String id);
-
     void updateSafetyFormEnabled(String id, boolean enabled);
+
+    boolean checkSafetyFormLocationExists(String location, Long id);
 
     void logicDeleteSafetyForm(String id);
 }

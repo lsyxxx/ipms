@@ -25,8 +25,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SafetyForm extends AuditInfo {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     /**
      * 表单名称
@@ -38,7 +38,7 @@ public class SafetyForm extends AuditInfo {
      * 检查地点
      */
     @Size(max = 400, message = "检查地点输入最多100字")
-    @Column(name = "location_", length = 400, unique = true)
+    @Column(name = "location_", length = 400)
     private String location;
 
     /**
@@ -65,9 +65,16 @@ public class SafetyForm extends AuditInfo {
     private boolean isDeleted;
 
     /**
+     * 排序
+     */
+    @Column(name="sort_no")
+    private int sortNo = 0;
+
+    /**
      * 检查项目列表
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "form_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable = false, updatable = false)
+    @OrderBy("sortNo ASC")
     private List<SafetyFormItem> items = new ArrayList<>();
 }

@@ -40,7 +40,7 @@ public interface SafetyFormRepository extends JpaRepository<SafetyForm, String>,
             select (count(f) > 0) from SafetyForm f
             where f.isDeleted = false
             and f.location = :location
-            and f.id <> :id
+            and (:id = null or f.id <> :id)
             """)
-    boolean checkLocationExists(String location, String id);
+    boolean checkLocationExists(String location, Long id);
 }

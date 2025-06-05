@@ -1,7 +1,7 @@
-package com.abt.sys.util;
+package com.abt.safety.converter;
 
 import com.abt.common.util.JsonUtil;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.safety.entity.SafetyForm;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,37 +9,35 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
-
-
 /**
- * 文件json转为实体类
+ * SafetyForm <-> json
  */
 @Converter(autoApply = true)
-public class SystemFileListConverter implements AttributeConverter<List<SystemFile>, String> {
+public class SafetyFormConverter implements AttributeConverter<SafetyForm, String> {
+
 
     @Override
-    public String convertToDatabaseColumn(List<SystemFile> attribute) {
+    public String convertToDatabaseColumn(SafetyForm attribute) {
         try {
-            if (attribute == null || attribute.isEmpty()) {
+            if (attribute == null) {
                 return null;
             }
             return JsonUtil.toJson(attribute);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error while serializing SystemFile to json", e);
+            throw new RuntimeException("Error while serializing SafetyForm to json", e);
         }
     }
 
     @Override
-    public List<SystemFile> convertToEntityAttribute(String dbData) {
+    public SafetyForm convertToEntityAttribute(String dbData) {
         if (StringUtils.isBlank(dbData)) {
             return null;
         }
         ObjectMapper objectMapper = JsonUtil.ObjectMapper();
         try {
-            return objectMapper.readValue(dbData, new TypeReference<List<SystemFile>>() {});
+            return objectMapper.readValue(dbData, new TypeReference<SafetyForm>() {});
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error while deserializing SystemFile to json", e);
+            throw new RuntimeException("Error while deserializing SafetyForm to json", e);
         }
     }
 }

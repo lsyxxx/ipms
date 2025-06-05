@@ -1,5 +1,7 @@
 package com.abt.wf.entity;
 
+import com.abt.wf.converter.TripAllowanceConverter;
+import com.abt.wf.model.TripAllowanceDetail;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -82,11 +84,11 @@ public class TripDetail {
     @Column(name="lodging_exp", columnDefinition="DECIMAL(10,2)")
     private BigDecimal lodgingExpense;
 
-    /**
-     * 出差补助
-     */
-    @Column(name="allowance", columnDefinition = "DECIMAL(10,2)")
-    private BigDecimal allowance;
+//    /**
+//     * 出差补助
+//     */
+//    @Column(name="allowance", columnDefinition = "DECIMAL(10,2)")
+//    private BigDecimal allowance;
 
     /**
      * 本次项目合计
@@ -108,11 +110,11 @@ public class TripDetail {
     @JoinColumn(name = "did", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private List<TripOtherItem> items = new ArrayList<>();
 
+
     public void addItem(TripOtherItem item) {
         if (this.getItems() == null) {
             this.items = new ArrayList<>();
         }
         this.items.add(item);
     }
-
 }

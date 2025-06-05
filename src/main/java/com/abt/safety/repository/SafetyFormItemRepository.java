@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface SafetyFormItemRepository extends JpaRepository<SafetyFormItem, String> {
-    void deleteByFormId(String formId);
+    void deleteByFormId(Long formId);
 }

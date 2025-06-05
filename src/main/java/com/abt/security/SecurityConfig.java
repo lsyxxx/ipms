@@ -1,6 +1,7 @@
 package com.abt.security;
 
 import com.abt.http.dto.WebApiToken;
+import com.abt.sys.exception.CustomAccessDeniedHandler;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final TokenAuthenticationHandler tokenAuthenticationHandler;
     private final ABTAuthorizationManager abtAuthorizationManager;
     private final SysLogFilter sysLogFilter;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     /**
      * 白名单
@@ -83,6 +85,7 @@ public class SecurityConfig {
                 .authenticationProvider(abtWebApiTokenAuthenticationProvider)
                 .exceptionHandling(config -> config
                         .accessDeniedHandler(tokenAuthenticationHandler)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                         .authenticationEntryPoint(tokenAuthenticationHandler))
 
                 .requestCache((cache) -> cache

@@ -60,6 +60,8 @@ public class SystemFile extends AuditInfo {
 
     private boolean isDeleted = false;
 
+    private String base64;
+
 
     public SystemFile(MultipartFile file, String service, String filePath, Boolean withTime) {
         super();

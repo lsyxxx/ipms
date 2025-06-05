@@ -34,7 +34,8 @@ public class SafetyItem extends AuditInfo {
     public static final String INPUT_TYPE_TEXT = "TEXT";       // 文本型
     public static final String INPUT_TYPE_NUMBER = "NUMBER";   // 数值型
     public static final String INPUT_TYPE_SELECT = "SELECT";   // 选择型
-    
+    public static final String INPUT_TYPE_UPLOAD_PIC = "UPLOAD_PIC";   // 上传图片
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
@@ -82,9 +83,4 @@ public class SafetyItem extends AuditInfo {
     @Column(name="type_")
     private String type;
 
-    /**
-     * 结果
-     */
-    @Transient
-    private String result;
 }

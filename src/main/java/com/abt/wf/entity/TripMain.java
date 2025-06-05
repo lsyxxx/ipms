@@ -1,6 +1,8 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.wf.converter.TripAllowanceConverter;
+import com.abt.wf.model.TripAllowanceDetail;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -125,6 +127,21 @@ public class TripMain extends WorkflowBase {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "mid", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private List<TripDetail> details = new ArrayList<>();
+
+
+    /**
+     * 出差补助总金额
+     */
+    @Column(name="allowance", columnDefinition = "DECIMAL(10,2)")
+    private BigDecimal allowance;
+
+    /**
+     * 补助详情
+     */
+    @Column(name="allowance_dtls", columnDefinition = "TEXT")
+    @Convert(converter =  TripAllowanceConverter.class)
+    private List<TripAllowanceDetail> allowanceDetails;
+
 
     @Transient
     private String decision;

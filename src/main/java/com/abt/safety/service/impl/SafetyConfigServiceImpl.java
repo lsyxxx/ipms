@@ -10,13 +10,13 @@ import com.abt.safety.entity.SafetyFormItem;
 import com.abt.safety.model.SafetyFormRequestForm;
 import com.abt.safety.repository.SafetyFormItemRepository;
 import com.abt.safety.repository.SafetyFormRepository;
+import com.abt.safety.service.SafetyConfigService;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import com.abt.safety.service.SafetyService;
 import com.abt.sys.exception.BusinessException;
 
 import io.micrometer.common.util.StringUtils;
@@ -29,20 +29,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
-public class SafetyServiceImpl implements SafetyService {
+public class SafetyConfigServiceImpl implements SafetyConfigService {
 
     private final SafetyItemRepository safetyItemRepository;
     private final SafetyFormRepository safetyFormRepository;
     private final SafetyFormItemRepository safetyFormItemRepository;
 
-    public SafetyServiceImpl(SafetyItemRepository safetyItemRepository, SafetyFormRepository safetyFormRepository, SafetyFormItemRepository safetyFormItemRepository) {
+    public SafetyConfigServiceImpl(SafetyItemRepository safetyItemRepository, SafetyFormRepository safetyFormRepository, SafetyFormItemRepository safetyFormItemRepository) {
         this.safetyItemRepository = safetyItemRepository;
         this.safetyFormRepository = safetyFormRepository;
         this.safetyFormItemRepository = safetyFormItemRepository;
     }
 
+
     @Override
-    public Page<SafetyItem> getSafetyItemConfigList(SafeItemRequestForm requestForm) {
+    public Page<SafetyItem> getSafetyItemConfigPage(SafeItemRequestForm requestForm) {
         PageRequest pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.ASC, "sortNo"));
         return safetyItemRepository.findByQueryPageable(requestForm.getItemEnabled(), requestForm.getQuery(), pageable);
     }
@@ -101,15 +102,10 @@ public class SafetyServiceImpl implements SafetyService {
     @Override
     public SafetyForm saveForm(SafetyForm form) {
         SafetyForm savedForm = safetyFormRepository.save(form);
-        if (StringUtils.isNotBlank(form.getId())) {
+        if (form.getId() != null) {
             safetyFormItemRepository.deleteByFormId(form.getId());
         }
         if (form.getItems() != null && !form.getItems().isEmpty()) {
-//            for (int i = 0; i < form.getItems().size(); i++) {
-//                final SafetyFormItem formItem = form.getItems().get(i);
-//                formItem.setFormId(form.getId());
-//                formItem.setSortNo(i);
-//            }
             List<SafetyFormItem> itemsToSave = new ArrayList<>();
             for (SafetyFormItem item : form.getItems()) {
                 item.setFormId(savedForm.getId());
@@ -122,7 +118,8 @@ public class SafetyServiceImpl implements SafetyService {
 
     @Override
     public SafetyForm loadSafetyFormWithItems(String id) {
-        return safetyFormRepository.findWithItemsById(id).orElseThrow(() -> new BusinessException("未查询到安全检查表单(id=" + id + ")"));
+        return safetyFormRepository.findWithItemsById(id)
+            .orElseThrow(() -> new BusinessException("未查询到安全检查表单(id=" + id + ")"));
     }
 
     @Override
@@ -133,7 +130,7 @@ public class SafetyServiceImpl implements SafetyService {
     @Override
     public Page<SafetyForm> findByQueryPageable(SafetyFormRequestForm requestForm) {
         PageRequest pageRequest = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), 
-                                               Sort.by(Sort.Direction.ASC, "location"));
+                                               Sort.by(Sort.Direction.ASC, "sortNo"));
         
         String query = requestForm.getQuery();
         Specification<SafetyForm> spec = (root, criteriaQuery, criteriaBuilder) -> {
@@ -150,13 +147,16 @@ public class SafetyServiceImpl implements SafetyService {
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("responsibleName")), pattern)
                 ));
             }
+            if (requestForm.getFormEnabled() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("enabled"), requestForm.getFormEnabled()));
+            }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
         return safetyFormRepository.findAll(spec, pageRequest);
     }
     @Override
-    public boolean checkSafetyFormLocationExists(String location, String id) {
+    public boolean checkSafetyFormLocationExists(String location, Long id) {
         if (StringUtils.isBlank(location)) {
             throw new BusinessException("安全检查表单地点不能为空");
         }
