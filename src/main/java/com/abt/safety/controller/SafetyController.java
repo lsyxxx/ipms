@@ -5,6 +5,7 @@ import com.abt.common.util.TokenUtil;
 import com.abt.safety.entity.SafetyForm;
 import com.abt.safety.entity.SafetyItem;
 import com.abt.safety.entity.SafetyRecord;
+import com.abt.safety.event.SafetyRecordFinishedEvent;
 import com.abt.safety.model.RectifyRequest;
 import com.abt.safety.model.SafeItemRequestForm;
 import com.abt.safety.model.SafetyFormRequestForm;
@@ -15,17 +16,22 @@ import com.abt.safety.service.SafetyRecordService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.WithQuery;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.SystemMessage;
+import com.abt.sys.service.SystemMessageService;
 import com.abt.sys.util.WithQueryUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+
+import static com.abt.safety.Constants.ROLE_DISPATCHER;
 
 /**
  * 安全检查
@@ -39,6 +45,9 @@ public class SafetyController {
 
     private final SafetyConfigService safetyConfigService;
     private final SafetyRecordService safetyRecordService;
+    private final SystemMessageService systemMessageService;
+
+    private final ApplicationEventPublisher publisher;
 
 
 
@@ -162,10 +171,10 @@ public class SafetyController {
     @GetMapping("/record/validate")
     public R<Boolean> validateSafetyFormApply(Long formId) {
         LocalDate now = LocalDate.now();
-        final boolean exist = safetyRecordService.recordExist(now, formId);
-        if (exist) {
-            throw new BusinessException(String.format("%s 已存在安全检查记录，请勿重复提交。", now));
-        }
+//        final boolean exist = safetyRecordService.recordExist(now, formId);
+//        if (exist) {
+//            throw new BusinessException(String.format("%s 已存在安全检查记录，请勿重复提交。", now));
+//        }
         return R.success("验证通过");
     }
 
@@ -173,7 +182,7 @@ public class SafetyController {
      * 新增安全检查表单
      */
     @PostMapping("/record/check")
-    public R<Object> saveFormRecord(@Validated @RequestBody SafetyForm safetyForm) {
+    public R<Object> saveFormRecord(@Validated @RequestBody SafetyForm safetyForm) throws InterruptedException {
         LocalDate now = LocalDate.now();
         final boolean exist = safetyRecordService.recordExist(now, safetyForm.getId());
         if (safetyForm.getId() == null) {
@@ -182,7 +191,9 @@ public class SafetyController {
         if (exist) {
             throw new BusinessException(String.format("%s 已存在安全检查记录，请勿重复提交。", now));
         }
-        safetyRecordService.saveCheck(safetyForm);
+        final SafetyRecord saved = safetyRecordService.saveCheck(safetyForm);
+        //直接发布事件，controller中不做任何处理
+        publisher.publishEvent(new SafetyRecordFinishedEvent(this, saved));
         return R.success("安全检查记录保存成功!");
     }
 
@@ -203,20 +214,22 @@ public class SafetyController {
      * 调度人分配
      *
      * @param id              record id
-     * @param rectifierJno  负责人工号
+     * @param rectifierId  负责人userid
      * @param rectifierName 负责人姓名
      */
-    @Secured("SAFETY_RECORD_DISPATCH")
+    @Secured(ROLE_DISPATCHER)
     @GetMapping("/record/dispatch")
-    public R<Object> recordDispatch(String id, String rectifierJno, String rectifierName) {
+    public R<Object> recordDispatch(String id, String rectifierId, String rectifierName) {
         final UserView dispatcher = TokenUtil.getUserFromAuthToken();
-        safetyRecordService.dispatch(id, dispatcher.getEmpnum(), dispatcher.getName(), rectifierJno, rectifierName);
+        final SafetyRecord record = safetyRecordService.dispatch(id, dispatcher.getId(), dispatcher.getName(), rectifierId, rectifierName);
+        publisher.publishEvent(new SafetyRecordFinishedEvent(this, record));
         return R.success("已分配负责人:" + rectifierName);
     }
 
     @PostMapping("/record/rectify")
     public R<Object> recordRectify(@RequestBody RectifyRequest rectifyRequest) {
-        safetyRecordService.rectified(rectifyRequest.getId(), rectifyRequest.getRectifyRemark(), rectifyRequest.getFiles());
+        final SafetyRecord record = safetyRecordService.rectified(rectifyRequest.getId(), rectifyRequest.getRectifyRemark(), rectifyRequest.getFiles());
+        publisher.publishEvent(new SafetyRecordFinishedEvent(this, record));
         return R.success("已整改");
     }
 

@@ -21,6 +21,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
+import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_NAME_IMPORTANT;
+import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_NAME_TIP;
 import static com.abt.wf.config.Constants.DECISION_PASS;
 import static com.abt.wf.config.Constants.DECISION_REJECT;
 

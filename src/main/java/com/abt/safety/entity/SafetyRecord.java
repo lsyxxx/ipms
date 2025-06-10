@@ -6,6 +6,7 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
 import com.abt.safety.converter.SafetyFormConverter;
+import com.abt.safety.model.RecordStatus;
 import com.abt.sys.model.WithQuery;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
@@ -51,8 +52,8 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     /**
      * 检查人工号
      */
-    @Column(name="checker_jno")
-    private String checkerJno;
+    @Column(name="checker_id")
+    private String checkerId;
     @Column(name="checker_name")
     private String checkerName;
     /**
@@ -78,8 +79,8 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     /**
      * 调度员
      */
-    @Column(name="dispatcher_jno")
-    private String dispatcherJno;
+    @Column(name="dispatcher_id")
+    private String dispatcherId;
     
     @Column(name="dispatcher_name")
     private String dispatcherName;
@@ -88,10 +89,10 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     private LocalDateTime dispatchTime;
    
     /**
-     * 负责人/整改人工号
+     * 负责人/整改人userid
      */
-    @Column(name = "rectifier_jno")
-    private String rectifierJno;
+    @Column(name = "rectifier_id")
+    private String rectifierId;
     @Column(name = "rectifier_name")
     private String rectifierName;
 
@@ -114,8 +115,9 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     /**
      * 流转状态, RecordStatus
      */
+    @Enumerated(EnumType.STRING)
     @Column(name="state_", length = 32)
-    private String state;
+    private RecordStatus state;
 
     /**
      * 检查流程是否完成

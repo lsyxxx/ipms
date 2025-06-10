@@ -84,11 +84,13 @@ public class TripDetail {
     @Column(name="lodging_exp", columnDefinition="DECIMAL(10,2)")
     private BigDecimal lodgingExpense;
 
-//    /**
-//     * 出差补助
-//     */
-//    @Column(name="allowance", columnDefinition = "DECIMAL(10,2)")
-//    private BigDecimal allowance;
+    /**
+     * 出差补助
+     * 弃用，补助放在tripMain中，仅为保留历史数据
+     */
+    @Deprecated
+    @Column(name="allowance", columnDefinition = "DECIMAL(10,2)")
+    private BigDecimal allowance;
 
     /**
      * 本次项目合计

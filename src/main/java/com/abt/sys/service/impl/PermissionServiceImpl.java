@@ -44,4 +44,5 @@ public class PermissionServiceImpl implements PermissionService {
     public DataPrivilegeRule getDataPrivilegeRuleBySourceCode(String sourceCode) {
         return WithQueryUtil.build(dataPrivilegeRuleRepository.findBySourceCodeAndEnable(sourceCode, true));
     }
+
 }

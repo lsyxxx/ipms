@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,29 +44,29 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
 
     private final SafetyRecordRepository safetyRecordRepository;
 
-
     @Override
     public boolean recordExist(LocalDate checkDate, Long formId) {
         return safetyRecordRepository.checkSubmitDuplicated(checkDate.atStartOfDay(), checkDate.plusDays(1L).atStartOfDay(), formId);
     }
 
+    @Transactional
     @Override
-    public void saveCheck(SafetyForm form) {
+    public SafetyRecord saveCheck(SafetyForm form) {
         final SafetyRecord record = createRecordWithTokenUser(form);
         record.setFormId(form.getId());
-        record.setState(RecordStatus.SUBMITTED.name());
+        record.setState(RecordStatus.SUBMITTED);
         //判断是否完成, 没有问题就算结束
         record.calcProblemCount();
         record.calcHasProblem();
         record.setCompleted(!record.isHasProblem());
-        safetyRecordRepository.save(record);
+        return safetyRecordRepository.save(record);
     }
 
     private SafetyRecord createRecordWithTokenUser(SafetyForm form) {
         SafetyRecord record = new SafetyRecord();
         record.setLocation(form.getLocation());
         final UserView uv = TokenUtil.getUserFromAuthToken();
-        record.setCheckerJno(uv.getEmpnum());
+        record.setCheckerId(uv.getId());
         record.setCheckerName(uv.getName());
         record.setCheckTime(LocalDateTime.now());
         record.setCheckFormInstance(form);
@@ -141,29 +142,27 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
     }
 
     @Override
-    public void dispatch(String id, String dispatcherJno, String dispatcherName, String rectifierJno, String rectifierName) {
+    public SafetyRecord dispatch(String id, String dispatcherId, String dispatcherName, String rectifierId, String rectifierName) {
         final SafetyRecord record = loadRecordOnly(id);
-        record.setDispatcherJno(dispatcherJno);
+        record.setDispatcherId(dispatcherId);
         record.setDispatcherName(dispatcherName);
-        record.setRectifierJno(rectifierJno);
+        record.setRectifierId(rectifierId);
         record.setRectifierName(rectifierName);
         record.setDispatchTime(LocalDateTime.now());
-        record.setState(RecordStatus.DISPATCHED.name());
-        safetyRecordRepository.save(record);
+        record.setState(RecordStatus.DISPATCHED);
+        return safetyRecordRepository.save(record);
     }
 
     @Override
-    public void rectified(String id, String rectifyRemark, List<SystemFile> systemFiles) {
+    public SafetyRecord rectified(String id, String rectifyRemark, List<SystemFile> systemFiles) {
         final SafetyRecord record = loadRecordOnly(id);
         record.setRectifyRemark(rectifyRemark);
         record.setRectifyTime(LocalDateTime.now());
-        record.setState(RecordStatus.RECTIFIED.name());
+        record.setState(RecordStatus.RECTIFIED);
         record.setRectifyFiles(systemFiles);
         //整改完就算结束
         record.setCompleted(true);
-        safetyRecordRepository.save(record);
+        return safetyRecordRepository.save(record);
     }
-
-
 
 }

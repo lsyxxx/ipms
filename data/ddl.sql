@@ -258,3 +258,9 @@ delete from T_stockcataDetail where id = 'e29eaa94-e771-4ecb-b0e2-cf8e238dbcf7';
 delete from T_stockcataDetail where id = 'ea935b3c-4319-420c-b505-8acf8413be1c';
 delete from T_stockcataDetail where id = '4fb2285e-b8c2-413c-9693-21595d5128bd';
 delete from T_stockcataDetail where id = '9b478930-1da4-4e46-a449-b1cab66dfbde';
+
+-- 字典新增消息状态
+INSERT INTO [dbo].[CategoryType] ([Id], [Name], [CreateTime]) VALUES ('sysmsg_status', N'消息中心-消息状态', '2025-04-03 13:55:25.430');
+INSERT INTO [dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [SortNo], [Description], [TypeId], [CreateTime], [CreateUserId], [CreateUserName], [UpdateTime], [UpdateUserId], [UpdateUserName]) VALUES ('35f9f352-2f23-4b97-9858-c88bb2a08770', '已读', 'sysmsg_status_1', '1', '1', 0, '消息阅读状态-已读', 'sysmsg_status', '2025-04-03 13:56:39.786678', '00000000-0000-0000-0000-000000000000', '超级管理员', '2025-04-03 13:56:39.786677', '', '');
+INSERT INTO [dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [SortNo], [Description], [TypeId], [CreateTime], [CreateUserId], [CreateUserName], [UpdateTime], [UpdateUserId], [UpdateUserName]) VALUES ('923d41ac-6236-46b8-94fc-a0abdae6a07e', '未读', 'sysmsg_status_0', '0', '1', 1, '消息阅读状态-未读', 'sysmsg_status', '2025-04-03 13:56:01.672837', '00000000-0000-0000-0000-000000000000', '超级管理员', '2025-04-03 13:56:17.842265', '00000000-0000-0000-0000-000000000000', '超级管理员');
+

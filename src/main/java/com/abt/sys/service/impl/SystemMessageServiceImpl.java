@@ -7,6 +7,7 @@ import com.abt.sys.model.dto.SystemMessageRequestForm;
 import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.repository.SystemMessageRepository;
 import com.abt.sys.service.SystemMessageService;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -16,8 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_ID_COPY;
-import static com.abt.sys.config.SystemConstants.SYSMSG_TYPE_NAME_TIP;
+import static com.abt.sys.config.SystemConstants.*;
 
 /**
  *
@@ -92,6 +92,22 @@ public class SystemMessageServiceImpl implements SystemMessageService {
     }
 
     @Override
+    public SystemMessage createImportantSystemMsg(@NotNull String toId, String toName, @NotNull String content, @NotNull String service, String entityId) {
+        SystemMessage  msg = new SystemMessage();
+        msg.setTypeId(SystemConstants.SYSMSG_TYPE_IMPORTANT);
+        msg.setTypeName(SYSMSG_TYPE_NAME_IMPORTANT);
+        msg.setFromId(SystemConstants.SYSTEM_USER_ID);
+        msg.setFromName(SystemConstants.SYSTEM_USER_NAME);
+        msg.setToId(toId);
+        msg.setToName(toName);
+        msg.setContent(content);
+        msg.setService(service);
+        msg.setEntityId(entityId);
+        msg.setMsgResult(SYSMSG_RESULT_IMPORTANT);
+        return msg;
+    }
+
+    @Override
     public void readAll(String toId) {
         systemMessageRepository.updateReadAllByToId(toId, LocalDateTime.now());
     }
@@ -100,4 +116,5 @@ public class SystemMessageServiceImpl implements SystemMessageService {
     public void sendAll(List<SystemMessage> list) {
         systemMessageRepository.saveAll(list);
     }
+
 }

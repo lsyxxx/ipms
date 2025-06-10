@@ -414,7 +414,7 @@ public class StockServiceImpl implements StockService {
                 endDate,
                 pageable);
         stockList.addAll(WithQueryUtil.build(page2.getContent()));
-        //剩余库存(endDate前最近日期的库存，不包含endDate)
+        //剩余库存(endDate前最近日期的库存，包含endDate)
         final ArrayList<Stock> distinctList = stockList.stream().collect(collectingAndThen(
                 Collectors.toCollection(() -> new TreeSet<>(
                         Comparator.comparing(obj -> obj.getMaterialId() + "#" + obj.getWarehouseId())
@@ -425,7 +425,7 @@ public class StockServiceImpl implements StockService {
         Map<String, Inventory> invMap = new HashMap<>();
 
         for (Stock stock : distinctList) {
-            final Inventory inv = inventoryRepository.findNearestBefore(endDate, stock.getMaterialId(), stock.getWarehouseId());
+            final Inventory inv = inventoryRepository.findNearestBefore(endDate.plusDays(1L), stock.getMaterialId(), stock.getWarehouseId());
             invMap.put(stock.getMaterialId() + "#" + stock.getWarehouseId(), inv);
         }
         for (Stock stock : stockList) {

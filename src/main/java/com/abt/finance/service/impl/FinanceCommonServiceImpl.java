@@ -42,7 +42,7 @@ public class FinanceCommonServiceImpl implements FinanceCommonService {
 
     @Override
     public List<BankAccount> loadAllBankAccounts() {
-        return bankAccountRepository.findAll(Sort.by(Sort.Direction.DESC, "account"));
+        return bankAccountRepository.findAll(Sort.by(Sort.Order.asc("company"), Sort.Order.desc("account")));
     }
 
     @Override

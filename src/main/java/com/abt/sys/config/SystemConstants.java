@@ -17,6 +17,11 @@ public class SystemConstants {
     public static final String SYSMSG_TYPE_ID_TIP = "TIP_MSG";
     public static final String SYSMSG_TYPE_NAME_TIP = "提醒";
 
+    //重要
+    public static final String SYSMSG_TYPE_IMPORTANT = "IMPORTANT_MSG";
+    public static final String SYSMSG_TYPE_NAME_IMPORTANT = "重要";
+    public static final String SYSMSG_RESULT_IMPORTANT = "important";
+
     public static final String SYSMSG_TYPE_ID_SL_CHK = "SL_CHK_MSG";
 
 

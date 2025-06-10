@@ -15,7 +15,7 @@ public interface SafetyRecordService {
     /**
      * 安全检查人提交表单
      */
-    void saveCheck(SafetyForm form);
+    SafetyRecord saveCheck(SafetyForm form);
 
     SafetyRecord loadRecord(String id);
 
@@ -24,12 +24,12 @@ public interface SafetyRecordService {
     /**
      * 检查分配给负责人
      * @param id 记录Id
-     * @param dispatcherJno 调度人工号
+     * @param dispatcherId 调度人userid
      * @param dispatcherName 调度人姓名
-     * @param responsibleJno 负责人工号
-     * @param responsibleName 负责人姓名
+     * @param rectifierId 负责人工号
+     * @param rectifierName 负责人姓名
      */
-    void dispatch(String id, String dispatcherJno, String dispatcherName, String responsibleJno, String responsibleName);
+    SafetyRecord dispatch(String id, String dispatcherId, String dispatcherName, String rectifierId, String rectifierName);
 
     /**
      * 整改
@@ -37,5 +37,5 @@ public interface SafetyRecordService {
      * @param rectifyRemark 整改说明
      * @param systemFiles 上传文件
      */
-    void rectified(String id, String rectifyRemark, List<SystemFile> systemFiles);
+    SafetyRecord rectified(String id, String rectifyRemark, List<SystemFile> systemFiles);
 }

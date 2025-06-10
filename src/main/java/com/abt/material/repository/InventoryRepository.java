@@ -54,8 +54,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, String> {
     void deleteByOrderId(String orderId);
 
 
+//    剩余库存(endDate前最近日期的库存，不包含endDate)
     @Query(value = """
-        select top 1 * from stock_inventory where m_id = :materialId and wh_id = :whid and create_date <= :endDate  order by create_date desc
+        select top 1 * from stock_inventory where m_id = :materialId and wh_id = :whid and create_date < :endDate  order by create_date desc
 """, nativeQuery = true)
     Inventory findNearestBefore(LocalDate endDate, String materialId, String whid);
 }
