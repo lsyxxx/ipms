@@ -20,5 +20,9 @@ public class Constants {
      * 调度人权限
      */
     public static final String ROLE_DISPATCHER = "SAFETY_RECORD_DISPATCH";
+    /**
+     * 查看所有列表权限
+     */
+    public static final String ROLE_VIEW_LIST_ALL = "SAFETY_VIEW_LIST_ALL";
 
 }

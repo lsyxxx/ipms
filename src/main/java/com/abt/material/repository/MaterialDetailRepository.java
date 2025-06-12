@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface MaterialDetailRepository extends JpaRepository<MaterialDetail, String> {
@@ -38,4 +39,6 @@ public interface MaterialDetailRepository extends JpaRepository<MaterialDetail, 
             "and ('all' in :warehouseIds or w.id in :warehouseIds) " +
             "order by m.materialTypeId, m.name, i.warehouseId")
     List<IMaterialDetailDTO> findAllWithInventories(List<String> materialTypeIds, List<String> warehouseIds);
+
+    List<MaterialDetail> findByIdIn(Collection<String> ids);
 }

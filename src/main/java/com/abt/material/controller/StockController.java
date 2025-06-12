@@ -189,7 +189,7 @@ public class StockController {
         final List<MaterialDetailDTO> list = stockService.findAllMaterialInventories(inventoryRequestForm);
         String fileName = URLEncoder.encode("inv_export.xlsx", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
         final List<Warehouse> whs = stockService.findAllWarehouseBy(new WarehouseRequestForm());
-        try (ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream(), MaterialDetailDTO.class).autoCloseStream(Boolean.FALSE)
+        try (ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream(), MaterialDetailDTO.class).autoCloseStream(Boolean.TRUE)
                 .withTemplate(templatePath).build()) {
             //sheet1
             WriteSheet writeSheet = EasyExcel.writerSheet(0).build();
@@ -213,6 +213,17 @@ public class StockController {
             final R<Object> fail = R.fail("物品库存数据导出失败!");
             response.getWriter().println(JsonUtil.toJson(fail));
         }
+    }
+
+    /**
+     * TODO: 导出库存及价值
+     */
+    @PostMapping("/inv/export")
+    public void exportInventory(@RequestBody InventoryRequestForm requestForm) {
+        //不分页
+        requestForm.setPage(1);
+        requestForm.setLimit(9999);
+        final Page<Inventory> page = stockService.latestInventories(requestForm);
     }
 
     public static final String SESSION_CHECK_BILL = "stockCheckBillOrder";

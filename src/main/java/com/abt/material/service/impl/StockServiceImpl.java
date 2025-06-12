@@ -591,13 +591,45 @@ public class StockServiceImpl implements StockService {
     }
 
     /**
+     * 出库价值合计行
+     */
+    public void insertSumValueRow(int rowNum, BigDecimal value, Worksheet worksheet) {
+        Cells  cells = worksheet.getCells();
+        cells.insertRow(rowNum);
+        cells.get(rowNum, 0).putValue(String.format("本周出库价值合计：%.2f元", value));
+        //样式
+        cells.getRows().get(rowNum).setHeight(35);
+        Style style = worksheet.getWorkbook().createStyle();
+        style.getFont().setName("SimSun");
+        style.getFont().setSize(10);
+        style.getFont().setBold(true);
+        style.getFont().setColor(Color.getBlack());
+        style.setHorizontalAlignment(TextAlignmentType.LEFT);
+        style.setVerticalAlignment(TextAlignmentType.CENTER);
+        style.setTextWrapped(true);
+        cells.get(rowNum, 0).setStyle(style);
+        cells.get(rowNum, 1).setStyle(style);
+        cells.get(rowNum, 2).setStyle(style);
+        cells.get(rowNum, 3).setStyle(style);
+        cells.get(rowNum, 4).setStyle(style);
+        cells.get(rowNum, 5).setStyle(style);
+        //合并
+        cells.merge(rowNum, 0, 1, 6);
+
+    }
+
+    /**
      * 生成礼品表格
      * @param headerRow 标题行
      * @param list 数据
      * @param worksheet worksheet
      */
     private void createStockTable(int headerRow, List<Stock> list, Worksheet worksheet, Style style) {
-        list = formatExcelData(list);
+        //处理数据
+        List<String> mids = list.stream().map(Stock::getMaterialId).toList();
+        final List<MaterialDetail> mds = materialDetailRepository.findByIdIn(mids);
+        final Map<String, MaterialDetail> mtMap = mds.stream().collect(Collectors.toMap(MaterialDetail::getId, md -> md));
+        list = formatExcelData(list, mtMap);
         int dataRow = headerRow + 1;
         final Map<String, List<Stock>> map = list.stream()
                 .collect(Collectors.groupingBy(
@@ -615,6 +647,8 @@ public class StockServiceImpl implements StockService {
             Style greenStyle = dataStyle(worksheet.getWorkbook());
             greenStyle.getFont().setBold(true);
             greenStyle.getFont().setColor(Color.getGreen());
+            //出库合计
+            BigDecimal valueSum = BigDecimal.ZERO;
             for(Map.Entry<String, List<Stock>> entry : map.entrySet()) {
                 List<Stock> vlist = entry.getValue();
                 //按日期排序
@@ -623,6 +657,7 @@ public class StockServiceImpl implements StockService {
                     Stock stock = vlist.get(r);
                     dataRow = start + r;
                     insertStockRow(stock, dataRow, cells, style, redStyle, greenStyle);
+                    valueSum = valueSum.add(stock.getTotalPrice().setScale(2, RoundingMode.FLOOR));
                     //行高35
                     worksheet.getCells().getRows().get(dataRow).setHeight(35);
                 }
@@ -636,8 +671,9 @@ public class StockServiceImpl implements StockService {
                 }
                 start = start + vlist.size();
             }
+            //总价合计
+            insertSumValueRow(start, valueSum,  worksheet);
         }
-//        createDivideRow(dataRow + 1, cells);
     }
 
     private void insertStockRow(Stock stock, int curRowIdx, Cells cells, Style style, Style redStyle, Style greenStyle) {
@@ -779,16 +815,25 @@ public class StockServiceImpl implements StockService {
 //    }
 
 
-    public List<Stock> formatExcelData(List<Stock> list) {
+    public List<Stock> formatExcelData(List<Stock> list, Map<String, MaterialDetail> materialDetailMap) {
         if (list == null || list.isEmpty()) {
             return new ArrayList<>();
         }
         for (Stock stock : list) {
+            //单价
+            BigDecimal price = materialDetailMap.getOrDefault(stock.getMaterialId(), new MaterialDetail()).getPrice();
+            stock.setPrice(price);
             //名称
+            String name = stock.getMaterialName();
             if (StringUtils.isNotBlank(stock.getSpecification())) {
                 String spec = String.format("(%s)", stock.getSpecification());
-                stock.setName(String.format("%s\n%s", stock.getMaterialName(), spec));
+                name = String.format("%s\n%s", stock.getMaterialName(), spec);
             }
+            //单价
+            if (price != null) {
+                name = String.format("%s/%.2f元", name, price);
+            }
+            stock.setName(name);
             //使用人
             if (StringUtils.isNotBlank(stock.getDeptName())) {
                 stock.setUsername(String.format("%s\n(%s)", stock.getUsername(), stock.getDeptName()));
@@ -806,6 +851,14 @@ public class StockServiceImpl implements StockService {
                 case STOCK_TYPE_IN -> stock.setQuantityStr("+" + formatDouble(stock.getNum()) + stock.getUnit());
                 case STOCK_TYPE_OUT -> stock.setQuantityStr("-" + formatDouble(stock.getNum()) + stock.getUnit());
                 default -> stock.setQuantityStr(stock.getNum() + stock.getUnit());
+            }
+            //出库价值
+            if (price != null) {
+                final BigDecimal value = price.multiply(BigDecimal.valueOf(stock.getNum())).setScale(2, RoundingMode.HALF_UP);
+                stock.setQuantityStr(stock.getQuantityStr() + "\n(" + value + "元)" );
+                stock.setTotalPrice(value);
+            } else {
+                stock.setTotalPrice(BigDecimal.ZERO);
             }
             //日期
             if (stock.getOrderDate() != null) {

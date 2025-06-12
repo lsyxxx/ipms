@@ -125,6 +125,15 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), pattern)
                 ));
             }
+            //查看权限条件
+            if (StringUtils.isNotBlank(requestForm.getUserid())) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.equal(root.get("checkerId"), requestForm.getUserid()),
+                        criteriaBuilder.equal(root.get("dispatcherId"), requestForm.getUserid()),
+                        criteriaBuilder.equal(root.get("rectifierId"), requestForm.getUserid())
+                ));
+            }
+
             if (requestForm.getLocalStartDate() != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("checkTime"), requestForm.getLocalStartDate().atStartOfDay()));
             }

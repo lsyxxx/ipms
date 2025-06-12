@@ -1,7 +1,9 @@
 package com.abt.safety.controller;
 
 import com.abt.common.model.R;
+import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
+import com.abt.http.dto.WebApiToken;
 import com.abt.safety.entity.SafetyForm;
 import com.abt.safety.entity.SafetyItem;
 import com.abt.safety.entity.SafetyRecord;
@@ -15,14 +17,17 @@ import com.abt.safety.service.SafetyConfigService;
 import com.abt.safety.service.SafetyRecordService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.WithQuery;
+import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.service.SystemMessageService;
+import com.abt.sys.service.UserService;
 import com.abt.sys.util.WithQueryUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.annotation.Secured;
@@ -30,8 +35,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static com.abt.safety.Constants.ROLE_DISPATCHER;
+import static com.abt.safety.Constants.ROLE_VIEW_LIST_ALL;
 
 /**
  * 安全检查
@@ -45,10 +52,10 @@ public class SafetyController {
 
     private final SafetyConfigService safetyConfigService;
     private final SafetyRecordService safetyRecordService;
-    private final SystemMessageService systemMessageService;
+    private final UserService<UserView, User> sqlServerUserService;
 
     private final ApplicationEventPublisher publisher;
-
+    private final UserService<UserView, WebApiToken> userService;
 
 
     /**
@@ -182,7 +189,7 @@ public class SafetyController {
      * 新增安全检查表单
      */
     @PostMapping("/record/check")
-    public R<Object> saveFormRecord(@Validated @RequestBody SafetyForm safetyForm) throws InterruptedException {
+    public R<Object> saveFormRecord(@Validated @RequestBody SafetyForm safetyForm) {
         LocalDate now = LocalDate.now();
         final boolean exist = safetyRecordService.recordExist(now, safetyForm.getId());
         if (safetyForm.getId() == null) {
@@ -205,6 +212,12 @@ public class SafetyController {
 
     @GetMapping("/record/page")
     public R<Page<SafetyRecord>> findFormRecordPage(@ModelAttribute SafetyRecordRequestForm requestForm) {
+        //权限
+        final List<UserRole> list = sqlServerUserService.getUserByRoleId(ROLE_VIEW_LIST_ALL);
+        String userid = TokenUtil.getUseridFromAuthToken();
+        list.stream().filter(i -> i.getId().equals(userid)).findAny().ifPresentOrElse(i -> requestForm.setUserid(null),
+                () -> requestForm.setUserid(userid));
+
         final Page<SafetyRecord> page = safetyRecordService.findSafetyRecordPageable(requestForm);
         WithQueryUtil.build(page);
         return R.success(page, "查询成功");
@@ -232,9 +245,6 @@ public class SafetyController {
         publisher.publishEvent(new SafetyRecordFinishedEvent(this, record));
         return R.success("已整改");
     }
-
-
-
 
 
 
