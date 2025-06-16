@@ -90,6 +90,7 @@ public class StockController {
 
     /**
      * 出入库产品明细表
+     *
      * @param requestForm 查询条件
      */
     @PostMapping("/dtl/table")
@@ -215,23 +216,13 @@ public class StockController {
         }
     }
 
-    /**
-     * TODO: 导出库存及价值
-     */
-    @PostMapping("/inv/export")
-    public void exportInventory(@RequestBody InventoryRequestForm requestForm) {
-        //不分页
-        requestForm.setPage(1);
-        requestForm.setLimit(9999);
-        final Page<Inventory> page = stockService.latestInventories(requestForm);
-    }
-
     public static final String SESSION_CHECK_BILL = "stockCheckBillOrder";
 
     @PostMapping("/chk/import")
     public R<List<MaterialDetailDTO>> importCheckBill(MultipartFile file, String orderJson, HttpServletRequest request) throws JsonProcessingException {
         SystemFile systemFile = iFileService.saveFile(file, savedRoot, "stockCheckBill", true, true);
-        StockOrder order = JsonUtil.toObject(orderJson, new TypeReference<StockOrder>() {});
+        StockOrder order = JsonUtil.toObject(orderJson, new TypeReference<StockOrder>() {
+        });
         File f = new File(systemFile.getFullPath());
         order.setFileList(JsonUtil.toJson(systemFile));
         order = stockService.importCheckBill(f, order);
@@ -261,7 +252,6 @@ public class StockController {
         stockService.saveStockOrder(order);
         return R.success("保存盘点单成功!");
     }
-
 
 
     @GetMapping("/type/find")
@@ -356,6 +346,7 @@ public class StockController {
 
     /**
      * 月报汇总
+     *
      * @param yearMonth yyyy-mm 年月
      */
     @GetMapping("/summary/month")
@@ -396,6 +387,41 @@ public class StockController {
         stockService.inventoryGiftDetails(startDate, endDate, table);
         final String path = stockService.createExcelWeek(table, startDate, endDate);
         return R.success(path, "导出成功!");
+    }
+
+    /**
+     * TODO: 导出库存及价值
+     */
+    @PostMapping("/inv/smry/download")
+    public void downloadInventoryAndValueExcel(HttpServletResponse response,
+                                               @RequestBody InventoryRequestForm requestForm) throws Exception {
+        //不分页
+//        requestForm.setPage(1);
+//        requestForm.setLimit(9999);
+//        final Page<Inventory> page = stockService.latestInventories(requestForm);
+        try {
+            stockService.createGiftInventoryAndValueExcel(response.getOutputStream(), requestForm.getYear1(), requestForm.getYear2(), requestForm.getMonthIn());
+            //下载excel
+
+            // 设置响应头
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("UTF-8");
+
+            // 设置文件名
+            String fileName = "礼品使用分析.xlsx";
+            response.setHeader("Content-Disposition",
+                    "attachment; filename*=UTF-8''" + java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            final R<Object> fail = R.fail("下载礼品使用分析Excel失败!");
+            response.getWriter().println(JsonUtil.toJson(fail));
+        }
+
+
     }
 
 

@@ -1,10 +1,5 @@
 package com.abt.material.service.impl;
 
-import cn.idev.excel.ExcelWriter;
-import cn.idev.excel.FastExcel;
-import cn.idev.excel.write.metadata.WriteSheet;
-import cn.idev.excel.write.metadata.fill.FillConfig;
-import cn.idev.excel.write.metadata.fill.FillWrapper;
 import com.abt.common.util.TimeUtil;
 import com.abt.material.entity.*;
 import com.abt.material.listener.ImportCheckBillListener;
@@ -20,17 +15,14 @@ import com.abt.wf.repository.PurchaseApplyDetailRepository;
 import com.aspose.cells.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -41,7 +33,6 @@ import java.util.stream.Stream;
 
 import static com.abt.material.entity.StockOrder.*;
 import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
 
 /**
  * 出入库
@@ -855,7 +846,7 @@ public class StockServiceImpl implements StockService {
             //出库价值
             if (price != null) {
                 final BigDecimal value = price.multiply(BigDecimal.valueOf(stock.getNum())).setScale(2, RoundingMode.HALF_UP);
-                stock.setQuantityStr(stock.getQuantityStr() + "\n(" + value + "元)" );
+//                stock.setQuantityStr(stock.getQuantityStr() + "\n(" + value + "元)" );
                 stock.setTotalPrice(value);
             } else {
                 stock.setTotalPrice(BigDecimal.ZERO);
@@ -880,6 +871,37 @@ public class StockServiceImpl implements StockService {
         } else {
             return String.valueOf(value); // 保留原有小数位
         }
+    }
+
+
+    /**
+     * 礼品使用情况
+     * @param year    指定年份
+     * @param monthIn 包含月份
+     * @return List<MonthlyStockStatsDTO>
+     */
+    public List<MonthlyStockStatsDTO> createGiftUseMonthlyData(int year, List<Integer> monthIn) {
+        return stockRepository.findGiftMonthlyDataBy(year, monthIn, StockType.OUT.getValue());
+    }
+
+
+    @Override
+    public void createGiftInventoryAndValueExcel(OutputStream outputStream, int year1, int year2, List<Integer> monthIn) throws Exception {
+        //对比数据
+        final List<MonthlyStockStatsDTO> data1 = createGiftUseMonthlyData(year1, monthIn);
+        final List<MonthlyStockStatsDTO> data2 = createGiftUseMonthlyData(year2, monthIn);
+
+        //库存数据
+        final List<MaterialType> giftTypes = materialTypeRepository.findByNameContaining("礼品类");
+        InventoryRequestForm form = new InventoryRequestForm();
+        final List<String> typeList = giftTypes.stream().map(MaterialType::getId).toList();
+        form.setMaterialTypeIds(typeList);
+        form.setLimit(9999);
+        final List<Inventory> inventoryList = this.latestInventories(form).getContent();
+        WithQueryUtil.build(inventoryList);
+
+        InventoryExcel ie = new InventoryExcel(inventoryList, data1, data2, year1, year2, monthIn);
+        ie.createInventoryExportExcel(outputStream);
     }
 
 

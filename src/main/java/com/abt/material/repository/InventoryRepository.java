@@ -35,6 +35,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, String> {
     @Query("select i1 from Inventory i1 " +
             "left join fetch i1.materialDetail " +
             "left join fetch i1.warehouse " +
+            "left join fetch i1.order " +
             "left join fetch InventoryAlert a on i1.warehouseId =  a.id.warehouseId and i1.materialId = a.id.materialId " +
             "where 1=1" +
             "and i1.updateDate = (SELECT MAX(i2.updateDate) FROM Inventory i2 " +

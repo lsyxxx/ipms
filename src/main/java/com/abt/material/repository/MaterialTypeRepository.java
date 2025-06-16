@@ -17,4 +17,7 @@ public interface MaterialTypeRepository extends JpaRepository<MaterialType, Stri
     List<MaterialType> findByQuery(List<String> ids, String nameLike, Boolean isDeleted);
 
 
+    List<MaterialType> findByNameContaining(String name);
+
+
 }

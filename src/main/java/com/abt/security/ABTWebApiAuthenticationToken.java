@@ -26,6 +26,7 @@ public class ABTWebApiAuthenticationToken extends AbstractAuthenticationToken {
      */
     private String credentials;
 
+
     //TODO: 可以扩展其它信息，比如可见菜单
 
 

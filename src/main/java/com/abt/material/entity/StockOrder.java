@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Table;
@@ -108,7 +109,7 @@ public class StockOrder extends AuditInfo implements CommonJpaAudit, WithQuery<S
     private Integer stockType;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "stockOrder")
-    @JsonIgnoreProperties({"stockList"})
+    @JsonManagedReference
     private List<Stock> stockList;
 
     /**

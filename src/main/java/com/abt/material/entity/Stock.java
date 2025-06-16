@@ -153,11 +153,11 @@ public class Stock implements WithQuery<Stock> {
     private String quantityStr;
     @Transient
     private String orderDateStr;
-    /**
-     * 添加stockOrder信息
-     */
+    
+    /* 添加stockOrder信息 */
     @Override
     public Stock afterQuery() {
+        //1. 复制order信息
         if (stockOrder != null) {
             this.orderDate = stockOrder.getOrderDate();
             this.stockType = stockOrder.getStockType();
@@ -167,6 +167,8 @@ public class Stock implements WithQuery<Stock> {
             this.warehouseId = stockOrder.getWarehouseId();
             this.warehouseName = stockOrder.getWarehouseName();
             this.orderRemark = stockOrder.getRemark();
+            //防止嵌套
+            this.stockOrder = null;
         }
 
         return this;

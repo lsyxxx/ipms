@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -112,4 +113,9 @@ public interface StockService {
     void stockSummary(LocalDate startDate, LocalDate endDate, StockSummaryTable table);
 
     String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws Exception;
+
+    /**
+     * 礼品类库存及价值分析excel
+     */
+    void createGiftInventoryAndValueExcel(OutputStream outputStream, int year1, int year2, List<Integer> monthIn) throws Exception;
 }
