@@ -902,6 +902,8 @@ public class StockServiceImpl implements StockService {
 
         InventoryExcel ie = new InventoryExcel(inventoryList, data1, data2, year1, year2, monthIn);
         ie.createInventoryExportExcel(outputStream);
+
+
     }
 
 

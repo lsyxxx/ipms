@@ -6,6 +6,7 @@ import com.abt.finance.entity.BankAccount;
 import com.abt.finance.entity.Invoice;
 import com.abt.finance.service.ICreditBook;
 import com.abt.wf.model.WithInvoice;
+import com.abt.wf.model.WorkflowCompany;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -37,7 +38,7 @@ import static com.abt.wf.config.Constants.*;
 @DynamicUpdate
 @Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice {
+public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice, WorkflowCompany {
 
     @Id
     @GeneratedValue(generator  = "timestampIdGenerator")
@@ -216,6 +217,7 @@ public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice 
         this.variableMap.put(KEY_STARTER_NAME, this.getSubmitUsername());
         this.variableMap.put(KEY_COST, this.getCost());
         this.variableMap.put(KEY_SERVICE, "费用报销");
+        this.variableMap.put(KEY_COMPANY, this.getCompany());
         return this.variableMap;
     }
 

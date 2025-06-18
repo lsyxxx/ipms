@@ -96,17 +96,15 @@ public class InventoryExcel {
         defaultStyle.getFont().setSize(11);
         defaultStyle.setVerticalAlignment(TextAlignmentType.CENTER);
         defaultStyle.setHorizontalAlignment(TextAlignmentType.CENTER);
-
         workbook.setDefaultStyle(defaultStyle);
-
 
         // 创建对比数据sheet
         createCompareSheet(workbook);
         createStockValueSheet(workbook);
 
         // 直接保存到输出流
-        // workbook.save(outputStream, SaveFormat.XLSX);
-        workbook.save("C:\\Users\\Administrator\\Desktop\\temp\\inv_export.xlsx");
+         workbook.save(outputStream, SaveFormat.XLSX);
+//        workbook.save("C:\\Users\\Administrator\\Desktop\\temp\\inv_export.xlsx");
     }
 
     /**
@@ -158,7 +156,7 @@ public class InventoryExcel {
     public void createCompareSheet(Workbook workbook) {
         // 添加新的worksheet
         String sheetName = year1 + "和" + year2 + "礼品用量对比";
-        workbook.getWorksheets().add(sheetName);
+        workbook.getWorksheets().get(0).setName(sheetName);
         Worksheet sheet = workbook.getWorksheets().get(sheetName);
         // 创建表头样式
         final Style headerStyle = createHeaderStyle(sheet.getWorkbook());

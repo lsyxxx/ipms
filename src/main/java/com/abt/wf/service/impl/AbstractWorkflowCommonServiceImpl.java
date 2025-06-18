@@ -38,10 +38,7 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.impl.instance.StartEventImpl;
-import org.camunda.bpm.model.bpmn.instance.EndEvent;
-import org.camunda.bpm.model.bpmn.instance.FlowNode;
-import org.camunda.bpm.model.bpmn.instance.StartEvent;
-import org.camunda.bpm.model.bpmn.instance.UserTask;
+import org.camunda.bpm.model.bpmn.instance.*;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -206,8 +203,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         StartEventImpl startEvent = (StartEventImpl) startEvents.iterator().next();
         List<FlowNode> previewList = new ArrayList<>();
         WorkFlowUtil.findActivityNodes(startEvent, previewList, vars);
-        //去掉startEvent和endEvent
-        previewList = previewList.stream().filter(i -> !(i instanceof StartEvent || i instanceof EndEvent)).toList();
+        //去掉startEvent和endEvent，GateWay
+        previewList = previewList.stream().filter(i -> !(i instanceof StartEvent || i instanceof EndEvent || i instanceof Gateway)).toList();
         List<UserTaskDTO> returnList = new ArrayList<>();
         //生成返回给前端的对象
         for (FlowNode node : previewList) {

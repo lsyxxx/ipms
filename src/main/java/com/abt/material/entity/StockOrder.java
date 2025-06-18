@@ -109,7 +109,6 @@ public class StockOrder extends AuditInfo implements CommonJpaAudit, WithQuery<S
     private Integer stockType;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "stockOrder")
-    @JsonManagedReference
     private List<Stock> stockList;
 
     /**

@@ -266,7 +266,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     @Override
     public Map<String, Object> createVariableMap(Reimburse form) {
-        return form.createVariableMap();
+         return form.createVariableMap();
     }
 
     @Override

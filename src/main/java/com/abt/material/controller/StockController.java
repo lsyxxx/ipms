@@ -390,7 +390,7 @@ public class StockController {
     }
 
     /**
-     * TODO: 导出库存及价值
+     * 导出库存对比分析及库存价值
      */
     @PostMapping("/inv/smry/download")
     public void downloadInventoryAndValueExcel(HttpServletResponse response,
@@ -420,8 +420,6 @@ public class StockController {
             final R<Object> fail = R.fail("下载礼品使用分析Excel失败!");
             response.getWriter().println(JsonUtil.toJson(fail));
         }
-
-
     }
 
 

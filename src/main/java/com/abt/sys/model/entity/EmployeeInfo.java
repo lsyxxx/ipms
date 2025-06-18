@@ -330,7 +330,7 @@ public class EmployeeInfo implements WithQuery<EmployeeInfo> {
     }
 
     public boolean salaryDisabled() {
-        return this.isActive.equals("2");
+        return this.isActive != null &&  this.isActive.equals("2");
     }
 
     @Override

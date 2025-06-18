@@ -157,6 +157,7 @@ public class TripMain extends WorkflowBase {
         variableMap.put(KEY_STARTER, this.getSubmitUserid());
         variableMap.put(KEY_COST, this.getSum());
         variableMap.put(KEY_SERVICE, SERVICE_TRIP);
+        variableMap.put(KEY_COMPANY, this.getCompany());
         if (StringUtils.isBlank(this.getManagers())) {
             variableMap.put(KEY_MANAGER, List.of());
         } else {

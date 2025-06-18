@@ -83,6 +83,7 @@ public class WorkFlowUtil {
                 final String text = conditionExpression.getTextContent();
                 final boolean result = evaluateExpression(text, vars);
                 if (result) {
+                    //会返回GATEWAY
                     return sequenceFlow.getTarget();
                 }
 //                for(Map.Entry<String, Object> entry : vars.entrySet()) {
