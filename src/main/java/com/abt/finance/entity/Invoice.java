@@ -20,7 +20,10 @@ import java.time.LocalDate;
 /**
  * 发票
  */
-@Table(name = "fi_invoice")
+@Table(name = "fi_invoice", indexes = {
+        @Index(name = "idx_ref_code", columnList = "ref_code"),
+        @Index(name = "idx_ref_name", columnList = "ref_name")
+})
 @Entity
 @Getter
 @Setter
@@ -31,16 +34,14 @@ import java.time.LocalDate;
 @EntityListeners(CommonJpaAuditListener.class)
 public class Invoice extends AuditInfo implements CommonJpaAudit {
 
-    /**
-     * 发票代码
-     */
     @Id
-    @NotNull(groups = {ValidateGroup.All.class}, message = "发票号码不能为空")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     /**
-     * 发票号码
+     * 发票代码
      */
+    @NotNull(groups = {ValidateGroup.All.class}, message = "发票号码不能为空")
     private String code;
 
     /**
@@ -105,8 +106,17 @@ public class Invoice extends AuditInfo implements CommonJpaAudit {
     @Column(name="seller_name")
     private String sellerName;
 
+    /**
+     * 是否使用，默认true
+     * 对于审批拒绝的流程，关联的发票不能删除，但是不能作为查重的依据。此时设置isUse=false
+     */
+    @Column(name="is_use")
+    private boolean isUse = true;
+
     @Transient
     private String error;
+
+
 
 
 }

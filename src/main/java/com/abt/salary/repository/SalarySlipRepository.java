@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -216,4 +217,10 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     and s.dceoJobNumber = :jobNumber
 """)
     SlipCount dceoSlipCount(String mainId, String jobNumber);
+
+    @Modifying
+    @Query("""
+    update SalarySlip s set s.empCost = :empCost, s.netPaid = :netPaid where s.id = :slipId
+""")
+    void updateUserEmpCostAndNetPaid(String slipId, BigDecimal empCost, BigDecimal netPaid);
 }

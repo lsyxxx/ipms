@@ -114,12 +114,6 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     @Override
     void rejectHandler(Reimburse form, Task task) {
         this.commonRejectHandler(form, task, form.getComment(), form.getId());
-        //删除发票
-        try {
-            invoiceService.deleteByRef(form.getId(), getServiceName());
-        } catch (Exception e) {
-            log.error("删除发票失败! Cause: " + e.getMessage(), e);
-        }
     }
 
     @Override

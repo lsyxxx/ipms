@@ -43,7 +43,7 @@ import static com.abt.wf.config.Constants.*;
 @DynamicInsert
 @DynamicUpdate
 @AllArgsConstructor
-public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice {
+public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice{
     @Id
     @GeneratedValue(generator = "timestampIdGenerator")
     @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
@@ -294,4 +294,13 @@ public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice
         setTaxItemId(null);
     }
 
+    @Override
+    public String getRefCode() {
+        return this.id;
+    }
+
+    @Override
+    public String getRefName() {
+        return this.getServiceName();
+    }
 }

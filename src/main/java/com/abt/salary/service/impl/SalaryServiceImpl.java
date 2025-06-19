@@ -1487,9 +1487,18 @@ public class SalaryServiceImpl implements SalaryService {
         salarySlipRepository.hrCheckByYearMonth(yearMonth, LocalDateTime.now());
     }
 
+    @Transactional
     @Override
-    public SalaryMain recalculateSalaryMainSumData(String mid) {
-        SalaryMain sm = findSalaryMainById(mid);
+    public void updateUserSlip(String slipId, SalaryMain main) {
+        final SalarySlip slip = salarySlipRepository.findById(slipId).orElseThrow(() -> new BusinessException("未查询到工资条(id=" + slipId + ")"));
+        final SalaryCell empCostCell = salaryCellRepository.findBySlipIdAndColumnIndex(slipId, main.getEmpCostColumnIndex());
+        final SalaryCell empNetPaidCell = salaryCellRepository.findBySlipIdAndColumnIndex(slipId, main.getNetPaidColumnIndex());
+        //update
+        salarySlipRepository.updateUserEmpCostAndNetPaid(slipId, new BigDecimal(empCostCell.getValue()), new BigDecimal(empNetPaidCell.getValue()));
+    }
+
+    @Override
+    public SalaryMain recalculateSalaryMainSumData(String mid, @NotNull SalaryMain sm) {
         //empCost
         final Integer empCostColumnIndex = sm.getEmpCostColumnIndex();
 
@@ -1502,7 +1511,7 @@ public class SalaryServiceImpl implements SalaryService {
         final Integer netPaidColumnIndex = sm.getNetPaidColumnIndex();
         if (netPaidColumnIndex != null) {
             final List<SalaryCell> cells = salaryCellRepository.findByColumnIndexAndMidOrderByRowIndex(netPaidColumnIndex, mid);
-            sumDoubleValue(cells);
+            sm.setSumNetPaid(sumDoubleValue(cells));
         }
         sm = salaryMainRepository.save(sm);
         return sm;

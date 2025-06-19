@@ -5,6 +5,7 @@ import com.abt.common.model.R;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.finance.entity.Invoice;
+import com.abt.finance.invoice.CheckAndSaveInvoice;
 import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
@@ -19,6 +20,7 @@ import com.abt.wf.service.ReimburseService;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.write.metadata.WriteSheet;
+import com.abt.wf.util.WorkFlowUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -42,6 +44,8 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.abt.wf.config.Constants.SERVICE_RBS;
 
 /**
  *
@@ -81,6 +85,7 @@ public class ReimburseController {
     public R<Object> revoke(String id) {
         UserView user = TokenUtil.getUserFromAuthToken();
         reimburseService.revoke(id, user.getId(), user.getName());
+        invoiceService.notUse(id, SERVICE_RBS);
         return R.success("撤销成功");
     }
 
@@ -90,28 +95,14 @@ public class ReimburseController {
         return R.success(copyEntity);
     }
 
+    @CheckAndSaveInvoice
     @PostMapping("/apply")
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody Reimburse form) {
         setSubmitUser(form);
         form.setRbsDate(LocalDate.now());
-        //validate
-        final List<Invoice> invList = invoiceService.check(form.getInvoiceList());
-        List<Invoice> error = new ArrayList<>();
-        invList.forEach(invoice -> {
-            if (invoiceService.hasError(invoice)) {
-                error.add(invoice);
-            }
-        });
-        if (!error.isEmpty()) {
-            return R.fail(error, "发票号码存在错误！");
-        }
         costDetailService.check(form.getCostDetailList(), form.getCost());
         final Reimburse entity = reimburseService.apply(form);
-        invList.forEach(i -> i.setRefCode(entity.getId()));
         costDetailService.save(form.getCostDetailList(), entity.getId());
-        invoiceService.save(invList);
-
-
         return R.success(entity, "提交成功");
     }
 
@@ -121,6 +112,9 @@ public class ReimburseController {
         form.setSubmitUserid(user.getId());
         form.setSubmitUsername(user.getUsername());
         reimburseService.approve(form);
+        if (WorkFlowUtil.isReject(form.getDecision())) {
+            invoiceService.notUse(form.getId(), form.getServiceName());
+        }
         return R.success("审批成功");
     }
 
@@ -167,6 +161,7 @@ public class ReimburseController {
     @GetMapping("/del/{id}")
     public R<Object> delete(@PathVariable String id, String reason) {
         reimburseService.delete(id, reason);
+        invoiceService.deleteByRef(id, SERVICE_RBS);
         return R.success("删除成功");
     }
 

@@ -274,4 +274,14 @@ public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice,
         setTaxItem(null);
         setTaxItemId(null);
     }
+
+    @Override
+    public String getRefCode() {
+        return this.id;
+    }
+
+    @Override
+    public String getRefName() {
+        return this.getServiceName();
+    }
 }

@@ -375,8 +375,11 @@ public class SalaryController {
     @GetMapping("/cell/updateAndSend")
     public R<Object> updateSalaryCellAndSend(String cellId, String value, String slipId, String mid) throws SchedulerException, ClassNotFoundException {
         salaryService.updateUserSalaryCell(cellId, value);
+        //更新个人工资条的用工成本和实发
+        final SalaryMain main = salaryService.findSalaryMainById(mid);
         //重新计算并保存
-        final SalaryMain sm = salaryService.recalculateSalaryMainSumData(mid);
+        salaryService.recalculateSalaryMainSumData(mid, main);
+        salaryService.updateUserSlip(slipId, main);
         final LocalDateTime autoCheckTime = salaryService.sendSlipById(slipId);
         //自动确认-- 个人单独确认
         return R.success("已发送工资条");

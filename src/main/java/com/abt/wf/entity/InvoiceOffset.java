@@ -1,6 +1,8 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.finance.entity.Invoice;
+import com.abt.wf.model.WithInvoice;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -12,6 +14,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.abt.wf.config.Constants.*;
 
@@ -24,7 +27,7 @@ import static com.abt.wf.config.Constants.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class InvoiceOffset extends WorkflowBase {
+public class InvoiceOffset extends WorkflowBase implements WithInvoice{
     @Id
     @Column(name = "id", nullable = false)
     @GeneratedValue(generator  = "timestampIdGenerator")
@@ -95,6 +98,7 @@ public class InvoiceOffset extends WorkflowBase {
     @NotNull(groups = {ValidateGroup.Save.class}, message = "发票编号必填")
     @Column(name="inv_code", columnDefinition="VARCHAR(128)")
     private String invoiceCode;
+
     /**
      * 回票类型
      */
@@ -128,6 +132,22 @@ public class InvoiceOffset extends WorkflowBase {
     private String decision;
     @Transient
     private String comment;
+    /**
+     * 关联发票列表
+     */
+    @Transient
+    private List<Invoice> invoiceList;
+
+    /**
+     * 根据发票列表(invoiceList)生成发票号码字符串
+     * 如果发票列表中有数据，那么重新生成
+     * 如果发票列表中没数据，那么不变
+     */
+    public void generateInvoiceCode() {
+        if (this.invoiceList != null && this.invoiceList.size() > 0) {
+            this.invoiceCode = this.invoiceList.stream().map(Invoice::getCode).collect(Collectors.joining(","));
+        }
+    }
 
     @Transient
     private Map<String, Object> variableMap = new HashMap<>();
@@ -156,5 +176,15 @@ public class InvoiceOffset extends WorkflowBase {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), id, company, project, projectId, projectType, accumulatedInvoice, supplierId, supplierName, contractName, contractCode, contractAmount, invoiceAmount, invoiceCode, invoiceType, remark, fileList);
+    }
+
+    @Override
+    public String getRefCode() {
+        return this.id;
+    }
+
+    @Override
+    public String getRefName() {
+        return this.getServiceName();
     }
 }

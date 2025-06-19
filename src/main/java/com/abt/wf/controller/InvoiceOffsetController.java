@@ -3,6 +3,8 @@ package com.abt.wf.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
+import com.abt.finance.invoice.CheckAndSaveInvoice;
+import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
@@ -11,6 +13,7 @@ import com.abt.wf.entity.InvoiceOffset;
 import com.abt.wf.model.InvoiceOffsetRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceOffsetService;
+import com.abt.wf.util.WorkFlowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -18,6 +21,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.abt.wf.config.Constants.SERVICE_INV_OFFSET;
 
 /**
  * 发票冲账申请
@@ -27,9 +32,11 @@ import java.util.List;
 @RequestMapping("/wf/invoffset")
 public class InvoiceOffsetController {
     private final InvoiceOffsetService invoiceOffsetService;
+    private final InvoiceService invoiceService;
 
-    public InvoiceOffsetController(InvoiceOffsetService invoiceOffsetService) {
+    public InvoiceOffsetController(InvoiceOffsetService invoiceOffsetService, InvoiceService invoiceService) {
         this.invoiceOffsetService = invoiceOffsetService;
+        this.invoiceService = invoiceService;
     }
 
     /**
@@ -40,6 +47,7 @@ public class InvoiceOffsetController {
     public R<Object> revoke(String id) {
         UserView user = TokenUtil.getUserFromAuthToken();
         invoiceOffsetService.revoke(id, user.getId(), user.getName());
+        invoiceService.notUse(id, SERVICE_INV_OFFSET);
         return R.success("撤销成功");
     }
 
@@ -53,15 +61,20 @@ public class InvoiceOffsetController {
     }
 
 
+    @CheckAndSaveInvoice
     @PostMapping("/apply")
-    public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody InvoiceOffset form) {
-        invoiceOffsetService.apply(form);
-        return R.success();
+    public R<InvoiceOffset> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody InvoiceOffset form) {
+        form.generateInvoiceCode();
+        final InvoiceOffset entity = invoiceOffsetService.apply(form);
+        return R.success(entity);
     }
 
     @PostMapping("/approve")
     public R<Object> approve(@RequestBody InvoiceOffset form) {
         invoiceOffsetService.approve(form);
+        if (WorkFlowUtil.isReject(form.getDecision())) {
+            invoiceService.notUse(form.getId(), form.getServiceName());
+        }
         return R.success("审批成功");
     }
 
@@ -106,6 +119,7 @@ public class InvoiceOffsetController {
     @GetMapping("/del/{id}")
     public R<Object> delete(@PathVariable String id, @RequestParam(required = false) String reason) {
         invoiceOffsetService.delete(id, reason);
+        invoiceService.deleteByRef(id, SERVICE_INV_OFFSET);
         return R.success("删除成功");
     }
 

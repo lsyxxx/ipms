@@ -27,4 +27,15 @@ public interface InvoiceService {
     void deleteByRef(String refCode, String refName);
 
     void delete(List<String> list);
+
+    String SERVICE = "fi_invoice";
+
+    /**
+     * 设置为不适用
+     * @param invoices 发票列表
+     */
+    @Transactional
+    void notUse(List<Invoice> invoices);
+
+    void notUse(String refCode, String service);
 }

@@ -7,6 +7,7 @@ import com.abt.finance.model.InvoiceRequestForm;
 import com.abt.finance.service.InvoiceService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,12 +41,27 @@ public class InvoiceController {
     }
 
     @PostMapping("/save/list")
-    public R<List<Invoice>  > save(@RequestBody List<Invoice> list) {
+    public R<List<Invoice>> save(@RequestBody List<Invoice> list) {
         final List<Invoice> error = invoiceService.save(list);
         if (error != null && !error.isEmpty()) {
             return R.success("保存成功!");
         }
         return R.fail(error, "保存失败!");
+    }
+
+    @PostMapping("/checkAndSave")
+    public R<List<String>> checkAndSave(@Validated({ValidateGroup.Apply.class}) @RequestBody List<Invoice> list) {
+        list = invoiceService.check(list);
+        if (list != null && !list.isEmpty()) {
+            final List<String> errorList = list.stream().map(Invoice::getError).filter(StringUtils::isNotBlank).toList();
+            if (!errorList.isEmpty()) {
+                return R.fail(StringUtils.join(errorList, " "));
+            } else {
+                invoiceService.save(list);
+                return R.success("发票查重并保存成功!");
+            }
+        }
+        return R.warn("未填写发票");
     }
 
     @GetMapping("/find")

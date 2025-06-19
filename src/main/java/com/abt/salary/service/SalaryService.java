@@ -7,6 +7,7 @@ import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
 import com.abt.salary.model.*;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -168,9 +169,15 @@ public interface SalaryService {
     void hrCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth);
 
     /**
+     * 更新实发，用工成本
+     */
+    @Transactional
+    void updateUserSlip(String slipId, SalaryMain main);
+
+    /**
      * 重新计算main中的统计数据
      */
-    SalaryMain recalculateSalaryMainSumData(String mid);
+    SalaryMain recalculateSalaryMainSumData(String mid, SalaryMain sm);
 
     /**
      * 手动个人确认，防止自动确认无效

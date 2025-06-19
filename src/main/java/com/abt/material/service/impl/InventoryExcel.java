@@ -336,7 +336,7 @@ public class InventoryExcel {
         List<Inventory> sortedList = new ArrayList<>(inventoryList);
         sortedList.sort(
             // 1. 按品类优先级排序
-            Comparator.comparing((Inventory inv) -> getTypePriority(inv.getMaterialType()))
+            Comparator.comparing((Inventory inv) -> getTypePriority(inv.getMaterialType()), Comparator.reverseOrder())
             // 2. 其他类别按类别名称排序
             .thenComparing(inv -> inv.getMaterialType() == null ? "" : inv.getMaterialType())
             // 3. 按单价倒序排序（高价在前，null值在后）
@@ -494,16 +494,12 @@ public class InventoryExcel {
         if (materialType == null) {
             return 5; // null值优先级最低
         }
-        switch (materialType) {
-            case "礼品类-烟":
-                return 1;
-            case "礼品类-酒":
-                return 2;
-            case "礼品类-茶":
-                return 3;
-            default:
-                return 4; // 其他类别
-        }
+        return switch (materialType) {
+            case "礼品类-烟" -> 1;
+            case "礼品类-酒" -> 2;
+            case "礼品类-茶" -> 3;
+            default -> 4; // 其他类别
+        };
     }
 
     private int getWarehousePriority(String warehouseName) {

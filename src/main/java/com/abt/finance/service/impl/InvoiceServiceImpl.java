@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -56,39 +55,16 @@ public class InvoiceServiceImpl implements InvoiceService {
         return StringUtils.isNotBlank(invoice.getError());
     }
 
-    /**
-     * 保存
-     * @param invoice 发票
-     */
-    private Invoice save(Invoice invoice) {
-
-        try {
-            final long count = invoiceRepository.countById(invoice.getId());
-            if (count > 0) {
-                invoice.setError("发票号码(" + invoice.getId() + ")已存在！");
-                return invoice;
-            }
-            Invoice save = invoiceRepository.save(invoice);
-            clearError(invoice);
-            return save;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            invoice.setError(e.getMessage());
-            return invoice;
-        }
-    }
-
-
     private void prepareCheck(Invoice invoice) {
         clearError(invoice);
     }
 
     private void doCheck(Invoice invoice) {
         prepareCheck(invoice);
-        final Optional<Invoice> byId = invoiceRepository.findById(invoice.getId());
-        if (byId.isPresent()) {
-            String error = "发票号码(" + invoice.getId() + ")已存在!";
-            Invoice i = byId.get();
+        final Optional<Invoice> inv = invoiceRepository.findUsedByCode(invoice.getCode());
+        if (inv.isPresent()) {
+            String error = "发票号码(" + invoice.getCode() + ")已存在!";
+            Invoice i = inv.get();
             invoice.setRefName(i.getRefName());
             invoice.setRefCode(i.getRefCode());
             invoice.setCreateUsername(i.getCreateUsername());
@@ -101,16 +77,13 @@ public class InvoiceServiceImpl implements InvoiceService {
             }
             invoice.setError(error);
         }
-//        else {
-//            invoice = invoiceRepository.save(invoice);
-//        }
     }
 
     @Transactional
     @Override
     public Invoice checkOne(Invoice invoice) {
         prepareCheck(invoice);
-        if (invoice.getId() != null) {
+        if (invoice.getCode() != null) {
             doCheck(invoice);
         } else {
             invoice.setError("发票号码为空");
@@ -125,20 +98,6 @@ public class InvoiceServiceImpl implements InvoiceService {
             list.forEach(this::doCheck);
         }
         return list;
-    }
-    private Invoice findCachedElementById(List<Invoice> list, String id) {
-        if (list == null) {
-            return null;
-        }
-        if (list.isEmpty()) {
-            return null;
-        }
-        for (Invoice invoice : list) {
-            if (Objects.equals(id, invoice.getId())) {
-                return invoice;
-            }
-        }
-        return null;
     }
 
     private void clearError(Invoice invoice) {
@@ -160,11 +119,32 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public void deleteByRef(String refCode, String refName) {
-        invoiceRepository.deleteByRefCodeAndRefName(refCode, refName);
+        try {
+            invoiceRepository.deleteByRefCodeAndRefName(refCode, refName);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     @Override
     public void delete(List<String> list) {
         invoiceRepository.deleteAllById(list);
     }
+
+    @Transactional
+    @Override
+    public void notUse(List<Invoice> invoices) {
+        invoiceRepository.updateNotUse(invoices.stream().map(Invoice::getId).toList());
+    }
+
+    @Transactional
+    @Override
+    public void notUse(String refCode, String service) {
+        try {
+            invoiceRepository.updateNotUse(refCode, service);
+        } catch (Exception e) {
+            log.error("停用发票失败！" + e.getMessage(), e);
+        }
+    }
+
 }

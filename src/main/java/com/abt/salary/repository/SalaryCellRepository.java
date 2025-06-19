@@ -59,4 +59,6 @@ public interface SalaryCellRepository extends JpaRepository<SalaryCell, String> 
     Integer updateValueById(@Size(max = 255) String value, String id);
 
     List<SalaryCell> findByColumnIndexAndMidOrderByRowIndex(@NotNull Integer columnIndex, @Size(max = 255) String mid);
+
+    SalaryCell findBySlipIdAndColumnIndex(String slipId, Integer columnIndex);
 }
