@@ -9,6 +9,7 @@ import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 物品详情
@@ -120,6 +121,7 @@ public class MaterialDetail {
     @JoinColumn(name = "stockcatalogId", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     @NotFound(action= NotFoundAction.IGNORE)
     private MaterialType materialType;
+
 
 
 

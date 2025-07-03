@@ -194,6 +194,12 @@ public class InvoiceApply extends WorkflowBase {
     @Column(name="issuer_name", length = 128)
     private String issuerName;
 
+    /**
+     * 关联结算单号
+     */
+    @Column(name="stlm_id", length = 128)
+    private String settlementId;
+
 
     @Transient
     private String comment;

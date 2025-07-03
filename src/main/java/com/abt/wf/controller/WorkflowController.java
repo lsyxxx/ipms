@@ -93,7 +93,7 @@ public class WorkflowController {
                                                        @RequestParam(required = false, defaultValue = "") String taskName,
                                                        @RequestParam(required = false, defaultValue = "") String query) {
         final List<Object> list = activitiService.findTodoByDefKey(defKey, taskName, query, TokenUtil.getUseridFromAuthToken());
-        return R.success(list, list.size());
+        return R.success(list, list == null ? 0 : list.size());
     }
 
     /**

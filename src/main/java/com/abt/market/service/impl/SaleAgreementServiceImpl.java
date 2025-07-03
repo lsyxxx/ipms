@@ -3,6 +3,7 @@ package com.abt.market.service.impl;
 import com.abt.common.config.CommonSpecification;
 import com.abt.common.util.FileUtil;
 import com.abt.common.util.JsonUtil;
+import com.abt.common.util.QueryUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.market.entity.SaleAgreement;
 import com.abt.market.model.SaleAgreementRequestForm;
@@ -12,6 +13,7 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.CountQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -58,6 +60,7 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
                 .and(spec.attributeEqual(requestForm))
                 .and(spec.partyAEqual(requestForm))
                 .and(spec.partyBEqual(requestForm))
+                .and(spec.queryLike(requestForm))
                 ;
         final Page<SaleAgreement> all = saleAgreementRepository.findAll(cr, page);
         all.getContent().forEach(SaleAgreement::format);
@@ -223,6 +226,21 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
                     return null;
                 }
                 return builder.equal(root.get("partyB"), form.getPartyB());
+            };
+        }
+
+        /**
+         * 关键词模糊查询，合同名称/合同编号/甲方名称
+         */
+        public Specification<SaleAgreement> queryLike(SaleAgreementRequestForm form) {
+            return (root, query, builder) -> {
+                if (StringUtils.isBlank(form.getQuery())) {
+                    return builder.conjunction();
+                }
+                Predicate codeLike = builder.like(root.get("code"), QueryUtil.like(form.getQuery()));
+                Predicate nameLike = builder.like(root.get("name"), QueryUtil.like(form.getQuery()));
+                Predicate partyALike = builder.like(root.get("partyA"), QueryUtil.like(form.getQuery()));
+                return builder.or(codeLike, nameLike, partyALike);
             };
         }
     }

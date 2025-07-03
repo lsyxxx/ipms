@@ -3,6 +3,9 @@ package com.abt.wf.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
+import com.abt.market.entity.SettlementRelation;
+import com.abt.market.model.SettlementRelationType;
+import com.abt.market.service.SettlementService;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
@@ -13,6 +16,7 @@ import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceApplyService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +32,8 @@ import java.util.List;
 @AllArgsConstructor
 public class InvoiceApplyController {
 
-    private final InvoiceApplyService invoiceApplyService;;
+    private final InvoiceApplyService invoiceApplyService;
+    private final SettlementService settlementService;
 
 
     /**
@@ -38,7 +43,15 @@ public class InvoiceApplyController {
     @GetMapping("/revoke")
     public R<Object> revoke(String id) {
         UserView user = TokenUtil.getUserFromAuthToken();
+        final InvoiceApply entity = invoiceApplyService.load(id);
         invoiceApplyService.revoke(id, user.getId(), user.getName());
+        if (entity != null) {
+            if (StringUtils.isNotBlank(entity.getSettlementId())) {
+                //删除关联结算
+                settlementService.deleteRefBy(entity.getSettlementId(), entity.getId());
+            }
+        }
+
         return R.success("撤销成功");
     }
 
@@ -50,7 +63,8 @@ public class InvoiceApplyController {
 
     @PostMapping("/apply")
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody InvoiceApply form) {
-        invoiceApplyService.apply(form);
+        final InvoiceApply saved = invoiceApplyService.apply(form);
+
         return R.success();
     }
 
@@ -97,7 +111,14 @@ public class InvoiceApplyController {
 
     @GetMapping("/del/{id}")
     public R<Object> delete(@PathVariable String id, @RequestParam(required = false) String reason) {
-        invoiceApplyService.delete(id, reason);
+        final InvoiceApply entity = invoiceApplyService.load(id);
+        if (entity != null) {
+            invoiceApplyService.delete(id, reason);
+            if (StringUtils.isNotBlank(entity.getSettlementId())) {
+                //删除关联结算
+                settlementService.deleteRefBy(entity.getSettlementId(), entity.getId());
+            }
+        }
         return R.success("删除成功");
     }
 

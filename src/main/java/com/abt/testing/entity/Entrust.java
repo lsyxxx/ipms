@@ -1,18 +1,17 @@
 package com.abt.testing.entity;
 
-import com.abt.sys.model.entity.CustomerInfo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Setter
@@ -57,8 +56,8 @@ public class Entrust {
     @Column(name = "SendReportType", length = 20)
     private String sendReportType;
 
-    @Column(name = "ReportDate", columnDefinition = "DATETIME")
-    private Instant reportDate;
+    @Column(name = "ReportDate")
+    private LocalDateTime reportDate;
 
     @Size(max = 2)
     @Column(name = "IsSamply", length = 2)
@@ -93,8 +92,9 @@ public class Entrust {
     @Column(name = "CreateUserName", nullable = false, length = 50)
     private String createUserName;
 
-    @NotNull
-    @Column(name = "CreateDate", nullable = false, columnDefinition = "DATETIME")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "CreateDate")
     private LocalDateTime createDate;
 
     @Size(max = 50)
@@ -102,8 +102,9 @@ public class Entrust {
     @Column(name = "Operator", nullable = false, length = 50)
     private String operator;
 
-    @NotNull
-    @Column(name = "Operatedate", nullable = false, columnDefinition = "DATETIME")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "Operatedate")
     private LocalDateTime operatedate;
 
     @Size(max = 50)
@@ -155,19 +156,66 @@ public class Entrust {
 
     @Size(max = 2000)
     @Column(name = "reportfilepath", length = 2000)
-    private String reportFilePath;
+    private String reportfilepath;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "customNo", referencedColumnName = "Id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
-    @NotFound(action= NotFoundAction.IGNORE)
-    private CustomerInfo customer;
+    @Size(max = 16)
+    @Column(name = "company_", length = 16)
+    private String company;
 
-    @Override
-    public String toString() {
-        return "Entrust{" +
-                "id='" + id + '\'' +
-                ", htBianHao='" + htBianHao + '\'' +
-                ", customNo='" + customNo + '\'' +
-                '}';
+    @Size(max = 20)
+    @Column(name = "ywfl", length = 20)
+    private String ywfl;
+
+    @Size(max = 20)
+    @Column(name = "ywgs", length = 20)
+    private String ywgs;
+
+    @Size(max = 20)
+    @Column(name = "ccyq", length = 20)
+    private String ccyq;
+
+    @Size(max = 300)
+    @Column(name = "ccyqqt", length = 300)
+    private String ccyqqt;
+
+    @Size(max = 20)
+    @Column(name = "lysj", length = 20)
+    private String lysj;
+
+    @Size(max = 20)
+    @Column(name = "isfb", length = 20)
+    private String isfb;
+
+    @Size(max = 300)
+    @Column(name = "fbproject", length = 300)
+    private String fbproject;
+
+    @Size(max = 20)
+    @Column(name = "jlpd", length = 20)
+    private String jlpd;
+
+    @Size(max = 20)
+    @Column(name = "jylb", length = 20)
+    private String jylb;
+
+    @Size(max = 20)
+    @Column(name = "jylbqt", length = 20)
+    private String jylbqt;
+
+    @Size(max = 20)
+    @Column(name = "yycl", length = 20)
+    private String yycl;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "songyangdate")
+    private LocalDateTime songyangdate;
+
+    @Transient
+    private String songyangDateStr;
+
+    private String getSongyangDateStr(DateTimeFormatter formatter) {
+        return songyangdate == null ? "" :  songyangdate.format(formatter);
     }
+
 }

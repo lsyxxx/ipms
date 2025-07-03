@@ -1,7 +1,7 @@
 package com.abt.testing.service.impl;
 
 import com.abt.common.util.QueryUtil;
-import com.abt.market.entity.SettlementItem;
+import com.abt.market.entity.TestItem;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Entrust;
 import com.abt.testing.entity.SampleRegistCheckModeuleItem;
@@ -75,11 +75,11 @@ public class EntrustServiceImpl implements EntrustService {
 
 
     @Override
-    public List<SettlementItem> findSampleCheckModules(String entrustNo) {
+    public List<TestItem> findSampleCheckModules(String entrustNo) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<SettlementItem> selectQuery = criteriaBuilder.createQuery(SettlementItem.class);
+        CriteriaQuery<TestItem> selectQuery = criteriaBuilder.createQuery(TestItem.class);
         Root<SampleRegistCheckModeuleItem> root = selectQuery.from(SampleRegistCheckModeuleItem.class);
-        selectQuery.select(criteriaBuilder.construct(SettlementItem.class, root.get("checkModeuleId"), root.get("checkModeuleName"), criteriaBuilder.count(root)));
+        selectQuery.select(criteriaBuilder.construct(TestItem.class, root.get("checkModeuleId"), root.get("checkModeuleName"), criteriaBuilder.count(root)));
         selectQuery.where(criteriaBuilder.equal(root.get("entrustId"), entrustNo));
         selectQuery.groupBy(root.get("checkModeuleId"), root.get("checkModeuleName"));
         selectQuery.orderBy(criteriaBuilder.asc(root.get("checkModeuleId")));

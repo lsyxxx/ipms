@@ -67,7 +67,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public List<CustomerInfo> findYCompanyList() {
-        return List.of(abtCompany, grdCompany);
+        return List.of(abtCompany, grdCompany, dcCompany);
     }
 
     @Override

@@ -1,0 +1,191 @@
+# --------- environment
+server:
+  port: 8080
+
+# --------- log
+logging:
+  file:
+    path: E:\\java-web-log
+  level:
+    root: info
+    org:
+      springframework:
+        data: trace
+        jdbc:
+          core:
+            JdbcTemplate: debug
+        security: TRACE
+      hibernate:
+        orm:
+          jdbc:
+            bind: TRACE
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+        SQL: DEBUG
+    com:
+      abt: TRACE
+    sql: trace
+    web: DEBUG
+  config: classpath:logback-spring.xml
+
+spring:
+  # ------ jpa
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        
+  # --------- datasource
+  datasource:
+    url: jdbc:sqlserver://127.0.0.1:1433;database=ZJData;trustServerCertificate=true
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: sa
+    password: abt@23328
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 50
+    
+  # --------- messages
+  messages:
+    basename: i18n/message
+
+# ---- camunda wf
+camunda:
+  bpm:
+    admin-user:
+      id: demo
+      password: demo
+    database:
+      schema-update: true
+    auto-deployment-enabled: true
+    job-execution:
+      enabled: false
+    filter:
+      create: show all
+
+# --------- file
+com:
+  abt:
+    file:
+      upload:
+        save: E:\\upload
+        temp: temp-attachments
+
+# ---------- spring doc/swagger
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+# --------- webapi
+webapi:
+  http:
+    ip: localhost
+    port: 52789
+    base: /api
+    protocol: http://
+    token:
+      key: X-Token
+    # uri: http://localhost:52789/api
+    uri: http://192.168.0.181:52789/api
+    # ip: 7386n59g91.goho.co
+    # port: 10008
+    # uri: http://7386n59g91.goho.co:10008/api
+
+# ----- fieldwork excel model
+abt:
+  fw:
+    excel:
+      output: E:\\temp\\fw\\
+    export:
+      template: E:\\temp\\fieldwork_atd_model.xlsx
+      tempfile:
+        path: E:\\temp\\fw\\
+  
+  # ------ app
+  app:
+    bak:
+      android:
+        dir: D:\\app_bak\\android\\
+      ios:
+        dir: D:\\app_bak\\ios\\
+    run:
+      android:
+        url: E:\\OA质检目录\\apk\\android_apk.apk
+      ios:
+        url: E:\\OA质检目录\\apk\\ios_apk.apk
+      dir: E:\\OA质检目录\\apk\\
+  
+  # ---- templates
+  rbs:
+    excel:
+      template: E:\\temp\\export\\rbs_template.xlsx
+      dtl:
+        template: E:\\temp\\export\\rbs_dtl_template.xlsx
+    pur:
+      dir: E:\\upload\\reimburse\\
+  
+  pay:
+    excel:
+      template: E:\\temp\\export\\pay_template.xlsx
+      
+  pur:
+    excel:
+      template: E:\\temp\\export\\purchase_apply_template.xlsx
+    accept:
+      excel:
+        template: E:\\temp\\export\\purchase_accept_template.xlsx
+    tmp:
+      name: purchase.xlsx
+      
+  trip:
+    excel:
+      template: E:\\temp\\export\\trip_template.xlsx
+      
+  temp:
+    dir: E:\\temp\\temp\\
+  
+  # ---- stock
+  stock:
+    inv:
+      export:
+        template: E:\\temp\\export\\materials_inventory_template.xlsx
+      alert:
+        export:
+          template: E:\\temp\\export\\inventory_alert_template.xlsx
+          template2: E:\\temp\\export\\inventory_alert_template2.xlsx
+    export:
+      week:
+        template: E:\\temp\\export\\stock_gift_export.xlsx
+        path: E:\\temp\\temp\\stock\\week\\
+    gift:
+      compare:
+        dir: E:\\temp\\temp\\stock\\week\\
+  
+  # ---- signature
+  sig:
+    dir: D:\\sig_bak\\sig\\
+    
+  # ---- sl check
+  sl:
+    check: E:\\temp\\export\\sl\\
+    
+  # ---- wf sbct
+  wf:
+    sbct:
+      rock:
+        template: E:\\temp\\sbct_samplelist_rock.xlsx
+      fluid:
+        template: E:\\temp\\sbct_samplelist_fluid.xlsx
+      export:
+        dir: E:\\temp\\temp\\sbct
+
+  # --- settlement
+  settlement:
+    excel:
+      template: E:\\temp\\import\\settlement_template.xlsx

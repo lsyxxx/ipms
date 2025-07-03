@@ -395,10 +395,6 @@ public class StockController {
     @PostMapping("/inv/smry/download")
     public void downloadInventoryAndValueExcel(HttpServletResponse response,
                                                @RequestBody InventoryRequestForm requestForm) throws Exception {
-        //不分页
-//        requestForm.setPage(1);
-//        requestForm.setLimit(9999);
-//        final Page<Inventory> page = stockService.latestInventories(requestForm);
         try {
             stockService.createGiftInventoryAndValueExcel(response.getOutputStream(), requestForm.getYear1(), requestForm.getYear2(), requestForm.getMonthIn());
             //下载excel

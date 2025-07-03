@@ -1,6 +1,6 @@
 package com.abt.testing.service;
 
-import com.abt.market.entity.SettlementItem;
+import com.abt.market.entity.TestItem;
 import com.abt.testing.entity.Entrust;
 import com.abt.testing.model.EntrustRequestForm;
 
@@ -15,5 +15,5 @@ public interface EntrustService {
      * @param entrustNo 委托单号（检测编号）
      * @return SettlementItem列表
      */
-    List<SettlementItem> findSampleCheckModules(String entrustNo);
+    List<TestItem> findSampleCheckModules(String entrustNo);
 }

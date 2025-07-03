@@ -1,14 +1,24 @@
 package com.abt.wf.listener;
 
+import com.abt.market.entity.SettlementRelation;
+import com.abt.market.model.SettlementRelationType;
+import com.abt.market.service.SettlementService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.SystemErrorLog;
+import com.abt.sys.service.SystemErrorLogService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.service.InvoiceApplyService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.ExecutionListener;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+import static com.abt.wf.config.Constants.SERVICE_INV;
 
 /**
  * 开票申请流程结束
@@ -18,6 +28,8 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class InvoiceApplyProcessEndListener implements ExecutionListener {
     private final InvoiceApplyService invoiceApplyService;
+    private final SettlementService settlementService;
+    private final SystemErrorLogService systemErrorLogService;
 
     @Override
     public void notify(DelegateExecution execution) {
@@ -37,9 +49,22 @@ public class InvoiceApplyProcessEndListener implements ExecutionListener {
                 }
                 invoiceApply.setProcessEnd();
                 invoiceApplyService.saveEntity(invoiceApply);
+                // 关联结算
+                if (StringUtils.isNotBlank(invoiceApply.getSettlementId())) {
+                    SettlementRelation ref = new  SettlementRelation();
+                    ref.setMid(invoiceApply.getSettlementId());
+                    ref.setBizType(SettlementRelationType.INVOICE);
+                    ref.setRid(invoiceApply.getId());
+                    settlementService.saveRef(List.of(ref), invoiceApply.getSettlementId());
+                }
             } catch (BusinessException e) {
+                SystemErrorLog errorLog = new SystemErrorLog();
+                errorLog.setError(e.getMessage());
+                errorLog.setService(SERVICE_INV);
+                systemErrorLogService.saveLog(errorLog);
                 log.warn("业务异常: ", e);
             }
+
 
             //抄送TODO;
         }

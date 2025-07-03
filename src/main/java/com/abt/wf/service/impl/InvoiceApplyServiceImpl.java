@@ -310,4 +310,11 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
         return List.of();
     }
 
+
+    /**
+     * 查询结算是否开票
+     */
+    public void querySettled() {
+
+    }
 }

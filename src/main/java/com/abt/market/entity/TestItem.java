@@ -4,16 +4,20 @@ import com.abt.testing.entity.Entrust;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 /**
- * 结算单-结算项目
+ * 结算单-关联检测项目
  */
-@Table(name = "mkt_settlement_item",  indexes = {
+@Table(name = "stlm_test",  indexes = {
         @Index(name = "idx_mid", columnList = "m_id"),
 })
 @Entity
@@ -23,7 +27,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SettlementItem {
+public class TestItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,24 +42,27 @@ public class SettlementItem {
     /**
      * 委托单号/检测编号
      */
-    @Column(name="entrust_no", columnDefinition="VARCHAR(50)")
-    private String entrustNo;
+    @Column(name="entrust_id", columnDefinition="VARCHAR(50)")
+    private String entrustId;
+
+    /**
+     * 样品编号（我方）
+     */
+    @NotNull(message = "样品编号不能为空")
+    @Column(name="sample_no")
+    private String sampleNo;
 
     /**
      * 检测单项id
      */
-    @Column(name="module_id")
-    private String moduleId;
+    @Column(name="check_module_id")
+    private String checkModuleId;
     /**
      * 检测项目名称
      */
-    @Column(name="test_name", columnDefinition="VARCHAR(100)")
-    private String moduleName;
-    /**
-     * 样品数量
-     */
-    @Column(name="sample_num", columnDefinition="SMALLINT")
-    private Integer sampleNum;
+    @Column(name="check_module_name", columnDefinition="VARCHAR(100)")
+    private String checkModuleName;
+
     /**
      * 样品数量单位
      */
@@ -65,20 +72,19 @@ public class SettlementItem {
      * 检测项目单价
      */
     @Column(name="price_", columnDefinition="DECIMAL(10,2)")
-    private Double price;
+    private BigDecimal price;
 
     /**
-     * 检测项目合计金额
+     * 甲方样品编号
      */
-    @Column(name="sum_", columnDefinition = "DECIMAL(10,2)")
-    private Double sum;
-
+    @Column(name="old_sample_no")
+    private String oldSampleNo;
 
     /**
-     * 已结算的样品数量
+     * 井号
      */
-    @Column(name="finished_num", columnDefinition="SMALLINT")
-    private Integer settledNum = 0;
+    @Column(name="well_no")
+    private String wellNo;
 
     /**
      * 关联委托单
@@ -90,11 +96,5 @@ public class SettlementItem {
     @JsonIgnore
     @JoinColumn(name = "m_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private SettlementMain main;
-
-    public SettlementItem(String moduleId, String moduleName, Integer sampleNum) {
-        this.moduleId = moduleId;
-        this.moduleName = moduleName;
-        this.sampleNum = sampleNum;
-    }
 
 }

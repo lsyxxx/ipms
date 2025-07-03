@@ -902,7 +902,13 @@ public class StockServiceImpl implements StockService {
 
         InventoryExcel ie = new InventoryExcel(inventoryList, data1, data2, year1, year2, monthIn);
         ie.createInventoryExportExcel(outputStream);
+    }
 
+
+    /**
+     * 查询所有物品及库存信息（含预警）
+     */
+    public void findAllMaterialAndInventory() {
 
     }
 

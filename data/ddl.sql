@@ -264,3 +264,10 @@ INSERT INTO [dbo].[CategoryType] ([Id], [Name], [CreateTime]) VALUES ('sysmsg_st
 INSERT INTO [dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [SortNo], [Description], [TypeId], [CreateTime], [CreateUserId], [CreateUserName], [UpdateTime], [UpdateUserId], [UpdateUserName]) VALUES ('35f9f352-2f23-4b97-9858-c88bb2a08770', '已读', 'sysmsg_status_1', '1', '1', 0, '消息阅读状态-已读', 'sysmsg_status', '2025-04-03 13:56:39.786678', '00000000-0000-0000-0000-000000000000', '超级管理员', '2025-04-03 13:56:39.786677', '', '');
 INSERT INTO [dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [SortNo], [Description], [TypeId], [CreateTime], [CreateUserId], [CreateUserName], [UpdateTime], [UpdateUserId], [UpdateUserName]) VALUES ('923d41ac-6236-46b8-94fc-a0abdae6a07e', '未读', 'sysmsg_status_0', '0', '1', 1, '消息阅读状态-未读', 'sysmsg_status', '2025-04-03 13:56:01.672837', '00000000-0000-0000-0000-000000000000', '超级管理员', '2025-04-03 13:56:17.842265', '00000000-0000-0000-0000-000000000000', '超级管理员');
 
+
+-- 1. 删除现有的 CHECK 约束
+ALTER TABLE dbo.stlm_rel DROP CONSTRAINT CK__stlm_rel__biz_ty__79B300FB;
+
+-- 2. 添加新的 CHECK 约束，允许 AGREEMENT 和 INVOICE
+ALTER TABLE dbo.stlm_rel ADD CONSTRAINT CK_stlm_rel_biz_type
+    CHECK (biz_type IN ('AGREEMENT', 'INVOICE'));

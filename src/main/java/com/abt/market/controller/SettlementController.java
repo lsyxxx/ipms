@@ -1,0 +1,95 @@
+package com.abt.market.controller;
+
+import com.abt.common.config.ValidateGroup;
+import com.abt.common.model.R;
+import com.abt.market.entity.SettlementMain;
+import com.abt.market.model.SaveType;
+import com.abt.market.model.SettlementMainListDTO;
+import com.abt.market.model.SettlementRequestForm;
+import com.abt.market.service.SettlementService;
+import com.abt.sys.exception.BusinessException;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.nio.charset.StandardCharsets;
+
+/**
+ * 结算
+ */
+@RestController
+@Slf4j
+@RequestMapping("/stlm")
+public class SettlementController {
+    private final SettlementService settlementService;
+
+    public SettlementController(SettlementService settlementService) {
+        this.settlementService = settlementService;
+    }
+
+    @PostMapping("/save/draft")
+    public R<Object> saveDraft(@RequestBody SettlementMain settlementMain) {
+        settlementMain.setSaveType(SaveType.TEMP);
+        settlementService.save(settlementMain);
+        return R.success("草稿保存成功");
+    }
+
+    @PostMapping("/save")
+    public R<Object> save(@Validated({ValidateGroup.Save.class}) @RequestBody SettlementMain settlementMain) {
+        settlementMain.setSaveType(SaveType.SAVE);
+        settlementService.save(settlementMain);
+        return R.success("保存成功");
+    }
+
+    @GetMapping("/find/page")
+    public R<Page<SettlementMainListDTO>> findByQuery(@ModelAttribute SettlementRequestForm requestForm) {
+        Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
+        final Page<SettlementMainListDTO> page = settlementService.findMainOnlyByQuery(requestForm, pageable);
+        return R.success(page);
+    }
+
+    @GetMapping("/detail/{id}")
+    public R<SettlementMain> loadEntity(@PathVariable String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("结算单id未传入");
+        }
+        final SettlementMain entity = settlementService.findSettlementMainWithAllItems(id);
+        return R.success(entity, "加载成功");
+    }
+
+    @GetMapping("/delete")
+    public R<Object> delete(String id) {
+        settlementService.delete(id);
+        return R.success("删除成功");
+    }
+
+    @GetMapping("/detail/export")
+    public void exportAndDownload(String id, HttpServletResponse response) {
+        try {
+            // 获取结算单数据
+            SettlementMain settlementMain = settlementService.findSettlementMainWithAllItems(id);
+            
+            // 构建文件名
+            String fileName = "结算单_" + settlementMain.getClientName() + "_" + id + ".xlsx";
+            
+            // 设置响应头
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", 
+                "attachment; filename=\"" + new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1) + "\"");
+            
+            settlementService.createSettlementExcel(settlementMain, response.getOutputStream());
+            
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("下载结算单失败", e);
+            throw new BusinessException(e.getMessage());
+        }
+    }
+
+}

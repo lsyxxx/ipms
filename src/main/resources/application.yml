@@ -1,0 +1,122 @@
+encoding: utf-8
+
+# --------- environment
+spring:
+  profiles:
+    active: dev
+  
+  # ---- spring
+  servlet:
+    multipart:
+      max-request-size: 200MB
+      max-file-size: 200MB
+      
+  # ---- messages
+  messages:
+    basename: i18n/message
+    
+  # ---- jpa
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: update
+    properties:
+      hibernate:
+        use_sql_comments: true
+        jdbc:
+          batch_size: 100
+        order_inserts: true
+        
+  # ----- quartz job
+  quartz:
+    job-store-type: memory
+    # jdbc:
+    #   initialize-schema: never
+    # auto-startup: true
+    # properties:
+    #   org:
+    #     quartz:
+    #       scheduler:
+    #         instanceName: ABTQuartzJobInstance
+    #         instanceId: AUTO
+    #       jobStore:
+    #         class: org.springframework.scheduling.quartz.LocalDataSourceJobStore
+    #         driverDelegateClass: org.quartz.impl.jdbcjobstore.MSSQLDelegate
+    #         tablePrefix: QRTZ_
+    #       threadPool:
+    #         threadCount: 10
+    #         threadPriority: 5
+
+server:
+  servlet:
+    session:
+      timeout: PT30M
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+        session: DEBUG
+    com:
+      zaxxer:
+        hikari: INFO
+        hikari.HikariDataSource: INFO
+
+# ---- abt custom properties
+abt:
+  sql:
+    max: 500
+  format:
+    datetime:
+      pattern: yyyy-MM-dd HH:mm:ss
+    date:
+      timezone: GMT+8
+  company:
+    abt:
+      id: 04fcf43e-75b4-46cb-ad73-b4d4396c2cc5
+    grd:
+      id: 5f10070c-b18c-47f2-acb1-a0346a342c21
+    dc:
+      id: 2f42748f-aef7-4df5-a3b0-15820dfec94a
+  purchase:
+    final:
+      userid: U20230406026
+  sl:
+    slip:
+      url: /sl/my/index
+    chk:
+      smry:
+        url: /sl/chk/list
+      dept:
+        url: /sl/chk/smry/dept/index
+
+# --------- api
+webapi:
+  http:
+    api:
+      userinfo: /check/GetUserProfile
+      flowschemes: /flowschemes/load
+      loadforuser: /roles/loadforuser?userId=
+      user:
+        get: /users/get?id=
+
+# --- min
+sl:
+  my:
+    session:
+      timeout: 5
+    autocheck: 2
+
+# --- workflow urls
+wf:
+  rbs:
+    url:
+      pre: /wf/rbs/detail/
+  inv:
+    url:
+      pre: /wf/inv/detail/
+  trip:
+    url:
+      pre: /wf/trip/detail/ 
