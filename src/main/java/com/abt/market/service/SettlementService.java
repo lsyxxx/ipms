@@ -5,6 +5,7 @@ import com.abt.market.entity.SettlementRelation;
 import com.abt.market.model.SettlementMainListDTO;
 import com.abt.market.model.SettlementRelationType;
 import com.abt.market.model.SettlementRequestForm;
+import com.abt.sys.model.entity.CustomerInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -67,4 +68,17 @@ public interface SettlementService {
      * @param rid 关联id
      */
     void deleteRefBy(String mid, String rid);
+
+    /**
+     * 作废结算单
+     * 1. 暂存的结算单：直接作废，仅修改saveType
+     * 2. 已完成的结算单：1. 查看是否开发票，若未开发票，直接作废。2. 若已开发票，必须有相同金额的负数发票才可以
+     * 3. 已作废：不变
+     */
+    void invalid(SettlementMain main);
+
+    /**
+     * 获取所有为作废的结算单的客户
+     */
+    List<CustomerInfo> getClients();
 }

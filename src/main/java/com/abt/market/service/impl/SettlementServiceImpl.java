@@ -1,15 +1,21 @@
 package com.abt.market.service.impl;
 
 import com.abt.common.util.MoneyUtil;
+import com.abt.common.util.TokenUtil;
 import com.abt.market.entity.*;
+import com.abt.market.model.SaveType;
 import com.abt.market.model.SettlementMainListDTO;
 import com.abt.market.model.SettlementRelationType;
 import com.abt.market.model.SettlementRequestForm;
 import com.abt.market.repository.*;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Entrust;
 import com.abt.testing.repository.EntrustRepository;
+import com.abt.wf.entity.InvoiceApply;
+import com.abt.wf.repository.InvoiceApplyRepository;
 import com.aspose.cells.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -22,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.OutputStream;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,12 +51,13 @@ public class SettlementServiceImpl implements SettlementService {
     private final SaleAgreementRepository saleAgreementRepository;
     private final SettlementSummaryRepository settlementSummaryRepository;
     private final EntrustRepository entrustRepository;
+    private final InvoiceApplyRepository invoiceApplyRepository;
 
 
     @Value("${abt.settlement.excel.template}")
     private String settlementTemplate;
 
-    public SettlementServiceImpl(SettlementMainRepository settlementMainRepository, ExpenseItemRepository expenseItemRepository, TestItemRepository testItemRepository, SettlementRelationRepository settlementRelationRepository, SaleAgreementRepository saleAgreementRepository, SettlementSummaryRepository settlementSummaryRepository, EntrustRepository entrustRepository) {
+    public SettlementServiceImpl(SettlementMainRepository settlementMainRepository, ExpenseItemRepository expenseItemRepository, TestItemRepository testItemRepository, SettlementRelationRepository settlementRelationRepository, SaleAgreementRepository saleAgreementRepository, SettlementSummaryRepository settlementSummaryRepository, EntrustRepository entrustRepository, InvoiceApplyRepository invoiceApplyRepository) {
         this.settlementMainRepository = settlementMainRepository;
         this.expenseItemRepository = expenseItemRepository;
         this.testItemRepository = testItemRepository;
@@ -59,8 +65,8 @@ public class SettlementServiceImpl implements SettlementService {
         this.saleAgreementRepository = saleAgreementRepository;
         this.settlementSummaryRepository = settlementSummaryRepository;
         this.entrustRepository = entrustRepository;
+        this.invoiceApplyRepository = invoiceApplyRepository;
     }
-
 
     @Transactional
     @Override
@@ -129,7 +135,11 @@ public class SettlementServiceImpl implements SettlementService {
         final List<String> agreementIds = main.getAgreementIds();
         final List<SaleAgreement> agreements = saleAgreementRepository.findByIdIsIn(agreementIds);
         main.setSaleAgreements(agreements);
-        
+
+        //关联开票
+        final List<InvoiceApply> inv = invoiceApplyRepository.findBySettlementId(main.getId());
+        main.setInvoiceApply(inv);
+
         return main;
     }
 
@@ -147,13 +157,36 @@ public class SettlementServiceImpl implements SettlementService {
     // 复杂查询使用CriteriaBuilder真的不行，特别是还带分页
     @Override
     public Page<SettlementMainListDTO> findMainOnlyByQuery(SettlementRequestForm requestForm, Pageable pageable) {
-        return settlementMainRepository.findMainOnlyByQuery(
+        final Page<SettlementMainListDTO> page = settlementMainRepository.findMainOnlyByQuery(
                 StringUtils.trim(requestForm.getQuery()),
                 requestForm.getLocalStartDate(),
                 requestForm.getLocalEndDate(),
                 StringUtils.trim(requestForm.getTestLike()),
+                requestForm.getClientId(),
+                requestForm.getState(),
                 pageable
         );
+        // 关联开票
+        final List<SettlementMainListDTO> list = page.getContent();
+        if (!list.isEmpty()) {
+            final Set<String> idSet = list.stream().map(SettlementMainListDTO::getId).collect(Collectors.toSet());
+            // 关联的发票
+            final List<InvoiceApply> invs = invoiceApplyRepository.findBySettlementIdIn(idSet);
+            for (SettlementMainListDTO dto : list) {
+                String mid = dto.getId();
+                final List<InvoiceApply> invList = invs.stream().filter(i -> i.getSettlementId().equals(mid)).toList();
+                //计算开票金额和
+                if (!invList.isEmpty()) {
+                    final double sum = invList.stream().map(InvoiceApply::getInvoiceAmount).mapToDouble(Double::doubleValue).sum();
+                    dto.setInvoiceAmount(sum);
+                    dto.setIsIssued(Boolean.TRUE);
+                } else {
+                    dto.setIsIssued(Boolean.FALSE);
+                }
+            }
+        }
+
+        return page;
 
     }
 
@@ -353,5 +386,38 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     public void deleteRefBy(String mid, String rid) {
         settlementRelationRepository.deleteByMidAndRid(mid, rid);
+    }
+
+    @Override
+    public void invalid(SettlementMain main) {
+        final SaveType saveType = main.getSaveType();
+        //1. 只能自己作废
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        if (!user.getId().equals(main.getCreateUserid())) {
+            throw new BusinessException(String.format("只有创建人(%s)可以作废该结算单(%s)", main.getCreateUsername(), main.getId()));
+        }
+        if (SaveType.SAVE == saveType) {
+            //1. 查找开票
+            final List<Double> invList = settlementRelationRepository.findInvoiceApplyByMid(main.getId());
+            //2. 开票金额合计是否为0，先这样简单处理
+            if (invList != null &&!invList.isEmpty()) {
+                final double sum = invList.stream().filter(Objects::nonNull).mapToDouble(Double::doubleValue).sum();
+                if (sum != 0.00) {
+                    // 合计不为0，不能作废
+                    throw new BusinessException("开票金额合计不为0，请先提交开票申请冲账");
+                }
+            }
+            main.setSaveType(SaveType.INVALID);
+            settlementMainRepository.save(main);
+
+        } else if (SaveType.TEMP == saveType) {
+            main.setSaveType(SaveType.INVALID);
+            settlementMainRepository.save(main);
+        }
+    }
+
+    @Override
+    public List<CustomerInfo> getClients() {
+        return settlementMainRepository.getAllCustomers();
     }
 }

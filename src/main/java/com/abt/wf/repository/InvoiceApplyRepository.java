@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface InvoiceApplyRepository extends JpaRepository<InvoiceApply, String>, JpaSpecificationExecutor<InvoiceApply> {
@@ -116,4 +117,9 @@ public interface InvoiceApplyRepository extends JpaRepository<InvoiceApply, Stri
     List<InvoiceApply> findByIdIsIn(List<String> ids);
 
 
+    List<InvoiceApply> findByIdIn(Collection<String> ids);
+
+    List<InvoiceApply> findBySettlementIdIn(Collection<String> settlementIds);
+
+    List<InvoiceApply> findBySettlementId(String settlementId);
 }

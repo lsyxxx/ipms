@@ -7,6 +7,8 @@ import com.abt.market.model.SaveType;
 import com.abt.market.model.SettlementRelationType;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
+import com.abt.wf.entity.InvoiceApply;
+import com.abt.wf.repository.InvoiceApplyRepository;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
@@ -170,6 +172,12 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     private List<SystemFile> settlementDocs;
 
     /**
+     * 作废原因
+     */
+    @Column(name="invalid_reason", length = 500)
+    private String invalidReason;
+
+    /**
      * 关联结算检测项目
      */
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "main")
@@ -201,6 +209,12 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
      */
     @Transient
     private List<SaleAgreement> saleAgreements;
+
+    /**
+     * 关联的发票
+     */
+    @Transient
+    private List<InvoiceApply> invoiceApply;
 
     /**
      * 最终结算金额

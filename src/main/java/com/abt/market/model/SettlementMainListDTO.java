@@ -1,6 +1,8 @@
 package com.abt.market.model;
 
+import com.abt.market.entity.SettlementRelation;
 import com.abt.sys.model.entity.SystemFile;
+import com.abt.wf.entity.InvoiceApply;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +15,6 @@ import java.util.List;
  * 用于列表展示结算主要信息，防止controller返回json序列化导致懒加载问题
  */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class SettlementMainListDTO{
     
@@ -119,4 +120,14 @@ public class SettlementMainListDTO{
      */
     private String updateUserid;
     private String updateUsername;
+
+    /**
+     * 开票金额
+     */
+    private Double invoiceAmount;
+
+    /**
+     * 是否开票
+     */
+    private Boolean isIssued;
 }

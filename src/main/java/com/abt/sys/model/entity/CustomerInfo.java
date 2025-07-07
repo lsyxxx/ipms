@@ -7,7 +7,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.CreatedBy;
@@ -26,6 +28,8 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 @EntityListeners({AuditingEntityListener.class, CommonJpaAuditListener.class})
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomerInfo implements CommonJpaAudit {
     @Id
     @Size(max = 50)
@@ -177,5 +181,11 @@ public class CustomerInfo implements CommonJpaAudit {
     @Override
     public void setUpdateUsername(String username) {
         this.operatorName = username;
+    }
+
+    public CustomerInfo(String id, String customerid, String customerName) {
+        this.id = id;
+        this.customerid = customerid;
+        this.customerName = customerName;
     }
 }

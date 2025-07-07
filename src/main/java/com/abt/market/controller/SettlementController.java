@@ -8,6 +8,7 @@ import com.abt.market.model.SettlementMainListDTO;
 import com.abt.market.model.SettlementRequestForm;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.CustomerInfo;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * 结算
@@ -65,8 +67,22 @@ public class SettlementController {
 
     @GetMapping("/delete")
     public R<Object> delete(String id) {
-        settlementService.delete(id);
+        final SettlementMain main = settlementService.findSettlementMainOnly(id);
+        if (SaveType.TEMP == main.getSaveType()) {
+            settlementService.delete(id);
+        } else {
+            throw new BusinessException("只能删除暂存的结算单!");
+        }
         return R.success("删除成功");
+    }
+
+    /**
+     * 获取所有结算客户
+     */
+    @GetMapping("/clients")
+    public R<List<CustomerInfo>> getClients() {
+        final List<CustomerInfo> clients = settlementService.getClients();
+        return R.success(clients);
     }
 
     @GetMapping("/detail/export")
@@ -90,6 +106,17 @@ public class SettlementController {
             log.error("下载结算单失败", e);
             throw new BusinessException(e.getMessage());
         }
+    }
+
+    /**
+     * 结算单作废
+     */
+    @GetMapping("/invalid")
+    public R<Object> invalid(String id, String reason) {
+        final SettlementMain main = settlementService.findSettlementMainOnly(id);
+        main.setInvalidReason(reason);
+        settlementService.invalid(main);
+        return R.success("作废成功");
     }
 
 }

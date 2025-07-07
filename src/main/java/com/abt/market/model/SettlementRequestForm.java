@@ -14,6 +14,9 @@ public class SettlementRequestForm extends RequestForm {
      * 结算客户名称
      */
     private String clientName;
+
+    private String clientId;
+
     /**
      * 结算总金额
      */
