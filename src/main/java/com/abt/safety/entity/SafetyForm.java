@@ -1,6 +1,9 @@
 package com.abt.safety.entity;
 
 import com.abt.common.model.AuditInfo;
+import com.abt.safety.model.CheckType;
+import com.abt.safety.model.LocationType;
+import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -23,7 +26,7 @@ import java.util.List;
 @DynamicUpdate
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SafetyForm extends AuditInfo {
+public class SafetyForm extends AuditInfo implements WithQuery<SafetyForm> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -70,6 +73,35 @@ public class SafetyForm extends AuditInfo {
     @Column(name="sort_no")
     private int sortNo = 0;
 
+
+    /**
+     * 表单分类:环境，安全
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name="check_type", length = 32)
+    private CheckType checkType;
+
+    @Transient
+    private String checkTypeDesc;
+    @Transient
+    private String locationTypeDesc;
+
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="loc_type", length = 16)
+    private LocationType locationType;
+
+    public String getLocationTypeDesc() {
+        this.locationTypeDesc = this.locationType == null ? "" : this.locationType.getDescription();
+        return this.locationTypeDesc;
+    }
+
+    public String getCheckTypeDesc() {
+        this.checkTypeDesc =  this.checkType == null ? "" : this.checkType.getDescription();
+        return this.checkTypeDesc;
+    }
+
+
     /**
      * 检查项目列表
      */
@@ -77,4 +109,11 @@ public class SafetyForm extends AuditInfo {
     @JoinColumn(name = "form_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable = false, updatable = false)
     @OrderBy("sortNo ASC")
     private List<SafetyFormItem> items = new ArrayList<>();
+
+    @Override
+    public SafetyForm afterQuery() {
+        this.getLocationTypeDesc();
+        this.getCheckTypeDesc();
+        return this;
+    }
 }

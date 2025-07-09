@@ -21,6 +21,8 @@ public interface SafetyRecordService {
 
     Page<SafetyRecord> findSafetyRecordPageable(SafetyRecordRequestForm requestForm);
 
+    SafetyRecord loadRecordOnly(String id);
+
     /**
      * 检查分配给负责人
      * @param id 记录Id
@@ -38,4 +40,6 @@ public interface SafetyRecordService {
      * @param systemFiles 上传文件
      */
     SafetyRecord rectified(String id, String rectifyRemark, List<SystemFile> systemFiles);
+
+    void logicDelete(String id);
 }

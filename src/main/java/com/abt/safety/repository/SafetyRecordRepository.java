@@ -3,7 +3,9 @@ package com.abt.safety.repository;
 import com.abt.safety.entity.SafetyRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,5 +22,11 @@ public interface SafetyRecordRepository extends JpaRepository<SafetyRecord, Stri
             select count(r) > 0 from SafetyRecord r where r.formId = :formId and r.checkTime >= :d1 and r.checkTime < :d2
             """)
     boolean checkSubmitDuplicated(LocalDateTime d1, LocalDateTime d2, Long formId);
+
+    @Modifying
+    @Query("""
+    update SafetyRecord r set r.isDeleted = true where r.id = :id
+""")
+    void logicDelete(String id);
 
 }

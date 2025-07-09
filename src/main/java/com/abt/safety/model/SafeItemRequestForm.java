@@ -9,4 +9,6 @@ import lombok.Setter;
 @Setter
 public class SafeItemRequestForm extends RequestForm{
    private Boolean itemEnabled;
+
+   private String checkType;
 }

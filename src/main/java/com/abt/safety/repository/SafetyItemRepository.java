@@ -4,6 +4,7 @@ import com.abt.safety.entity.SafetyItem;
 
 import java.util.Optional;
 
+import com.abt.safety.model.CheckType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,12 +28,13 @@ public interface SafetyItemRepository extends JpaRepository<SafetyItem, String>,
         SELECT s FROM SafetyItem s
         WHERE s.isDeleted = FALSE
         AND (:enabled is null or s.enabled = :enabled)
+        AND (:checkType is null or s.checkType = :checkType)
         AND (:query is null or :query = '' or s.name like %:query%)
         """)
-    Page<SafetyItem> findByQueryPageable(Boolean enabled, String query, Pageable pageable);
+    Page<SafetyItem> findByQueryPageable(Boolean enabled, String query, CheckType checkType, Pageable pageable);
 
-    @Query("SELECT s FROM SafetyItem s WHERE s.name = :name AND s.enabled = TRUE and s.isDeleted = FALSE")
-    Optional<SafetyItem> findEnabledByName(String name);
+    @Query("SELECT s FROM SafetyItem s WHERE s.name = :name AND s.enabled = TRUE and s.isDeleted = FALSE and s.checkType = :checkType")
+    Optional<SafetyItem> findEnabledByName(String name, CheckType checkType);
 
     long countByIsDeletedFalse();
 }

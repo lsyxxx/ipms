@@ -6,6 +6,8 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
 import com.abt.safety.converter.SafetyFormConverter;
+import com.abt.safety.model.CheckType;
+import com.abt.safety.model.LocationType;
 import com.abt.safety.model.RecordStatus;
 import com.abt.sys.model.WithQuery;
 import com.abt.sys.model.entity.SystemFile;
@@ -44,6 +46,31 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     private String id;
 
     //基础信息
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="check_type", length = 16)
+    private CheckType checkType;
+
+    @Transient
+    private String checkTypeDesc;
+
+    @Transient
+    private String locationTypeDesc;
+
+    public String getLocationTypeDesc() {
+        this.locationTypeDesc = this.locationType == null ? "" : this.locationType.getDescription();
+        return this.locationTypeDesc;
+    }
+
+    public String getCheckTypeDesc() {
+        this.checkTypeDesc =  this.checkType == null ? "" : this.checkType.getDescription();
+        return this.checkTypeDesc;
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="loc_type", length = 16)
+    private LocationType locationType;
+
     /**
      * 检查地点
      */
@@ -172,6 +199,8 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     public SafetyRecord afterQuery() {
         this.calcProblemCount();
         this.calcHasProblem();
+        this.getLocationTypeDesc();
+        this.getCheckTypeDesc();
         return this;
     }
 }

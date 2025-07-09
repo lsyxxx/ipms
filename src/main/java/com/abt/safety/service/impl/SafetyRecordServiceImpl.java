@@ -55,6 +55,8 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
         final SafetyRecord record = createRecordWithTokenUser(form);
         record.setFormId(form.getId());
         record.setState(RecordStatus.SUBMITTED);
+        record.setCheckType(form.getCheckType());
+        record.setLocationType(form.getLocationType());
         //判断是否完成, 没有问题就算结束
         record.calcProblemCount();
         record.calcHasProblem();
@@ -85,28 +87,6 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
     @Override
     public SafetyRecord loadRecord(String id) {
         final SafetyRecord record = safetyRecordRepository.findById(id).orElseThrow(() -> new RuntimeException("未查询到安全检查记录(id=" + id + ")"));
-        //处理图片，使用base64传输
-        record.getCheckFormInstance().getItems().forEach(i -> {
-            if (i.getFileList() != null && !i.getFileList().isEmpty()) {
-                i.getFileList().forEach(f -> {
-                    try {
-                       f.setBase64(getBase64Image(f.getFullPath()));
-                    } catch (IOException e) {
-                        log.error(e.getMessage(), e);
-                    }
-                });
-            }
-        });
-        //整改图片
-        if (record.isRectified() && record.getRectifyFiles() != null) {
-            record.getRectifyFiles().forEach(f -> {
-                try {
-                    f.setBase64(getBase64Image(f.getFullPath()));
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            });
-        }
         WithQueryUtil.build(record);
         return record;
     }
@@ -146,6 +126,7 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
         return safetyRecordRepository.findAll(spec, pageRequest);
     }
 
+    @Override
     public SafetyRecord loadRecordOnly(String id) {
         return safetyRecordRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到安全检查记录(id=" + id + ")"));
     }
@@ -172,6 +153,19 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
         //整改完就算结束
         record.setCompleted(true);
         return safetyRecordRepository.save(record);
+    }
+
+    @Transactional
+    @Override
+    public void logicDelete(String id) {
+        safetyRecordRepository.logicDelete(id);
+    }
+
+    /**
+     * 读取检查记录图片
+     */
+    public void loadRecordImages(String id) {
+
     }
 
 }

@@ -94,17 +94,4 @@ public class SafetyFormItem {
     @Convert(converter = SystemFileListConverter.class)
     private List<SystemFile> fileList;
 
-    /**
-     * 图片base64格式列表
-     */
-    @Transient
-    private List<String> imgBase64List;
-
-    public void addImageBase64(String base64) {
-        if (this.imgBase64List == null) {
-            this.imgBase64List = new ArrayList<>();
-        }
-        imgBase64List.add(base64);
-    }
-
 }

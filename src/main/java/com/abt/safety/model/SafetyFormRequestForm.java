@@ -14,4 +14,6 @@ public class SafetyFormRequestForm extends RequestForm {
     private Boolean formEnabled;
     private String location;
     private String responsible;
+    private String checkType;
+    private String locationType;
 }

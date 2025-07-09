@@ -1,6 +1,8 @@
 package com.abt.safety.service;
 
 import com.abt.safety.entity.SafetyForm;
+import com.abt.safety.model.CheckType;
+import com.abt.safety.model.LocationType;
 import com.abt.safety.model.SafeItemRequestForm;
 import com.abt.safety.entity.SafetyItem;
 
@@ -17,7 +19,7 @@ public interface SafetyConfigService {
      */
     Page<SafetyItem> getSafetyItemConfigPage(SafeItemRequestForm requestForm);
 
-    boolean validateDuplicateSafetyItemName(String name);
+    boolean validateDuplicateSafetyItemName(String name, CheckType checkType);
 
     /**
      * 验证添加安全检查项目配置前的数据
@@ -73,7 +75,7 @@ public interface SafetyConfigService {
 
     void updateSafetyFormEnabled(String id, boolean enabled);
 
-    boolean checkSafetyFormLocationExists(String location, Long id);
+    boolean checkSafetyFormLocationExists(String location, Long id, LocationType locationType);
 
     void logicDeleteSafetyForm(String id);
 }

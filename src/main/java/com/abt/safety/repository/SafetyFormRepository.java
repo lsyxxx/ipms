@@ -1,6 +1,7 @@
 package com.abt.safety.repository;
 
 import com.abt.safety.entity.SafetyForm;
+import com.abt.safety.model.LocationType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -41,6 +42,7 @@ public interface SafetyFormRepository extends JpaRepository<SafetyForm, String>,
             where f.isDeleted = false
             and f.location = :location
             and (:id = null or f.id <> :id)
+            and f.locationType = :locationType
             """)
-    boolean checkLocationExists(String location, Long id);
+    boolean checkLocationExists(String location, Long id, LocationType locationType);
 }

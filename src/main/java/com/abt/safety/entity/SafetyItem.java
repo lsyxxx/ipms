@@ -2,13 +2,21 @@ package com.abt.safety.entity;
 
 import com.abt.common.listener.JpaUsernameListener;
 import com.abt.common.model.AuditInfo;
+import com.abt.safety.model.CheckType;
+import com.abt.safety.model.LocationType;
+import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 安全检查项目配置
@@ -28,7 +36,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners(JpaUsernameListener.class)
-public class SafetyItem extends AuditInfo {
+public class SafetyItem extends AuditInfo implements WithQuery<SafetyItem> {
     // 结果类型常量
     public static final String INPUT_TYPE_BOOLEAN = "BOOLEAN"; // 布尔型（是/否）
     public static final String INPUT_TYPE_TEXT = "TEXT";       // 文本型
@@ -83,4 +91,35 @@ public class SafetyItem extends AuditInfo {
     @Column(name="type_")
     private String type;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name="check_type", length = 16)
+    private CheckType checkType;
+
+    @Transient
+    private String checkTypeDesc;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="loc_type", length = 16)
+    private LocationType locationType;
+
+    @Transient
+    private String locationTypeDesc;
+
+    public String getLocationTypeDesc() {
+        this.locationTypeDesc = this.locationType == null ? "" : this.locationType.getDescription();
+        return this.locationTypeDesc;
+    }
+
+    public String getCheckTypeDesc() {
+        this.checkTypeDesc =  this.checkType == null ? "" : this.checkType.getDescription();
+        return this.checkTypeDesc;
+    }
+
+
+    @Override
+    public SafetyItem afterQuery() {
+        this.getLocationTypeDesc();
+        this.getCheckTypeDesc();
+        return this;
+    }
 }
