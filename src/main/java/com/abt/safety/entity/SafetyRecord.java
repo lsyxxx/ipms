@@ -102,40 +102,6 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     @Column(name="check_form_inst", columnDefinition = "TEXT")
     private SafetyForm checkFormInstance;
 
-    //分配整改负责人
-    /**
-     * 调度员
-     */
-    @Column(name="dispatcher_id")
-    private String dispatcherId;
-    
-    @Column(name="dispatcher_name")
-    private String dispatcherName;
-
-    @Column(name="dispatch_time")
-    private LocalDateTime dispatchTime;
-   
-    /**
-     * 负责人/整改人userid
-     */
-    @Column(name = "rectifier_id")
-    private String rectifierId;
-    @Column(name = "rectifier_name")
-    private String rectifierName;
-
-    //整改
-    /**
-     * 整改说明
-     */
-    @Column(name = "rectify_remark", length = 1000)
-    private String rectifyRemark;
-    
-    /**
-     * 整改提交时间
-     */
-    @Column(name = "rectify_time")
-    private LocalDateTime rectifyTime;
-
     @Column(name="is_deleted")
     private boolean isDeleted = false;
 
@@ -152,18 +118,48 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     @Column(name="is_completed")
     private boolean isCompleted = false;
 
+    @Column(name="complete_time")
+    private LocalDateTime completeTime;
+
     /**
-     * 上传整改相关文件
+     * 催办时间
      */
-    @Convert(converter = SystemFileListConverter.class)
-    @Column(name="rectify_files", columnDefinition = "TEXT")
-    private List<SystemFile> rectifyFiles;
+    @Column(name="remind_time")
+    private LocalDateTime remindTime;
+
+    @Column(name="remind_userid")
+    private String remindUserid;
+
+    @Column(name="remind_username")
+    private String remindUsername;
+
+    /**
+     * 整改记录列表
+     */
+    @Transient
+    private List<SafetyRectify> safetyRectifyList;
 
     @Transient
     private int problemCount;
 
     @Transient
     private boolean hasProblem = false;
+
+    /**
+     * 当前正在进行的
+     */
+    @Transient
+    private SafetyRectify currentRectify;
+
+    /**
+     * 检查完成/结束
+     */
+    public void complete() {
+        this.isCompleted = true;
+        this.completeTime = LocalDateTime.now();
+        this.state = RecordStatus.COMPLETED;
+    }
+
 
     /**
      * 检查问题数量
@@ -183,16 +179,19 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
         return this.hasProblem;
     }
 
-    public boolean isRectified() {
-        return this.rectifyTime != null;
-    }
-
-    public boolean isDispatched() {
-        return this.dispatchTime != null;
-    }
-
     public boolean isChecked() {
         return this.checkTime != null;
+    }
+
+    /**
+     * 设置催办
+     * @param userid 催办人userid
+     * @param username 催办人名称
+     */
+    public void remind(String userid, String username) {
+        this.remindUserid = userid;
+        this.remindUsername = username;
+        this.remindTime = LocalDateTime.now();
     }
 
     @Override

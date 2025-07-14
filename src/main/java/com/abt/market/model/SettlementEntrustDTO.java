@@ -35,6 +35,7 @@ public class SettlementEntrustDTO {
 
     /**
      * 已结算样品数量
+     * TODO: 已结样品数量=项目总样品数量，不能表示结算完了，因为必须是每个样品的每个检测项目都结算了，才能算结算完成
      */
     private Double settledCount;
 
@@ -47,5 +48,15 @@ public class SettlementEntrustDTO {
      * 已结算金额
      */
     private Double settledAmount;
+
+    /**
+     * 已开票金额
+     */
+    private Double invoiceAmount;
+
+    /**
+     * 已回款金额
+     */
+    private Double receivePaymentAmount;
 
 }

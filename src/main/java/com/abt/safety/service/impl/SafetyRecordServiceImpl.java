@@ -3,15 +3,18 @@ package com.abt.safety.service.impl;
 import com.abt.common.util.QueryUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.safety.entity.SafetyRecord;
+import com.abt.safety.entity.SafetyRectify;
 import com.abt.safety.model.RecordStatus;
 import com.abt.safety.model.SafetyRecordRequestForm;
 import com.abt.safety.repository.SafetyRecordRepository;
+import com.abt.safety.repository.SafetyRectifyRepository;
 import com.abt.safety.service.SafetyRecordService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 
 import com.abt.safety.entity.SafetyForm;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.entity.SystemMessage;
+import com.abt.sys.service.SystemMessageService;
 import com.abt.sys.util.WithQueryUtil;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +27,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
+
+import static com.abt.safety.Constants.SERVICE_SAFETY;
 
 /**
  * 安全检查记录
@@ -43,6 +44,8 @@ import java.util.List;
 public class SafetyRecordServiceImpl implements SafetyRecordService {
 
     private final SafetyRecordRepository safetyRecordRepository;
+    private final SafetyRectifyRepository safetyRectifyRepository;
+    private final SystemMessageService systemMessageService;
 
     @Override
     public boolean recordExist(LocalDate checkDate, Long formId) {
@@ -75,19 +78,13 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
         return record;
     }
 
-    private String getBase64Image(String fullPath) throws IOException {
-        Path filePath = Paths.get(fullPath);
-        if (!Files.exists(filePath)) {
-            log.error("图片未找到! " + fullPath);
-        }
-        byte[] imageBytes = Files.readAllBytes(filePath);
-        return Base64.getEncoder().encodeToString(imageBytes);
-    }
 
     @Override
     public SafetyRecord loadRecord(String id) {
         final SafetyRecord record = safetyRecordRepository.findById(id).orElseThrow(() -> new RuntimeException("未查询到安全检查记录(id=" + id + ")"));
         WithQueryUtil.build(record);
+        final List<SafetyRectify> rectifies = safetyRectifyRepository.findByRecordId(id);
+        record.setSafetyRectifyList(rectifies);
         return record;
     }
 
@@ -109,8 +106,8 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
             if (StringUtils.isNotBlank(requestForm.getUserid())) {
                 predicates.add(criteriaBuilder.or(
                         criteriaBuilder.equal(root.get("checkerId"), requestForm.getUserid()),
-                        criteriaBuilder.equal(root.get("dispatcherId"), requestForm.getUserid()),
-                        criteriaBuilder.equal(root.get("rectifierId"), requestForm.getUserid())
+                        criteriaBuilder.equal(root.get("dispatcherId"), requestForm.getUserid())
+//                        criteriaBuilder.equal(root.get("rectifierId"), requestForm.getUserid())
                 ));
             }
 
@@ -132,27 +129,56 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
     }
 
     @Override
-    public SafetyRecord dispatch(String id, String dispatcherId, String dispatcherName, String rectifierId, String rectifierName) {
-        final SafetyRecord record = loadRecordOnly(id);
-        record.setDispatcherId(dispatcherId);
-        record.setDispatcherName(dispatcherName);
-        record.setRectifierId(rectifierId);
-        record.setRectifierName(rectifierName);
-        record.setDispatchTime(LocalDateTime.now());
-        record.setState(RecordStatus.DISPATCHED);
-        return safetyRecordRepository.save(record);
+    public SafetyRectify findRectifyById(int id) {
+        return safetyRectifyRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到整改记录(id=" + id + ")"));
     }
 
     @Override
-    public SafetyRecord rectified(String id, String rectifyRemark, List<SystemFile> systemFiles) {
-        final SafetyRecord record = loadRecordOnly(id);
-        record.setRectifyRemark(rectifyRemark);
-        record.setRectifyTime(LocalDateTime.now());
-        record.setState(RecordStatus.RECTIFIED);
-        record.setRectifyFiles(systemFiles);
-        //整改完就算结束
-        record.setCompleted(true);
-        return safetyRecordRepository.save(record);
+    public List<SafetyRectify> findRectifyListByRecordId(String recordId) {
+        return safetyRectifyRepository.findByRecordId(recordId);
+    }
+
+    @Transactional
+    @Override
+    public SafetyRecord dispatch(SafetyRecord record, String dispatcherId, String dispatcherName, String rectifierId, String rectifierName) {
+        final SafetyRectify rectifyRecord = createRectifyRecord(record.getId(), rectifierId, rectifierName, dispatcherId, dispatcherName);
+        record.setState(RecordStatus.DISPATCHED);
+        final SafetyRecord save = safetyRecordRepository.save(record);
+        final SafetyRectify rectify = safetyRectifyRepository.save(rectifyRecord);
+        save.setCurrentRectify(rectify);
+        return save;
+    }
+
+    /**
+     * 负责人整改
+     * @param safetyRectify 整改记录
+     */
+    @Override
+    public SafetyRecord rectify(SafetyRectify safetyRectify, SafetyRecord safetyRecord) {
+        safetyRecord.setState(RecordStatus.RECTIFIED);
+        safetyRectify.setRectifyTime(LocalDateTime.now());
+        final SafetyRectify rectify = safetyRectifyRepository.save(safetyRectify);
+        final SafetyRecord save = safetyRecordRepository.save(safetyRecord);
+        save.setCurrentRectify(rectify);
+        return save;
+    }
+
+    @Override
+    public void rectifyPass(SafetyRectify safetyRectify) {
+        safetyRectify.pass();
+        safetyRectifyRepository.save(safetyRectify);
+    }
+
+    @Override
+    public void complete(SafetyRecord safetyRecord) {
+        safetyRecord.complete();
+        safetyRecordRepository.save(safetyRecord);
+    }
+
+    @Override
+    public void rectifyReject(SafetyRectify safetyRectify) {
+        safetyRectify.reject();
+        safetyRectifyRepository.save(safetyRectify);
     }
 
     @Transactional
@@ -162,10 +188,30 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
     }
 
     /**
-     * 读取检查记录图片
+     * 创建一条整改记录
      */
-    public void loadRecordImages(String id) {
+    public SafetyRectify createRectifyRecord(String recordId, String rectifierId, String rectifierName, String dispatcherId, String dispatcherName) {
+        SafetyRectify rectify = new SafetyRectify();
+        rectify.setRecordId(recordId);
+        rectify.setRectifierId(rectifierId);
+        rectify.setRectifierName(rectifierName);
+        rectify.setDispatcherId(dispatcherId);
+        rectify.setDispatcherName(dispatcherName);
+        rectify.setDispatchTime(LocalDateTime.now());
+        return rectify;
+    }
 
+    @Override
+    public void remind(String toUserid, String toUsername, String fromUsername, SafetyRecord record) {
+        record.remind(toUserid, toUsername);
+        String msg = String.format("%s请您及时整改检查问题", fromUsername);
+        final SystemMessage sysmsg = systemMessageService.createImportantSystemMsg(toUserid, toUsername, msg, SERVICE_SAFETY, record.getId());
+        sysmsg.setImportantPriority();
+    }
+
+    @Override
+    public Optional<SafetyRectify> findRunningRectify(String recordId) {
+        return safetyRectifyRepository.findRunningRectify(recordId);
     }
 
 }

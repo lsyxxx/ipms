@@ -11,8 +11,6 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import java.math.BigDecimal;
-
 /**
  * 结算汇总表-主表
  * 用于保存样品汇总表，方便查看
@@ -89,6 +87,14 @@ public class SettlementSummary {
     @JsonIgnore
     @JoinColumn(name = "m_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private SettlementMain main;
+
+    public SettlementSummary(String entrustId, String checkModuleId, String checkModuleName, long sampleNum, Double amount) {
+        this.entrustId = entrustId;
+        this.checkModuleId = checkModuleId;
+        this.checkModuleName = checkModuleName;
+        this.sampleNum = Integer.parseInt(sampleNum + "");
+        this.amount = amount;
+    }
 
 
 

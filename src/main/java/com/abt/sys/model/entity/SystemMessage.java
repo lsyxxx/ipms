@@ -147,6 +147,22 @@ public class SystemMessage {
     @Column(name="entity_id")
     private String entityId;
 
+    /**
+     * 消息重要程度
+     * 数字越大，越重要重要
+     */
+    @Column(name="priority_", columnDefinition = "SMALLINT")
+    private int priority = 0;
+
+    public static final int IMPORTANT = 999;
+
+    /**
+     * 重要信息
+     */
+    public void setImportantPriority() {
+        this.priority = IMPORTANT;
+    }
+
     //抄送
     public static final String MSG_RESULT_COPY = "copy";
     //审批通过

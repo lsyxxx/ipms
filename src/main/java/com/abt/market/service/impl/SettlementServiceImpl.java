@@ -129,6 +129,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public SettlementMain findSettlementMainWithAllItems(String id) {
+        Objects.requireNonNull(id, "结算单ID不能为空");
         final SettlementMain main = settlementMainRepository.findOneWithAllItems(id);
         
         // 加载关联合同
@@ -137,7 +138,7 @@ public class SettlementServiceImpl implements SettlementService {
         main.setSaleAgreements(agreements);
 
         //关联开票
-        final List<InvoiceApply> inv = invoiceApplyRepository.findBySettlementId(main.getId());
+        final List<InvoiceApply> inv = invoiceApplyRepository.findRefSettlement(main.getId());
         main.setInvoiceApply(inv);
 
         return main;
@@ -229,7 +230,8 @@ public class SettlementServiceImpl implements SettlementService {
         int sumAmountCol = 4;
 
         //-- 客户名称
-        cells.get(headerRow, 0).putValue(settlementMain.getClientName() + ":");
+        String clientName = settlementMain.getClientName().replaceAll("\\(开票信息\\)", "").replaceAll("（开票信息）", "");
+        cells.get(headerRow, 0).putValue(clientName + ":");
 
         //--- 汇总数据
         int currentRow = dataRow;
@@ -383,6 +385,7 @@ public class SettlementServiceImpl implements SettlementService {
         settlementRelationRepository.deleteByMidAndBizType(mid, bizType);
     }
 
+    @Transactional
     @Override
     public void deleteRefBy(String mid, String rid) {
         settlementRelationRepository.deleteByMidAndRid(mid, rid);
@@ -419,5 +422,10 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     public List<CustomerInfo> getClients() {
         return settlementMainRepository.getAllCustomers();
+    }
+
+    public static void main(String[] args) {
+        String s = "xxx （开票信息）";
+        System.out.println(s.replaceAll("\\(开票信息\\) ", "").replaceAll("（开票信息）", ""));
     }
 }

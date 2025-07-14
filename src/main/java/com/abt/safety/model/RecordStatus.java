@@ -18,4 +18,9 @@ public enum RecordStatus {
      * 已整改
      */
     RECTIFIED,
+
+    /**
+     * 完成
+     */
+    COMPLETED,
 }

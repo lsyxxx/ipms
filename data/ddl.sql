@@ -265,9 +265,18 @@ INSERT INTO [dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [Sort
 INSERT INTO [dbo].[Category] ([Id], [Name], [DtCode], [DtValue], [Enable], [SortNo], [Description], [TypeId], [CreateTime], [CreateUserId], [CreateUserName], [UpdateTime], [UpdateUserId], [UpdateUserName]) VALUES ('923d41ac-6236-46b8-94fc-a0abdae6a07e', '未读', 'sysmsg_status_0', '0', '1', 1, '消息阅读状态-未读', 'sysmsg_status', '2025-04-03 13:56:01.672837', '00000000-0000-0000-0000-000000000000', '超级管理员', '2025-04-03 13:56:17.842265', '00000000-0000-0000-0000-000000000000', '超级管理员');
 
 
+ALTER TABLE dbo.stlm_main ADD CONSTRAINT CK__stlm_main__save___76D69450
+    CHECK (save_type IN ('SAVE', 'TEMP', 'INVALID'));
+
 -- 1. 删除现有的 CHECK 约束
 ALTER TABLE dbo.stlm_rel DROP CONSTRAINT CK__stlm_rel__biz_ty__79B300FB;
 
 -- 2. 添加新的 CHECK 约束，允许 AGREEMENT 和 INVOICE
 ALTER TABLE dbo.stlm_rel ADD CONSTRAINT CK_stlm_rel_biz_type
     CHECK (biz_type IN ('AGREEMENT', 'INVOICE'));
+
+-- 修改safety_record约束
+alter table dbo.safety_record drop constraint CK__safety_re__state__702996C1;
+alter table dbo.safety_record add constraint CK__safety_re__state__702996C1
+    check(state_ in ('SUBMITTED', 'DISPATCHED', 'RECTIFIED', 'COMPLETED'));
+

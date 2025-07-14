@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.List;
 import java.util.ArrayList;
 
+import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.util.QueryUtil;
 import com.abt.safety.entity.SafetyForm;
 import com.abt.safety.entity.SafetyFormItem;
@@ -96,6 +97,9 @@ public class SafetyConfigServiceImpl implements SafetyConfigService {
 
     @Override
     public void logicDeleteSafetyItemConfig(String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new MissingRequiredParameterException("id");
+        }
         safetyItemRepository.logicDeleteById(id);
     }
 
@@ -199,12 +203,12 @@ public class SafetyConfigServiceImpl implements SafetyConfigService {
         return safetyFormRepository.findAll(spec, pageRequest);
     }
     @Override
-    public boolean checkSafetyFormLocationExists(String location, Long id, LocationType locationType) {
+    public boolean checkSafetyFormLocationExists(String location, Long id, LocationType locationType, CheckType checkType) {
         if (StringUtils.isBlank(location)) {
             throw new BusinessException("环境安全检查表单地点不能为空");
         }
         
-        return safetyFormRepository.checkLocationExists(location, id, locationType);
+        return safetyFormRepository.checkLocationExists(location, id, locationType, checkType);
     }
 
     @Override

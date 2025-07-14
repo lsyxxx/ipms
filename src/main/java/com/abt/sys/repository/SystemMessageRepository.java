@@ -22,7 +22,6 @@ public interface SystemMessageRepository extends JpaRepository<SystemMessage, St
     and ('all' in :typeIds or s.typeId in :typeIds)
     and (:startDate is null or s.createTime >= :startDate)
     and (:endDate is null or s.createTime <= :endDate)
-    order by s.createTime desc
 """)
     Page<SystemMessage> findAllBy(String toId, List<String> typeIds, Integer toStatus, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 

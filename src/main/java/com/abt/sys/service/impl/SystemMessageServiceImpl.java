@@ -11,7 +11,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -58,7 +60,7 @@ public class SystemMessageServiceImpl implements SystemMessageService {
 
     @Override
     public Page<SystemMessage> findUserSystemMessagesAllPageable(SystemMessageRequestForm requestForm) {
-        Pageable page = requestForm.createDefaultPageableWithoutSorting();
+        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("priority"), Sort.Order.desc("createTime")));
         return systemMessageRepository.findAllBy(requestForm.getToId(),
                 requestForm.buildTypeIds(),
                 requestForm.getToStatus(),

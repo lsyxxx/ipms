@@ -1,16 +1,15 @@
 package com.abt.safety.controller;
 
+import com.abt.common.exception.MissingRequiredParameterException;
 import com.abt.common.model.R;
 import com.abt.common.model.User;
 import com.abt.common.util.TokenUtil;
 import com.abt.http.dto.WebApiToken;
-import com.abt.safety.entity.SafetyForm;
-import com.abt.safety.entity.SafetyItem;
-import com.abt.safety.entity.SafetyRecord;
-import com.abt.safety.entity.SafetyFormItem;
+import com.abt.safety.entity.*;
 import com.abt.safety.event.SafetyRecordFinishedEvent;
 import com.abt.safety.model.*;
 import com.abt.safety.service.SafetyConfigService;
+import com.abt.sys.model.entity.Role;
 import com.abt.sys.model.entity.SystemFile;
 
 import com.abt.safety.service.SafetyRecordService;
@@ -19,7 +18,6 @@ import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.UserService;
 import com.abt.sys.util.WithQueryUtil;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,18 +34,16 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Base64;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.Optional;
+import java.util.Set;
 
-import static com.abt.safety.Constants.ROLE_DISPATCHER;
-import static com.abt.safety.Constants.ROLE_VIEW_LIST_ALL;
+import static com.abt.safety.Constants.*;
 
 /**
  * 安全检查
@@ -146,7 +142,7 @@ public class SafetyController {
 
     @PostMapping("/form/save")
     public R<Object> saveSafetyForm(@RequestBody SafetyForm safetyForm) {
-        final boolean exists = safetyConfigService.checkSafetyFormLocationExists(safetyForm.getLocation(), safetyForm.getId(), safetyForm.getLocationType());
+        final boolean exists = safetyConfigService.checkSafetyFormLocationExists(safetyForm.getLocation(), safetyForm.getId(), safetyForm.getLocationType(), safetyForm.getCheckType());
         if (exists) {
             throw new BusinessException("检查地点：" + safetyForm.getLocation() + "已存在，请重新设置");
         }
@@ -162,12 +158,12 @@ public class SafetyController {
     }
 
     @GetMapping("/form/check/location")
-    public R<Boolean> checkSafetyFormLocation(String location, Long id, String locationType) {
+    public R<Boolean> checkSafetyFormLocation(String location, Long id, String locationType, CheckType checkType) {
         if (StringUtils.isBlank(location)) {
             throw new BusinessException("请输入地点类型");
         }
         LocationType lt = LocationType.fromString(locationType);
-        final boolean exists = safetyConfigService.checkSafetyFormLocationExists(location, id, lt);
+        final boolean exists = safetyConfigService.checkSafetyFormLocationExists(location, id, lt, checkType);
         return R.success(exists);
     }
 
@@ -218,7 +214,7 @@ public class SafetyController {
 //        }
         final SafetyRecord saved = safetyRecordService.saveCheck(safetyForm);
         //直接发布事件，controller中不做任何处理
-        publisher.publishEvent(new SafetyRecordFinishedEvent(this, saved));
+        publisher.publishEvent(new SafetyRecordFinishedEvent(this, saved, null));
         return R.success("安全检查记录保存成功!");
     }
 
@@ -230,6 +226,8 @@ public class SafetyController {
     @GetMapping("/record/load")
     public R<SafetyRecord> loadFormRecord(String id, HttpSession session) {
         final SafetyRecord record = safetyRecordService.loadRecordOnly(id);
+        final List<SafetyRectify> recList = safetyRecordService.findRectifyListByRecordId(id);
+        record.setSafetyRectifyList(recList);
         WithQueryUtil.build(record);
         session.setAttribute("safetyRecord" + id, record);
         return R.success(record, "读取成功");
@@ -250,7 +248,6 @@ public class SafetyController {
 
     /**
      * 调度人分配
-     *
      * @param id            record id
      * @param rectifierId   负责人userid
      * @param rectifierName 负责人姓名
@@ -259,15 +256,23 @@ public class SafetyController {
     @GetMapping("/record/dispatch")
     public R<Object> recordDispatch(String id, String rectifierId, String rectifierName) {
         final UserView dispatcher = TokenUtil.getUserFromAuthToken();
-        final SafetyRecord record = safetyRecordService.dispatch(id, dispatcher.getId(), dispatcher.getName(), rectifierId, rectifierName);
-        publisher.publishEvent(new SafetyRecordFinishedEvent(this, record));
+        SafetyRecord record = safetyRecordService.loadRecordOnly(id);
+        record = safetyRecordService.dispatch(record, dispatcher.getId(), dispatcher.getName(), rectifierId, rectifierName);
+        publisher.publishEvent(new SafetyRecordFinishedEvent(this, record, record.getCurrentRectify()));
         return R.success("已分配负责人:" + rectifierName);
     }
 
     @PostMapping("/record/rectify")
-    public R<Object> recordRectify(@RequestBody RectifyRequest rectifyRequest) {
-        final SafetyRecord record = safetyRecordService.rectified(rectifyRequest.getId(), rectifyRequest.getRectifyRemark(), rectifyRequest.getFiles());
-        publisher.publishEvent(new SafetyRecordFinishedEvent(this, record));
+    public R<Object> recordRectify(@RequestBody SafetyRectify safetyRectify) {
+        if (StringUtils.isBlank(safetyRectify.getRecordId())) {
+            throw new MissingRequiredParameterException("检查记录id");
+        }
+        final SafetyRecord record = safetyRecordService.loadRecordOnly(safetyRectify.getRecordId());
+        final SafetyRectify rectify = safetyRecordService.findRectifyById(safetyRectify.getId());
+        rectify.setRectifyRemark(safetyRectify.getRectifyRemark());
+        rectify.setRectifyFiles(safetyRectify.getRectifyFiles());
+        safetyRecordService.rectify(rectify, record);
+        publisher.publishEvent(new SafetyRecordFinishedEvent(this, record, record.getCurrentRectify()));
         return R.success("已整改");
     }
 
@@ -284,6 +289,47 @@ public class SafetyController {
     }
 
     /**
+     * 检查复核/确认完成
+     */
+    @Secured(ROLE_RECTIFY_COMPLETE)
+    @PostMapping("/record/rectify/complete")
+    public R<Object> complete(@RequestBody SafetyRectify form) {
+        if (StringUtils.isBlank(form.getRecordId())) {
+            throw new MissingRequiredParameterException("检查记录id");
+        }
+        final SafetyRecord record = safetyRecordService.loadRecordOnly(form.getRecordId());
+        final SafetyRectify saved = safetyRecordService.findRectifyById(form.getId());
+        if (saved.isChecked()) {
+            throw new BusinessException(String.format("整改记录(id=%s)已确认。确认人: %s, 确认时间: %s",
+                    saved.getId(), saved.getCheckerName(), saved.getCheckTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        }
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        saved.setComment(form.getComment());
+        saved.setCheckerId(user.getId());
+        saved.setCheckerName(user.getName());
+        if (RectifyResult.pass.equals(saved.getCheckResult())) {
+            safetyRecordService.rectifyPass(saved);
+            safetyRecordService.complete(record);
+        } else if (RectifyResult.reject.equals(form.getCheckResult())) {
+            safetyRecordService.rectifyReject(saved);
+            safetyRecordService.dispatch(record, user.getId(), user.getName(), form.getRectifierId(), form.getRectifierName());
+            publisher.publishEvent(new SafetyRecordFinishedEvent(this, record, record.getCurrentRectify()));
+        }
+        return R.success("整改复核完成");
+    }
+
+    /**
+     * 当前用户是否有权限确认整改
+     */
+    @GetMapping("/record/rectify/checkrole")
+    public R<Boolean> getRectifyCompleteRole() {
+        final UserView uv = TokenUtil.getUserFromAuthToken();
+        final Set<Role> authorities = uv.getAuthorities();
+        final Optional<Role> any = authorities.stream().filter(i -> ROLE_RECTIFY_COMPLETE.equals(i.getId())).findAny();
+        return R.success(any.isPresent());
+    }
+
+    /**
      * 下载图片
      * @param id recordId
      * @param fileId file id
@@ -295,6 +341,8 @@ public class SafetyController {
         SafetyRecord record = (SafetyRecord) session.getAttribute("safetyRecord" + id);
         if (record == null) {
             record = safetyRecordService.loadRecordOnly(id);
+            final List<SafetyRectify> recList = safetyRecordService.findRectifyListByRecordId(id);
+            record.setSafetyRectifyList(recList);
             WithQueryUtil.build(record);
             session.setAttribute("safetyRecord" + id, record);
         }
@@ -314,11 +362,15 @@ public class SafetyController {
                 }
             }
         } else if ("rectify".equalsIgnoreCase(type)) {
-            if (record.getRectifyFiles() != null && record.getRectifyFiles().size() > 0) {
-                for (SystemFile file : record.getRectifyFiles()) {
-                    if (file.getId().equals(fileId)) {
-                        fullUrl = file.getUrl();
-                        break;
+            if (record.getSafetyRectifyList() != null && record.getSafetyRectifyList().size() > 0) {
+                for (SafetyRectify rectify : record.getSafetyRectifyList()) {
+                    if (rectify.getRectifyFiles() != null && rectify.getRectifyFiles().size() > 0) {
+                        for (SystemFile file : rectify.getRectifyFiles()) {
+                            if (file.getId().equals(fileId)) {
+                                fullUrl = file.getUrl();
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -337,6 +389,28 @@ public class SafetyController {
         headers.setContentType(MediaType.parseMediaType(contentType));
 
         return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+    }
+
+    /**
+     * 催办
+     */
+    @GetMapping("/record/remind")
+    public R<Object> remind(String id) {
+        final SafetyRecord record = safetyRecordService.loadRecordOnly(id);
+        // 校验，是否允许催办
+        if (record.getState().equals(RecordStatus.COMPLETED)) {
+            throw new BusinessException(String.format("检查已结束(编号:%s), 无需催办", id));
+        }
+
+        // 当前正在进行的整改
+        final Optional<SafetyRectify> rectifyOptional = safetyRecordService.findRunningRectify(id);
+        if (rectifyOptional.isPresent()) {
+            final SafetyRectify rectify = rectifyOptional.get();
+            safetyRecordService.remind(rectify.getRectifierId(), rectify.getRectifierName(), TokenUtil.getUseridFromAuthToken(), record);
+            return R.success("已催办" + rectify.getRectifierName());
+        } else {
+            throw new BusinessException("无正在进行的整改(检查记录编号:" + id + ")");
+        }
     }
 
 }

@@ -1,6 +1,7 @@
 package com.abt.safety.event;
 
 import com.abt.safety.entity.SafetyRecord;
+import com.abt.safety.entity.SafetyRectify;
 import com.abt.sys.model.entity.SystemMessage;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
@@ -16,8 +17,11 @@ public class SafetyRecordFinishedEvent extends ApplicationEvent {
     //业务对象
     private final SafetyRecord safetyRecord;
 
-    public SafetyRecordFinishedEvent(Object source, SafetyRecord safetyRecord) {
+    private final SafetyRectify safetyRectify;
+
+    public SafetyRecordFinishedEvent(Object source, SafetyRecord safetyRecord, SafetyRectify safetyRectify) {
         super(source);
         this.safetyRecord = safetyRecord;
+        this.safetyRectify = safetyRectify;
     }
 }

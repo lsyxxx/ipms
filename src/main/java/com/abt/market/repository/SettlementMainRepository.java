@@ -1,6 +1,7 @@
 package com.abt.market.repository;
 
 import com.abt.market.entity.SettlementMain;
+import com.abt.market.model.SettlementEntrustDTO;
 import com.abt.market.model.SettlementMainListDTO;
 import com.abt.market.model.SettlementRequestForm;
 import com.abt.sys.model.entity.CustomerInfo;
@@ -100,4 +101,14 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
        order by m.clientName
 """)
     List<CustomerInfo> getAllCustomers();
+
+
+    /**
+     * 查询结算项目及金额
+     */
+    @Query(value = """
+        select * from stlm_main m 
+        left join T_sampleRegist
+""", nativeQuery = true)
+    List<SettlementEntrustDTO> findEntrustAmount();
 }

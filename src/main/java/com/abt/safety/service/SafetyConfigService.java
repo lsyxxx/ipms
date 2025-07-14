@@ -75,7 +75,7 @@ public interface SafetyConfigService {
 
     void updateSafetyFormEnabled(String id, boolean enabled);
 
-    boolean checkSafetyFormLocationExists(String location, Long id, LocationType locationType);
+    boolean checkSafetyFormLocationExists(String location, Long id, LocationType locationType, CheckType checkType);
 
     void logicDeleteSafetyForm(String id);
 }

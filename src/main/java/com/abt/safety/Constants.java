@@ -25,4 +25,9 @@ public class Constants {
      */
     public static final String ROLE_VIEW_LIST_ALL = "SAFETY_VIEW_LIST_ALL";
 
+    /**
+     * 确认整改权限
+     */
+    public static final String ROLE_RECTIFY_COMPLETE = "SAFETY_RECTIFY_COMPLETE";
+
 }

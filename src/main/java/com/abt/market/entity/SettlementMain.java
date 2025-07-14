@@ -92,6 +92,8 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
 
     /**
      * 是否含税
+     * 是：表示输入的单价是含税价
+     * 否：输入的单价不含税
      */
     @Column(name="is_tax", columnDefinition = "BIT")
     private boolean isTax = true;
@@ -221,7 +223,7 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
      * @return  含税，返回含税金额(taxAmount)；不含税，返回totalAmount
      */
     public BigDecimal getFinalAmount() {
-        return this.isTax ? taxAmount : totalAmount;
+        return this.totalAmount;
     }
 
     /**
@@ -251,18 +253,19 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
         this.expenseAmount = expenseItems.stream().map(ExpenseItem::getAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    /**
-     * 计算含税价
-     */
-    public void calculateTaxAmount() {
-        if (this.isTax && this.taxRate != null) {
-            this.taxAmount = this.totalAmount.multiply(BigDecimal.valueOf(1 + this.taxRate));
-        }
-    }
+//    /**
+//     * 计算含税价
+//     */
+//    public void calculateTaxAmount() {
+//        if (this.taxRate == null) {
+//            this.taxRate = 0.00;
+//        }
+//        this.taxAmount = this.totalAmount.multiply(BigDecimal.valueOf(1 + this.taxRate));
+//    }
 
     public void calculateAllAmount() {
         this.calculateTotalAmount();
-        this.calculateTaxAmount();
+//        this.calculateTaxAmount();
     }
 
     /**

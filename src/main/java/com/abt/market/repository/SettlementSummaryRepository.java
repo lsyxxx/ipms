@@ -19,4 +19,18 @@ public interface SettlementSummaryRepository extends JpaRepository<SettlementSum
      * @param mid 结算主表ID
      */
     void deleteByMid(String mid);
+
+    /**
+     * 一个委托项目的汇总合计
+     * @param entrustId 委托编号
+     */
+    @Query("""
+    select new com.abt.market.entity.SettlementSummary(s.entrustId, s.checkModuleId, s.checkModuleName, sum(s.sampleNum), sum(s.amount))
+    from SettlementMain m
+    left join SettlementSummary s on m.id = s.mid
+    where m.saveType = 'SAVE'
+    and s.entrustId = :entrustId
+    group by s.entrustId, s.checkModuleId, s.checkModuleName
+""")
+    List<SettlementSummary> entrustSummary(String entrustId);
 }
