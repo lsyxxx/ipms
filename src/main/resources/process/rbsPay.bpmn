@@ -76,7 +76,7 @@
     <bpmn:endEvent id="Event_0h0jtl7" name="审批结束">
       <bpmn:documentation>审批结束</bpmn:documentation>
       <bpmn:incoming>Flow_0zqtcp6</bpmn:incoming>
-      <bpmn:incoming>Flow_06pex7u</bpmn:incoming>
+      <bpmn:incoming>Flow_0we5qsp</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:userTask id="rbsPay_acc" name="会计审批" camunda:assignee="U20230406007">
       <bpmn:extensionElements>
@@ -131,12 +131,25 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0t70q8d</bpmn:incoming>
-      <bpmn:outgoing>Flow_06pex7u</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0op4bvk</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_0t70q8d" name="IS_QT" sourceRef="Gateway_06d9vwn" targetRef="rbsPay_cashier_QT">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${company == 'QT'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_06pex7u" sourceRef="rbsPay_cashier_QT" targetRef="Event_0h0jtl7" />
+    <bpmn:userTask id="Activity_18z2uer" name="归档" camunda:assignee="U20230406007">
+      <bpmn:documentation>归档</bpmn:documentation>
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="approvalType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
+          <camunda:property name="taskType" value="approval" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0op4bvk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0we5qsp</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0op4bvk" sourceRef="rbsPay_cashier_QT" targetRef="Activity_18z2uer" />
+    <bpmn:sequenceFlow id="Flow_0we5qsp" sourceRef="Activity_18z2uer" targetRef="Event_0h0jtl7" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsPay">
@@ -187,7 +200,11 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1hh3jxv" bpmnElement="rbsPay_cashier_QT">
-        <dc:Bounds x="540" y="420" width="100" height="80" />
+        <dc:Bounds x="680" y="420" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1yk01zm" bpmnElement="Activity_18z2uer">
+        <dc:Bounds x="530" y="420" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1wak73i_di" bpmnElement="Flow_1wak73i">
@@ -206,10 +223,6 @@
         <di:waypoint x="640" y="117" />
         <di:waypoint x="680" y="117" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0zqtcp6_di" bpmnElement="Flow_0zqtcp6">
-        <di:waypoint x="540" y="330" />
-        <di:waypoint x="328" y="330" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1w0a64j_di" bpmnElement="Flow_1w0a64j">
         <di:waypoint x="980" y="117" />
         <di:waypoint x="1180" y="117" />
@@ -217,14 +230,13 @@
           <dc:Bounds x="1040" y="99" width="80" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0fhdgr9_di" bpmnElement="Flow_0fhdgr9">
-        <di:waypoint x="1230" y="157" />
-        <di:waypoint x="1230" y="330" />
-        <di:waypoint x="955" y="330" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0h6gbw3_di" bpmnElement="Flow_0h6gbw3">
         <di:waypoint x="780" y="117" />
         <di:waypoint x="880" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0zqtcp6_di" bpmnElement="Flow_0zqtcp6">
+        <di:waypoint x="540" y="330" />
+        <di:waypoint x="328" y="330" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_08vtl80_di" bpmnElement="Flow_08vtl80">
         <di:waypoint x="930" y="157" />
@@ -232,6 +244,11 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="906" y="229" width="80" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0fhdgr9_di" bpmnElement="Flow_0fhdgr9">
+        <di:waypoint x="1230" y="157" />
+        <di:waypoint x="1230" y="330" />
+        <di:waypoint x="955" y="330" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11h0iu7_di" bpmnElement="Flow_11h0iu7">
         <di:waypoint x="905" y="330" />
@@ -243,15 +260,19 @@
       <bpmndi:BPMNEdge id="Flow_0t70q8d_di" bpmnElement="Flow_0t70q8d">
         <di:waypoint x="930" y="355" />
         <di:waypoint x="930" y="460" />
-        <di:waypoint x="640" y="460" />
+        <di:waypoint x="780" y="460" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="757" y="443" width="33" height="14" />
+          <dc:Bounds x="832" y="443" width="33" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_06pex7u_di" bpmnElement="Flow_06pex7u">
-        <di:waypoint x="540" y="460" />
-        <di:waypoint x="434" y="460" />
-        <di:waypoint x="434" y="330" />
+      <bpmndi:BPMNEdge id="Flow_0op4bvk_di" bpmnElement="Flow_0op4bvk">
+        <di:waypoint x="680" y="460" />
+        <di:waypoint x="630" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0we5qsp_di" bpmnElement="Flow_0we5qsp">
+        <di:waypoint x="530" y="460" />
+        <di:waypoint x="429" y="460" />
+        <di:waypoint x="429" y="330" />
         <di:waypoint x="328" y="330" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>

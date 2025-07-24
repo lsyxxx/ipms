@@ -18,11 +18,14 @@ import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.service.UserService;
 import com.abt.sys.util.WithQueryUtil;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +41,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -58,9 +62,7 @@ public class SafetyController {
     private final SafetyConfigService safetyConfigService;
     private final SafetyRecordService safetyRecordService;
     private final UserService<UserView, User> sqlServerUserService;
-
     private final ApplicationEventPublisher publisher;
-    private final UserService<UserView, WebApiToken> userService;
 
 
     /**
@@ -247,7 +249,9 @@ public class SafetyController {
     }
 
     /**
-     * 调度人分配
+     * 调度人分配，只影响safetyRecord
+     * 1. 若没有正在进行的rectifyRecord，那么新建一个，整改人是rectifierId
+     * 2. 若存在正在进行的rectifyRecord，不影响正在进行的safetyRectify， 仅修改safetyRecord中的。
      * @param id            record id
      * @param rectifierId   负责人userid
      * @param rectifierName 负责人姓名
@@ -257,7 +261,10 @@ public class SafetyController {
     public R<Object> recordDispatch(String id, String rectifierId, String rectifierName) {
         final UserView dispatcher = TokenUtil.getUserFromAuthToken();
         SafetyRecord record = safetyRecordService.loadRecordOnly(id);
-        record = safetyRecordService.dispatch(record, dispatcher.getId(), dispatcher.getName(), rectifierId, rectifierName);
+        record.setDispatcherId(dispatcher.getId());
+        record.setDispatcherName(dispatcher.getName());
+        record.setDispatchTime(LocalDateTime.now());
+        safetyRecordService.dispatch(record, rectifierId, rectifierName);
         publisher.publishEvent(new SafetyRecordFinishedEvent(this, record, record.getCurrentRectify()));
         return R.success("已分配负责人:" + rectifierName);
     }
@@ -289,7 +296,7 @@ public class SafetyController {
     }
 
     /**
-     * 检查复核/确认完成
+     * 整改复核/确认完成
      */
     @Secured(ROLE_RECTIFY_COMPLETE)
     @PostMapping("/record/rectify/complete")
@@ -307,15 +314,33 @@ public class SafetyController {
         saved.setComment(form.getComment());
         saved.setCheckerId(user.getId());
         saved.setCheckerName(user.getName());
-        if (RectifyResult.pass.equals(saved.getCheckResult())) {
+        if (RectifyResult.pass.equals(form.getCheckResult())) {
             safetyRecordService.rectifyPass(saved);
             safetyRecordService.complete(record);
         } else if (RectifyResult.reject.equals(form.getCheckResult())) {
             safetyRecordService.rectifyReject(saved);
-            safetyRecordService.dispatch(record, user.getId(), user.getName(), form.getRectifierId(), form.getRectifierName());
+            safetyRecordService.dispatch(record, form.getRectifierId(), form.getRectifierName());
             publisher.publishEvent(new SafetyRecordFinishedEvent(this, record, record.getCurrentRectify()));
         }
         return R.success("整改复核完成");
+    }
+
+    /**
+     * 修改整改人
+     * @param rectifyId 整改记录id
+     * @param rectifierId 整改人id
+     * @param rectifierName 整改人name
+     */
+    @GetMapping("/record/rectify/update")
+    public R<Object> updateRectifier(int rectifyId, String rectifierId, String rectifierName) {
+        final SafetyRectify rectify = safetyRecordService.findRectifyById(rectifyId);
+        if (rectify.isChecked()) {
+            throw new BusinessException(String.format("整改记录(id=%s)已确认。确认人: %s, 确认时间: %s",
+                    rectify.getId(), rectify.getCheckerName(), rectify.getCheckTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        }
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        safetyRecordService.updateRectifyUser(rectifyId, rectifierId, rectifierName, user.getId(), user.getName());
+        return R.success("修改整改人成功!");
     }
 
     /**
@@ -401,16 +426,31 @@ public class SafetyController {
         if (record.getState().equals(RecordStatus.COMPLETED)) {
             throw new BusinessException(String.format("检查已结束(编号:%s), 无需催办", id));
         }
+        final UserView user = TokenUtil.getUserFromAuthToken();
 
-        // 当前正在进行的整改
-        final Optional<SafetyRectify> rectifyOptional = safetyRecordService.findRunningRectify(id);
-        if (rectifyOptional.isPresent()) {
-            final SafetyRectify rectify = rectifyOptional.get();
-            safetyRecordService.remind(rectify.getRectifierId(), rectify.getRectifierName(), TokenUtil.getUseridFromAuthToken(), record);
-            return R.success("已催办" + rectify.getRectifierName());
-        } else {
-            throw new BusinessException("无正在进行的整改(检查记录编号:" + id + ")");
+        // 判断催办人
+        if (RecordStatus.SUBMITTED.equals(record.getState())) {
+            // 1. 已提交检查，催办调度人
+            final List<UserRole> dispatcherUsers = sqlServerUserService.getUserByRoleId(ROLE_DISPATCHER);
+            for (UserRole dispatcher : dispatcherUsers) {
+                String msg = record.getCheckType().getDescription() + "检查已完成, 请及时调度，催办人: " + user.getName();
+                safetyRecordService.remind(dispatcher.getId(), dispatcher.getUsername(), user.getUsername(), record, msg);
+            }
+            return R.success("已催办调度人" + dispatcherUsers.size() + "人");
+
+        } else if (RecordStatus.DISPATCHED.equals(record.getState())) {
+            // 2. 已调度，催办整改负责人
+            // 当前正在进行的整改
+            final Optional<SafetyRectify> rectifyOptional = safetyRecordService.findRunningRectify(id);
+            if (rectifyOptional.isPresent()) {
+                final SafetyRectify rectify = rectifyOptional.get();
+                safetyRecordService.remind(rectify.getRectifierId(), rectify.getRectifierName(), TokenUtil.getUseridFromAuthToken(), record, null);
+                return R.success("已催办" + rectify.getRectifierName());
+            } else {
+                throw new BusinessException("无正在进行的整改(检查记录编号:" + id + ")");
+            }
         }
+        return R.success("无催办人");
     }
 
 }

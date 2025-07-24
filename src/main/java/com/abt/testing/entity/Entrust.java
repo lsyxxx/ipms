@@ -70,12 +70,12 @@ public class Entrust {
     @Column(name = "FkType", length = 20)
     private String fkType;
 
-    @Size(max = 300)
-    @Column(name = "EntrustDesc", length = 300)
+    @Size(max = 1000)
+    @Column(name = "EntrustDesc", length = 1000)
     private String entrustDesc;
 
-    @Size(max = 300)
-    @Column(name = "Note", length = 300)
+    @Size(max = 1000)
+    @Column(name = "Note", length = 1000)
     private String note;
 
     @Lob

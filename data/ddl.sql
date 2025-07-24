@@ -253,7 +253,7 @@ update stock_inventory set m_id = '51901809-7ba1-42f0-9c25-f590cff5ca93' where i
 update stock_inventory set quantity_ = 73  where id = 'b17253b6-aee4-434e-8eb5-40b8a8e2bc64';
 
 
---删除多余物品资料
+--删除多余物品资料a
 delete from T_stockcataDetail where id = 'e29eaa94-e771-4ecb-b0e2-cf8e238dbcf7';
 delete from T_stockcataDetail where id = 'ea935b3c-4319-420c-b505-8acf8413be1c';
 delete from T_stockcataDetail where id = '4fb2285e-b8c2-413c-9693-21595d5128bd';

@@ -648,7 +648,7 @@ public class StockServiceImpl implements StockService {
                     Stock stock = vlist.get(r);
                     dataRow = start + r;
                     insertStockRow(stock, dataRow, cells, style, redStyle, greenStyle);
-                    valueSum = valueSum.add(stock.getTotalPrice().setScale(2, RoundingMode.FLOOR));
+                    valueSum = valueSum.add(stock.getTotalPrice().setScale(2, RoundingMode.HALF_UP));
                     //行高35
                     worksheet.getCells().getRows().get(dataRow).setHeight(35);
                 }
@@ -689,66 +689,6 @@ public class StockServiceImpl implements StockService {
         cells.get(curRowIdx, 5).setStyle(style);
     }
 
-    //使用easyexcel导出，合并有问题
-//    @Override
-//    public String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws IOException {
-//        String path = stockWeekFilePath + System.currentTimeMillis() + ".xlsx";
-//        int dataRow = 4;
-//        List<CellRangeAddress> mergedRegions = new ArrayList<>();
-//        //表格数据
-//        final List<Stock> xianStockDetails = summaryTable.getXianStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
-//        formatExcelData(xianStockDetails);
-////        mergedRegions.addAll(mergeData(xianStockDetails, dataRow, NAME_COL));
-////        mergedRegions.addAll(mergeData(xianStockDetails, dataRow, STOCK_COL));
-//        final List<Stock> yananStockDetails = summaryTable.getYananStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
-//        formatExcelData(yananStockDetails);
-//        dataRow = dataRow + xianStockDetails.size() + 2;
-////        mergedRegions.addAll(mergeData(yananStockDetails, dataRow, NAME_COL));
-////        mergedRegions.addAll(mergeData(yananStockDetails, dataRow, STOCK_COL));
-//        dataRow = dataRow + yananStockDetails.size() + 2;
-//        final List<Stock> chengduStockDetails = summaryTable.getChengduStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
-//        formatExcelData(chengduStockDetails);
-////        mergedRegions.addAll(mergeData(chengduStockDetails, dataRow, NAME_COL));
-////        mergedRegions.addAll(mergeData(chengduStockDetails, dataRow, STOCK_COL));
-//        final List<PurchaseSummaryAmount> purchaseSummaryAmountList = summaryTable.getPurchaseSummaryAmountList();
-//        purchaseSummaryAmountList.sort(
-//                Comparator.comparing(PurchaseSummaryAmount::getName)
-//                        .thenComparing(PurchaseSummaryAmount::getSpecification)
-//                        .thenComparing(PurchaseSummaryAmount::getUnit)
-//                        .thenComparing(PurchaseSummaryAmount::getPrice)
-//        );
-//        for (PurchaseSummaryAmount psa : purchaseSummaryAmountList) {
-//            if (StringUtils.isNotBlank(psa.getSpecification())) {
-//                psa.setName(String.format("%s(%s)", psa.getName(), psa.getSpecification()));
-//            }
-//        }
-//        final BigDecimal sumPurchase = sumPurchases(purchaseSummaryAmountList);
-//        int purchaseRow = 4;
-//        purchaseRow = addRow(purchaseRow, xianStockDetails) + 2;
-//        purchaseRow = addRow(purchaseRow, yananStockDetails) + 2;
-//        purchaseRow = addRow(purchaseRow, chengduStockDetails) + 2;
-//        if (!purchaseSummaryAmountList.isEmpty()) {
-//            purchaseRow = purchaseRow + 1;
-//        }
-//        try (ExcelWriter writer = FastExcel.write(path).withTemplate(this.stockWeekTemplate)
-//                .registerWriteHandler(new CellMergeHandler(purchaseRow))
-//                .build()) {
-//            WriteSheet writeSheet = FastExcel.writerSheet().build();
-//            FillConfig fillConfig = FillConfig.builder().build();
-//            fillConfig.setForceNewRow(true);
-//            writer.fill(new FillWrapper("xian", xianStockDetails), fillConfig, writeSheet);
-//            writer.fill(new FillWrapper("yanan", yananStockDetails), fillConfig, writeSheet);
-//            writer.fill(new FillWrapper("chengdu", chengduStockDetails), fillConfig, writeSheet);
-//            writer.fill(new FillWrapper("purchases", purchaseSummaryAmountList), fillConfig, writeSheet);
-//            Map<String, Object> map = new HashMap<>();
-//            map.put("startDate", TimeUtil.toYYYY_MM_DDString(startDate));
-//            map.put("endDate", TimeUtil.toYYYY_MM_DDString(endDate));
-//            map.put("purchaseAmount", sumPurchase.setScale(2, RoundingMode.FLOOR));
-//            writer.fill(map, writeSheet);
-//        }
-//        return path;
-//    }
-
     private BigDecimal sumPurchases(List<PurchaseSummaryAmount> list) {
         return list.stream().map(PurchaseSummaryAmount::getTotalAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -772,39 +712,6 @@ public class StockServiceImpl implements StockService {
         }
         return mergedCells;
     }
-
-    //使用aspose生成， 问题1：数据源（列表）没数据，不会清除模板中的占位符。 2. 合并问题
-//    @Override
-//    public String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws Exception {
-//        Workbook workbook = new Workbook(stockWeekTemplate);
-//        WorkbookDesigner designer = new WorkbookDesigner();
-//        designer.setWorkbook(workbook); // 加载模板 Excel
-//        //表格数据
-//        List<Stock> xianStockDetails = summaryTable.getXianStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
-//        xianStockDetails = formatExcelData(xianStockDetails);
-//        List<Stock> yananStockDetails = summaryTable.getYananStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
-//        yananStockDetails = formatExcelData(yananStockDetails);
-//        List<Stock> chengduStockDetails = summaryTable.getChengduStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList();
-//        chengduStockDetails = formatExcelData(chengduStockDetails);
-//        List<PurchaseSummaryAmount> purchaseSummaryAmountList = summaryTable.getPurchaseSummaryAmountList();
-//        for (PurchaseSummaryAmount psa : purchaseSummaryAmountList) {
-//            if (StringUtils.isNotBlank(psa.getSpecification())) {
-//                psa.setName(String.format("%s(%s)", psa.getName(), psa.getSpecification()));
-//            }
-//        }
-//        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日");
-//        designer.setDataSource("startDate", startDate.format(dateFormatter));
-//        designer.setDataSource("endDate", endDate.format(dateFormatter));
-//        designer.setDataSource("xian", xianStockDetails);
-//        designer.setDataSource("yanan", yananStockDetails);
-//        designer.setDataSource("chengdu", chengduStockDetails);
-//        designer.setDataSource("purchases", purchaseSummaryAmountList);
-//        designer.process(true);
-//        String path = stockWeekFilePath + System.currentTimeMillis() + ".xlsx";
-//        designer.getWorkbook().save(path);
-//        return path;
-//    }
-
 
     public List<Stock> formatExcelData(List<Stock> list, Map<String, MaterialDetail> materialDetailMap) {
         if (list == null || list.isEmpty()) {
@@ -845,8 +752,10 @@ public class StockServiceImpl implements StockService {
             }
             //出库价值
             if (price != null) {
-                final BigDecimal value = price.multiply(BigDecimal.valueOf(stock.getNum())).setScale(2, RoundingMode.HALF_UP);
-//                stock.setQuantityStr(stock.getQuantityStr() + "\n(" + value + "元)" );
+                BigDecimal value = price.multiply(BigDecimal.valueOf(stock.getNum())).setScale(2, RoundingMode.HALF_UP);
+                if(STOCK_TYPE_IN == stockType) {
+                    value = value.negate();
+                }
                 stock.setTotalPrice(value);
             } else {
                 stock.setTotalPrice(BigDecimal.ZERO);

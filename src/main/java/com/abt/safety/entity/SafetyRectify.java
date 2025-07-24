@@ -90,7 +90,7 @@ public class SafetyRectify {
      * 整改复查结果
      */
     @Enumerated(EnumType.STRING)
-    @Column(name="review_result", length = 16)
+    @Column(name="check_result", length = 16)
     private RectifyResult checkResult;
 
     @Column(name="check_time")

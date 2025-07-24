@@ -52,7 +52,7 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
         return safetyRecordRepository.checkSubmitDuplicated(checkDate.atStartOfDay(), checkDate.plusDays(1L).atStartOfDay(), formId);
     }
 
-    @Transactional
+
     @Override
     public SafetyRecord saveCheck(SafetyForm form) {
         final SafetyRecord record = createRecordWithTokenUser(form);
@@ -63,7 +63,9 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
         //判断是否完成, 没有问题就算结束
         record.calcProblemCount();
         record.calcHasProblem();
-        record.setCompleted(!record.isHasProblem());
+        if (!record.isHasProblem()) {
+            record.complete();
+        }
         return safetyRecordRepository.save(record);
     }
 
@@ -99,18 +101,21 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
             if (StringUtils.isNotBlank(query) && StringUtils.isNotBlank(query.trim())) {
                 String pattern = QueryUtil.like(query.toLowerCase());
                 predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), pattern)
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("location")), pattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("id")), pattern)
                 ));
             }
             //查看权限条件
             if (StringUtils.isNotBlank(requestForm.getUserid())) {
                 predicates.add(criteriaBuilder.or(
                         criteriaBuilder.equal(root.get("checkerId"), requestForm.getUserid()),
-                        criteriaBuilder.equal(root.get("dispatcherId"), requestForm.getUserid())
-//                        criteriaBuilder.equal(root.get("rectifierId"), requestForm.getUserid())
+                        criteriaBuilder.equal(root.get("dispatcherId"), requestForm.getUserid()),
+                        criteriaBuilder.equal(root.get("rectifierId"), requestForm.getUserid())
                 ));
             }
-
+            if (requestForm.getCheckType() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("checkType"), requestForm.getCheckType()));
+            }
             if (requestForm.getLocalStartDate() != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("checkTime"), requestForm.getLocalStartDate().atStartOfDay()));
             }
@@ -138,16 +143,21 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
         return safetyRectifyRepository.findByRecordId(recordId);
     }
 
-    @Transactional
-    @Override
-    public SafetyRecord dispatch(SafetyRecord record, String dispatcherId, String dispatcherName, String rectifierId, String rectifierName) {
-        final SafetyRectify rectifyRecord = createRectifyRecord(record.getId(), rectifierId, rectifierName, dispatcherId, dispatcherName);
-        record.setState(RecordStatus.DISPATCHED);
-        final SafetyRecord save = safetyRecordRepository.save(record);
-        final SafetyRectify rectify = safetyRectifyRepository.save(rectifyRecord);
-        save.setCurrentRectify(rectify);
-        return save;
-    }
+//    @Transactional
+//    @Override
+//    public SafetyRecord dispatch(SafetyRecord record, String dispatcherId, String dispatcherName, String rectifierId, String rectifierName) {
+//        final SafetyRectify rectifyRecord = createRectifyRecord(record.getId(), rectifierId, rectifierName, dispatcherId, dispatcherName);
+//        record.setState(RecordStatus.DISPATCHED);
+//        record.setDispatcherId(dispatcherId);
+//        record.setDispatcherName(dispatcherName);
+//        record.setDispatchTime(LocalDateTime.now());
+//        record.setRectifierId(rectifierId);
+//        record.setRectifierName(rectifierName);
+//        final SafetyRecord save = safetyRecordRepository.save(record);
+//        final SafetyRectify rectify = safetyRectifyRepository.save(rectifyRecord);
+//        save.setCurrentRectify(rectify);
+//        return save;
+//    }
 
     /**
      * 负责人整改
@@ -187,9 +197,27 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
         safetyRecordRepository.logicDelete(id);
     }
 
-    /**
-     * 创建一条整改记录
-     */
+    @Transactional
+    @Override
+    public void dispatch(SafetyRecord safetyRecord, String rectifierId, String rectifierName) {
+        final Optional<SafetyRectify> runningRectify = this.findRunningRectify(safetyRecord.getId());
+        if (runningRectify.isEmpty()) {
+            final SafetyRectify rectify = this.createAndSaveRectifyRecord(safetyRecord.getId(), rectifierId, rectifierName, safetyRecord.getDispatcherId(), safetyRecord.getDispatcherName());
+            safetyRecord.setState(RecordStatus.DISPATCHED);
+            safetyRecord.setRectifierId(rectifierId);
+            safetyRecord.setRectifierName(rectifierName);
+            safetyRectifyRepository.save(rectify);
+        }
+        safetyRecordRepository.save(safetyRecord);
+    }
+
+    @Override
+    public SafetyRectify createAndSaveRectifyRecord(String recordId, String rectifierId, String rectifierName, String dispatcherId, String dispatcherName) {
+        final SafetyRectify rectifyRecord = createRectifyRecord(recordId, rectifierId, rectifierName, dispatcherId, dispatcherName);
+        return safetyRectifyRepository.save(rectifyRecord);
+    }
+
+    @Override
     public SafetyRectify createRectifyRecord(String recordId, String rectifierId, String rectifierName, String dispatcherId, String dispatcherName) {
         SafetyRectify rectify = new SafetyRectify();
         rectify.setRecordId(recordId);
@@ -202,16 +230,25 @@ public class SafetyRecordServiceImpl implements SafetyRecordService {
     }
 
     @Override
-    public void remind(String toUserid, String toUsername, String fromUsername, SafetyRecord record) {
+    public void remind(String toUserid, String toUsername, String fromUsername, SafetyRecord record, String msg) {
         record.remind(toUserid, toUsername);
-        String msg = String.format("%s请您及时整改检查问题", fromUsername);
+        if (StringUtils.isEmpty(msg)) {
+            msg = String.format("%s请您及时整改检查问题", fromUsername);
+        }
         final SystemMessage sysmsg = systemMessageService.createImportantSystemMsg(toUserid, toUsername, msg, SERVICE_SAFETY, record.getId());
         sysmsg.setImportantPriority();
+        systemMessageService.sendMessage(sysmsg);
     }
 
     @Override
     public Optional<SafetyRectify> findRunningRectify(String recordId) {
         return safetyRectifyRepository.findRunningRectify(recordId);
+    }
+
+    @Transactional
+    @Override
+    public void updateRectifyUser(int id, String rectifierId, String rectifierName, String dispatcherId, String dispatcherName) {
+        safetyRectifyRepository.updateRectifyUser(id, rectifierId, rectifierName, dispatcherId, dispatcherName, LocalDateTime.now());
     }
 
 }

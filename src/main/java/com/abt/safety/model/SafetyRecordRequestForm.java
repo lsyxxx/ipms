@@ -14,4 +14,6 @@ public class SafetyRecordRequestForm extends RequestForm {
     private String location;
 
     private Boolean isDeleted;
+
+    private CheckType checkType;
 }

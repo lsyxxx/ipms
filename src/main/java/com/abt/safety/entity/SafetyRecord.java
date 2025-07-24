@@ -133,6 +133,28 @@ public class SafetyRecord extends AuditInfo implements CommonJpaAudit, WithQuery
     @Column(name="remind_username")
     private String remindUsername;
 
+    //分配整改负责人
+    /**
+     * 调度员
+     */
+    @Column(name="dispatcher_id")
+    private String dispatcherId;
+
+    @Column(name="dispatcher_name")
+    private String dispatcherName;
+
+    @Column(name="dispatch_time")
+    private LocalDateTime dispatchTime;
+
+    /**
+     * 负责人/整改人userid
+     * 可以看作这个整改的负责人，但是每次单独整改(safetyRectify)可能会改变负责人，但是不影响这里的
+     */
+    @Column(name = "rectifier_id")
+    private String rectifierId;
+    @Column(name = "rectifier_name")
+    private String rectifierName;
+
     /**
      * 整改记录列表
      */
