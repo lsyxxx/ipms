@@ -77,6 +77,12 @@ public class SettlementSummary {
     private Double amount;
 
     /**
+     * 样品单位
+     */
+    @Column(name="unit_")
+    private String unit;
+
+    /**
      * 备注
      */
     @Size(message = "备注信息不能超过100字", groups = ValidateGroup.Save.class)

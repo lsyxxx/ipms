@@ -180,6 +180,14 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     private String invalidReason;
 
     /**
+     * 选择模式
+     * sample: 直接选择样品
+     * entrust: 选择项目，自动按编号大小顺序分配样品（小-大）
+     */
+    @Column(name="mode_", length = 32)
+    private String mode;
+
+    /**
      * 关联结算检测项目
      */
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "main")
@@ -234,8 +242,6 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
             this.grossTestAmount = BigDecimal.ZERO;
             return;
         }
-
-        // 使用Stream和BigDecimal计算testItem的price合计，避免精度问题
         this.grossTestAmount = testItems.stream()
                 .map(TestItem::getPrice)
                 .filter(Objects::nonNull)
@@ -323,5 +329,9 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
                 ", saveType=" + saveType +
                 ", remark='" + remark + '\'' +
                 "} " + super.toString();
+    }
+
+    public boolean isEntrustMode() {
+        return "entrust".equalsIgnoreCase(mode);
     }
 }

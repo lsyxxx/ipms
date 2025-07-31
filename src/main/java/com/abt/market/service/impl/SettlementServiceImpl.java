@@ -19,6 +19,7 @@ import com.abt.wf.repository.InvoiceApplyRepository;
 import com.aspose.cells.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,12 +27,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -71,9 +71,18 @@ public class SettlementServiceImpl implements SettlementService {
     @Transactional
     @Override
     public void save(SettlementMain main) {
-        main.calculateAllAmount();
         final SettlementMain save = settlementMainRepository.save(main);
         final String id = save.getId();
+
+        if (main.isEntrustMode()) {
+            testItemRepository.deleteByMid(id);
+            testItemRepository.flush();
+            final List<TestItem> itemList = relateSamples(main);
+            Set<TestItem> set = new HashSet<>(itemList);
+            main.setTestItems(set);
+        }
+
+        main.calculateAllAmount();
         
         // 保存检测项目
         if (main.getTestItems() != null) {
@@ -119,6 +128,93 @@ public class SettlementServiceImpl implements SettlementService {
             }
             settlementSummaryRepository.saveAllAndFlush(main.getSummaryTab());
         }
+
+    }
+
+    private String genKey(String entrustId, String checkModuleId) {
+        return String.format("%s_%s", entrustId, checkModuleId);
+    }
+
+    /**
+     * 自动关联样品
+     *
+     * @param main 结算主体
+     * @return List<TestItem> TestItem 结算的样品
+     */
+    public List<TestItem> relateSamples(SettlementMain main) {
+        if (!main.isEntrustMode()) {
+            return null;
+        }
+        final Set<SettlementSummary> summaryTab = main.getSummaryTab();
+        Set<String> entrustIds = summaryTab.stream().map(SettlementSummary::getEntrustId).collect(Collectors.toSet());
+        final Map<String, SettlementSummary> map = summaryTab.stream().collect(Collectors.toMap(st -> genKey(st.getEntrustId(), st.getCheckModuleId()), st -> st));
+
+        // 查询所有项目的未结算样品及检测项目
+        final List<TestItem> unsettledSampleNoList = findUnsettledTestItems(entrustIds);
+        if (CollectionUtils.isEmpty(unsettledSampleNoList)) {
+            throw new BusinessException("不存在未结算的样品和检测项目");
+        }
+
+         // 校验每个检测项目的未结算样品是否不小于提交的数量
+        final Map<String, List<TestItem>> tiMap = unsettledSampleNoList.stream()
+                .collect(Collectors.groupingBy(ti -> genKey(ti.getEntrustId(), ti.getCheckModuleId()), Collectors.toList()));
+        List<String> error = new ArrayList<>();
+        tiMap.forEach((key, tiList) -> {
+            final SettlementSummary summary = map.get(key);
+            if (summary != null) {
+                // 结算数量大于未结算的
+                if (summary.getSampleNum() > tiList.size()) {
+                    error.add(String.format("委托编号：%s的[%s]未结算数量%s小于提交数量%s", summary.getEntrustId(), summary.getCheckModuleName(), tiList.size(), summary.getSampleNum()));
+                }
+            }
+        });
+        if (!error.isEmpty()) {
+            String msg = String.join(",\n", error);
+            throw new BusinessException(msg);
+        }
+
+        List<TestItem> savedList = new ArrayList<>();
+        for (Map.Entry<String, List<TestItem>> entry : tiMap.entrySet()) {
+            String key = entry.getKey();
+            final List<TestItem> itemList = entry.getValue();
+            itemList.sort(Comparator.comparing(TestItem::getSampleNo));
+            final SettlementSummary summary = map.get(key);
+            if (summary != null) {
+                final int sampleNum = summary.getSampleNum();
+                savedList.addAll(itemList.subList(0, sampleNum));
+            }
+        }
+
+        // 单价，单位
+        for (TestItem testItem : savedList) {
+            String key = genKey(testItem.getEntrustId(), testItem.getCheckModuleId());
+            final SettlementSummary summary = map.get(key);
+            if (summary != null) {
+                testItem.setPrice(BigDecimal.valueOf(summary.getPrice()));
+                testItem.setSampleUnit(summary.getUnit());
+                testItem.setMid(main.getId());
+            }
+        }
+        return savedList;
+    }
+
+    private List<TestItem> findUnsettledTestItems(Set<String> entrustIds) {
+        final List<Tuple> tuples = testItemRepository.findUnsettledSamples(entrustIds);
+        if (CollectionUtils.isEmpty(tuples)) {
+            return new ArrayList<>();
+        }
+        List<TestItem> list = new ArrayList<>();
+        for (Tuple tuple : tuples) {
+            TestItem ti = new TestItem();
+            ti.setEntrustId(tuple.get("entrust_id").toString());
+            ti.setSampleNo(tuple.get("sample_no").toString());
+            ti.setCheckModuleId(tuple.get("check_module_id").toString());
+            ti.setCheckModuleName(tuple.get("check_module_name").toString());
+            ti.setOldSampleNo(tuple.get("old_sample_no").toString());
+            ti.setWellNo(tuple.get("well_no").toString());
+            list.add(ti);
+        }
+        return list;
     }
 
     @Override

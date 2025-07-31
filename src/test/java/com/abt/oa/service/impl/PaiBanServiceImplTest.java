@@ -71,7 +71,7 @@ class PaiBanServiceImplTest {
             String line;
             // 跳过标题行（如果有）
              reader.readLine();     // 取消注释以跳过第一行（如果有标题）
-            reader.readLine();      //第二行标题行
+             reader.readLine();      //第二行标题行
 
             while ((line = reader.readLine()) != null) {
                 // 按制表符分隔

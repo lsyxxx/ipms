@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +13,6 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  * 结算单-关联检测项目
@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @DynamicUpdate
 @DynamicInsert
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -97,4 +98,14 @@ public class TestItem {
     @JoinColumn(name = "m_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
     private SettlementMain main;
 
+    public TestItem(String entrustId, String sampleNo, String checkModuleId, String checkModuleName, String sampleUnit, BigDecimal price, String oldSampleNo, String wellNo) {
+        this.entrustId = entrustId;
+        this.sampleNo = sampleNo;
+        this.checkModuleId = checkModuleId;
+        this.checkModuleName = checkModuleName;
+        this.sampleUnit = sampleUnit;
+        this.price = price;
+        this.oldSampleNo = oldSampleNo;
+        this.wellNo = wellNo;
+    }
 }
