@@ -2,12 +2,14 @@ package com.abt.market.service;
 
 import com.abt.market.entity.SettlementMain;
 import com.abt.market.entity.SettlementRelation;
+import com.abt.market.model.RelationRequest;
 import com.abt.market.model.SettlementMainListDTO;
 import com.abt.market.model.SettlementRelationType;
 import com.abt.market.model.SettlementRequestForm;
 import com.abt.sys.model.entity.CustomerInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -81,4 +83,7 @@ public interface SettlementService {
      * 获取所有为作废的结算单的客户
      */
     List<CustomerInfo> getClients();
+
+    @Transactional
+    void updateRelations(RelationRequest relationRequest);
 }

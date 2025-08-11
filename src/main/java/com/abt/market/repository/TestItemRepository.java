@@ -15,18 +15,22 @@ public interface TestItemRepository extends JpaRepository<TestItem, String> {
 
   /**
    *  查询委托单未结算的样品
+   *  T_SampleRegist中可能有样品没有配置项目
    * @param entrustIds 委托单号列表
    */
   @Query(value = """
-          select  sr.NewSampleNo as sample_no, sr.entrustId as entrust_id, scmi.CheckModeuleId as check_module_id, scmi.CheckModeuleName as check_module_name, 
+   select * from (
+         select  sr.NewSampleNo as sample_no, sr.entrustId as entrust_id, scmi.CheckModeuleId as check_module_id, scmi.CheckModeuleName as check_module_name, 
                 sr.OldSampleNo as old_sample_no, sr.Jname as well_no
           from T_entrust e
           left join T_SampleRegist sr on e.Id = sr.entrustId
           left join T_SampleRegist_CheckModeuleItem scmi on scmi.SampleRegistId = sr.NewSampleNo
           left join stlm_test st on sr.NewSampleNo = st.sample_no and st.check_module_id = scmi.CheckModeuleId
-          where e.Id in :entrustIds
-          and st.sample_no is null
-          order by e.Id , sr.NewSampleNo, scmi.CheckModeuleId
+          where e.Id in :entrustIds    
+      ) as t 
+    where (check_module_id is not null or check_module_id = '')
+    order by entrust_id, sample_no
+
    """, nativeQuery = true)
   List<Tuple> findUnsettledSamples(Set<String> entrustIds);
 }

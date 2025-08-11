@@ -3,6 +3,7 @@ package com.abt.market.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.market.entity.SettlementMain;
+import com.abt.market.model.RelationRequest;
 import com.abt.market.model.SaveType;
 import com.abt.market.model.SettlementMainListDTO;
 import com.abt.market.model.SettlementRequestForm;
@@ -117,6 +118,15 @@ public class SettlementController {
         main.setInvalidReason(reason);
         settlementService.invalid(main);
         return R.success("作废成功");
+    }
+
+    /**
+     * 保存关联
+     */
+    @PostMapping("/rel/update")
+    public R<Object> saveRelations(@RequestBody RelationRequest relationRequest) {
+        settlementService.updateRelations(relationRequest);
+        return R.success("更新成功!");
     }
 
 }

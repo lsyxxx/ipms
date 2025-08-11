@@ -3,10 +3,7 @@ package com.abt.market.service.impl;
 import com.abt.common.util.MoneyUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.market.entity.*;
-import com.abt.market.model.SaveType;
-import com.abt.market.model.SettlementMainListDTO;
-import com.abt.market.model.SettlementRelationType;
-import com.abt.market.model.SettlementRequestForm;
+import com.abt.market.model.*;
 import com.abt.market.repository.*;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.exception.BusinessException;
@@ -14,6 +11,7 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Entrust;
 import com.abt.testing.repository.EntrustRepository;
+import com.abt.testing.repository.SampleRegistRepository;
 import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.repository.InvoiceApplyRepository;
 import com.aspose.cells.*;
@@ -52,12 +50,13 @@ public class SettlementServiceImpl implements SettlementService {
     private final SettlementSummaryRepository settlementSummaryRepository;
     private final EntrustRepository entrustRepository;
     private final InvoiceApplyRepository invoiceApplyRepository;
+    private final SampleRegistRepository sampleRegistRepository;
 
 
     @Value("${abt.settlement.excel.template}")
     private String settlementTemplate;
 
-    public SettlementServiceImpl(SettlementMainRepository settlementMainRepository, ExpenseItemRepository expenseItemRepository, TestItemRepository testItemRepository, SettlementRelationRepository settlementRelationRepository, SaleAgreementRepository saleAgreementRepository, SettlementSummaryRepository settlementSummaryRepository, EntrustRepository entrustRepository, InvoiceApplyRepository invoiceApplyRepository) {
+    public SettlementServiceImpl(SettlementMainRepository settlementMainRepository, ExpenseItemRepository expenseItemRepository, TestItemRepository testItemRepository, SettlementRelationRepository settlementRelationRepository, SaleAgreementRepository saleAgreementRepository, SettlementSummaryRepository settlementSummaryRepository, EntrustRepository entrustRepository, InvoiceApplyRepository invoiceApplyRepository, SampleRegistRepository sampleRegistRepository) {
         this.settlementMainRepository = settlementMainRepository;
         this.expenseItemRepository = expenseItemRepository;
         this.testItemRepository = testItemRepository;
@@ -66,6 +65,7 @@ public class SettlementServiceImpl implements SettlementService {
         this.settlementSummaryRepository = settlementSummaryRepository;
         this.entrustRepository = entrustRepository;
         this.invoiceApplyRepository = invoiceApplyRepository;
+        this.sampleRegistRepository = sampleRegistRepository;
     }
 
     @Transactional
@@ -73,6 +73,13 @@ public class SettlementServiceImpl implements SettlementService {
     public void save(SettlementMain main) {
         final SettlementMain save = settlementMainRepository.save(main);
         final String id = save.getId();
+
+
+        final List<String> err = validateCheckModules(main.getSummaryTab());
+        if (!err.isEmpty()) {
+            String error = String.join(";\n", err);
+            throw new BusinessException(error);
+        }
 
         if (main.isEntrustMode()) {
             testItemRepository.deleteByMid(id);
@@ -131,6 +138,38 @@ public class SettlementServiceImpl implements SettlementService {
 
     }
 
+    /**
+     * 校验检测项目
+     * 1. 对应委托单中是否有该检测项目
+     * 2. 检测项目是否存在
+     * @param summaryTab 汇总表
+     */
+    private List<String> validateCheckModules(Set<SettlementSummary> summaryTab) {
+        if (CollectionUtils.isEmpty(summaryTab)) {
+            return new ArrayList<>();
+        }
+        List<String> errors = new ArrayList<>();
+        final Set<String> entrustIds = summaryTab.stream().map(SettlementSummary::getEntrustId).collect(Collectors.toSet());
+        final Set<Tuple> checkModules = sampleRegistRepository.findDistinctCheckModulesByEntrustId(entrustIds);
+        for (SettlementSummary summary : summaryTab) {
+            String entrustNo = summary.getEntrustId();
+            String checkModuleId = summary.getCheckModuleId();
+            if (StringUtils.isEmpty(entrustNo)) {
+                throw new BusinessException("汇总表：委托编号不能为空");
+            }
+            if (StringUtils.isEmpty(checkModuleId)) {
+                throw new BusinessException("汇总表：检测项目代码不能为空");
+            }
+
+            final Optional<Tuple> any = checkModules.stream().filter(i -> entrustNo.equals(i.get("entrustId")) && checkModuleId.equals(i.get("CheckModeuleId")))
+                    .findAny();
+            if (any.isEmpty()) {
+                errors.add(String.format("委托单%s没有检测项目:[%s](%s)", entrustNo, summary.getCheckModuleName(), checkModuleId));
+            }
+        }
+        return errors;
+    }
+
     private String genKey(String entrustId, String checkModuleId) {
         return String.format("%s_%s", entrustId, checkModuleId);
     }
@@ -152,7 +191,7 @@ public class SettlementServiceImpl implements SettlementService {
         // 查询所有项目的未结算样品及检测项目
         final List<TestItem> unsettledSampleNoList = findUnsettledTestItems(entrustIds);
         if (CollectionUtils.isEmpty(unsettledSampleNoList)) {
-            throw new BusinessException("不存在未结算的样品和检测项目");
+            throw new BusinessException("未选择待结算的样品和检测项目");
         }
 
          // 校验每个检测项目的未结算样品是否不小于提交的数量
@@ -478,7 +517,11 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public void deleteRefByBizType(String mid, SettlementRelationType bizType) {
-        settlementRelationRepository.deleteByMidAndBizType(mid, bizType);
+        if (bizType == null) {
+            settlementRelationRepository.deleteByMid(mid);
+        } else {
+            settlementRelationRepository.deleteByMidAndBizType(mid, bizType);
+        }
     }
 
     @Transactional
@@ -520,8 +563,11 @@ public class SettlementServiceImpl implements SettlementService {
         return settlementMainRepository.getAllCustomers();
     }
 
-    public static void main(String[] args) {
-        String s = "xxx （开票信息）";
-        System.out.println(s.replaceAll("\\(开票信息\\) ", "").replaceAll("（开票信息）", ""));
+
+    @Transactional
+    @Override
+    public void updateRelations(RelationRequest relationRequest) {
+        deleteRefByBizType(relationRequest.getMid(), relationRequest.getBizType());
+        saveRef(relationRequest.getRelationList(), relationRequest.getMid());
     }
 }
