@@ -10,6 +10,7 @@ import com.abt.material.service.StockService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.util.WithQueryUtil;
 import cn.idev.excel.EasyExcel;
+import com.abt.wf.generator.CommonIdGenerator;
 import com.abt.wf.model.PurchaseSummaryAmount;
 import com.abt.wf.repository.PurchaseApplyDetailRepository;
 import com.aspose.cells.*;
@@ -26,6 +27,8 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.Month;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,7 +60,7 @@ public class StockServiceImpl implements StockService {
     private String stockWeekFilePath;
 
 
-    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository, PurchaseApplyDetailRepository purchaseApplyDetailRepository) {
+    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository, PurchaseApplyDetailRepository purchaseApplyDetailRepository, CommonIdGenerator commonIdGenerator) {
         this.stockOrderRepository = stockOrderRepository;
         this.stockRepository = stockRepository;
         this.warehouseRepository = warehouseRepository;
@@ -374,13 +377,6 @@ public class StockServiceImpl implements StockService {
         return purchaseApplyDetailRepository.summaryGiftTotalAmount(GIFT_TYPE, startDate, endDate);
     }
 
-    //延安库房
-    public static final String WH_GIFT_YANAN = "c04c456a-7cc2-475a-8449-b8a3c18d7784";
-    //西安库房
-    public static final String WH_GIFT_XIAN = "44746bb0-30dd-48ad-a57d-de1e160bf1d4";
-    //成都库房
-    public static final String WH_GIFT_CHENGDU = "fe4ef039-65fb-4d94-858a-d8683971ba53";
-
     public static final String GIFT_TYPE = "礼品类";
 
     @Override
@@ -426,20 +422,31 @@ public class StockServiceImpl implements StockService {
             }
         }
 
-        Comparator<Stock> comparator = Comparator.comparing(Stock::getMaterialName)
+        // 将stockList按warehouseId分组
+        final Map<String, List<Stock>> map = stockList.stream()
+                .collect(Collectors.groupingBy(Stock::getWarehouseId));
+        for (Map.Entry<String, List<Stock>> entry : map.entrySet()) {
+            final List<Stock> list = entry.getValue();
+            list.sort(stockComparator());
+        }
+        table.setGiftStockMap(map);
+        return table;
+    }
+
+    private Style createBaseStyle(Workbook workbook) {
+        Style style = workbook.createStyle();
+        style.getFont().setName("SimSun");
+        style.setHorizontalAlignment(TextAlignmentType.CENTER);
+        style.setVerticalAlignment(TextAlignmentType.CENTER);
+        style.setTextWrapped(true);
+        return style;
+    }
+
+    private Comparator<Stock> stockComparator() {
+        return Comparator.comparing(Stock::getMaterialName)
                 .thenComparing(Stock::getSpecification)
                 .thenComparing(Stock::getUnit)
                 .thenComparing(Stock::getOrderDate);
-
-        //库房
-        final List<Stock> yanan = stockList.stream().filter(i -> WH_GIFT_YANAN.equals(i.getWarehouseId())).sorted(comparator).toList();
-        final List<Stock> xian = stockList.stream().filter(i -> WH_GIFT_XIAN.equals(i.getWarehouseId())).sorted(comparator).toList();
-        final List<Stock> chengdu = stockList.stream().filter(i -> WH_GIFT_CHENGDU.equals(i.getWarehouseId())).sorted(comparator).toList();
-
-        table.setXianStockDetails(xian);
-        table.setYananStockDetails(yanan);
-        table.setChengduStockDetails(chengdu);
-        return table;
     }
 
     @Override
@@ -451,62 +458,112 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws Exception {
+    public String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate,
+                                  Map<String, Warehouse> warehouseMap) throws Exception {
         Workbook workbook = new Workbook(stockWeekTemplate);
         Worksheet sheet = workbook.getWorksheets().get(0);
         //日期行
         sheet.getCells().get(1, 0).putValue(TimeUtil.toYYYY_MM_DDString(startDate) + "至" + TimeUtil.toYYYY_MM_DDString(endDate));
         Style dataStyle = dataStyle(workbook);
-        //西安礼品表
-        createStockTable(getStockGiftRow(sheet, XIAN_COMMENT),
-                summaryTable.getXianStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList(),
-                sheet, dataStyle);
-        //延安
-        createStockTable(getStockGiftRow(sheet, YANAN_COMMENT),
-                summaryTable.getYananStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList(),
-                sheet, dataStyle);
-        //成都
-        createStockTable(getStockGiftRow(sheet, CHENGDU_COMMENT),
-                summaryTable.getChengduStockDetails().stream().filter(i -> !"采购".equals(i.getBizType())).toList(),
-                sheet, dataStyle);
-        //采购
-        int purRow = getStockGiftRow(sheet, PURCHASE_COMMENT);
-        createPurchaseTable(purRow, summaryTable.getPurchaseSummaryAmountList(), sheet, dataStyle);
+
+        final Map<String, List<Stock>> giftStockMap = summaryTable.getGiftStockMap();
+        int startRow = 2;
+        for (Map.Entry<String, List<Stock>> entry : giftStockMap.entrySet()) {
+            String whid = entry.getKey();
+            Warehouse wh =  warehouseMap.get(whid);
+            String whName = "库房";
+            if (wh != null) {
+                whName = wh.getName();
+            }
+            final List<Stock> stockList = entry.getValue();
+            int endRow = createStockTable(whName, startRow, stockList.stream().filter(i -> !"采购".equals(i.getBizType())).toList(), sheet, dataStyle);
+            // 空行
+            endRow++;
+            sheet.getCells().insertRow(endRow);
+            sheet.getCells().getRows().get(endRow).setHeight(24);
+            startRow = startRow + endRow;
+        }
+
+        //本月采购
+        final List<Integer> purchaseMonthGiftCell = getStockGiftRow(sheet, PURCHASE_MONTH_GIFT);
+        if (purchaseMonthGiftCell.isEmpty()) {
+            throw new BusinessException("模板无法匹配！purchase_month_gift注释不存在");
+        }
+        createPurchaseTable(purchaseMonthGiftCell.get(0), summaryTable.getPurchaseSummaryAmountList(), sheet, dataStyle);
         //合计
-        int sumRow = getStockGiftRow(sheet, PURCHASE_SUM_COMMENT);
+        final List<Integer> purchaseMonthSumCell = getStockGiftRow(sheet, PURCHASE_MONTH_SUM);
+        if (purchaseMonthSumCell.isEmpty()) {
+            throw new BusinessException("模板无法匹配！purchase_month_sum注释不存在");
+        }
         final BigDecimal purSum = sumPurchases(summaryTable.getPurchaseSummaryAmountList());
-        sheet.getCells().get(sumRow, 4).putValue(purSum.setScale(2, RoundingMode.FLOOR).toString());
+        sheet.getCells().get(purchaseMonthSumCell.get(0), purchaseMonthSumCell.get(1)).putValue(purSum.setScale(2, RoundingMode.FLOOR).toString());
+
+        // 本年采购
+        final List<Integer> purchaseYearDate = getStockGiftRow(sheet, PURCHASE_YEAR_DATE);
+        if (purchaseYearDate.isEmpty()) {
+            throw new BusinessException("模板无法匹配！purchase_year_date注释不存在");
+        }
+        Style purchaseYearDateStyle = createBaseStyle(workbook);
+        purchaseYearDateStyle.getFont().setSize(14);
+        purchaseYearDateStyle.getFont().setBold(true);
+        purchaseYearDateStyle.setHorizontalAlignment(TextAlignmentType.LEFT);
+        final int year = endDate.getYear();
+        final LocalDate range1 = LocalDate.of(year, 1, 1);
+        final Month month = endDate.getMonth();
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate range2 = yearMonth.atEndOfMonth();
+        String dateRange = String.format("%s 至 %s", range1.format(TimeUtil.dateFormatter), range2.format(TimeUtil.dateFormatter));
+        sheet.getCells().get(purchaseYearDate.get(0), 0).putValue(String.format("本年采购情况(%s)", dateRange));
+        // 本年采购金额合计
+        final List<Integer> purchaseYearSumCell = getStockGiftRow(sheet, PURCHASE_YEAR_SUM);
+        if (purchaseYearSumCell.isEmpty()) {
+            throw new BusinessException("模板无法匹配！purchase_year_sum注释不存在");
+        }
+        sheet.getCells().get(purchaseYearSumCell.get(0), purchaseYearSumCell.get(1)).putValue(100000.00);
+
+        // 当前库存剩余价值
+        final List<Integer> purchaseYearValue = getStockGiftRow(sheet, PURCHASE_YEAR_VALUE);
+        if (purchaseYearValue.isEmpty()) {
+            throw new BusinessException("模板无法匹配！purchase_year_value注释不存在");
+        }
+        sheet.getCells().get(purchaseYearValue.get(0), purchaseYearValue.get(1)).putValue(20000.00);
+
         String path = stockWeekFilePath + System.currentTimeMillis() + ".xlsx";
         workbook.save(path);
         return path;
     }
 
-    public static final String XIAN_COMMENT = "xian_gift";
-    public static final String YANAN_COMMENT = "yanan_gift";
-    public static final String CHENGDU_COMMENT = "chengdu_gift";
-    public static final String PURCHASE_COMMENT = "purchase_gift";
-    public static final String PURCHASE_SUM_COMMENT = "purchase_sum";
+    public static final String PURCHASE_MONTH_GIFT = "purchase_month_gift";
+    public static final String PURCHASE_MONTH_SUM = "purchase_month_sum";
+    public static final String PURCHASE_YEAR_DATE = "purchase_year_date";
+    public static final String PURCHASE_YEAR_SUM = "purchase_year_sum";
+    public static final String PURCHASE_YEAR_VALUE = "purchase_year_value";
 
-    private int getStockGiftRow(Worksheet sheet, String flag) {
+    /**
+     * 返回注解所在单元格的row, column
+     * @param sheet
+     * @param flag
+     * @return
+     */
+    private List<Integer> getStockGiftRow(Worksheet sheet, String flag) {
         CommentCollection comments = sheet.getComments();
         for (int i = 0; i < comments.getCount(); i++) {
             Comment comment = comments.get(i);
             //note: Administrator:\nxian_gift
             final String note = comment.getNote();
-            if (note.contains(XIAN_COMMENT) && XIAN_COMMENT.equals(flag)) {
-                //西安礼品表
-                return comment.getRow();
-            } else if (note.contains(YANAN_COMMENT) && YANAN_COMMENT.equals(flag)) {
-                return comment.getRow();
-            } else if (note.contains(CHENGDU_COMMENT) && CHENGDU_COMMENT.equals(flag)) {
-                return comment.getRow();
-            } else if (note.contains(PURCHASE_COMMENT) && PURCHASE_COMMENT.equals(flag)) {
-                return comment.getRow();
-            } else if (note.contains(PURCHASE_SUM_COMMENT) && PURCHASE_SUM_COMMENT.equals(flag)) {
-                return comment.getRow();
+            if (note.contains(PURCHASE_MONTH_GIFT) && PURCHASE_MONTH_GIFT.equals(flag)) {
+                return List.of(comment.getRow(), comment.getColumn());
+            } else if (note.contains(PURCHASE_MONTH_SUM) && PURCHASE_MONTH_SUM.equals(flag)) {
+                return List.of(comment.getRow(), comment.getColumn());
+            } else if (note.contains(PURCHASE_YEAR_DATE) && PURCHASE_YEAR_DATE.equals(flag)) {
+                return List.of(comment.getRow(), comment.getColumn());
+            } else if (note.contains(PURCHASE_YEAR_SUM) && PURCHASE_YEAR_SUM.equals(flag)) {
+                return List.of(comment.getRow(), comment.getColumn());
+            } else if (note.contains(PURCHASE_YEAR_VALUE) && PURCHASE_YEAR_VALUE.equals(flag)) {
+                return List.of(comment.getRow(), comment.getColumn());
             }
         }
-        return 0;
+        return List.of();
     }
 
     /**
@@ -610,24 +667,74 @@ public class StockServiceImpl implements StockService {
     }
 
     /**
+     * 库房出入库标题样式
+     * @param workbook
+     * @return
+     */
+    private Style createStockTableHeaderStyle(Workbook workbook) {
+        Style style = this.createCommonStyle(workbook);
+        style.getFont().setName("SimSun");
+        style.getFont().setBold(true);
+        style.getFont().setSize(11);
+        style.getFont().setColor(Color.getBlack());
+        return style;
+    }
+
+    private Style createWarehouseHeaderStyle(Workbook workbook) {
+        Style style = workbook.createStyle();
+        style.getFont().setName("SimSun");
+        style.getFont().setBold(true);
+        style.getFont().setSize(14);
+        style.getFont().setColor(Color.getBlack());
+        
+        return style;
+    }
+
+    /**
      * 生成礼品表格
      * @param headerRow 标题行
      * @param list 数据
      * @param worksheet worksheet
+     * @return 最后一行行号(0-based)
      */
-    private void createStockTable(int headerRow, List<Stock> list, Worksheet worksheet, Style style) {
+    private int createStockTable(String warehouse, int headerRow, List<Stock> list, Worksheet worksheet, Style style) {
+        int curRow = headerRow;
+        Cells cells = worksheet.getCells();
+        //库房标题
+        Style headerStyle = createWarehouseHeaderStyle(worksheet.getWorkbook());
+        cells.insertRow(headerRow);
+        cells.get(curRow, 0).putValue(warehouse);
+        cells.get(curRow, 0).setStyle(headerStyle);
+        cells.getRows().get(curRow).setHeight(22);
+        //表格标题行
+        curRow++;
+        Style tableHeader = createStockTableHeaderStyle(worksheet.getWorkbook());
+        cells.insertRow(curRow);
+        cells.get(curRow, 0).putValue("礼品");
+        cells.get(curRow, 0).setStyle(tableHeader);
+        cells.get(curRow, 1).putValue("出入数量");
+        cells.get(curRow, 1).setStyle(tableHeader);
+        cells.get(curRow, 2).putValue("使用人");
+        cells.get(curRow, 2).setStyle(tableHeader);
+        cells.get(curRow, 3).putValue("用途");
+        cells.get(curRow, 3).setStyle(tableHeader);
+        cells.get(curRow, 4).putValue("使用日期");
+        cells.get(curRow, 4).setStyle(tableHeader);
+        cells.get(curRow, 5).putValue("库存");
+        cells.get(curRow, 5).setStyle(tableHeader);
+        cells.getRows().get(curRow).setHeight(15);
+        curRow++;
         //处理数据
         List<String> mids = list.stream().map(Stock::getMaterialId).toList();
         final List<MaterialDetail> mds = materialDetailRepository.findByIdIn(mids);
         final Map<String, MaterialDetail> mtMap = mds.stream().collect(Collectors.toMap(MaterialDetail::getId, md -> md));
         list = formatExcelData(list, mtMap);
-        int dataRow = headerRow + 1;
+        int dataRow = curRow;
         final Map<String, List<Stock>> map = list.stream()
                 .collect(Collectors.groupingBy(
                         item -> item.getName() + "|" + item.getSpecification() + "|" + item.getUnit(), // 组合键
                         TreeMap::new,
                         Collectors.toList()));
-        Cells cells = worksheet.getCells();
         if (list.isEmpty()) {
             createEmpty("本周无出入库", dataRow, cells, worksheet.getWorkbook());
         } else {
@@ -663,8 +770,9 @@ public class StockServiceImpl implements StockService {
                 start = start + vlist.size();
             }
             //总价合计
-            insertSumValueRow(start, valueSum,  worksheet);
+            insertSumValueRow(start, valueSum, worksheet);
         }
+        return dataRow;
     }
 
     private void insertStockRow(Stock stock, int curRowIdx, Cells cells, Style style, Style redStyle, Style greenStyle) {
@@ -801,7 +909,7 @@ public class StockServiceImpl implements StockService {
         final List<MonthlyStockStatsDTO> data2 = createGiftUseMonthlyData(year2, monthIn);
 
         //库存数据
-        final List<MaterialType> giftTypes = materialTypeRepository.findByNameContaining("礼品类");
+        final List<MaterialType> giftTypes = materialTypeRepository.findByNameContaining(GIFT_TYPE);
         InventoryRequestForm form = new InventoryRequestForm();
         final List<String> typeList = giftTypes.stream().map(MaterialType::getId).toList();
         form.setMaterialTypeIds(typeList);
@@ -811,6 +919,12 @@ public class StockServiceImpl implements StockService {
 
         InventoryExcel ie = new InventoryExcel(inventoryList, data1, data2, year1, year2, monthIn);
         ie.createInventoryExportExcel(outputStream);
+    }
+
+    @Override
+    public Map<String, Warehouse> findGiftWarehouseMap(Boolean enabled) {
+        final List<Warehouse> list = warehouseRepository.findGiftWarehouse(true);
+        return list.stream().collect(Collectors.toMap(Warehouse::getId, i -> i));
     }
 
 

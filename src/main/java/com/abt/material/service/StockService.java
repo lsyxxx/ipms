@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -112,10 +113,22 @@ public interface StockService {
       */
     void stockSummary(LocalDate startDate, LocalDate endDate, StockSummaryTable table);
 
-    String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate) throws Exception;
+    /**
+     * 导出礼品周报
+     * @param summaryTable 礼品输入库数据表
+     * @param startDate 数据开始日期
+     * @param endDate 数据结束日期
+     * @param warehouseMap 仓库
+     * @return
+     * @throws Exception
+     */
+    String createExcelWeek(StockSummaryTable summaryTable, LocalDate startDate, LocalDate endDate,
+                           Map<String, Warehouse> warehouseMap) throws Exception;
 
     /**
      * 礼品类库存及价值分析excel
      */
     void createGiftInventoryAndValueExcel(OutputStream outputStream, int year1, int year2, List<Integer> monthIn) throws Exception;
+
+    Map<String, Warehouse> findGiftWarehouseMap(Boolean enabled);
 }

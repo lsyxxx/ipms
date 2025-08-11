@@ -134,6 +134,12 @@ public class StockController {
         return R.success("删除仓库成功!");
     }
 
+    @GetMapping("/wh/giftMap")
+    public R<Object> findGiftWarehouse(Boolean enabled) {
+        final Map<String, Warehouse> map = stockService.findGiftWarehouseMap(enabled);
+        return R.success(map, "获取礼品仓库信息成功");
+    }
+
 
     @PostMapping("/inv/latestList")
     public R<List<Inventory>> latestInventoryList(@RequestBody InventoryRequestForm requestForm) {
@@ -385,7 +391,8 @@ public class StockController {
         final List<PurchaseSummaryAmount> list = stockService.summaryPurchaseGiftTotalAmount(startDate, endDate);
         table.setPurchaseSummaryAmountList(list);
         stockService.inventoryGiftDetails(startDate, endDate, table);
-        final String path = stockService.createExcelWeek(table, startDate, endDate);
+        final Map<String, Warehouse> giftWarehouseMap = stockService.findGiftWarehouseMap(true);
+        final String path = stockService.createExcelWeek(table, startDate, endDate, giftWarehouseMap);
         return R.success(path, "导出成功!");
     }
 

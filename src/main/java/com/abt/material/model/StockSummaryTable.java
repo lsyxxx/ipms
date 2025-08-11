@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 库存汇总表
@@ -15,24 +16,16 @@ import java.util.List;
 public class StockSummaryTable {
 
     /**
+     * 礼品类出入库详情
+     * key: 礼品类库房id
+     * value: 库房出入明细
+     */
+    private Map<String, List<Stock>> giftStockMap;
+
+    /**
      * 采购汇总金额
      */
     private List<PurchaseSummaryAmount> purchaseSummaryAmountList;
-
-    /**
-     * 西安库房出入明细
-     */
-    private List<Stock> xianStockDetails;
-
-    /**
-     * 延安库房出入明细
-     */
-    private List<Stock> yananStockDetails;
-
-    /**
-     * 成都出入明细
-     */
-    private List<Stock> chengduStockDetails;
 
     /**
      * 入库汇总

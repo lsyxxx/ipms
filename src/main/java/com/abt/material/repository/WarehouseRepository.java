@@ -17,4 +17,11 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, String> {
     Integer findMaxSortNo();
 
     List<Warehouse> findByName(String name);
+
+    List<Warehouse> findByNameContains(String name);
+
+    @Query("""
+    select wh from Warehouse wh where wh.name like '%礼品类%' and (:enabled is null or wh.enabled = :enabled)
+""")
+    List<Warehouse> findGiftWarehouse(Boolean enabled);
 }
