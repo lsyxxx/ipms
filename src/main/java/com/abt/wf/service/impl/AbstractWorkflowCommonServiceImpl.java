@@ -122,6 +122,7 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         final Task applyTask = this.startProcessAndApply(form, variableMap, businessKey(form));
 
         //-- save entity
+        form.setFinished(false);
         final T entity = this.saveEntity(form);
         final String id = this.getEntityId(entity);
         runtimeService.setVariable(form.getProcessInstanceId(), Constants.VAR_KEY_ENTITY, id);

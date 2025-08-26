@@ -1,16 +1,14 @@
 package com.abt.market.repository;
 
 import com.abt.market.entity.SettlementMain;
+import com.abt.market.model.SaveType;
 import com.abt.market.model.SettlementEntrustDTO;
 import com.abt.market.model.SettlementMainListDTO;
 import com.abt.market.model.SettlementRequestForm;
 import com.abt.sys.model.entity.CustomerInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
@@ -111,4 +109,9 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
         left join T_sampleRegist
 """, nativeQuery = true)
     List<SettlementEntrustDTO> findEntrustAmount();
+
+
+    @Modifying
+    @Query("update SettlementMain set saveType = :saveType where id = :id")
+    void updateSaveType(SaveType saveType, String id);
 }

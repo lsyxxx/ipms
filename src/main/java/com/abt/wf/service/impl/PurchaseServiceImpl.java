@@ -318,6 +318,9 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         }
 
         PurchaseApplyMain entity = purchaseApplyMainRepository.findByIdWithDetails(id);
+        if (!entity.isFinished() || STATE_DETAIL_ACTIVE.equals(entity.getBusinessState())) {
+            throw new BusinessException(String.format("采购流程(%s)正在审批中，无法重新提交", id));
+        }
         clearEntityId(entity);
         entity.getDetails().forEach(d -> {
             d.setId(null);

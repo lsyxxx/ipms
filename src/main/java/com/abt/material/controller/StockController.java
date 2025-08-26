@@ -352,7 +352,7 @@ public class StockController {
 
     /**
      * 月报汇总
-     *
+     *你
      * @param yearMonth yyyy-mm 年月
      */
     @GetMapping("/summary/month")

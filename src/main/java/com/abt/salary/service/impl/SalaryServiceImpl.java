@@ -151,6 +151,7 @@ public class SalaryServiceImpl implements SalaryService {
                 .headRowNumber(SalaryExcelReadListener.DATA_START_IDX)
                 //sheetNo从0开始
                 .extraRead(CellExtraTypeEnum.MERGE).sheet(salaryMain.getSheetNo()).doRead();
+        // 校验header列
         salaryMain.setNetPaidColumnIndex(listener.getNetPaidRawColumnIndex());
         salaryMain.setJobNumberColumnIndex(listener.getJobNumberRawColumnIndex());
         salaryMain.setName(listener.getNameRawColumnIndex());

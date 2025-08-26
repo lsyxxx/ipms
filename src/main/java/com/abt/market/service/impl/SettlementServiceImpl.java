@@ -570,4 +570,10 @@ public class SettlementServiceImpl implements SettlementService {
         deleteRefByBizType(relationRequest.getMid(), relationRequest.getBizType());
         saveRef(relationRequest.getRelationList(), relationRequest.getMid());
     }
+
+    @Transactional
+    @Override
+    public void updateSaveType(SaveType saveType, String id) {
+        settlementMainRepository.updateSaveType(saveType, id);
+    }
 }

@@ -444,8 +444,8 @@ public class StockServiceImpl implements StockService {
 
     private Comparator<Stock> stockComparator() {
         return Comparator.comparing(Stock::getMaterialName)
-                .thenComparing(Stock::getSpecification)
-                .thenComparing(Stock::getUnit)
+                .thenComparing(Stock::getSpecification, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(Stock::getUnit, Comparator.nullsLast(Comparator.naturalOrder()))
                 .thenComparing(Stock::getOrderDate);
     }
 
@@ -478,9 +478,9 @@ public class StockServiceImpl implements StockService {
             final List<Stock> stockList = entry.getValue();
             int endRow = createStockTable(whName, startRow, stockList.stream().filter(i -> !"采购".equals(i.getBizType())).toList(), sheet, dataStyle);
             // 空行
-            endRow++;
-            sheet.getCells().insertRow(endRow);
-            sheet.getCells().getRows().get(endRow).setHeight(24);
+//            endRow++;
+//            sheet.getCells().insertRow(endRow);
+//            sheet.getCells().getRows().get(endRow).setHeight(24);
             startRow = startRow + endRow;
         }
 

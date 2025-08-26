@@ -58,6 +58,7 @@ spring:
 # ---- camunda wf
 camunda:
   bpm:
+    history-level: full
     admin-user:
       id: demo
       password: demo

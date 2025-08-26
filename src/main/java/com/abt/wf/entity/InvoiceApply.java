@@ -200,6 +200,12 @@ public class InvoiceApply extends WorkflowBase {
     @Column(name="stlm_id", length = 128)
     private String settlementId;
 
+    /**
+     * 是否社会市场客户(非大客户)
+     */
+    @Column(name="is_social")
+    private Boolean isSocial;
+
 
     @Transient
     private String comment;

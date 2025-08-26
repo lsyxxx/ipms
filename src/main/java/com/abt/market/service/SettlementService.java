@@ -2,10 +2,7 @@ package com.abt.market.service;
 
 import com.abt.market.entity.SettlementMain;
 import com.abt.market.entity.SettlementRelation;
-import com.abt.market.model.RelationRequest;
-import com.abt.market.model.SettlementMainListDTO;
-import com.abt.market.model.SettlementRelationType;
-import com.abt.market.model.SettlementRequestForm;
+import com.abt.market.model.*;
 import com.abt.sys.model.entity.CustomerInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -84,6 +81,10 @@ public interface SettlementService {
      */
     List<CustomerInfo> getClients();
 
-    @Transactional
     void updateRelations(RelationRequest relationRequest);
+
+    /**
+     * 更新状态
+     */
+    void updateSaveType(SaveType saveType, String id);
 }

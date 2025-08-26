@@ -1,6 +1,7 @@
 package com.abt.wf.listener;
 
 import com.abt.market.entity.SettlementRelation;
+import com.abt.market.model.SaveType;
 import com.abt.market.model.SettlementRelationType;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.exception.BusinessException;
@@ -37,7 +38,7 @@ public class InvoiceApplyProcessEndListener implements ExecutionListener {
         Object obj = execution.getVariable(Constants.VAR_KEY_ENTITY);
         String entityId = "";
         if (obj == null) {
-            log.error("款项支付单流程参数中未保存业务实体id! 流程实例id: {}", execution.getProcessInstanceId());
+            log.error("开票申请流程参数中未保存业务实体id! 流程实例id: {}", execution.getProcessInstanceId());
         } else {
             entityId = obj.toString();
             try {
@@ -55,6 +56,8 @@ public class InvoiceApplyProcessEndListener implements ExecutionListener {
                     ref.setMid(invoiceApply.getSettlementId());
                     ref.setBizType(SettlementRelationType.INVOICE);
                     ref.setRid(invoiceApply.getId());
+                    // 更新状态
+                    settlementService.updateSaveType(SaveType.INVOICE, invoiceApply.getSettlementId());
                     settlementService.saveRef(List.of(ref), invoiceApply.getSettlementId());
                 }
             } catch (BusinessException e) {
@@ -64,9 +67,6 @@ public class InvoiceApplyProcessEndListener implements ExecutionListener {
                 systemErrorLogService.saveLog(errorLog);
                 log.warn("业务异常: ", e);
             }
-
-
-            //抄送TODO;
         }
     }
 }

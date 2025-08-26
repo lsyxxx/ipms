@@ -10,6 +10,7 @@ public enum SaveType {
     TEMP("暂存"),
     SAVE("保存"),
     INVALID("作废"),
+    INVOICE("已开票")
     ;
 
     private final String description;

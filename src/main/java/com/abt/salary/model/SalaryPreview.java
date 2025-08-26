@@ -5,6 +5,7 @@ import com.abt.salary.entity.SalaryCell;
 import com.abt.salary.entity.SalaryHeader;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
+import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.wf.entity.UserSignature;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -106,18 +107,15 @@ public class SalaryPreview {
         this.typedErrorMap.put(typeName, errList);
     }
 
-//    public void buildHeader() {
-//        this.mergedHeader.forEach((k, v) -> {
-//            SalaryCell cell = SalaryCell.createTemp(v, v, 0, k);
-//            this.header.add(cell);
-//        });
-//    }
-
     //生成sl_header
     public void buildHeader(Map<Integer, Map<Integer, String>> rawHeader, String mid) {
         this.header = new ArrayList<>();
         rawHeader.forEach((r, row) -> {
             if (r != 0) {
+                // 列过多，提示
+                if (row.size() > 100) {
+                    throw new BusinessException(String.format("导入Excel列数过多（检测到%d列数据），请检查（请检查是否有额外的数据或整行筛选）", row.size()));
+                }
                 row.forEach((c, cell) -> {
                     SalaryHeader header = new SalaryHeader();
                     header.setMid(mid);

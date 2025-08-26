@@ -39,7 +39,7 @@ spring:
         
   # --------- datasource
   datasource:
-    url: jdbc:sqlserver://localhost:1433;database=ZJData20250808;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost:1433;database=ZJData;trustServerCertificate=true
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: sa
     password: "123456"
@@ -55,11 +55,12 @@ spring:
 # ---- camunda wf
 camunda:
   bpm:
+    history-level: full
     admin-user:
       id: demo
       password: demo
     filter:
-      create: show all
+      create: All Tasks
     database:
       schema-update: true
     auto-deployment-enabled: true
