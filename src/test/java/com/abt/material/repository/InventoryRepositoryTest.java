@@ -1,6 +1,8 @@
 package com.abt.material.repository;
 
 import com.abt.material.entity.Inventory;
+import jakarta.persistence.Tuple;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,5 +28,15 @@ class InventoryRepositoryTest {
 //        page.getContent().forEach(i -> {
 //            System.out.printf("name：%s, num: %d, alert: %d \n", i.getMaterialName(), i.getQuantity(), i.getAlert() == null ? -1 : i.getAlert().getAlertNum());
 //        });
+    }
+
+    @Test
+    void findGiftLatestInventory() {
+//        final List<Tuple> list = inventoryRepository.findGiftLatestInventory();
+//        Assertions.assertFalse(list.isEmpty());
+//        list.forEach(i -> {
+//            System.out.println(i.toString());
+//        });
+
     }
 }

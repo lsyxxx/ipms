@@ -14,9 +14,11 @@ import com.abt.wf.generator.CommonIdGenerator;
 import com.abt.wf.model.PurchaseSummaryAmount;
 import com.abt.wf.repository.PurchaseApplyDetailRepository;
 import com.aspose.cells.*;
+import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.camunda.feel.syntaxtree.In;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -462,15 +464,17 @@ public class StockServiceImpl implements StockService {
                                   Map<String, Warehouse> warehouseMap) throws Exception {
         Workbook workbook = new Workbook(stockWeekTemplate);
         Worksheet sheet = workbook.getWorksheets().get(0);
+        Cells cells = sheet.getCells();
+
         //日期行
-        sheet.getCells().get(1, 0).putValue(TimeUtil.toYYYY_MM_DDString(startDate) + "至" + TimeUtil.toYYYY_MM_DDString(endDate));
+        cells.get(1, 0).putValue(TimeUtil.toYYYY_MM_DDString(startDate) + "至" + TimeUtil.toYYYY_MM_DDString(endDate));
         Style dataStyle = dataStyle(workbook);
 
         final Map<String, List<Stock>> giftStockMap = summaryTable.getGiftStockMap();
         int startRow = 2;
         for (Map.Entry<String, List<Stock>> entry : giftStockMap.entrySet()) {
             String whid = entry.getKey();
-            Warehouse wh =  warehouseMap.get(whid);
+            Warehouse wh = warehouseMap.get(whid);
             String whName = "库房";
             if (wh != null) {
                 whName = wh.getName();
@@ -481,7 +485,7 @@ public class StockServiceImpl implements StockService {
 //            endRow++;
 //            sheet.getCells().insertRow(endRow);
 //            sheet.getCells().getRows().get(endRow).setHeight(24);
-            startRow = startRow + endRow;
+            startRow = endRow + 2;
         }
 
         //本月采购
@@ -510,8 +514,7 @@ public class StockServiceImpl implements StockService {
         final int year = endDate.getYear();
         final LocalDate range1 = LocalDate.of(year, 1, 1);
         final Month month = endDate.getMonth();
-        YearMonth yearMonth = YearMonth.of(year, month);
-        LocalDate range2 = yearMonth.atEndOfMonth();
+        LocalDate range2 = YearMonth.of(year, month).atEndOfMonth();
         String dateRange = String.format("%s 至 %s", range1.format(TimeUtil.dateFormatter), range2.format(TimeUtil.dateFormatter));
         sheet.getCells().get(purchaseYearDate.get(0), 0).putValue(String.format("本年采购情况(%s)", dateRange));
         // 本年采购金额合计
@@ -519,14 +522,17 @@ public class StockServiceImpl implements StockService {
         if (purchaseYearSumCell.isEmpty()) {
             throw new BusinessException("模板无法匹配！purchase_year_sum注释不存在");
         }
-        sheet.getCells().get(purchaseYearSumCell.get(0), purchaseYearSumCell.get(1)).putValue(100000.00);
+        final Double sum = purchaseApplyDetailRepository.sumPurchase(GIFT_TYPE, range1, range2);
+        sheet.getCells().get(purchaseYearSumCell.get(0), purchaseYearSumCell.get(1)).putValue(sum);
 
         // 当前库存剩余价值
         final List<Integer> purchaseYearValue = getStockGiftRow(sheet, PURCHASE_YEAR_VALUE);
         if (purchaseYearValue.isEmpty()) {
             throw new BusinessException("模板无法匹配！purchase_year_value注释不存在");
         }
-        sheet.getCells().get(purchaseYearValue.get(0), purchaseYearValue.get(1)).putValue(20000.00);
+        final List<Inventory> giftInventory = findGiftInventory(startDate, endDate.plusDays(1));
+        final BigDecimal stockSum = giftInventory.stream().map(Inventory::getTotalPrice).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+        sheet.getCells().get(purchaseYearValue.get(0), purchaseYearValue.get(1)).putValue(stockSum);
 
         String path = stockWeekFilePath + System.currentTimeMillis() + ".xlsx";
         workbook.save(path);
@@ -541,6 +547,7 @@ public class StockServiceImpl implements StockService {
 
     /**
      * 返回注解所在单元格的row, column
+     *
      * @param sheet
      * @param flag
      * @return
@@ -568,9 +575,10 @@ public class StockServiceImpl implements StockService {
 
     /**
      * 生成采购表格
+     *
      * @param headerRow 标题行
-     * @param list 数据
-     * @param sheet sheet
+     * @param list      数据
+     * @param sheet     sheet
      */
     private void createPurchaseTable(int headerRow, List<PurchaseSummaryAmount> list, Worksheet sheet, Style dataStyle) {
         Cells cells = sheet.getCells();
@@ -641,10 +649,10 @@ public class StockServiceImpl implements StockService {
     /**
      * 出库价值合计行
      */
-    public void insertSumValueRow(int rowNum, BigDecimal value, Worksheet worksheet) {
-        Cells  cells = worksheet.getCells();
+    public void insertSumValueRow(int rowNum, BigDecimal valIn, BigDecimal valOut, Worksheet worksheet) {
+        Cells cells = worksheet.getCells();
         cells.insertRow(rowNum);
-        cells.get(rowNum, 0).putValue(String.format("本周出库价值合计：%.2f元", value));
+        cells.get(rowNum, 0).putValue(String.format("出库价值合计：%.2f元", valOut));
         //样式
         cells.getRows().get(rowNum).setHeight(35);
         Style style = worksheet.getWorkbook().createStyle();
@@ -668,6 +676,7 @@ public class StockServiceImpl implements StockService {
 
     /**
      * 库房出入库标题样式
+     *
      * @param workbook
      * @return
      */
@@ -686,14 +695,15 @@ public class StockServiceImpl implements StockService {
         style.getFont().setBold(true);
         style.getFont().setSize(14);
         style.getFont().setColor(Color.getBlack());
-        
+
         return style;
     }
 
     /**
      * 生成礼品表格
+     *
      * @param headerRow 标题行
-     * @param list 数据
+     * @param list      数据
      * @param worksheet worksheet
      * @return 最后一行行号(0-based)
      */
@@ -746,8 +756,9 @@ public class StockServiceImpl implements StockService {
             greenStyle.getFont().setBold(true);
             greenStyle.getFont().setColor(Color.getGreen());
             //出库合计
-            BigDecimal valueSum = BigDecimal.ZERO;
-            for(Map.Entry<String, List<Stock>> entry : map.entrySet()) {
+            BigDecimal valIn = BigDecimal.ZERO;
+            BigDecimal valOut = BigDecimal.ZERO;
+            for (Map.Entry<String, List<Stock>> entry : map.entrySet()) {
                 List<Stock> vlist = entry.getValue();
                 //按日期排序
                 vlist.sort(Comparator.comparing(Stock::getOrderDate));
@@ -755,7 +766,9 @@ public class StockServiceImpl implements StockService {
                     Stock stock = vlist.get(r);
                     dataRow = start + r;
                     insertStockRow(stock, dataRow, cells, style, redStyle, greenStyle);
-                    valueSum = valueSum.add(stock.getTotalPrice().setScale(2, RoundingMode.HALF_UP));
+                    if (STOCK_TYPE_OUT == stock.getStockType()) {
+                        valOut = valOut.add(stock.getTotalPrice().setScale(2, RoundingMode.HALF_UP)).abs();
+                    }
                     //行高35
                     worksheet.getCells().getRows().get(dataRow).setHeight(35);
                 }
@@ -770,7 +783,7 @@ public class StockServiceImpl implements StockService {
                 start = start + vlist.size();
             }
             //总价合计
-            insertSumValueRow(start, valueSum, worksheet);
+            insertSumValueRow(start, valIn, valOut, worksheet);
         }
         return dataRow;
     }
@@ -861,7 +874,7 @@ public class StockServiceImpl implements StockService {
             //出库价值
             if (price != null) {
                 BigDecimal value = price.multiply(BigDecimal.valueOf(stock.getNum())).setScale(2, RoundingMode.HALF_UP);
-                if(STOCK_TYPE_IN == stockType) {
+                if (STOCK_TYPE_IN == stockType) {
                     value = value.negate();
                 }
                 stock.setTotalPrice(value);
@@ -893,6 +906,7 @@ public class StockServiceImpl implements StockService {
 
     /**
      * 礼品使用情况
+     *
      * @param year    指定年份
      * @param monthIn 包含月份
      * @return List<MonthlyStockStatsDTO>
@@ -929,10 +943,37 @@ public class StockServiceImpl implements StockService {
 
 
     /**
-     * 查询所有物品及库存信息（含预警）
+     * 查询礼品类库存
+     *
+     * @param startDate 查询开始日期
+     * @param endDate   查询结束日期
      */
-    public void findAllMaterialAndInventory() {
+    public List<Inventory> findGiftInventory(LocalDate startDate, LocalDate endDate) {
+        final List<Tuple> list = inventoryRepository.findGiftLatestInventory(TimeUtil.toYYYY_MM_DDString(startDate), TimeUtil.toYYYY_MM_DDString(endDate));
+        List<Inventory> inventoryList = new ArrayList<>();
+        if (list != null && !list.isEmpty()) {
+            for (Tuple tuple : list) {
+                Inventory inventory = new Inventory();
+                inventory.setMaterialId(getTupleStringValue(tuple, "m_id"));
+                inventory.setMaterialName(getTupleStringValue(tuple, "m_name"));
+                inventory.setMaterialSpec(getTupleStringValue(tuple, "m_spec"));
+                inventory.setMaterialUnit(getTupleStringValue(tuple, "m_unit"));
+                inventory.setMaterialType(getTupleStringValue(tuple, "mtype_name"));
+                inventory.setWarehouseId(getTupleStringValue(tuple, "wh_id"));
+                inventory.setWarehouseName(getTupleStringValue(tuple, "wh_name"));
+                inventory.setQuantity(Double.parseDouble(getTupleStringValue(tuple, "quantity_")));
+                inventory.setTotalPrice(new BigDecimal(getTupleStringValue(tuple, "total_price")));
+                inventoryList.add(inventory);
+            }
+        }
+        return inventoryList;
+    }
 
+    private String getTupleStringValue(Tuple tuple, String columnName) {
+        if (tuple != null && tuple.get(columnName) != null) {
+            return tuple.get(columnName).toString();
+        }
+        return null;
     }
 
 

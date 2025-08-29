@@ -25,4 +25,17 @@ public interface PurchaseApplyDetailRepository extends JpaRepository<PurchaseApp
 """)
     List<PurchaseSummaryAmount> summaryGiftTotalAmount(String typeName, LocalDate startDate, LocalDate endDate);
 
+    @Query("""
+    select sum(dtl.cost)
+    from PurchaseApplyDetail dtl
+    join dtl.main main
+    left join MaterialDetail md on dtl.detailId = md.id
+    left join MaterialType mt on md.materialTypeId = mt.id
+    where main.businessState = '已通过'
+    and (:typeName is null or :typeName = '' or mt.name like %:typeName%)
+    and (:startDate is null or CAST(main.endTime AS LocalDate) >= :startDate)
+    and (:endDate is null or CAST(main.endTime AS LocalDate) <= :endDate)
+""")
+    Double sumPurchase(String typeName, LocalDate startDate, LocalDate endDate);
+
 }

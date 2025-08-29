@@ -3,6 +3,7 @@ package com.abt.material.repository;
 import com.abt.material.entity.Inventory;
 import com.abt.material.entity.MaterialDetail;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -60,4 +61,39 @@ public interface InventoryRepository extends JpaRepository<Inventory, String> {
         select top 1 * from stock_inventory where m_id = :materialId and wh_id = :whid and create_date < :endDate  order by create_date desc
 """, nativeQuery = true)
     Inventory findNearestBefore(LocalDate endDate, String materialId, String whid);
+
+    // 礼品类最新库存,[startDate, endDate)
+    @Query(value = """
+    SELECT
+           m_id,
+           wh_id,
+           quantity_,
+           price,
+           quantity_ * price AS total_price,
+           m_name,
+           mtype_name,
+           wh_name,
+           m_spec,
+           m_unit
+       FROM (
+           SELECT
+               si.m_id,
+               si.wh_id,
+               si.quantity_,
+               tsd.price,
+               tsd.fname AS m_name,
+               tsl.fname AS mtype_name,
+               sw.name_ AS wh_name,
+               tsd.xhgz AS m_spec,
+               tsd.Unit AS m_unit,
+               ROW_NUMBER() OVER (PARTITION BY si.m_id, si.wh_id ORDER BY si.create_date DESC) AS rn
+           FROM stock_inventory si
+           LEFT JOIN t_stockcataDetail tsd ON si.m_id = tsd.id
+           LEFT JOIN t_stockcatalog tsl ON tsd.stockcatalogid = tsl.id
+           LEFT JOIN stock_warehouse sw ON sw.id = si.wh_id
+           WHERE tsl.Fname LIKE '%礼品类%'
+       ) t
+       WHERE t.rn = 1;
+""", nativeQuery = true)
+    List<Tuple> findGiftLatestInventory(String startDate, String endDate);
 }

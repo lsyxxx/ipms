@@ -104,7 +104,6 @@ public class InventoryExcel {
 
         // 直接保存到输出流
          workbook.save(outputStream, SaveFormat.XLSX);
-//        workbook.save("C:\\Users\\Administrator\\Desktop\\temp\\inv_export.xlsx");
     }
 
     /**
@@ -449,8 +448,8 @@ public class InventoryExcel {
                     cells.merge(nameStartRow, nameCol, sameNameInventories.size(), 1);
                     // 合并单位列
                     cells.merge(nameStartRow, unitCol, sameNameInventories.size(), 1);
-                    // 合并单价列
-                    cells.merge(nameStartRow, priceCol, sameNameInventories.size(), 1);
+//                    // 合并单价列
+//                    cells.merge(nameStartRow, priceCol, sameNameInventories.size(), 1);
                 }
             }
             

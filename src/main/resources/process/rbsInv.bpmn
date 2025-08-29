@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_15isgch" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_15isgch" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.36.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
   <bpmn:process id="rbsInv" name="rbsInv" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:extensionElements>
       <camunda:executionListener delegateExpression="${invoiceApplyProcessEndListener}" event="end" />
@@ -19,19 +19,16 @@
       <bpmn:incoming>Flow_09ajh3e</bpmn:incoming>
       <bpmn:outgoing>Flow_186fvry</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="rbsInv_managers" name="主管及技术负责人" camunda:assignee="${manager}">
+    <bpmn:userTask id="rbsInv_managers" name="主管及技术负责人" camunda:assignee="U20230406059">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="0" />
+          <camunda:property name="selectUserType" value="1" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_186fvry</bpmn:incoming>
       <bpmn:outgoing>Flow_0s5f0ky</bpmn:outgoing>
-      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:collection="managerList" camunda:elementVariable="manager">
-        <bpmn:completionCondition xsi:type="bpmn:tFormalExpression">${nrOfInstances == nrOfCompletedInstances}</bpmn:completionCondition>
-      </bpmn:multiInstanceLoopCharacteristics>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_186fvry" sourceRef="rbsInv_apply" targetRef="rbsInv_managers" />
     <bpmn:userTask id="rbsInv_finAcct" name="财务会计" camunda:assignee="U20230406007">

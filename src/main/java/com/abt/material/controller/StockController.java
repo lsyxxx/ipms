@@ -388,10 +388,12 @@ public class StockController {
         }
 
         StockSummaryTable table = new StockSummaryTable();
+        // 导入日期范围的采购
         final List<PurchaseSummaryAmount> list = stockService.summaryPurchaseGiftTotalAmount(startDate, endDate);
         table.setPurchaseSummaryAmountList(list);
         stockService.inventoryGiftDetails(startDate, endDate, table);
         final Map<String, Warehouse> giftWarehouseMap = stockService.findGiftWarehouseMap(true);
+        //年采购
         final String path = stockService.createExcelWeek(table, startDate, endDate, giftWarehouseMap);
         return R.success(path, "导出成功!");
     }
