@@ -8,7 +8,8 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.SubcontractTesting;
-import com.abt.wf.entity.SubcontractTestingSettlementDetail;
+import com.abt.wf.entity.SubcontractTestingSample;
+import com.abt.wf.model.SbctSummaryData;
 import com.abt.wf.model.SubcontractTestingRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.projection.SubcontractTestingSettlementDetailProjection;
@@ -17,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,7 +31,9 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 外送检测
@@ -112,7 +117,7 @@ public class SubcontractTestingController {
         if (StringUtils.isBlank(id)) {
             throw new BusinessException("审批编号不能为空!");
         }
-        SubcontractTesting form = subcontractTestingService.loadWithSampleList(id);
+        SubcontractTesting form = subcontractTestingService.load(id);
         setSubmitUser(form);
         try {
             final boolean approveUser = subcontractTestingService.isApproveUser(form);
@@ -122,6 +127,20 @@ public class SubcontractTestingController {
         }
         return R.success(form);
     }
+
+//    /**
+//     * 读取申请单的样品列表
+//     * @param id 申请单Id
+//     */
+//    @GetMapping("/load/samples")
+//    public R<List<SubcontractTestingSample>> loadSampleList(@RequestParam String id) {
+//        if (StringUtils.isBlank(id)) {
+//            throw new BusinessException("审批编号不能为空!");
+//        }
+//        subcontractTestingService.validateEntity(id);
+//        final List<SubcontractTestingSample> samples = subcontractTestingService.getSamples(id);
+//        return R.success(samples);
+//    }
 
 
     //删除权限：财务流程-删除
@@ -181,6 +200,65 @@ public class SubcontractTestingController {
         final List<SubcontractTestingSettlementDetailProjection> list = subcontractTestingService.findDetails(requestForm);
         return R.success(list);
     }
+
+    /**
+     * 验证是否存在重复外送的样品
+     * @param form 提交的表单
+     */
+    @PostMapping("/validate/duplicate")
+    public R<Object> validateDuplicatedSample(@RequestBody SubcontractTesting form) {
+        final List<SubcontractTestingSample> samples = subcontractTestingService.validateDuplicatedSample(form);
+        if (samples != null && samples.size() > 0) {
+            return R.fail(samples, "存在重复外送样品");
+        }
+        return R.success("无重复外送样品");
+    }
+
+
+
+    @PostMapping("/find/apply/samples")
+    public R<Page<SubcontractTestingSample>> findApplySamples(@RequestBody SubcontractTestingRequestForm requestForm) {
+        // 仅使用ids
+        if (requestForm.getIds() == null || requestForm.getIds().isEmpty()) {
+            return R.success(Page.empty(), "查询成功");
+        }
+        Map<String, SubcontractTesting> map = new HashMap<>();
+        for (String id : requestForm.getIds()) {
+            final SubcontractTesting main = subcontractTestingService.load(id);
+            map.put(main.getId(), main);
+        }
+        PageRequest pageRequest = requestForm.createPageable(Sort.by(Sort.Order.asc("newSampleNo")));
+        final Page<SubcontractTestingSample> samples = subcontractTestingService.findSamplesAndMarkDuplicated(requestForm.getIds(), pageRequest);
+        for (SubcontractTestingSample sample : samples) {
+            final SubcontractTesting main = map.get(sample.getMid());
+            if (main != null) {
+                sample.setEntrustCompany(main.getSubcontractCompanyName());
+            }
+        }
+        return R.success(samples, "查询成功!");
+    }
+
+    @PostMapping("/find/apply/duplicated")
+    public R<List<SubcontractTestingSample>> findDuplicatedSamples(@RequestBody SubcontractTestingRequestForm requestForm) {
+        if (requestForm.getIds() == null || requestForm.getIds().isEmpty()) {
+            throw new BusinessException("请传入外送申请单号!");
+        }
+        final List<SubcontractTestingSample> list = subcontractTestingService.findDuplicatedSamples(requestForm.getIds());
+        return R.success(list, "查询重复外送样品成功!");
+    }
+
+    /**
+     * 获取样品汇总
+     */
+    @PostMapping("/find/apply/smry")
+    public R<List<SbctSummaryData>> getApplySummaryData(@RequestBody SubcontractTestingRequestForm requestForm) {
+        if (requestForm.getIds() == null || requestForm.getIds().isEmpty()) {
+            throw new BusinessException("请传入外送申请审批编号!");
+        }
+        final List<SbctSummaryData> summaryData = subcontractTestingService.getSummaryData(requestForm.getIds());
+        return R.success(summaryData, "查询成功!");
+    }
+
 
     public void setTokenUser(SubcontractTestingRequestForm form) {
         UserView user = TokenUtil.getUserFromAuthToken();

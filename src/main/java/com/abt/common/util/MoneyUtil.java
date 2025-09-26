@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 /**
  *
@@ -78,7 +79,18 @@ public class MoneyUtil {
         return result.toString();
     }
 
-    public static void main(String[] args) {
-        System.out.println(toUpperCase("1333.56"));
+    /**
+     * 将数字转为百分比
+     * @param number 数字
+     * @param scale 转为百分比后保留的小数位数
+     */
+    public static String toPercentage(Double number, int scale) {
+        NumberFormat nf = NumberFormat.getPercentInstance();
+        nf.setMinimumFractionDigits(scale); // 保留小数位
+        nf.setMaximumFractionDigits(scale); // 最大小数位
+        return nf.format(number);
     }
+
+
+
 }

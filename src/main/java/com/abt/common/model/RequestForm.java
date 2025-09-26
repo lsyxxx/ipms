@@ -166,10 +166,6 @@ public class RequestForm {
         return PageRequest.of(this.jpaPage(), this.getLimit(), Sort.by(Sort.Order.desc("createDate")));
     }
 
-    public Pageable createDefaultPageableWithoutSorting() {
-        return PageRequest.of(this.jpaPage(), this.getLimit());
-    }
-
     /**
      * 日期的开始时间
      */
@@ -182,5 +178,17 @@ public class RequestForm {
      */
     public LocalDateTime toLocalEndTime() {
         return this.localEndDate == null ? null : this.localEndDate.plusDays(1).atStartOfDay();
+    }
+
+    /**
+     * 生成Pageable
+     * @param sort 为null，则默认是createDate desc
+     * @return PageRequest
+     */
+    public PageRequest createPageable(Sort sort) {
+        if (sort == null) {
+            sort = Sort.by(Sort.Order.desc("createDate"));
+        }
+        return PageRequest.of(this.jpaPage(), this.getLimit(), sort);
     }
 }

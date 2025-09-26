@@ -33,4 +33,17 @@ public interface TestItemRepository extends JpaRepository<TestItem, String> {
 
    """, nativeQuery = true)
   List<Tuple> findUnsettledSamples(Set<String> entrustIds);
+
+    /**
+     * 查询已支付的
+     * @param keys
+     * @return
+     */
+  @Query("""
+    select t from TestItem t
+    left join SettlementMain m on t.mid = m.id
+    where m.saveType = 'PAYED'
+    and concat(t.sampleNo, t.checkModuleId) in :keys
+""")
+  List<TestItem> findSubcontractSettledSamples(Set<String> keys);
 }

@@ -2,20 +2,22 @@ package com.abt.wf.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
-import com.abt.common.model.RequestForm;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
+import com.abt.wf.entity.SubcontractTestingSettlementDetail;
 import com.abt.wf.entity.SubcontractTestingSettlementMain;
+import com.abt.wf.model.SbctSummaryData;
 import com.abt.wf.model.SubcontractTestingSettlementRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.SubcontractTestingSettlementService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -104,14 +106,12 @@ public class SubcontractTestingSettlementController {
         if (StringUtils.isBlank(id)) {
             throw new BusinessException("审批编号不能为空!");
         }
-        SubcontractTestingSettlementMain form = subcontractTestingSettlementService.loadEntireEntity(id);
+        SubcontractTestingSettlementMain form = subcontractTestingSettlementService.loadEntityOnly(id);
+        final List<SbctSummaryData> summaryData = subcontractTestingSettlementService.getSummaryData(id);
+        final boolean exists = subcontractTestingSettlementService.duplicatedSamplesExists(id);
+        form.setSummaryData(summaryData);
+        form.setDuplicatedSettledExists(exists);
         setSubmitUser(form);
-        try {
-            final boolean approveUser = subcontractTestingSettlementService.isApproveUser(form);
-            form.setApproveUser(approveUser);
-        } catch (BusinessException e) {
-            form.setApproveUser(false);
-        }
         return R.success(form);
     }
 
@@ -142,6 +142,24 @@ public class SubcontractTestingSettlementController {
         setTokenUser(requestForm);
         final int count = subcontractTestingSettlementService.countMyTodo(requestForm);
         return R.success(count, "查询成功");
+    }
+
+    /**
+     * 获取结算单的样品列表
+     */
+    @GetMapping("/sample/page")
+    public R<Page<SubcontractTestingSettlementDetail>> getSampleList(@ModelAttribute SubcontractTestingSettlementRequestForm requestForm) {
+        final PageRequest pageRequest = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.ASC, "sampleNo", "checkModuleId"));
+        final Page<SubcontractTestingSettlementDetail> page = subcontractTestingSettlementService.getSamplesPage(requestForm.getId(), pageRequest);
+        return R.success(page, "查询成功");
+    }
+
+    /**
+     * 查询重复结算的样品
+     */
+    @PostMapping("/find/duplicaed")
+    public void findDuplicatedSamples(@RequestBody SubcontractTestingSettlementRequestForm requestForm) {
+
     }
     
     /**

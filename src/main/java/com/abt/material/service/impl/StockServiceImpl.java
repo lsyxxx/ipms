@@ -962,7 +962,9 @@ public class StockServiceImpl implements StockService {
                 inventory.setWarehouseId(getTupleStringValue(tuple, "wh_id"));
                 inventory.setWarehouseName(getTupleStringValue(tuple, "wh_name"));
                 inventory.setQuantity(Double.parseDouble(getTupleStringValue(tuple, "quantity_")));
-                inventory.setTotalPrice(new BigDecimal(getTupleStringValue(tuple, "total_price")));
+                if (getTupleStringValue(tuple, "total_price") != null) {
+                    inventory.setTotalPrice(new BigDecimal(getTupleStringValue(tuple, "total_price")));
+                }
                 inventoryList.add(inventory);
             }
         }

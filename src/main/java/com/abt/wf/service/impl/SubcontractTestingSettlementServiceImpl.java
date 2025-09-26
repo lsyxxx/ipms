@@ -7,14 +7,19 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.SubcontractTestingSettlementDetail;
 import com.abt.wf.entity.SubcontractTestingSettlementMain;
+import com.abt.wf.model.DuplicatedSample;
+import com.abt.wf.model.SbctSummaryData;
 import com.abt.wf.model.SubcontractTestingSettlementRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.SubcontractTestingRepository;
 import com.abt.wf.repository.SubcontractTestingSampleRepository;
+import com.abt.wf.repository.SubcontractTestingSettlementDetailRepository;
 import com.abt.wf.repository.SubcontractTestingSettlementMainRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.SignatureService;
 import com.abt.wf.service.SubcontractTestingSettlementService;
+import com.abt.wf.util.WorkFlowUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
@@ -25,9 +30,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Comparator;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.abt.wf.config.Constants.*;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_SBCT_STL;
@@ -51,13 +55,14 @@ public class SubcontractTestingSettlementServiceImpl extends AbstractWorkflowCom
     private final SubcontractTestingRepository subcontractTestingRepository;
     private final SubcontractTestingSettlementMainRepository subcontractTestingSettlementMainRepository;
     private final SubcontractTestingSampleRepository subcontractTestingSampleRepository;
+    private final SubcontractTestingSettlementDetailRepository subcontractTestingSettlementDetailRepository;
     private final BpmnModelInstance sbctStlBpmnModelInstance;
 
     public SubcontractTestingSettlementServiceImpl(IdentityService identityService, RepositoryService repositoryService,
                                                    RuntimeService runtimeService, TaskService taskService,
                                                    FlowOperationLogService flowOperationLogService,
                                                    @Qualifier("sqlServerUserService") UserService userService, IFileService fileService,
-                                                   HistoryService historyService, SignatureService signatureService, SubcontractTestingRepository subcontractTestingRepository, SubcontractTestingSettlementMainRepository subcontractTestingSettlementMainRepository, SubcontractTestingSampleRepository subcontractTestingSampleRepository, BpmnModelInstance sbctStlBpmnModelInstance) {
+                                                   HistoryService historyService, SignatureService signatureService, SubcontractTestingRepository subcontractTestingRepository, SubcontractTestingSettlementMainRepository subcontractTestingSettlementMainRepository, SubcontractTestingSampleRepository subcontractTestingSampleRepository, SubcontractTestingSettlementDetailRepository subcontractTestingSettlementDetailRepository, BpmnModelInstance sbctStlBpmnModelInstance) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService,signatureService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
@@ -71,6 +76,7 @@ public class SubcontractTestingSettlementServiceImpl extends AbstractWorkflowCom
         this.subcontractTestingRepository = subcontractTestingRepository;
         this.subcontractTestingSettlementMainRepository = subcontractTestingSettlementMainRepository;
         this.subcontractTestingSampleRepository = subcontractTestingSampleRepository;
+        this.subcontractTestingSettlementDetailRepository = subcontractTestingSettlementDetailRepository;
         this.sbctStlBpmnModelInstance = sbctStlBpmnModelInstance;
     }
 
@@ -127,6 +133,10 @@ public class SubcontractTestingSettlementServiceImpl extends AbstractWorkflowCom
     public SubcontractTestingSettlementMain saveEntity(SubcontractTestingSettlementMain entity) {
         if (entity.getDetails() != null) {
             entity.getDetails().forEach(d -> {
+                if (d.getPrice() == null) {
+                    throw new BusinessException(String.format("请输入单价(检测编号:%s, 检测项目:%s)!", d.getSampleNo(), d.getCheckModuleName()));
+                }
+                d.setId(null);
                 d.setMain(entity);
             });
         }
@@ -275,6 +285,13 @@ public class SubcontractTestingSettlementServiceImpl extends AbstractWorkflowCom
         );
     }
 
+    @Override
+    public SubcontractTestingSettlementMain loadEntityOnly(String id) {
+        final SubcontractTestingSettlementMain entity = load(id);
+        setActiveTask(entity);
+        return entity;
+    }
+
     /**
      * 读取业务，包含详情及当前任务
      * @param id 业务id
@@ -284,6 +301,7 @@ public class SubcontractTestingSettlementServiceImpl extends AbstractWorkflowCom
         if (entity == null) {
             throw new BusinessException("未查询到业务(id=" + id + ")");
         }
+        setActiveTask(entity);
         if (entity.getDetails() != null) {
             entity.getDetails().sort(Comparator
                 .comparing(SubcontractTestingSettlementDetail::getEntrustId, Comparator.nullsLast(String::compareTo))
@@ -292,4 +310,61 @@ public class SubcontractTestingSettlementServiceImpl extends AbstractWorkflowCom
         }
         return entity;
     }
+
+    @Override
+    public List<SbctSummaryData> getSummaryData(String mid) {
+        WorkFlowUtil.ensureProperty(mid, "外送结算审批编号(mid)");
+        return subcontractTestingSettlementMainRepository.getSummaryData(mid);
+    }
+
+    @Override
+    public Page<SubcontractTestingSettlementDetail> getSamplesPage(String id, PageRequest pageRequest) {
+        return subcontractTestingSettlementDetailRepository.findByMain_Id(id, pageRequest);
+    }
+
+    /**
+     * 查询重复结算的样品
+     */
+    public List<DuplicatedSample> findDuplicatedSamples(SubcontractTestingSettlementMain main) {
+        final List<SubcontractTestingSettlementDetail> duplicatedSamples = subcontractTestingSettlementDetailRepository.findDuplicatedSamplesByMid(main.getId());
+        List<DuplicatedSample> duplicatedSamplesList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(duplicatedSamples)) {
+            for (SubcontractTestingSettlementDetail dtl : duplicatedSamples) {
+                final DuplicatedSample dup = DuplicatedSample.from(dtl);
+                dup.setMid(main.getId());
+            }
+        }
+        return duplicatedSamplesList;
+    }
+
+    @Override
+    public void findDuplicatedSamplesAndMarked(SubcontractTestingSettlementMain main) {
+        if (CollectionUtils.isEmpty(main.getDetails())) {
+            return;
+        }
+        final List<DuplicatedSample> duplicatedSamples = this.findDuplicatedSamples(main);
+        if (CollectionUtils.isEmpty(duplicatedSamples)) {
+            return;
+        }
+        final Map<String, List<DuplicatedSample>> dupMap = duplicatedSamples.stream().collect(Collectors.groupingBy(i -> i.getNewSampleNo() + i.getCheckModuleId(), Collectors.toList()));
+        for (SubcontractTestingSettlementDetail dtl : main.getDetails()) {
+            String key = dtl.getSampleNo() + dtl.getCheckModuleId();
+            final List<DuplicatedSample> list = dupMap.get(key);
+            if (!CollectionUtils.isEmpty(list)) {
+                // 取消自身
+                List<DuplicatedSample> dupList = list.stream().filter(i -> !i.getId().equals(dtl.getId())).toList();
+                dtl.setDuplicatedSamples(dupList);
+                String ids = dupList.stream().map(DuplicatedSample::getId).collect(Collectors.joining(","));
+                String error = String.format("重复结算(结算审批编号:%s)", ids);
+                dtl.setError(error);
+            }
+        }
+    }
+
+
+    @Override
+    public boolean duplicatedSamplesExists(String id) {
+        return subcontractTestingSettlementDetailRepository.duplicatedSamplesExists(id);
+    }
+
 }

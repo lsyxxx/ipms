@@ -2,6 +2,7 @@ package com.abt.wf.repository;
 
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.entity.SubcontractTestingSettlementMain;
+import com.abt.wf.model.SbctSummaryData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -95,5 +96,13 @@ public interface SubcontractTestingSettlementMainRepository extends JpaRepositor
 """)
     SubcontractTestingSettlementMain findWithDetails(String id);
 
+
+    @Query("""
+    select new com.abt.wf.model.SbctSummaryData(d.entrustId, d.checkModuleId, d.checkModuleName, count(d.id), d.price, sum(d.price))
+    from SubcontractTestingSettlementDetail d
+    where d.main.id = :mid
+    group by d.entrustId, d.checkModuleId, d.checkModuleName, d.price
+""")
+    List<SbctSummaryData> getSummaryData(String mid);
 
 }

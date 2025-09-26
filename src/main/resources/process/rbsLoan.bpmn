@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1pgw9lk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.14.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1pgw9lk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.36.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.19.0">
   <bpmn:process id="rbsLoan" name="rbsLoan" isExecutable="true" camunda:versionTag="借款申请流程" camunda:historyTimeToLive="180">
     <bpmn:documentation>借款申请流程</bpmn:documentation>
     <bpmn:extensionElements>
@@ -59,7 +59,6 @@
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_01ovdtc</bpmn:incoming>
       <bpmn:outgoing>Flow_1cc5liz</bpmn:outgoing>
-      <bpmn:outgoing>Flow_1neclh7</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="rbsLoan_cashier" name="出纳" camunda:assignee="U20230406007">
       <bpmn:extensionElements>
@@ -70,7 +69,6 @@
         </camunda:properties>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0bvo277</bpmn:incoming>
-      <bpmn:incoming>Flow_1neclh7</bpmn:incoming>
       <bpmn:outgoing>Flow_18wy4p8</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="rbsLoan_chief" name="董事长" camunda:assignee="U20230406001">
@@ -102,14 +100,9 @@
     </bpmn:userTask>
     <bpmn:sequenceFlow id="Flow_1p7dmo6" sourceRef="rbsLoan_managers" targetRef="rbsLoan_acc" />
     <bpmn:sequenceFlow id="Flow_0tg101u" sourceRef="rbsLoan_acc" targetRef="rbsLoan_finMgr" />
-    <bpmn:sequenceFlow id="Flow_1cc5liz" name="金额大于等于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_chief">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&gt;=5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1cc5liz" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_chief" />
     <bpmn:sequenceFlow id="Flow_0bvo277" sourceRef="rbsLoan_chief" targetRef="rbsLoan_cashier" />
     <bpmn:sequenceFlow id="Flow_01ovdtc" sourceRef="rbsLoan_finMgr" targetRef="rbsLoan_ceo" />
-    <bpmn:sequenceFlow id="Flow_1neclh7" name="金额小于5000" sourceRef="rbsLoan_ceo" targetRef="rbsLoan_cashier">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${cost&lt;5000}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="rbsLoan">
@@ -177,7 +170,7 @@
         <di:waypoint x="960" y="330" />
         <di:waypoint x="880" y="330" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="876" y="312" width="90" height="14" />
+          <dc:Bounds x="879" y="312" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0bvo277_di" bpmnElement="Flow_0bvo277">
@@ -187,15 +180,6 @@
       <bpmndi:BPMNEdge id="Flow_01ovdtc_di" bpmnElement="Flow_01ovdtc">
         <di:waypoint x="1010" y="137" />
         <di:waypoint x="1010" y="290" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1neclh7_di" bpmnElement="Flow_1neclh7">
-        <di:waypoint x="1010" y="370" />
-        <di:waypoint x="1010" y="460" />
-        <di:waypoint x="620" y="460" />
-        <di:waypoint x="620" y="370" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="781" y="442" width="68" height="14" />
-        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

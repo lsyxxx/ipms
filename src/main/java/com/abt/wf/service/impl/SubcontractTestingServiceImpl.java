@@ -9,8 +9,8 @@ import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.SubcontractTesting;
 import com.abt.wf.entity.SubcontractTestingSample;
+import com.abt.wf.model.SbctSummaryData;
 import com.abt.wf.model.SubcontractTestingRequestForm;
-import com.abt.wf.model.TaskCheckUser;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.projection.SubcontractTestingSettlementDetailProjection;
 import com.abt.wf.repository.SubcontractTestingRepository;
@@ -19,6 +19,8 @@ import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.SignatureService;
 import com.abt.wf.service.SubcontractTestingService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
@@ -28,12 +30,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.abt.wf.config.Constants.*;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_SBCT;
@@ -112,6 +112,23 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
     }
 
     @Override
+    public void validateEntity(String id) {
+        final boolean exists = subcontractTestingRepository.existsById(id);
+        if (!exists) {
+            throw new BusinessException(String.format("外送申请单(%s)不存在", id));
+        }
+
+
+
+    }
+
+    @Override
+    public SubcontractTesting loadEntityOnly(String entityId) {
+        return subcontractTestingRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到外送申请(id=" + entityId + ")"));
+
+    }
+
+    @Override
     public SubcontractTesting load(String entityId) {
         final SubcontractTesting entity = subcontractTestingRepository.findById(entityId).orElseThrow(() -> new BusinessException("未查询到外送申请(id=" + entityId + ")"));
         setActiveTask(entity);
@@ -123,6 +140,11 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
         final SubcontractTesting entity = subcontractTestingRepository.findWithSampleList(entityId).orElseThrow(() -> new BusinessException("未查询到外送申请(id=" + entityId + ")"));
         setActiveTask(entity);
         return entity;
+    }
+
+    @Override
+    public List<SubcontractTestingSample> getSamples(String entityId) {
+        return subcontractTestingSampleRepository.findByMid(entityId);
     }
 
     @Override
@@ -319,6 +341,79 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
     @Override
     public List<SubcontractTestingSettlementDetailProjection> findDetails(SubcontractTestingRequestForm requestForm) {
         return subcontractTestingSampleRepository.findDetailsBy(requestForm.getUserid(), requestForm.getSubcontractCompanyName());
+    }
+
+
+    public void compareDuplicateSamples(List<SubcontractTestingSample> samples, List<SubcontractTestingSample> duplicatedSamples) {
+        if (CollectionUtils.isEmpty(duplicatedSamples)) {
+            return;
+        }
+        final Map<String, List<SubcontractTestingSample>> dupMap = duplicatedSamples.stream().collect(Collectors.groupingBy(this::getKey, Collectors.toList()));
+        for (SubcontractTestingSample sample : samples) {
+            String key = getKey(sample);
+            if (dupMap.containsKey(key)) {
+                dupMap.get(key).forEach(sample::addDuplicatedApplySample);
+            }
+        }
+    }
+
+    @Override
+    public List<SubcontractTestingSample> validateDuplicatedSample(SubcontractTesting entity) {
+        final List<SubcontractTestingSample> sampleList = entity.getSampleList();
+        Set<String> sampleKeySet = new HashSet<>();
+        if (sampleList != null) {
+            //1. sampleList中有重复的
+            sampleList.forEach(sample -> {
+                String key = sample.getNewSampleNo() + sample.getCheckModuleId();
+                if (!sampleKeySet.contains(key)) {
+                    sampleKeySet.add(key);
+                } else {
+                    throw new BusinessException(String.format("存在重复外送样品: %s(%s)", sample.getNewSampleNo(), sample.getCheckModuleName()));
+                }
+            });
+            //2. 和库里存在重复的
+            List<SubcontractTestingSample> duplicatedSamples = new ArrayList<>();
+            if (StringUtils.isEmpty(entity.getId())) {
+                // 可能是未提交的申请
+                duplicatedSamples = subcontractTestingSampleRepository.findSamplesByKey(sampleKeySet);
+            } else {
+                duplicatedSamples = findDuplicatedSamples(List.of(entity.getId()));
+            }
+            if (!CollectionUtils.isEmpty(duplicatedSamples)) {
+                return duplicatedSamples;
+            }
+        } else {
+            throw new BusinessException("请选择外送样品及检测项目!");
+        }
+        return List.of();
+    }
+
+
+
+    private String getKey(SubcontractTestingSample sample) {
+        return sample.getNewSampleNo() + sample.getCheckModuleId();
+    }
+
+    @Override
+    public Page<SubcontractTestingSample> findSamplesAndMarkDuplicated(List<String> ids, Pageable pageable) {
+        //1. 查询ids的所有样品samples
+        final Page<SubcontractTestingSample> samples = subcontractTestingSampleRepository.findByMids(ids, pageable);
+        //2 查询库中重复样品
+        final List<SubcontractTestingSample> duplicatedSamples = findDuplicatedSamples(ids);
+        compareDuplicateSamples(samples.getContent(), duplicatedSamples);
+
+        //3. 是否结算（TODO）
+        return samples;
+    }
+
+    @Override
+    public List<SubcontractTestingSample> findDuplicatedSamples(List<String> ids) {
+        return subcontractTestingSampleRepository.findDuplicatedSamples(ids);
+    }
+
+    @Override
+    public List<SbctSummaryData> getSummaryData(List<String> ids) {
+        return subcontractTestingSampleRepository.getSummaryData(ids);
     }
 
 }

@@ -123,13 +123,13 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     private BigDecimal expenseAmount;
 
     /**
-     * 优惠百分比
+     * 优惠百分比，仅针对检测项目的费用优惠，不包含其他项目费用的
      */
     @Column(name="discount_perc", columnDefinition = "DECIMAL(6,3)")
     private Double discountPercentage;
 
     /**
-     * 优惠金额
+     * 优惠金额，仅针对检测项目的费用优惠，不包含其他项目费用的
      */
     @Column(name="discount_amt", columnDefinition = "DECIMAL(10,2)")
     private Double discountAmount;
@@ -249,6 +249,17 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     }
 
     /**
+     * 计算优惠金额，仅对检测项目费用优惠
+     */
+    public void calculateDiscountAmount() {
+        if (this.discountPercentage != null && this.grossTestAmount != null) {
+            this.discountAmount = this.grossTestAmount.multiply(BigDecimal.valueOf(this.discountPercentage)).doubleValue();
+        } else {
+            this.discountAmount = 0.00;
+        }
+    }
+
+    /**
      * 计算其他费用合计
      */
     public void calculateExpenseAmount() {
@@ -259,38 +270,35 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
         this.expenseAmount = expenseItems.stream().map(ExpenseItem::getAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-//    /**
-//     * 计算含税价
-//     */
-//    public void calculateTaxAmount() {
-//        if (this.taxRate == null) {
-//            this.taxRate = 0.00;
-//        }
-//        this.taxAmount = this.totalAmount.multiply(BigDecimal.valueOf(1 + this.taxRate));
-//    }
 
     public void calculateAllAmount() {
         this.calculateTotalAmount();
-//        this.calculateTaxAmount();
+    }
+
+    public void calculateTestNetAmount() {
+        if (this.grossTestAmount != null && this.discountAmount != null) {
+            this.netTestAmount = this.grossTestAmount.subtract(BigDecimal.valueOf(this.discountAmount));
+        } else {
+            this.netTestAmount = BigDecimal.ZERO;
+        }
     }
 
     /**
-     * 计算合计金额
+     * 计算最终金额
+     * 1. 检测总费用：检测项目*单价
+     * 2. 优惠金额：检测总费用*优惠
+     * 3. 实际检测费用：检测总费用-优惠
+     * 4. 其他费用
+     * 5. 最终金额=实际检测费用+其他费用
      */
     public void calculateTotalAmount() {
         calculateGrossTestAmount();
+        calculateDiscountAmount();
+        calculateTestNetAmount();
         calculateExpenseAmount();
 
+        this.totalAmount = this.netTestAmount.add(this.expenseAmount);
 
-        // 初始化总金额为检测项目金额
-        totalAmount = netTestAmount != null ? netTestAmount : BigDecimal.ZERO;
-        //加其他费用
-        totalAmount = expenseAmount != null ? totalAmount.add(expenseAmount) : totalAmount;
-
-        // 减去优惠金额
-        if (discountAmount != null) {
-            totalAmount = totalAmount.subtract(BigDecimal.valueOf(discountAmount));
-        }
     }
 
     /**

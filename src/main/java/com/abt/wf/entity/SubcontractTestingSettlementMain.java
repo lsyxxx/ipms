@@ -1,5 +1,7 @@
 package com.abt.wf.entity;
 
+import com.abt.sys.model.entity.SystemFile;
+import com.abt.wf.model.SbctSummaryData;
 import com.abt.wf.model.TaskCheckUser;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -104,6 +106,9 @@ public class SubcontractTestingSettlementMain extends WorkflowBase{
     @Column(name="remark_", length = 1000)
     private String remark;
 
+    @Column(name="attachments", columnDefinition = "TEXT")
+    private List<SystemFile> attachments;
+
     //-- 审批
     @Transient
     private String decision;
@@ -117,6 +122,15 @@ public class SubcontractTestingSettlementMain extends WorkflowBase{
      */
     @Transient
     private List<TaskCheckUser> checkUsers;
+
+    @Transient
+    private List<SbctSummaryData> summaryData;
+
+    /**
+     * 是否存在重复结算的情况
+     */
+    @Transient
+    private boolean duplicatedSettledExists = false;
 
     public Map<String, Object> createVarMap() {
         this.variableMap.clear();

@@ -4,6 +4,8 @@ import com.abt.common.model.RequestForm;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  *
  */
@@ -12,4 +14,6 @@ import lombok.Setter;
 public class SubcontractTestingRequestForm extends RequestForm {
     private String id;
     private String subcontractCompanyName;
+
+    private List<String> ids;
 }

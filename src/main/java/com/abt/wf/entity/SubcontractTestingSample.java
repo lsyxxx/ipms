@@ -1,6 +1,7 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.wf.model.DuplicatedSample;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -12,6 +13,10 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 外送检测清单
@@ -118,5 +123,29 @@ public class SubcontractTestingSample {
      */
     @Column(name="sample_addr")
     private String sampleAddress;
-    
+
+    /**
+     * 重复的样品列表
+     */
+    @Transient
+    private List<DuplicatedSample> duplicatedApplySamples;
+
+    /**
+     * 重复结算的样品
+     */
+    @Transient
+    private List<DuplicatedSample> duplicatedSettledSamples;
+
+    /**
+     * 外送单位
+     */
+    @Transient
+    private String entrustCompany;
+
+    public void addDuplicatedApplySample(SubcontractTestingSample sample) {
+        if (duplicatedApplySamples == null) {
+            duplicatedApplySamples = new ArrayList<>();
+        }
+        duplicatedApplySamples.add(DuplicatedSample.from(sample));
+    }
 }

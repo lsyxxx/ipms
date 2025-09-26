@@ -153,7 +153,7 @@ public class WorkFlowUtil {
         if (StringUtils.isNotBlank(prop)) {
             return;
         }
-        throw new MissingRequiredParameterException("propName");
+        throw new MissingRequiredParameterException(propName);
     }
 
     public static Collection<CamundaProperty> queryUserTaskBpmnModelExtensionProperties(BpmnModelInstance bpmnModelInstance, String taskDefId) {

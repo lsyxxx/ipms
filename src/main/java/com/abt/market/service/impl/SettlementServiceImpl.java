@@ -164,7 +164,7 @@ public class SettlementServiceImpl implements SettlementService {
             final Optional<Tuple> any = checkModules.stream().filter(i -> entrustNo.equals(i.get("entrustId")) && checkModuleId.equals(i.get("CheckModeuleId")))
                     .findAny();
             if (any.isEmpty()) {
-                errors.add(String.format("委托单%s没有检测项目:[%s](%s)", entrustNo, summary.getCheckModuleName(), checkModuleId));
+                errors.add(String.format("委托单%s没有检测项目:[%s(%s)]", entrustNo, summary.getCheckModuleName(), checkModuleId));
             }
         }
         return errors;
@@ -402,6 +402,19 @@ public class SettlementServiceImpl implements SettlementService {
         }
 
         //----- 合计行
+        // 优惠
+        if (settlementMain.getDiscountPercentage() != null) {
+            cells.insertRow(currentRow);
+            String money = MoneyUtil.toUpperCase(settlementMain.getDiscountAmount().toString());
+            String percentage = MoneyUtil.toPercentage(settlementMain.getDiscountPercentage(), 2);
+            cells.get(currentRow, 0).putValue(String.format("优惠(%s): %s", percentage, money));
+            cells.get(currentRow, 0).setStyle(dataStyle);
+            cells.get(currentRow, sumAmountCol).putValue(settlementMain.getDiscountAmount());
+            cells.get(currentRow, sumAmountCol).setStyle(dataStyle);
+            worksheet.getCells().merge(currentRow, 0, 1, sumAmountCol);
+            currentRow++;
+        }
+
         // 合计行-其他费用
         if (settlementMain.getExpenseItems() != null && !settlementMain.getExpenseItems().isEmpty()) {
             for (ExpenseItem expenseItem : settlementMain.getExpenseItems()) {

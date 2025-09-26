@@ -1,5 +1,6 @@
 package com.abt.wf.entity;
 
+import com.abt.wf.model.DuplicatedSample;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -12,6 +13,7 @@ import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 外送检测结算详情
@@ -38,6 +40,12 @@ public class SubcontractTestingSettlementDetail {
     @Column(name="entrust_id", nullable=false)
     private String entrustId;
 
+    /**
+     * 检测编号
+     */
+    @Column(name="sample_no",  nullable=false)
+    private String sampleNo;
+
     @Transient
     private String projectName;
 
@@ -57,28 +65,10 @@ public class SubcontractTestingSettlementDetail {
     private String checkModuleId;
 
     /**
-     * 外送数量
-     */
-    @Column(name="num_")
-    private int num;
-
-    /**
-     * 单位
-     */
-    @Column(name="unit_")
-    private String unit;
-
-    /**
      * 单价
      */
     @Column(name="price_", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
-
-    /**
-     * 总价
-     */
-    @Column(name="total_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalPrice;
 
     /**
      * 备注
@@ -92,12 +82,14 @@ public class SubcontractTestingSettlementDetail {
     @JsonBackReference
     private SubcontractTestingSettlementMain main;
 
-    public SubcontractTestingSettlementDetail(String entrustId, String checkModuleName, long num) {
-        this.entrustId = entrustId;
-        this.checkModuleName = checkModuleName;
-        this.num = (int)num;
-    }
 
+    /**
+     * 重复的样品
+     */
+    @Transient
+    private List<DuplicatedSample> duplicatedSamples;
 
+    @Transient
+    private String error;
 
 }
