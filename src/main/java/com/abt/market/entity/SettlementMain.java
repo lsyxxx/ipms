@@ -62,33 +62,38 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     @Column(name="client_name")
     private String clientName;
 
+
+    ///--  不是结算客户信息，因为开始写错了
+
     /**
-     * 收款公司名称
+     * 公司名称
      */
     @Column(name="company_name")
     private String companyName;
     /**
-     * 收款公司税号
+     * 公司名称
      */
     @Column(name="tax_no", columnDefinition="VARCHAR(128)")
     private String taxNo;
     /**
-     * 收款公司电话
+     * 公司名称
      */
     @Column(name="tel_no", columnDefinition="VARCHAR(32)")
     private String telephoneNo;
 
     /**
-     * 收款公司开户行
+     * 公司名称
      */
     @Column(name="acc_bank", columnDefinition="VARCHAR(128)")
     private String accountBank;
 
     /**
-     * 收款公司账户
+     * 公司名称
      */
     @Column(name="acc_no", columnDefinition="VARCHAR(128)")
     private String accountNo;
+
+    //-------
 
     /**
      * 是否含税

@@ -1,12 +1,10 @@
 package com.abt.market.controller;
 
+import cn.idev.excel.FastExcel;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.market.entity.SettlementMain;
-import com.abt.market.model.RelationRequest;
-import com.abt.market.model.SaveType;
-import com.abt.market.model.SettlementMainListDTO;
-import com.abt.market.model.SettlementRequestForm;
+import com.abt.market.model.*;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.CustomerInfo;
@@ -19,7 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -129,4 +129,15 @@ public class SettlementController {
         return R.success("更新成功!");
     }
 
+    /**
+     * 按样品导入
+     */
+    @PostMapping("/import/bysample")
+    public R<Object> importBySamples(@RequestParam("file") MultipartFile file) throws IOException {
+        List<ImportSample> list = FastExcel.read(file.getInputStream())
+                .head(ImportSample.class)
+                .sheet()  // 默认读取第一个sheet
+                .doReadSync();
+        return R.success("共读取" + list.size() + "条数据");
+    }
 }

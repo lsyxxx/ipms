@@ -589,4 +589,12 @@ public class SettlementServiceImpl implements SettlementService {
     public void updateSaveType(SaveType saveType, String id) {
         settlementMainRepository.updateSaveType(saveType, id);
     }
+
+
+    /**
+     * 按样品编号导入
+     */
+    public void importBySamples() {
+
+    }
 }
