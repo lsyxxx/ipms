@@ -25,11 +25,18 @@ public class SystemMessageController {
         this.systemMessageService = systemMessageService;
     }
 
-    @GetMapping("/find/loginuser")
+    @GetMapping("/find")
     public R<List<SystemMessage>> findByLoginUser(@ModelAttribute SystemMessageRequestForm requestForm) {
-        requestForm.setToId(TokenUtil.getUseridFromAuthToken());
-        final Page<SystemMessage> page = systemMessageService.findUserSystemMessagesAllPageable(requestForm);
-        return R.success(page.getContent(), (int)page.getTotalElements(), "查询成功!");
+        if (requestForm.isLoginUser()) {
+            requestForm.setToId(TokenUtil.getUseridFromAuthToken());
+        }
+        if (requestForm.isTestTask()) {
+            final Page<SystemMessage> page = systemMessageService.findUserTestTaskMessages(requestForm);
+            return R.success(page.getContent(), (int)page.getTotalElements(), "查询成功!");
+        } else {
+            final Page<SystemMessage> page = systemMessageService.findUserCommonMessages(requestForm);
+            return R.success(page.getContent(), (int)page.getTotalElements(), "查询成功!");
+        }
     }
 
     @GetMapping("/read/all")

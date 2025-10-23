@@ -26,7 +26,7 @@ public class SystemConstants {
 
 
 
-    public static final Integer STATUS_DEL = 9;
+    public static final Integer STATUS_DEL = -1;
     public static final Integer STATUS_UNREAD = 0;
     public static final Integer STATUS_READ = 1;
 

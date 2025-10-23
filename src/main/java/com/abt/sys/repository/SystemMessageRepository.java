@@ -25,6 +25,29 @@ public interface SystemMessageRepository extends JpaRepository<SystemMessage, St
 """)
     Page<SystemMessage> findAllBy(String toId, List<String> typeIds, Integer toStatus, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
+    @Query("""
+    select s from SystemMessage s
+    where (s.toId = :toId)
+    and (:toStatus is null or s.toStatus = :toStatus)
+    and ('all' in :typeIds or s.typeId in :typeIds)
+    and (:startDate is null or s.createTime >= :startDate)
+    and (:endDate is null or s.createTime <= :endDate)
+    and s.service != 'testTask'
+""")
+    Page<SystemMessage> findCommonMessage(String toId, List<String> typeIds, Integer toStatus, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+
+    @Query("""
+    select s from SystemMessage s
+    where (s.toId = :toId)
+    and (:toStatus is null or s.toStatus = :toStatus)
+    and ('all' in :typeIds or s.typeId in :typeIds)
+    and (:startDate is null or s.createTime >= :startDate)
+    and (:endDate is null or s.createTime <= :endDate)
+    and s.service = 'testTask'
+""")
+    Page<SystemMessage> findTestTaskMessage(String toId, List<String> typeIds, Integer toStatus, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+
+
 
     @Query("update SystemMessage s set s.toStatus = 1, s.readTime = :readTime  where s.id = :id")
     @Modifying

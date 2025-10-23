@@ -19,6 +19,10 @@ public interface SystemMessageService {
     //获取用户的所有抄送信息
     Page<SystemMessage> findUserSystemMessagesAllPageable(SystemMessageRequestForm requestForm);
 
+    Page<SystemMessage> findUserCommonMessages(SystemMessageRequestForm requestForm);
+
+    Page<SystemMessage> findUserTestTaskMessages(SystemMessageRequestForm requestForm);
+
     void readOne(String id);
 
     /**

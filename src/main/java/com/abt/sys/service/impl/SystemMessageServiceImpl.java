@@ -71,6 +71,31 @@ public class SystemMessageServiceImpl implements SystemMessageService {
     }
 
     @Override
+    public Page<SystemMessage> findUserCommonMessages(SystemMessageRequestForm requestForm) {
+        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("priority"), Sort.Order.desc("createTime")));
+        return systemMessageRepository.findCommonMessage(requestForm.getToId(),
+                requestForm.buildTypeIds(),
+                requestForm.getToStatus(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()),
+                TimeUtil.toLocalDateTime(requestForm.getEndDate()),
+                page
+        );
+    }
+
+
+    @Override
+    public Page<SystemMessage> findUserTestTaskMessages(SystemMessageRequestForm requestForm) {
+        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("priority"), Sort.Order.desc("createTime")));
+        return systemMessageRepository.findTestTaskMessage(requestForm.getToId(),
+                requestForm.buildTypeIds(),
+                requestForm.getToStatus(),
+                TimeUtil.toLocalDateTime(requestForm.getStartDate()),
+                TimeUtil.toLocalDateTime(requestForm.getEndDate()),
+                page
+        );
+    }
+
+    @Override
     public void readOne(String id) {
         if (StringUtils.isBlank(id)) {
             throw new BusinessException("未传入消息id(" + id + " )");

@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 
 /**
@@ -347,4 +348,8 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     public boolean isEntrustMode() {
         return "entrust".equalsIgnoreCase(mode);
     }
+
+
 }
+
+
