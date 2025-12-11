@@ -131,4 +131,12 @@ public interface StockService {
     void createGiftInventoryAndValueExcel(OutputStream outputStream, int year1, int year2, List<Integer> monthIn) throws Exception;
 
     Map<String, Warehouse> findGiftWarehouseMap(Boolean enabled);
+
+    /**
+     * 生成礼品采购明细数据excel。
+     * @param startDate 采购流程创建开始日期（包含）
+     * @param endDate 采购流程创建结束日期（包含）
+     * @throws Exception
+     */
+    void createPurchasingDetailExcel(OutputStream outputStream, LocalDate startDate, LocalDate endDate) throws Exception;
 }

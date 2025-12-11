@@ -1,5 +1,6 @@
 package com.abt.wf.service;
 
+import com.abt.market.model.ImportSample;
 import com.abt.wf.entity.SubcontractTesting;
 import com.abt.wf.entity.SubcontractTestingSample;
 import com.abt.wf.model.SbctSummaryData;
@@ -8,6 +9,7 @@ import com.abt.wf.projection.SubcontractTestingSettlementDetailProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.io.OutputStream;
 import java.util.List;
 
 public interface SubcontractTestingService extends WorkFlowService<SubcontractTesting> ,BusinessService<SubcontractTestingRequestForm, SubcontractTesting> {
@@ -59,4 +61,15 @@ public interface SubcontractTestingService extends WorkFlowService<SubcontractTe
     List<SubcontractTestingSample> findDuplicatedSamples(List<String> ids);
 
     List<SbctSummaryData> getSummaryData(List<String> ids);
+
+    /**
+     * 导出表单
+     * @throws Exception
+     */
+    void createFormExcel(String id, OutputStream outputStream) throws Exception;
+
+    /**
+     * 通过样品excel导入
+     */
+    String importBySamples(List<ImportSample> list);
 }

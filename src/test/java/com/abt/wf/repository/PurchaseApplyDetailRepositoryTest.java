@@ -1,6 +1,8 @@
 package com.abt.wf.repository;
 
+import com.abt.material.model.PurchaseDetailDTO;
 import com.abt.wf.model.PurchaseSummaryAmount;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,5 +32,12 @@ class PurchaseApplyDetailRepositoryTest {
         final Double sum = purchaseApplyDetailRepository.sumPurchase("礼品类", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 8, 1));
         System.out.println(sum.toString());
 
+    }
+
+    @Test
+    void findPurchaseDetailDTOList() {
+        final List<PurchaseDetailDTO> list = purchaseApplyDetailRepository.findPurchaseDetailDTOList("礼品类", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 11, 1));
+        Assertions.assertNotNull(list);
+        System.out.println(list.size());
     }
 }

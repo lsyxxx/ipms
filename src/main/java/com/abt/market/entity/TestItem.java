@@ -72,7 +72,7 @@ public class TestItem {
     /**
      * 检测项目单价
      */
-    @Column(name="price_", columnDefinition="DECIMAL(10,2)")
+    @Column(name="price_", columnDefinition="DECIMAL(10,3)")
     private BigDecimal price;
 
     /**

@@ -1,8 +1,10 @@
 package com.abt.wf.controller;
 
+import cn.idev.excel.FastExcel;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
+import com.abt.market.model.ImportSample;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
@@ -14,6 +16,7 @@ import com.abt.wf.model.SubcontractTestingRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.projection.SubcontractTestingSettlementDetailProjection;
 import com.abt.wf.service.SubcontractTestingService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -174,7 +178,7 @@ public class SubcontractTestingController {
         return R.success(count, "查询成功");
     }
 
-    @GetMapping("/export")
+    @GetMapping("/export/samples")
     public ResponseEntity<byte[]> export(String id) throws IOException {
         try {
             final String filePath = subcontractTestingService.exportSampleList(id);
@@ -257,6 +261,39 @@ public class SubcontractTestingController {
         }
         final List<SbctSummaryData> summaryData = subcontractTestingService.getSummaryData(requestForm.getIds());
         return R.success(summaryData, "查询成功!");
+    }
+
+    /**
+     * 导出表单
+     */
+    @GetMapping("/export/form")
+    public void exportForm(String id, HttpServletResponse response) throws IOException {
+        try {
+            String fileName = "外送申请单.xlsx";
+            // 设置响应头
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1) + "\"");
+            subcontractTestingService.createFormExcel(id, response.getOutputStream());
+        } catch (Exception e) {
+            log.error("导出表单失败: ", e);
+            throw new BusinessException("导出表单失败: " + e.getMessage());
+        }   
+    }
+
+
+    /**
+     * 导入样品excel
+     */
+    @GetMapping("/import/bysamples")
+    public R<String> importSampleExcel(MultipartFile file, HttpServletResponse response) throws IOException {
+        List<ImportSample> list = FastExcel.read(file.getInputStream())
+                .head(ImportSample.class)
+                .sheet()  // 默认读取第一个sheet
+                .doReadSync();
+        final String tempId = subcontractTestingService.importBySamples(list);
+
+        return R.success(tempId, "导入成功");
     }
 
 

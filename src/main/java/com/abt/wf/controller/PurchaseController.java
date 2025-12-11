@@ -2,6 +2,7 @@ package com.abt.wf.controller;
 
 import com.abt.common.ExcelUtil;
 import com.abt.common.model.R;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
@@ -10,6 +11,8 @@ import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.PurchaseService;
+
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -111,6 +114,9 @@ public class PurchaseController {
     public R<List<PurchaseApplyMain>> todoList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
         setTokenUser(requestForm);
         final Page<PurchaseApplyMain> page = purchaseService.findMyTodoByQueryPageable(requestForm);
+        if (!requestForm.isHasDetails()) {
+            page.getContent().forEach(item -> item.setDetails(null));
+        }
         return R.success(page.getContent(), (int) page.getTotalElements());
     }
 
@@ -132,14 +138,25 @@ public class PurchaseController {
     public R<List<PurchaseApplyMain>> myApplyList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
         setTokenUser(requestForm);
         final Page<PurchaseApplyMain> page = purchaseService.findMyApplyByQueryPageable(requestForm);
+        if (!requestForm.isHasDetails()) {
+            //不包含details，避免触发懒加载
+            page.getContent().forEach(item -> {
+                item.setDetails(null);
+            });
+        }
         return R.success(page.getContent(), (int) page.getTotalElements());
     }
 
     @GetMapping("/all")
-    public R<List<PurchaseApplyMain>> allList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
-        setTokenUser(requestForm);
+    public R<Page<PurchaseApplyMain>> allList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
         final Page<PurchaseApplyMain> page = purchaseService.findAllByQueryPageable(requestForm);
-        return R.success(page.getContent(), (int) page.getTotalElements());
+        if (!requestForm.isHasDetails()) {
+            //不包含details
+            page.getContent().forEach(item -> {
+                item.setDetails(null);
+            });
+        }
+        return R.success(page);
     }
 
 
@@ -276,6 +293,35 @@ public class PurchaseController {
         }
     }
 
+    /**
+     * 导出列表
+     */
+    @GetMapping("/export/list")
+    public void exportList(@ModelAttribute PurchaseApplyRequestForm requestForm, HttpServletResponse response) throws Exception {
+        try {
+            requestForm.setPage(1);
+            //不分页
+            requestForm.setLimit(99999);
+            final Page<PurchaseApplyMain> all = purchaseService.findAllByQueryPageable(requestForm);
+            purchaseService.createPurchaseListExcel(all.getContent(), response.getOutputStream());
+            //下载
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("UTF-8");
+            String fileName = "采购申请记录.xlsx";
+            response.setHeader("Content-Disposition",
+                    "attachment; filename*=UTF-8''" + java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("文件下载失败: ", e);
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            final R<Object> fail = R.fail("下载采购申请记录Excel失败!");
+            response.getWriter().println(JsonUtil.convertJson(fail));
+        }
+        
+
+    }
 
     public void accessAccept(PurchaseApplyMain main) {
         if (!main.isFinished()) {

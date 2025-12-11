@@ -5,6 +5,8 @@ import jakarta.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface SampleRegistRepository extends JpaRepository<SampleRegist, String> {
@@ -21,4 +23,5 @@ public interface SampleRegistRepository extends JpaRepository<SampleRegist, Stri
     Set<Tuple> findDistinctCheckModulesByEntrustId(Set<String> entrustIds);
 
 
+    List<SampleRegist> findByNewSampleNoIn(Collection<String> newSampleNos);
 }

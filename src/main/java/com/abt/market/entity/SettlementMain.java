@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -113,19 +114,19 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     /**
      * 检测项目合计（优惠前）
      */
-    @Column(name="gross_test_amt", columnDefinition = "DECIMAL(10,2)")
+    @Column(name="gross_test_amt", columnDefinition = "DECIMAL(10,3)")
     private BigDecimal grossTestAmount;
 
     /**
      * 检测项目合计金额（优惠后）
      */
-    @Column(name="net_test_amount", columnDefinition = "DECIMAL(10,2)")
+    @Column(name="net_test_amount", columnDefinition = "DECIMAL(10,3)")
     private BigDecimal netTestAmount = BigDecimal.ZERO;
 
     /**
      * 其他费用合计金额
      */
-    @Column(name="expense_amt", columnDefinition = "DECIMAL(10,2)")
+    @Column(name="expense_amt", columnDefinition = "DECIMAL(10,3)")
     private BigDecimal expenseAmount;
 
     /**
@@ -137,7 +138,7 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     /**
      * 优惠金额，仅针对检测项目的费用优惠，不包含其他项目费用的
      */
-    @Column(name="discount_amt", columnDefinition = "DECIMAL(10,2)")
+    @Column(name="discount_amt", columnDefinition = "DECIMAL(10,3)")
     private Double discountAmount;
 
     /**
@@ -188,7 +189,7 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     /**
      * 选择模式
      * sample: 直接选择样品
-     * entrust: 选择项目，自动按编号大小顺序分配样品（小-大）
+     * entrust: 选择项目，自动按编号大小顺序分配样品（小-大），可能不包含具体样品
      */
     @Column(name="mode_", length = 32)
     private String mode;
@@ -318,7 +319,7 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
                 .filter(i -> SettlementRelationType.AGREEMENT.equals(i.getBizType()))
                 .map(SettlementRelation::getRid)
                 .distinct()
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -346,9 +347,23 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     }
 
     public boolean isEntrustMode() {
-        return "entrust".equalsIgnoreCase(mode);
+        return MODE_ENTRUST.equalsIgnoreCase(mode);
     }
 
+    /**
+     * 项目模式
+     */
+    public static final String MODE_ENTRUST = "entrust";
+
+    /**
+     * 样品模式
+     */
+    public static final String MODE_SAMPLE = "sample";
+
+    /**
+     * 项目-数量模式
+     */
+    public static final String MODE_SUMMARY = "summary";
 
 }
 

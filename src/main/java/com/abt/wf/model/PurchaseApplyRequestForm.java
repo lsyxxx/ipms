@@ -10,6 +10,9 @@ import lombok.*;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class PurchaseApplyRequestForm extends RequestForm {
-
+    /**
+     * 列表是否包含详细记录
+     */
+    private boolean hasDetails = false;
 
 }

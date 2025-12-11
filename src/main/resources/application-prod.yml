@@ -183,6 +183,8 @@ abt:
         template: E:\\temp\\sbct_samplelist_rock.xlsx
       fluid:
         template: E:\\temp\\sbct_samplelist_fluid.xlsx
+      form:
+        template: E:\\temp\\sbct_form_export.xlsx
       export:
         dir: E:\\temp\\temp\\sbct
 

@@ -4,8 +4,13 @@ import cn.idev.excel.FastExcel;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.market.entity.SettlementMain;
+import com.abt.market.entity.SettlementSummary;
+import com.abt.market.entity.StlmSmryTemp;
+import com.abt.market.entity.StlmTestTemp;
 import com.abt.market.model.*;
 import com.abt.market.service.SettlementService;
+import com.abt.testing.entity.SampleRegistCheckModeuleItem;
+import com.abt.testing.service.SampleRegistCheckModeuleItemService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.CustomerInfo;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,9 +36,11 @@ import java.util.List;
 @RequestMapping("/stlm")
 public class SettlementController {
     private final SettlementService settlementService;
+    private final SampleRegistCheckModeuleItemService sampleRegistCheckModeuleItemService;
 
-    public SettlementController(SettlementService settlementService) {
+    public SettlementController(SettlementService settlementService, SampleRegistCheckModeuleItemService sampleRegistCheckModeuleItemService) {
         this.settlementService = settlementService;
+        this.sampleRegistCheckModeuleItemService = sampleRegistCheckModeuleItemService;
     }
 
     @PostMapping("/save/draft")
@@ -131,6 +138,7 @@ public class SettlementController {
 
     /**
      * 按样品导入
+     * @param file 导入文件
      */
     @PostMapping("/import/bysample")
     public R<Object> importBySamples(@RequestParam("file") MultipartFile file) throws IOException {
@@ -138,6 +146,79 @@ public class SettlementController {
                 .head(ImportSample.class)
                 .sheet()  // 默认读取第一个sheet
                 .doReadSync();
-        return R.success("共读取" + list.size() + "条数据");
+        final String tempMid = settlementService.importBySamples(list);
+        return R.success(tempMid, "导入成功");
+    }
+
+    @GetMapping("/testTemp/delAll")
+    public R<Object> deleteAllTestItemTemp(String tempMid) {
+        settlementService.deleteTempByTempMid(tempMid);
+        return R.success("删除成功");
+    }
+
+
+    /**
+     * 获取stlm_test_temp数据（分页）
+     */
+    @GetMapping("/testTemp/query")
+    public R<Page<StlmTestTemp>> findTempTestByQuery(@ModelAttribute TestTempRequestForm  requestForm) {
+        final Page<StlmTestTemp> page = settlementService.findTestTempByQuery(requestForm);
+        return R.success(page, "查询成功");
+    }
+
+    /**
+     * 根据临时数据生成summaryData
+     */
+    @GetMapping("/testTemp/createSummaryTable")
+    public R<List<SettlementSummary>> createSummaryDataByTestTemp(String tempMid) {
+        final List<SettlementSummary> summary = settlementService.createSummaryTableByTestTemp(tempMid);
+        return R.success(summary, "生成成功");
+    }
+
+    /**
+     * 导出委托单样品
+     * @param entrustIds 委托单ID列表字符串，用,分隔
+     * @param response HTTP响应
+     */
+    @GetMapping("/export/samples")
+    public void exportEntrustSamples(@RequestParam String entrustIds, HttpServletResponse response) {
+        if (StringUtils.isBlank(entrustIds)) {
+            throw new BusinessException("项目编号不能为空!");
+        }
+        try {
+            List<String> ids = List.of(entrustIds.split(","));
+            final List<SampleRegistCheckModeuleItem> samples = sampleRegistCheckModeuleItemService.findByEntrustIds(ids, null);
+            // 构建文件名
+            String fileName = "样品清单_" + System.currentTimeMillis() + ".xlsx";
+            // 设置响应头
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Disposition", 
+                "attachment; filename=\"" + new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1) + "\"");
+            // 导出Excel
+            settlementService.exportTestTempToExcel(samples, response.getOutputStream());
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("导出委托单样品失败", e);
+            throw new BusinessException("导出失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 导入汇总数据
+     *
+     * @param file: 导入文件
+     */
+    @PostMapping("/import/bysummary")
+    public R<String> importSummaryData(@RequestParam("file") MultipartFile file) throws Exception {
+        final String tempId = settlementService.saveTempSummaryData(file);
+        return R.success(tempId, "导入成功");
+    }
+
+
+    @GetMapping("/find/smrytemp")
+    public R<List<StlmSmryTemp>> getTempSummaryData(String tempMid) {
+        final List<StlmSmryTemp> list = settlementService.getTempSummaryData(tempMid);
+        return R.success(list, "查询成功");
     }
 }

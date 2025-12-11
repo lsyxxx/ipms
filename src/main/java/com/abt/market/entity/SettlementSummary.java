@@ -11,6 +11,8 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.math.BigDecimal;
+
 /**
  * 结算汇总表-主表
  * 用于保存样品汇总表，方便查看
@@ -47,19 +49,19 @@ public class SettlementSummary {
     private int sortNo;
 
     /**
-     * 检测项目id
+     * 检测项目id，非必须
      */
     @Column(name="check_module_id")
     private String checkModuleId;
 
     /**
-     * 检测项目名称
+     * 检测项目名称，不一定是系统内配置的检测项目
      */
     @Column(name="check_module_name")
     private String checkModuleName;
 
     /**
-     * 样品数量
+     * 结算数量(不等于系统内录入样品数量)
      */
     @Column(name="sample_num", columnDefinition = "smallint")
     private int sampleNum;
@@ -77,7 +79,7 @@ public class SettlementSummary {
     private Double amount;
 
     /**
-     * 样品单位
+     * 单位
      */
     @Column(name="unit_")
     private String unit;
@@ -88,6 +90,13 @@ public class SettlementSummary {
     @Size(message = "备注信息不能超过100字", groups = ValidateGroup.Save.class)
     @Column(name="remark_", length = 512)
     private String remark;
+
+    /**
+     * 该项目的检测项目样品是否认为全部结算
+     * 结算数量可能是录入样品数量有出入（比如甲方仅认定部分样品）
+     */
+    @Column(name="is_all_settled", columnDefinition = "BIT")
+    private Boolean isAllSettled;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -102,6 +111,13 @@ public class SettlementSummary {
         this.amount = amount;
     }
 
-
+    public SettlementSummary(String entrustId, String checkModuleId, String checkModuleName, Double price, long sampleNum, Double amount) {
+        this.entrustId = entrustId;
+        this.checkModuleId = checkModuleId;
+        this.checkModuleName = checkModuleName;
+        this.price = price;
+        this.sampleNum = Integer.parseInt(sampleNum + "");
+        this.amount = amount;
+    }
 
 }

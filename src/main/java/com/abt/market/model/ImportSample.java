@@ -11,10 +11,13 @@ import lombok.Setter;
 @Setter
 public class ImportSample {
 
+    @ExcelProperty("项目编号")
+    private String projectNo;
+
     @ExcelProperty("检测编号")
     private String sampleNo;
 
-    @ExcelProperty("检测项目代码")
+    @ExcelProperty("检测项目编码")
     private String checkModuleId;
 
     @ExcelProperty("检测项目名称")
@@ -22,4 +25,7 @@ public class ImportSample {
 
     @ExcelProperty("单价")
     private String price;
+
+    @ExcelProperty("备注")
+    private String remark;
 }

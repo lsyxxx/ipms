@@ -72,7 +72,7 @@ public class SystemMessageServiceImpl implements SystemMessageService {
 
     @Override
     public Page<SystemMessage> findUserCommonMessages(SystemMessageRequestForm requestForm) {
-        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("priority"), Sort.Order.desc("createTime")));
+        Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createTime")));
         return systemMessageRepository.findCommonMessage(requestForm.getToId(),
                 requestForm.buildTypeIds(),
                 requestForm.getToStatus(),

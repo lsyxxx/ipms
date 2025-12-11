@@ -59,6 +59,10 @@ class StockServiceImplTest {
         inventoryList.forEach(i -> {
             System.out.printf("%s-%s[%s]: %.2f, %.2f\n", i.getMaterialType(), i.getMaterialName(), i.getWarehouseName(), i.getQuantity(), i.getUnitPrice());
         });
+    }
+
+    @Test
+    void testPurchaseSummary() {
 
     }
 }

@@ -18,6 +18,14 @@ import com.abt.wf.repository.PurchaseApplyMainRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.PurchaseService;
 import com.abt.wf.service.SignatureService;
+import com.aspose.cells.Cells;
+import com.aspose.cells.Color;
+import com.aspose.cells.SaveFormat;
+import com.aspose.cells.Style;
+import com.aspose.cells.TextAlignmentType;
+import com.aspose.cells.Workbook;
+import com.aspose.cells.Worksheet;
+
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.metadata.data.ImageData;
@@ -40,6 +48,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -74,7 +84,9 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     @Value("${abt.pur.accept.excel.template}")
     private String acceptExcelTemplate;
 
-    private static String acceptItems = "品名、规格、等级、生产日期、有效期、成分、包装、外观、贮存、数量、合格证明、说明书、保修卡";
+    public static final String LOGIN_USER = "loginUser";
+
+    private static final String acceptItems = "品名、规格、等级、生产日期、有效期、成分、包装、外观、贮存、数量、合格证明、说明书、保修卡";
 
 
     public PurchaseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService,
@@ -198,8 +210,12 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
 
     @Override
     public Page<PurchaseApplyMain> findAllByQueryPageable(PurchaseApplyRequestForm requestForm) {
+        if (LOGIN_USER.equals(requestForm.getUserid())) {
+            //查询登录用户的
+            requestForm.setUserid(TokenUtil.getUseridFromAuthToken());
+        }
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
-        final Page<PurchaseApplyMain> paged = purchaseApplyMainRepository.findAllByQueryPaged(null,
+        final Page<PurchaseApplyMain> paged = purchaseApplyMainRepository.findAllByQueryPaged(requestForm.getUserid(),
                 requestForm.getQuery(), requestForm.getState(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()),
                 TimeUtil.toLocalDateTime(requestForm.getEndDate()),
@@ -476,6 +492,137 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
             excelWriter.fill(map, writeSheet);
         }
         return file;
+    }
+
+    @Override
+    public void createPurchaseListExcel(List<PurchaseApplyMain> list, OutputStream outputStream) throws Exception {
+        //使用aspose创建excel
+        Workbook workbook = new Workbook();
+        Worksheet worksheet = workbook.getWorksheets().get(0);
+        Cells cells = worksheet.getCells();
+        //表格标题: 序号	审批编号	总金额	状态	申请人	部门	创建时间	是否验收	验收时间	物品名称	规格型号	单位	采购数量	单价	用途
+        Style tableHeaderStyle = workbook.createStyle();
+        tableHeaderStyle.getFont().setBold(true);
+        tableHeaderStyle.getFont().setSize(12);
+        tableHeaderStyle.setHorizontalAlignment(TextAlignmentType.CENTER);
+        tableHeaderStyle.setVerticalAlignment(TextAlignmentType.CENTER);
+        cells.insertRow(0);
+        cells.get(0, 0).putValue("序号");
+        cells.get(0, 0).setStyle(tableHeaderStyle);
+        cells.get(0, 1).putValue("审批编号");
+        cells.get(0, 1).setStyle(tableHeaderStyle);
+        cells.get(0, 2).putValue("总金额");
+        cells.get(0, 2).setStyle(tableHeaderStyle);
+        cells.get(0, 3).putValue("状态");
+        cells.get(0, 3).setStyle(tableHeaderStyle);
+        cells.get(0, 4).putValue("申请人");
+        cells.get(0, 4).setStyle(tableHeaderStyle);
+        cells.get(0, 5).putValue("部门");
+        cells.get(0, 5).setStyle(tableHeaderStyle);
+        cells.get(0, 6).putValue("创建时间");
+        cells.get(0, 6).setStyle(tableHeaderStyle);
+        cells.get(0, 7).putValue("验收时间");
+        cells.get(0, 7).setStyle(tableHeaderStyle);
+        cells.get(0, 8).putValue("是否验收");
+        cells.get(0, 8).setStyle(tableHeaderStyle);
+        cells.get(0, 9).putValue("物品名称");
+        cells.get(0, 9).setStyle(tableHeaderStyle);
+        cells.get(0, 10).putValue("规格型号");
+        cells.get(0, 10).setStyle(tableHeaderStyle);
+        cells.get(0, 11).putValue("单位");
+        cells.get(0, 11).setStyle(tableHeaderStyle);
+        cells.get(0, 12).putValue("采购数量");
+        cells.get(0, 12).setStyle(tableHeaderStyle);
+        cells.get(0, 13).putValue("单价");
+        cells.get(0, 13).setStyle(tableHeaderStyle);
+        cells.get(0, 14).putValue("用途");
+        cells.get(0, 14).setStyle(tableHeaderStyle);
+
+        //表格数据
+        int dataRow = 1;
+        //数据样式
+        Style dataStyle = workbook.createStyle();
+        dataStyle.getFont().setSize(10);
+        dataStyle.getFont().setColor(Color.getBlack());
+        int seq = 1;
+        for (PurchaseApplyMain main : list) {
+            int detailCount = main.getDetails() != null ? main.getDetails().size() : 0;
+            if (detailCount == 0) {
+                detailCount = 1;
+            }
+            // 记录起始行，用于后续合并单元格
+            int startRow = dataRow;
+            // 插入需要的行数
+            for (int r = 0; r < detailCount; r++) {
+                cells.insertRow(dataRow + r);
+            }
+            //1. 序号
+            cells.get(dataRow, 0).putValue(seq);
+            cells.get(dataRow, 0).setStyle(dataStyle);
+            //2. 审批编号
+            cells.get(dataRow, 1).putValue(main.getId());
+            cells.get(dataRow, 1).setStyle(dataStyle);
+            //3. 总金额
+            cells.get(dataRow, 2).putValue(main.getCost());
+            cells.get(dataRow, 2).setStyle(dataStyle);
+            //4. 状态
+            cells.get(dataRow, 3).putValue(main.getBusinessState());
+            cells.get(dataRow, 3).setStyle(dataStyle);
+            //5. 申请人
+            cells.get(dataRow, 4).putValue(main.getCreateUsername());
+            cells.get(dataRow, 4).setStyle(dataStyle);
+            //6. 部门
+            cells.get(dataRow, 5).putValue(main.getCreateDeptName());
+            cells.get(dataRow, 5).setStyle(dataStyle);
+            //7. 创建时间
+            cells.get(dataRow, 6).putValue(TimeUtil.toYYYY_MM_DDString(main.getCreateDate()));
+            cells.get(dataRow, 6).setStyle(dataStyle);
+            //8. 验收时间
+            cells.get(dataRow, 7).putValue(TimeUtil.toYYYY_MM_DDString(main.getAcceptDate()));
+            cells.get(dataRow, 7).setStyle(dataStyle);
+            //9. 是否验收
+            cells.get(dataRow, 8).putValue(main.isAccepted() ? "是" : "否");
+            cells.get(dataRow, 8).setStyle(dataStyle);
+            // 采购详情
+            if (main.getDetails() != null && main.getDetails().size() > 0) {
+                for (PurchaseApplyDetail detail : main.getDetails()) {
+                    //物品名称
+                    cells.get(dataRow, 9).putValue(detail.getName());
+                    cells.get(dataRow, 9).setStyle(dataStyle);
+                    //规格型号
+                    cells.get(dataRow, 10).putValue(detail.getSpecification());
+                    cells.get(dataRow, 10).setStyle(dataStyle);
+                    //单位
+                    cells.get(dataRow, 11).putValue(detail.getUnit());
+                    cells.get(dataRow, 11).setStyle(dataStyle);
+                    //采购数量
+                    cells.get(dataRow, 12).putValue(detail.getQuantity());
+                    cells.get(dataRow, 12).setStyle(dataStyle);
+                    //单价
+                    cells.get(dataRow, 13).putValue(detail.getPrice());
+                    cells.get(dataRow, 13).setStyle(dataStyle);
+                    //用途
+                    cells.get(dataRow, 14).putValue(detail.getUsage());
+                    cells.get(dataRow, 14).setStyle(dataStyle);
+                    dataRow++;
+                }
+            } else {
+                dataRow++;
+            }
+            // 对0-8列根据采购详情中物品数量进行合并行（当详情数量大于1时才需要合并）
+            if (detailCount > 1) {
+                for (int col = 0; col <= 8; col++) {
+                    cells.merge(startRow, col, detailCount, 1);
+                    // 设置合并后单元格的样式（垂直居中）
+                    Style mergeStyle = cells.get(startRow, col).getStyle();
+                    mergeStyle.setVerticalAlignment(TextAlignmentType.CENTER);
+                    cells.get(startRow, col).setStyle(mergeStyle);
+                }
+            }
+            seq++;
+        }
+        //保存excel，并提供web下载
+        workbook.save(outputStream, SaveFormat.XLSX);
     }
 
 

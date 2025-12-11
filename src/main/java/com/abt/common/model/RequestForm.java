@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 
 import static com.abt.oa.OAConstants.QUERY_MODE_ALL;
 
+
 /**
  * client请求参数
  */
@@ -101,7 +102,7 @@ public class RequestForm {
      * 没分页
      */
     public boolean noPaging() {
-       return limit == 0;
+        return limit == 0;
     }
 
 

@@ -3,6 +3,7 @@ package com.abt.material.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.JsonUtil;
+import com.abt.common.util.TimeUtil;
 import com.abt.material.entity.*;
 import com.abt.material.model.*;
 import com.abt.material.service.StockService;
@@ -227,8 +228,7 @@ public class StockController {
     @PostMapping("/chk/import")
     public R<List<MaterialDetailDTO>> importCheckBill(MultipartFile file, String orderJson, HttpServletRequest request) throws JsonProcessingException {
         SystemFile systemFile = iFileService.saveFile(file, savedRoot, "stockCheckBill", true, true);
-        StockOrder order = JsonUtil.toObject(orderJson, new TypeReference<StockOrder>() {
-        });
+        StockOrder order = JsonUtil.toObject(orderJson, new TypeReference<StockOrder>() {});
         File f = new File(systemFile.getFullPath());
         order.setFileList(JsonUtil.toJson(systemFile));
         order = stockService.importCheckBill(f, order);
@@ -352,7 +352,6 @@ public class StockController {
 
     /**
      * 月报汇总
-     *你
      * @param yearMonth yyyy-mm 年月
      */
     @GetMapping("/summary/month")
@@ -427,5 +426,31 @@ public class StockController {
         }
     }
 
+
+    /**
+     * 导出采购明细
+     * @throws IOException 
+     * @throws JsonProcessingException 
+     */
+    @GetMapping("/export/purchase/dtl")
+    public void exportPurchasingDetails(HttpServletResponse response, @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate, @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) throws JsonProcessingException, IOException  {
+        try {
+            stockService.createPurchasingDetailExcel(response.getOutputStream(), startDate, endDate);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("UTF-8");
+            String fileName = "礼品采购明细(" + TimeUtil.toYYYY_MM_DDString(startDate) + " 至 " + TimeUtil.toYYYY_MM_DDString(endDate) + ").xlsx";
+            response.setHeader("Content-Disposition",
+                    "attachment; filename*=UTF-8''" + java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            final R<Object> fail = R.fail("下载礼品采购明细Excel失败!");
+            response.getWriter().println(JsonUtil.toJson(fail));
+        }
+        
+    }
 
 }

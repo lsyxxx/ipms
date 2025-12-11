@@ -177,8 +177,11 @@ abt:
         template: template/sbct_samplelist_rock.xlsx
       fluid:
         template: template/sbct_samplelist_fluid.xlsx
+      form:
+        template: template/sbct_form_export.xlsx
       export:
         dir: C:\\Users\\Administrator\\Desktop\\temp\\
+
 
   # --- settlement
   settlement:

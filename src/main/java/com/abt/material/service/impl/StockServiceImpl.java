@@ -18,7 +18,6 @@ import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.camunda.feel.syntaxtree.In;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -724,7 +723,7 @@ public class StockServiceImpl implements StockService {
         cells.get(curRow, 0).setStyle(tableHeader);
         cells.get(curRow, 1).putValue("出入数量");
         cells.get(curRow, 1).setStyle(tableHeader);
-        cells.get(curRow, 2).putValue("使用人");
+        cells.get(curRow, 2).putValue("领用人");
         cells.get(curRow, 2).setStyle(tableHeader);
         cells.get(curRow, 3).putValue("用途");
         cells.get(curRow, 3).setStyle(tableHeader);
@@ -858,12 +857,8 @@ public class StockServiceImpl implements StockService {
                 stock.setUsername(String.format("%s\n(%s)", stock.getUsername(), stock.getDeptName()));
             }
             //用途
-            String bizType = "";
-            if (StringUtils.isNotBlank(stock.getBizType())) {
-                bizType = String.format("(%s)", stock.getBizType());
-            }
             final String str = Stream.of(stock.getUsage(), stock.getRemark(), stock.getOrderRemark()).filter(StringUtils::isNotBlank).collect(Collectors.joining(";"));
-            stock.setUsage(bizType + str);
+            stock.setUsage(str);
             //数量
             final int stockType = stock.getStockType();
             switch (stockType) {
@@ -978,5 +973,79 @@ public class StockServiceImpl implements StockService {
         return null;
     }
 
+    @Override
+    public void createPurchasingDetailExcel(OutputStream outputStream, LocalDate startDate, LocalDate endDate) throws Exception {
+        
+        List<PurchaseDetailDTO> list = purchaseApplyDetailRepository.findPurchaseDetailDTOList(GIFT_TYPE, startDate, endDate);
+
+        //创建excel
+        Workbook workbook = new Workbook();
+        Worksheet worksheet = workbook.getWorksheets().get(0);
+        Cells cells = worksheet.getCells();
+        // 标题行，粗体
+        Style headerStyle = createCommonStyle(workbook);
+        headerStyle.getFont().setBold(true);
+        headerStyle.getFont().setSize(14);
+        cells.insertRow(0);
+        cells.get(0, 0).putValue(String.format("礼品采购明细(%s 至 %s)", TimeUtil.toYYYY_MM_DDString(startDate), TimeUtil.toYYYY_MM_DDString(endDate)));
+        cells.get(0, 0).setStyle(headerStyle);
+        cells.getRows().get(0).setHeight(54);
+        cells.merge(0, 0, 1, 7);
+
+        //表格标题：序号，品名，单位，数量，单价/元，总额/元，采购日期
+        //表格标题格式，粗体，12号字，行高35
+        Style tableHeaderStyle = createCommonStyle(workbook);
+        tableHeaderStyle.getFont().setBold(true);
+        tableHeaderStyle.getFont().setSize(12);
+        int rowIdx = 1;
+        cells.insertRow(rowIdx);
+        cells.get(rowIdx, 0).putValue("序号");
+        cells.get(rowIdx, 0).setStyle(tableHeaderStyle);
+        cells.get(rowIdx, 1).putValue("品名");
+        cells.get(rowIdx, 1).setStyle(tableHeaderStyle);
+        cells.get(rowIdx, 2).putValue("单位");
+        cells.get(rowIdx, 2).setStyle(tableHeaderStyle);
+        cells.get(rowIdx, 3).putValue("数量");
+        cells.get(rowIdx, 3).setStyle(tableHeaderStyle);
+        cells.get(rowIdx, 4).putValue("单价/元");
+        cells.get(rowIdx, 4).setStyle(tableHeaderStyle);
+        cells.get(rowIdx, 5).putValue("总额/元");
+        cells.get(rowIdx, 5).setStyle(tableHeaderStyle);
+        cells.get(rowIdx, 6).putValue("采购日期");
+        cells.get(rowIdx, 6).setStyle(tableHeaderStyle);
+        cells.getRows().get(rowIdx).setHeight(35);
+
+        //数据行
+        //数据格式
+        Style dataStyle = createCommonStyle(workbook);
+        dataStyle.getFont().setSize(11);
+        int index = 1;
+        for (PurchaseDetailDTO dto : list) {
+            rowIdx++;
+            cells.insertRow(rowIdx);
+            cells.get(rowIdx, 0).putValue(index++);
+            cells.get(rowIdx, 0).setStyle(dataStyle);
+            String name = dto.getMaterialName();
+            if (StringUtils.isNotBlank(dto.getSpecification())) {
+                name = name + "(" + dto.getSpecification() + ")";
+            }
+            cells.get(rowIdx, 1).putValue(name);
+            cells.get(rowIdx, 1).setStyle(dataStyle);
+            cells.get(rowIdx, 2).putValue(dto.getUnit());
+            cells.get(rowIdx, 2).setStyle(dataStyle);
+            cells.get(rowIdx, 3).putValue(dto.getQuantity());
+            cells.get(rowIdx, 3).setStyle(dataStyle);
+            cells.get(rowIdx, 4).putValue(dto.getPrice());
+            cells.get(rowIdx, 4).setStyle(dataStyle);
+            cells.get(rowIdx, 5).putValue(dto.getTotalPrice());
+            cells.get(rowIdx, 5).setStyle(dataStyle);
+            cells.get(rowIdx, 6).putValue(TimeUtil.toYYYY_MM_DDString(dto.getCreateTime()));
+            cells.get(rowIdx, 6).setStyle(dataStyle);
+            cells.getRows().get(rowIdx).setHeight(35);
+        }
+
+        //保存excel
+        workbook.save(outputStream, SaveFormat.XLSX);
+    }
 
 }

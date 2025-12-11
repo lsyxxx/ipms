@@ -3,10 +3,19 @@ package com.abt.wf.service.impl;
 import cn.idev.excel.FastExcel;
 import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
+import com.abt.common.util.MoneyUtil;
 import com.abt.common.util.TimeUtil;
+import com.abt.market.entity.StlmTestTemp;
+import com.abt.market.model.ImportSample;
+import com.abt.market.repository.StlmTestTempRepository;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
+import com.abt.testing.repository.EntrustRepository;
+import com.abt.testing.repository.SampleRegistCheckModeuleItemRepository;
+import com.abt.testing.repository.SampleRegistRepository;
+import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.SubcontractTesting;
 import com.abt.wf.entity.SubcontractTestingSample;
 import com.abt.wf.model.SbctSummaryData;
@@ -18,6 +27,8 @@ import com.abt.wf.repository.SubcontractTestingSampleRepository;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.SignatureService;
 import com.abt.wf.service.SubcontractTestingService;
+import com.aspose.cells.*;
+
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +43,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,7 +55,7 @@ import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_SBCT;
  *
  */
 @Service(DEF_KEY_SBCT)
-public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonServiceImpl<SubcontractTesting, SubcontractTestingRequestForm> implements SubcontractTestingService{
+public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonServiceImpl<SubcontractTesting, SubcontractTestingRequestForm> implements SubcontractTestingService {
 
     private final IdentityService identityService;
     private final RepositoryService repositoryService;
@@ -61,7 +74,10 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
 
     private final SubcontractTestingRepository subcontractTestingRepository;
     private final SubcontractTestingSampleRepository subcontractTestingSampleRepository;
-
+    private final EntrustRepository entrustRepository;
+    private final SampleRegistRepository sampleRegistRepository;
+    private final SampleRegistCheckModeuleItemRepository sampleRegistCheckModeuleItemRepository;
+    private final StlmTestTempRepository stlmTestTempRepository;
 
     @Value("${abt.wf.sbct.rock.template}")
     private String rockSampleListTemplate;
@@ -72,13 +88,16 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
     @Value("${abt.wf.sbct.export.dir}")
     private String sampleListExportDir;
 
+    @Value("${abt.wf.sbct.form.template}")
+    private String formTemplate;
+
     public SubcontractTestingServiceImpl(IdentityService identityService, RepositoryService repositoryService,
                                          RuntimeService runtimeService, TaskService taskService,
                                          FlowOperationLogService flowOperationLogService,
                                          @Qualifier("sqlServerUserService") UserService userService,
-                                         @Qualifier("sbctBpmnModelInstance")BpmnModelInstance subcontractTestingBpmnModelInstance, IFileService fileService, HistoryService historyService,
+                                         @Qualifier("sbctBpmnModelInstance") BpmnModelInstance subcontractTestingBpmnModelInstance, IFileService fileService, HistoryService historyService,
                                          SignatureService signatureService,
-                                         SubcontractTestingRepository subcontractTestingRepository, SubcontractTestingSampleRepository subcontractTestingSampleRepository) {
+                                         SubcontractTestingRepository subcontractTestingRepository, SubcontractTestingSampleRepository subcontractTestingSampleRepository, EntrustRepository entrustRepository, SampleRegistRepository sampleRegistRepository, SampleRegistCheckModeuleItemRepository sampleRegistCheckModeuleItemRepository, StlmTestTempRepository stlmTestTempRepository) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
 
         this.identityService = identityService;
@@ -93,6 +112,10 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
         this.signatureService = signatureService;
         this.subcontractTestingRepository = subcontractTestingRepository;
         this.subcontractTestingSampleRepository = subcontractTestingSampleRepository;
+        this.entrustRepository = entrustRepository;
+        this.sampleRegistRepository = sampleRegistRepository;
+        this.sampleRegistCheckModeuleItemRepository = sampleRegistCheckModeuleItemRepository;
+        this.stlmTestTempRepository = stlmTestTempRepository;
     }
 
 
@@ -117,7 +140,6 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
         if (!exists) {
             throw new BusinessException(String.format("外送申请单(%s)不存在", id));
         }
-
 
 
     }
@@ -389,7 +411,6 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
     }
 
 
-
     private String getKey(SubcontractTestingSample sample) {
         return sample.getNewSampleNo() + sample.getCheckModuleId();
     }
@@ -416,4 +437,232 @@ public class SubcontractTestingServiceImpl extends AbstractWorkflowCommonService
         return subcontractTestingSampleRepository.getSummaryData(ids);
     }
 
+
+    @Override
+    public void createFormExcel(String id, OutputStream outputStream) throws Exception {
+        // 从template中读取工作簿
+        Workbook workbook = new Workbook(formTemplate);
+        // 数据
+        SubcontractTesting entity = loadWithSampleList(id);
+        Worksheet worksheet = workbook.getWorksheets().get(0);
+        createFormSheet(worksheet, entity);
+        // //汇总数据
+        // List<SbctSummaryData> summaryData = getSummaryData(List.of(entity.getId()));
+        // createSummarySheet(worksheet, cells, summaryData);
+        //样品清单
+        Worksheet sampleSheet = workbook.getWorksheets().get("样品清单");
+        createSampleSheet(sampleSheet, entity.getSampleList());
+
+        // 保存到输出流
+        workbook.save(outputStream, SaveFormat.XLSX);
+    }
+
+    private void createFormSheet(Worksheet worksheet, SubcontractTesting entity) {
+        Cells cells = worksheet.getCells();
+        // 第2行：申请编号和申请日期
+        cells.get("B2").putValue(entity.getId());
+        cells.get("E2").putValue(TimeUtil.toYYYY_MM_DDString(entity.getCreateDate()));
+
+        // 第3行：经办人、部门、班组
+        cells.get("B3").putValue(entity.getCreateUsername());
+        cells.get("D3").putValue(entity.getCreateDeptName());
+        cells.get("F3").putValue(entity.getCreateTeamName());
+
+        // 第4行：样品种类、样品数量
+        cells.get("B4").putValue(entity.getSampleType());
+        cells.get("D4").putValue(entity.getSampleNum());
+
+        // 第5行：外送原因
+        cells.get("B5").putValue(entity.getReason());
+
+        // 第6行：外送费用
+        if (entity.getCost() != null) {
+            cells.get("B6").putValue(entity.getCost());
+        }
+        //外送金额大写
+        cells.get("D6").putValue(MoneyUtil.toUpperCase(entity.getCost().toString()));
+        // 第7行：委托单位
+        cells.get("B7").putValue(entity.getSubcontractCompanyName());
+
+        // 第8行：纳税人识别号
+        cells.get("B8").putValue(entity.getTaxNo());
+
+        // 第9行：是否评价、是否需要CMA、是否开具（发票）
+        cells.get("B9").putValue(booleanToYesNo(entity.getIsSubcontractCompany()));
+        cells.get("D9").putValue(booleanToYesNo(entity.getIsCMA()));
+        cells.get("F9").putValue(booleanToYesNo(entity.getIsInvoice()));
+
+        // 第11行：是否签订合同、是否开口合同、是否现金
+        cells.get("B10").putValue(booleanToYesNo(entity.getIsContract()));
+        cells.get("D10").putValue(booleanToYesNo(entity.getIsOpenContract()));
+        cells.get("F11").putValue(booleanToYesNo(entity.getIsCash()));
+
+        // 第12行：计划送样日期、计划验收日期、计划交付日期
+        if (entity.getPlanSendSampleDate() != null) {
+            cells.get("B11").putValue(entity.getPlanSendSampleDate().toString());
+        }
+        if (entity.getPlanAcceptDate() != null) {
+            cells.get("D11").putValue(entity.getPlanAcceptDate().toString());
+        }
+        if (entity.getPlanCompletionDate() != null) {
+            cells.get("F11").putValue(entity.getPlanCompletionDate().toString());
+        }
+
+        // 第13行：交付内容
+        if (entity.getReportDelivery() != null && !entity.getReportDelivery().isEmpty()) {
+            cells.get("B12").putValue(String.join("、", entity.getReportDelivery()));
+        }
+
+        // 第14行：备注
+        cells.get("B13").putValue(entity.getRemarks());
+
+        // 第15行：样品清单（文件名）
+        if (entity.getUploadSampleList() != null && !entity.getUploadSampleList().isEmpty()) {
+            String fileNames = entity.getUploadSampleList().stream()
+                    .map(SystemFile::getOriginalName)
+                    .collect(java.util.stream.Collectors.joining("、"));
+            cells.get("B14").putValue(fileNames);
+        } else {
+            cells.get("B14").putValue("无附件");
+        }
+
+        // 第16行：上传合同（文件名）
+        if (entity.getContractFile() != null && !entity.getContractFile().isEmpty()) {
+            String contractFileNames = entity.getContractFile().stream()
+                    .map(SystemFile::getOriginalName)
+                    .collect(java.util.stream.Collectors.joining("、"));
+            cells.get("B15").putValue(contractFileNames);
+        } else {
+            cells.get("B15").putValue("无附件");
+        }
+
+        List<FlowOperationLog> logs = flowOperationLogService.findLogsByEntityId(entity.getId());
+        createApprovalLog(worksheet, cells, logs);
+    }
+
+    public void createSummarySheet(Worksheet worksheet, Cells cells, List<SbctSummaryData> summaryData) {
+        if (summaryData == null || summaryData.isEmpty()) {
+            return;
+        }
+        //标题
+        cells.get(0, 0).putValue("项目编号");
+        cells.get(0, 1).putValue("检测编号");
+        cells.get(0, 2).putValue("检测项目名称");
+        cells.get(0, 3).putValue("样品数量");
+
+    }
+
+    /**
+     * 样品清单sheet
+     *
+     * @param worksheet
+     * @param samples:  样品列表
+     */
+    public void createSampleSheet(Worksheet worksheet, List<SubcontractTestingSample> samples) {
+        if (samples == null || samples.isEmpty()) {
+            return;
+        }
+        Cells cells = worksheet.getCells();
+        //标题
+        cells.get(0, 0).putValue("项目编号");
+        cells.get(0, 1).putValue("检测编号");
+        cells.get(0, 2).putValue("检测项目名称");
+        cells.get(0, 3).putValue("井号");
+
+        //数据
+        int rowIdx = 1;
+        for (SubcontractTestingSample sample : samples) {
+            cells.get(rowIdx, 0).putValue(sample.getEntrustId());
+            cells.get(rowIdx, 1).putValue(sample.getNewSampleNo());
+            cells.get(rowIdx, 2).putValue(sample.getCheckModuleName());
+            cells.get(rowIdx, 3).putValue(sample.getWellNo());
+            rowIdx++;
+        }
+    }
+
+    /**
+     * 审批记录
+     */
+    private void createApprovalLog(Worksheet worksheet, Cells cells, List<FlowOperationLog> logs) {
+        //logs 按时间排序
+        logs.sort(Comparator.comparing(FlowOperationLog::getTaskStartTime));
+        // 获取excel注释
+        final CommentCollection comments = worksheet.getComments();
+        int startRow = -1;
+        if (comments != null) {
+            for (int i = 0; i < comments.getCount(); i++) {
+                final Comment comment = comments.get(i);
+                String note = comment.getNote();
+                if (note != null && note.contains("log_start")) {
+                    startRow = comment.getRow();
+                }
+            }
+        }
+        if (startRow < 0) {
+            return;
+        }
+        startRow = startRow + 1;
+        for (FlowOperationLog log : logs) {
+            cells.get("A" + startRow).putValue(log.getTaskName());
+            cells.get("B" + startRow).putValue(log.getOperatorName());
+            cells.get("C" + startRow).putValue(log.getTaskResult());
+            cells.get("D" + startRow).putValue(log.getComment());
+            cells.get("E" + startRow).putValue(TimeUtil.toYYYY_MM_DDString(log.getTaskEndTime()));
+            startRow++;
+        }
+    }
+
+
+    /**
+     * 将Boolean类型转换为"是"或"否"
+     *
+     * @param value Boolean值
+     * @return "是"或"否"
+     */
+    private String booleanToYesNo(Boolean value) {
+        if (value == null) {
+            return "否";
+        } else {
+            return value ? "是" : "否";
+        }
+    }
+
+
+    @Override
+    public String importBySamples(List<ImportSample> list)  {
+        //1. 校验
+        //1.1 校验必填项是否为空, 并指出是哪一行的
+        list.forEach(i -> {
+            if (StringUtils.isBlank(i.getProjectNo())) {
+                throw new BusinessException("第" + (list.indexOf(i) + 1) + "行项目编号不能为空，请检查项目编号是否正确");
+            }
+            if (StringUtils.isBlank(i.getSampleNo())) {
+                throw new BusinessException("第" + (list.indexOf(i) + 1) + "行检测编号不能为空，请检查检测编号是否正确");
+            }
+            if (StringUtils.isBlank(i.getCheckModuleId())) {
+                throw new BusinessException("第" + (list.indexOf(i) + 1) + "行检测项目编码不能为空，请检查检测项目编码是否正确");
+            }
+            //单价
+            if (StringUtils.isBlank(i.getPrice())) {
+                throw new BusinessException("第" + (list.indexOf(i) + 1) + "行单价不能为空，请检查单价是否正确");
+            }
+            // 单价是否位数字
+            try {
+                new BigDecimal(i.getPrice());
+            } catch (NumberFormatException e) {
+                throw new BusinessException("第" + (list.indexOf(i) + 1) + "行单价(" + i.getPrice() + ")不是数字，请检查单价是否正确");
+            }
+        });
+
+        // 写入数据库
+        String tempId = UUID.randomUUID().toString();
+        List<StlmTestTemp> stlmTestTemps = new ArrayList<>();
+        for (ImportSample sample : list) {
+            StlmTestTemp stlmTestTemp = StlmTestTemp.from(sample, tempId);
+            stlmTestTemps.add(stlmTestTemp);
+        }
+        stlmTestTempRepository.saveAllAndFlush(stlmTestTemps);
+        
+        return tempId;
+    }
 }

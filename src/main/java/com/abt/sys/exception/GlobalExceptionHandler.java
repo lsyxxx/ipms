@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public R<Exception> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public R<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error("参数校验失败: ", e);
         BindingResult bindingResult = e.getBindingResult();
         String messages = bindingResult.getAllErrors()

@@ -10,22 +10,28 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Entrust;
+import com.abt.testing.entity.SampleRegist;
+import com.abt.testing.entity.SampleRegistCheckModeuleItem;
 import com.abt.testing.repository.EntrustRepository;
+import com.abt.testing.repository.SampleRegistCheckModeuleItemRepository;
 import com.abt.testing.repository.SampleRegistRepository;
 import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.repository.InvoiceApplyRepository;
 import com.aspose.cells.*;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.OutputStream;
 import java.math.BigDecimal;
@@ -33,16 +39,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
-  *
-  */
+ *
+ */
 @Service
 @Slf4j
 public class SettlementServiceImpl implements SettlementService {
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    private final SettlementMainRepository  settlementMainRepository;
+    private final SettlementMainRepository settlementMainRepository;
     private final ExpenseItemRepository expenseItemRepository;
     private final TestItemRepository testItemRepository;
     private final SettlementRelationRepository settlementRelationRepository;
@@ -51,12 +53,16 @@ public class SettlementServiceImpl implements SettlementService {
     private final EntrustRepository entrustRepository;
     private final InvoiceApplyRepository invoiceApplyRepository;
     private final SampleRegistRepository sampleRegistRepository;
+    private final SampleRegistCheckModeuleItemRepository sampleRegistCheckModeuleItemRepository;
+    private final StlmSmryTempRepository stlmSmryTempRepository;
+
+    private final StlmTestTempRepository stlmTestTempRepository;
 
 
     @Value("${abt.settlement.excel.template}")
     private String settlementTemplate;
 
-    public SettlementServiceImpl(SettlementMainRepository settlementMainRepository, ExpenseItemRepository expenseItemRepository, TestItemRepository testItemRepository, SettlementRelationRepository settlementRelationRepository, SaleAgreementRepository saleAgreementRepository, SettlementSummaryRepository settlementSummaryRepository, EntrustRepository entrustRepository, InvoiceApplyRepository invoiceApplyRepository, SampleRegistRepository sampleRegistRepository) {
+    public SettlementServiceImpl(SettlementMainRepository settlementMainRepository, ExpenseItemRepository expenseItemRepository, TestItemRepository testItemRepository, SettlementRelationRepository settlementRelationRepository, SaleAgreementRepository saleAgreementRepository, SettlementSummaryRepository settlementSummaryRepository, EntrustRepository entrustRepository, InvoiceApplyRepository invoiceApplyRepository, SampleRegistRepository sampleRegistRepository, SampleRegistCheckModeuleItemRepository sampleRegistCheckModeuleItemRepository, StlmSmryTempRepository stlmSmryTempRepository, StlmTestTempRepository stlmTestTempRepository) {
         this.settlementMainRepository = settlementMainRepository;
         this.expenseItemRepository = expenseItemRepository;
         this.testItemRepository = testItemRepository;
@@ -66,6 +72,9 @@ public class SettlementServiceImpl implements SettlementService {
         this.entrustRepository = entrustRepository;
         this.invoiceApplyRepository = invoiceApplyRepository;
         this.sampleRegistRepository = sampleRegistRepository;
+        this.sampleRegistCheckModeuleItemRepository = sampleRegistCheckModeuleItemRepository;
+        this.stlmSmryTempRepository = stlmSmryTempRepository;
+        this.stlmTestTempRepository = stlmTestTempRepository;
     }
 
     @Transactional
@@ -80,17 +89,25 @@ public class SettlementServiceImpl implements SettlementService {
             String error = String.join(";\n", err);
             throw new BusinessException(error);
         }
-
-        if (main.isEntrustMode()) {
-            testItemRepository.deleteByMid(id);
-            testItemRepository.flush();
-            final List<TestItem> itemList = relateSamples(main);
-            Set<TestItem> set = new HashSet<>(itemList);
-            main.setTestItems(set);
+        //summarytab和testItems至少有一个有数据
+        if (CollectionUtils.isEmpty(save.getExpenseItems()) && CollectionUtils.isEmpty(save.getSummaryTab())) {
+            throw new BusinessException("样品汇总或样品列表数据为空，请至少输入一种数据!");
         }
 
-        main.calculateAllAmount();
-        
+
+        // 保存汇总表数据
+        if (main.getSummaryTab() != null && !main.getSummaryTab().isEmpty()) {
+            // 先删除原有的汇总数据
+            settlementSummaryRepository.deleteByMid(id);
+            settlementSummaryRepository.flush();
+
+            // 保存新的汇总数据
+            for (SettlementSummary summary : main.getSummaryTab()) {
+                summary.setMid(id);
+            }
+            settlementSummaryRepository.saveAllAndFlush(main.getSummaryTab());
+        }
+
         // 保存检测项目
         if (main.getTestItems() != null) {
             testItemRepository.deleteByMid(id);
@@ -101,7 +118,7 @@ public class SettlementServiceImpl implements SettlementService {
             }
             testItemRepository.saveAllAndFlush(main.getTestItems());
         }
-        
+
         // 保存其他费用
         if (main.getExpenseItems() != null) {
             expenseItemRepository.deleteByMid(id);
@@ -112,7 +129,7 @@ public class SettlementServiceImpl implements SettlementService {
             }
             expenseItemRepository.saveAllAndFlush(main.getExpenseItems());
         }
-        
+
         // 保存关联关系
         if (main.getRelations() != null) {
             settlementRelationRepository.deleteByMid(id);
@@ -123,25 +140,42 @@ public class SettlementServiceImpl implements SettlementService {
             settlementRelationRepository.saveAllAndFlush(main.getRelations());
         }
         
-        // 保存汇总表数据
-        if (main.getSummaryTab() != null && !main.getSummaryTab().isEmpty()) {
-            // 先删除原有的汇总数据
-            settlementSummaryRepository.deleteByMid(id);
-            settlementSummaryRepository.flush();
-            
-            // 保存新的汇总数据
-            for (SettlementSummary summary : main.getSummaryTab()) {
-                summary.setMid(id);
-            }
-            settlementSummaryRepository.saveAllAndFlush(main.getSummaryTab());
+        if (!CollectionUtils.isEmpty(main.getSummaryTab())) {
+            calculateBySummaryData(main);
+        } else {
+            //使用testItem计算
+            main.calculateAllAmount();
         }
+    }
+
+
+    /**
+     * 根据summaryTab计算所有数据
+     */
+    private void calculateBySummaryData(SettlementMain main) {
+        Set<SettlementSummary> summaryTab = main.getSummaryTab();
+        if (CollectionUtils.isEmpty(summaryTab)) {
+            return;
+        }
+        main.calculateExpenseAmount();
+
+        // 根据SettlementSummary的amount计算合计金额
+        BigDecimal grossAmount = BigDecimal.ZERO;
+        for (SettlementSummary summary : summaryTab) {
+            grossAmount = grossAmount.add(BigDecimal.valueOf(summary.getAmount()));
+        }
+        main.setGrossTestAmount(grossAmount);
+        main.setDiscountAmount(0.00);
+        main.setDiscountPercentage(0.00);
+        main.setNetTestAmount(grossAmount);
+        main.setTotalAmount(main.getNetTestAmount().add(main.getExpenseAmount()));
 
     }
 
+
     /**
      * 校验检测项目
-     * 1. 对应委托单中是否有该检测项目
-     * 2. 检测项目是否存在
+     *
      * @param summaryTab 汇总表
      */
     private List<String> validateCheckModules(Set<SettlementSummary> summaryTab) {
@@ -150,6 +184,7 @@ public class SettlementServiceImpl implements SettlementService {
         }
         List<String> errors = new ArrayList<>();
         final Set<String> entrustIds = summaryTab.stream().map(SettlementSummary::getEntrustId).collect(Collectors.toSet());
+        final Set<String> checkModuleIds = summaryTab.stream().map(SettlementSummary::getCheckModuleId).collect(Collectors.toSet());
         final Set<Tuple> checkModules = sampleRegistRepository.findDistinctCheckModulesByEntrustId(entrustIds);
         for (SettlementSummary summary : summaryTab) {
             String entrustNo = summary.getEntrustId();
@@ -157,14 +192,16 @@ public class SettlementServiceImpl implements SettlementService {
             if (StringUtils.isEmpty(entrustNo)) {
                 throw new BusinessException("汇总表：委托编号不能为空");
             }
-            if (StringUtils.isEmpty(checkModuleId)) {
-                throw new BusinessException("汇总表：检测项目代码不能为空");
-            }
+//            if (StringUtils.isEmpty(checkModuleId)) {
+//                throw new BusinessException("汇总表：检测项目代码不能为空");
+//            }
 
-            final Optional<Tuple> any = checkModules.stream().filter(i -> entrustNo.equals(i.get("entrustId")) && checkModuleId.equals(i.get("CheckModeuleId")))
-                    .findAny();
-            if (any.isEmpty()) {
-                errors.add(String.format("委托单%s没有检测项目:[%s(%s)]", entrustNo, summary.getCheckModuleName(), checkModuleId));
+            //不在校验是否关联检测项目，有checkModuleId的检查是否一致
+            if (StringUtils.isNotBlank(checkModuleId)) {
+                final Optional<Tuple> any = checkModules.stream().filter(i -> entrustNo.equals(i.get("entrustId")) && checkModuleId.equals(i.get("CheckModeuleId"))).findAny();
+                if (any.isEmpty()) {
+                    errors.add(String.format("委托单%s没有检测项目:[%s(%s)]，请先添加检测项目", entrustNo, summary.getCheckModuleName(), checkModuleId));
+                }
             }
         }
         return errors;
@@ -194,7 +231,7 @@ public class SettlementServiceImpl implements SettlementService {
             throw new BusinessException("未选择待结算的样品和检测项目");
         }
 
-         // 校验每个检测项目的未结算样品是否不小于提交的数量
+        // 校验每个检测项目的未结算样品是否不小于提交的数量
         final Map<String, List<TestItem>> tiMap = unsettledSampleNoList.stream()
                 .collect(Collectors.groupingBy(ti -> genKey(ti.getEntrustId(), ti.getCheckModuleId()), Collectors.toList()));
         List<String> error = new ArrayList<>();
@@ -266,7 +303,7 @@ public class SettlementServiceImpl implements SettlementService {
     public SettlementMain findSettlementMainWithAllItems(String id) {
         Objects.requireNonNull(id, "结算单ID不能为空");
         final SettlementMain main = settlementMainRepository.findOneWithAllItems(id);
-        
+
         // 加载关联合同
         final List<String> agreementIds = main.getAgreementIds();
         final List<SaleAgreement> agreements = saleAgreementRepository.findByIdIsIn(agreementIds);
@@ -344,10 +381,11 @@ public class SettlementServiceImpl implements SettlementService {
 
     /**
      * 结算单页面
+     *
      * @param settlementMain 结算单对象
-     * @param workbook workbook
+     * @param workbook       workbook
      */
-    public void createSummarySheet(SettlementMain settlementMain,  Workbook workbook) {
+    public void createSummarySheet(SettlementMain settlementMain, Workbook workbook) {
         // 从模板文件读取工作簿
         Worksheet worksheet = workbook.getWorksheets().get(0);
         Cells cells = worksheet.getCells();
@@ -447,6 +485,7 @@ public class SettlementServiceImpl implements SettlementService {
 //        cells.get(currentRow, 0).putValue(dateStr);
 //        cells.get(currentRow, 4).setStyle(dateStyle);
     }
+
     /**
      * 创建数据样式
      */
@@ -471,6 +510,7 @@ public class SettlementServiceImpl implements SettlementService {
         style.setVerticalAlignment(TextAlignmentType.CENTER);
         return style;
     }
+
     /**
      * 创建右对齐样式
      */
@@ -489,6 +529,7 @@ public class SettlementServiceImpl implements SettlementService {
 
     /**
      * 导出样品详情表
+     *
      * @param workbook workbook
      */
     public void createSampleListSheet(Workbook workbook, SettlementMain stlmMain) throws Exception {
@@ -555,7 +596,7 @@ public class SettlementServiceImpl implements SettlementService {
             //1. 查找开票
             final List<Double> invList = settlementRelationRepository.findInvoiceApplyByMid(main.getId());
             //2. 开票金额合计是否为0，先这样简单处理
-            if (invList != null &&!invList.isEmpty()) {
+            if (invList != null && !invList.isEmpty()) {
                 final double sum = invList.stream().filter(Objects::nonNull).mapToDouble(Double::doubleValue).sum();
                 if (sum != 0.00) {
                     // 合计不为0，不能作废
@@ -591,10 +632,305 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
 
-    /**
-     * 按样品编号导入
-     */
-    public void importBySamples() {
+    @Override
+    public String importBySamples(List<ImportSample> list) {
+        //1. 校验  
+        //1.1 必填列不能为空
+        list.forEach(i -> {
+            //1.1 项目编号不能存在空的，并指出是哪一行的
+            if (StringUtils.isBlank(i.getProjectNo())) {
+                throw new BusinessException("第" + (list.indexOf(i) + 1) + "行项目编号不能为空，请检查项目编号是否正确");
+            }
 
+            //1.2 检测编号不能存在空的，并指出是哪一行的
+            if (StringUtils.isBlank(i.getSampleNo())) {
+                throw new BusinessException("第" + (list.indexOf(i) + 1) + "行检测编号不能为空，请检查检测编号是否正确");
+            }
+
+            //1.3 检测项目代码不能存在空的，并指出是哪一行的
+            if (StringUtils.isBlank(i.getCheckModuleId())) {
+                throw new BusinessException("第" + (list.indexOf(i) + 1) + "行检测项目编码不能为空，请检查检测项目编码是否正确");
+            }
+
+            //1.4 单价是否为数字
+            if (StringUtils.isNotBlank(i.getPrice())) {
+                try {
+                    new BigDecimal(i.getPrice());
+                } catch (NumberFormatException e) {
+                    throw new BusinessException("第" + (list.indexOf(i) + 1) + "行单价(" + i.getPrice() + ")不是数字，请检查单价是否正确");
+                }
+            }
+        });
+
+
+        //1.2 项目编号是否存在，并指出哪个不存在
+        // 提取所有的项目编号（去重）
+        Set<String> projectNos = list.stream()
+                .map(ImportSample::getProjectNo)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+        // 查询数据库中存在的项目
+        List<Entrust> existingEntrusts = entrustRepository.findByIdIn(projectNos);
+        Set<String> existingProjectNos = existingEntrusts.stream()
+                .map(Entrust::getId)
+                .collect(Collectors.toSet());
+        // 找出不存在的项目编号
+        Set<String> notExistingProjectNos = projectNos.stream()
+                .filter(projectNo -> !existingProjectNos.contains(projectNo))
+                .collect(Collectors.toSet());
+
+        // 如果有不存在的项目编号，抛出异常
+        if (!notExistingProjectNos.isEmpty()) {
+            String missingProjects = String.join("、", notExistingProjectNos);
+            throw new BusinessException("以下项目编号不存在: " + missingProjects + ",请检测项目编号是否正确或录入项目");
+        }
+
+        //1.2 检测编号是否存在
+        Set<String> sampleNos = list.stream()
+                .map(ImportSample::getSampleNo)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+        List<SampleRegist> existingSampleRegists = sampleRegistRepository.findByNewSampleNoIn(sampleNos);
+        Set<String> existingSampleNos = existingSampleRegists.stream()
+                .map(SampleRegist::getNewSampleNo)
+                .collect(Collectors.toSet());
+        Set<String> notExistingSampleNos = sampleNos.stream()
+                .filter(sampleNo -> !existingSampleNos.contains(sampleNo))
+                .collect(Collectors.toSet());
+        if (!notExistingSampleNos.isEmpty()) {
+            String missingSamples = String.join("、", notExistingSampleNos);
+            throw new BusinessException("以下检测编号不存在: " + missingSamples + ",请检查检测编号是否正确或录入检测编号");
+        }
+
+        //1.3 样品的检测项目是否存在
+        //提取所有检测项目code
+        Set<String> checkModuleIds = list.stream()
+                .map(ImportSample::getCheckModuleId)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+        //查询数据库中存在的检测项目
+        List<SampleRegistCheckModeuleItem> existingSampleRegistCheckModeuleItems = sampleRegistCheckModeuleItemRepository.findByCheckModeuleIdIn(checkModuleIds);
+        Set<String> notExistingCheckModuleIds = existingSampleRegistCheckModeuleItems.stream()
+                .map(SampleRegistCheckModeuleItem::getCheckModeuleId)
+                .filter(checkModuleId -> !checkModuleIds.contains(checkModuleId))
+                .collect(Collectors.toSet());
+        if (!notExistingCheckModuleIds.isEmpty()) {
+            String missingCheckModuleIds = String.join("、", notExistingCheckModuleIds);
+            throw new BusinessException("以下检测项目代码不存在: " + missingCheckModuleIds + ",请检查检测项目代码是否正确或录入检测项目");
+        }
+
+        //2. 写入数据库
+        //2.1 写入stlm_test_temp表
+        String tempMid = UUID.randomUUID().toString();
+        List<StlmTestTemp> stlmTestTemps = new ArrayList<>();
+        for (ImportSample sample : list) {
+            StlmTestTemp stlmTestTemp = StlmTestTemp.from(sample, tempMid);
+            //关联样品信息
+            existingSampleRegists.stream().filter(i -> i.getNewSampleNo().equals(sample.getSampleNo())).findFirst().ifPresent(i -> {
+                stlmTestTemp.setOldSampleNo(i.getOldSampleNo());
+                stlmTestTemp.setWellNo(i.getJname());
+            });
+
+            stlmTestTemps.add(stlmTestTemp);
+        }
+        stlmTestTempRepository.saveAllAndFlush(stlmTestTemps);
+
+        return tempMid;
     }
+
+
+    @Transactional
+    @Override
+    public void deleteTempByTempMid(String tempMid) {
+        stlmTestTempRepository.deleteAllByTempMid(tempMid);
+    }
+
+    @Override
+    public Page<StlmTestTemp> findTestTempByQuery(TestTempRequestForm requestForm) {
+        final PageRequest pageable = requestForm.createPageable(Sort.by("sampleNo", "checkModuleId"));
+        // 使用Example查询
+        StlmTestTemp exampleEntity = new StlmTestTemp();
+        if (StringUtils.isNotBlank(requestForm.getTempMid())) {
+            exampleEntity.setTempMid(requestForm.getTempMid());
+        }
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnoreNullValues()  // 忽略null值，只匹配非null字段
+                .withIgnoreCase();       // 忽略大小写
+        Example<StlmTestTemp> example = Example.of(exampleEntity, matcher);
+
+        return stlmTestTempRepository.findAll(example, pageable);
+    }
+
+    @Override
+    public List<SettlementSummary> createSummaryTableByTestTemp(String tempMid) {
+        final List<StlmTestTemp> list = stlmTestTempRepository.findAllByTempMid(tempMid);
+
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return stlmTestTempRepository.createSummaryDataByTemp(tempMid);
+    }
+
+    /**
+     * 导出委托单样品到Excel
+     *
+     * @param items        样品检测项目列表
+     * @param outputStream 输出流
+     * @throws Exception 导出异常
+     */
+    @Override
+    public void exportTestTempToExcel(List<SampleRegistCheckModeuleItem> items, OutputStream outputStream) throws Exception {
+        //创建工作簿
+        Workbook workbook = new Workbook();
+        //创建工作表
+        Worksheet worksheet = workbook.getWorksheets().get(0);
+        //写入表头：项目编号，检测编号，检测项目编码，检测项目名称，单价，备注
+        worksheet.getCells().get(0, 0).putValue("项目编号");
+        worksheet.getCells().get(0, 1).putValue("检测编号");
+        worksheet.getCells().get(0, 2).putValue("检测项目编码");
+        worksheet.getCells().get(0, 3).putValue("检测项目名称");
+        worksheet.getCells().get(0, 4).putValue("单价");
+        worksheet.getCells().get(0, 5).putValue("备注");
+        //表头样式，加粗，黑色
+        Style headerStyle = workbook.createStyle();
+        headerStyle.getFont().setBold(true);
+        headerStyle.getFont().setSize(14);
+        headerStyle.setHorizontalAlignment(TextAlignmentType.CENTER);
+        headerStyle.setVerticalAlignment(TextAlignmentType.CENTER);
+        worksheet.getCells().get(0, 0).setStyle(headerStyle);
+        worksheet.getCells().get(0, 1).setStyle(headerStyle);
+        worksheet.getCells().get(0, 2).setStyle(headerStyle);
+        worksheet.getCells().get(0, 3).setStyle(headerStyle);
+        worksheet.getCells().get(0, 4).setStyle(headerStyle);
+        worksheet.getCells().get(0, 5).setStyle(headerStyle);
+
+        //写入数据
+        //数据样式
+        Style dataStyle = workbook.createStyle();
+        dataStyle.getFont().setSize(11);
+        dataStyle.setHorizontalAlignment(TextAlignmentType.CENTER);
+        dataStyle.setVerticalAlignment(TextAlignmentType.CENTER);
+        dataStyle.setBorder(BorderType.TOP_BORDER, CellBorderType.THIN, Color.getBlack());
+        dataStyle.setBorder(BorderType.BOTTOM_BORDER, CellBorderType.THIN, Color.getBlack());
+        dataStyle.setBorder(BorderType.LEFT_BORDER, CellBorderType.THIN, Color.getBlack());
+        dataStyle.setBorder(BorderType.RIGHT_BORDER, CellBorderType.THIN, Color.getBlack());
+        int rowIdx = 1;
+        for (SampleRegistCheckModeuleItem item : items) {
+            worksheet.getCells().get(rowIdx, 0).putValue(item.getEntrustId());
+            worksheet.getCells().get(rowIdx, 0).setStyle(dataStyle);
+            worksheet.getCells().get(rowIdx, 1).putValue(item.getSampleRegistId());
+            worksheet.getCells().get(rowIdx, 1).setStyle(dataStyle);
+            worksheet.getCells().get(rowIdx, 2).putValue(item.getCheckModeuleId());
+            worksheet.getCells().get(rowIdx, 2).setStyle(dataStyle);
+            worksheet.getCells().get(rowIdx, 3).putValue(item.getCheckModeuleName());
+            worksheet.getCells().get(rowIdx, 3).setStyle(dataStyle);
+            worksheet.getCells().get(rowIdx, 4).putValue("");
+            worksheet.getCells().get(rowIdx, 4).setStyle(dataStyle);
+            worksheet.getCells().get(rowIdx, 5).putValue("");
+            worksheet.getCells().get(rowIdx, 5).setStyle(dataStyle);
+            rowIdx++;
+        }
+
+        //保存excel到输出流
+        workbook.save(outputStream, SaveFormat.XLSX);
+    }
+
+
+    @Override
+    public String saveTempSummaryData(MultipartFile file) throws Exception {
+
+        //1. 读取数据，使用aspose.cell
+        Workbook workbook = new Workbook(file.getInputStream());
+        Worksheet worksheet = workbook.getWorksheets().get(0);
+        Cells cells = worksheet.getCells();
+        //2. 校验标题列是否正确
+        //2.1 项目编号列
+        validateTitleColumn(cells, "项目编号", 0, 0);
+        //2.3 检测项目编码列
+        validateTitleColumn(cells, "检测项目编码", 0, 1);
+        //2.4 检测项目名称列
+        validateTitleColumn(cells, "检测项目名称", 0, 2);
+        //2.4 结算数量列
+        validateTitleColumn(cells, "结算数量", 0, 3);
+        //2.5 单价列
+        validateTitleColumn(cells, "单价", 0, 4);
+        //2.6 金额合计
+        validateTitleColumn(cells, "金额合计", 0, 5);
+
+        //3. 读取数据
+        List<StlmSmryTemp> summaryList = new ArrayList<>();
+        String tempId = UUID.randomUUID().toString();
+        for (int rowIdx = 1; rowIdx < cells.getRows().getCount(); rowIdx++) {
+            StlmSmryTemp summary = new StlmSmryTemp();
+            //项目编号必填
+            String entrustId = cells.get(rowIdx, 0).getStringValue().trim();
+            if (StringUtils.isEmpty(entrustId)) {
+                throw new BusinessException(String.format("第%d行项目编号为空", rowIdx));
+            }
+            String checkModuleId = cells.get(rowIdx, 1).getStringValue().trim();
+            String checkModuleName = cells.get(rowIdx, 2).getStringValue().trim();
+            // 检测项目编码和名称至少有一个
+            if (StringUtils.isEmpty(checkModuleId) && StringUtils.isEmpty(checkModuleName)) {
+                throw new BusinessException(String.format("第%d行检测项目编码和名称不能同时为空", rowIdx));
+            }
+            // 结算数量必须有
+            String sampleNum = cells.get(rowIdx, 3).getStringValue().trim();
+            if (StringUtils.isEmpty(sampleNum)) {
+                throw new BusinessException(String.format("第%d行结算数量为空", rowIdx));
+            }
+            // 单价必须填
+            String price = cells.get(rowIdx, 4).getStringValue().trim();
+            if (StringUtils.isBlank(price)) {
+                throw new BusinessException(String.format("第%d行单价为空", rowIdx));
+            }
+            // 校验是否是数字
+            try {
+                new BigDecimal(price);
+            } catch (NumberFormatException e) {
+                throw new BusinessException(String.format("第%d行单价(%s)不是数字，请检查单价是否正确", rowIdx, price));
+            }
+            // 金额合计必须填
+            String amount = cells.get(rowIdx, 5).getStringValue().trim();
+            // 校验是否是数字
+            try {
+                new BigDecimal(amount);
+            } catch (NumberFormatException e) {
+                throw new BusinessException(String.format("第%d行金额合计(%s)不是数字，请检查金额合计是否正确", rowIdx, amount));
+            }
+            if (StringUtils.isBlank(amount)) {
+                throw new BusinessException(String.format("第%d行金额合计为空", rowIdx));
+            }
+            summary.setEntrustId(entrustId);
+            summary.setCheckModuleId(checkModuleId);
+            summary.setCheckModuleName(checkModuleName);
+            summary.setSampleNum(Integer.parseInt(sampleNum));
+            summary.setPrice(new BigDecimal(price));
+            summary.setAmount(new BigDecimal(amount));
+            summary.setSortNo(rowIdx);
+            summary.setMid(tempId);
+            summary.setUnit(cells.get(rowIdx, 6).getStringValue().trim());
+            summary.setRemark(cells.get(rowIdx, 7).getStringValue().trim());
+            summaryList.add(summary);
+        }
+        //4. 保存数据
+        stlmSmryTempRepository.saveAllAndFlush(summaryList);
+        return tempId;
+    }
+
+
+    private void validateTitleColumn(Cells cells, String name, int rowIdx, int colIdx) {
+        Cell cell = cells.get(rowIdx, colIdx);
+        String columnName = cell.getStringValue().trim();
+        if (!columnName.equals(name)) {
+            throw new BusinessException(String.format("标题(%s:[%d,%d])不正确，请检查标题列是否正确", columnName, rowIdx, colIdx));
+        }
+    }
+
+
+    @Override
+    public List<StlmSmryTemp> getTempSummaryData(String tempId) {
+        return stlmSmryTempRepository.findByMidOrderBySortNo(tempId);
+    }
+
 }

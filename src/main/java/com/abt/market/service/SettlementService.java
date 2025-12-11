@@ -1,12 +1,11 @@
 package com.abt.market.service;
 
-import com.abt.market.entity.SettlementMain;
-import com.abt.market.entity.SettlementRelation;
+import com.abt.market.entity.*;
 import com.abt.market.model.*;
 import com.abt.sys.model.entity.CustomerInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -87,4 +86,43 @@ public interface SettlementService {
      * 更新状态
      */
     void updateSaveType(SaveType saveType, String id);
+
+    /**
+     * 按检测编号导入
+     *
+     * @param list 导入excel数据
+     */
+    String importBySamples(List<ImportSample> list);
+
+    /**
+     * 根据tempMid删除stlm_test_temp
+     * @param tempMid stlm_test_temp的mid
+     */
+    void deleteTempByTempMid(String tempMid);
+
+    /**
+     * 查询
+     * @param requestForm 查询form
+     */
+    Page<StlmTestTemp> findTestTempByQuery(TestTempRequestForm requestForm);
+
+    /**
+     * 使用testTemp临时数据生成summaryTableData
+     */
+    List<SettlementSummary> createSummaryTableByTestTemp(String tempMid);
+
+    /**
+     * 导出委托单样品到Excel
+     * @param items 样品检测项目列表
+     * @param outputStream 输出流
+     */
+    void exportTestTempToExcel(List<com.abt.testing.entity.SampleRegistCheckModeuleItem> items, java.io.OutputStream outputStream) throws Exception;
+
+    /**
+     * 保存临时导入的数据
+     * @return String
+     */
+    String saveTempSummaryData(MultipartFile file) throws Exception;
+
+    List<StlmSmryTemp> getTempSummaryData(String tempId);
 }

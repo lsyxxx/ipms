@@ -46,7 +46,9 @@ public class PurchaseApplyMain extends WorkflowBase{
     /**
      * 采购申请表单
      */
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @OneToMany(mappedBy = "main", cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE}, orphanRemoval = true, fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<PurchaseApplyDetail> details = new ArrayList<>();
 
     //-- 审批
