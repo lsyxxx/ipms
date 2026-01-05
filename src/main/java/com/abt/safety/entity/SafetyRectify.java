@@ -1,7 +1,7 @@
 package com.abt.safety.entity;
 
 import com.abt.safety.model.RectifyResult;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;

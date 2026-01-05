@@ -61,7 +61,13 @@ public class SettlementSummary {
     private String checkModuleName;
 
     /**
-     * 结算数量(不等于系统内录入样品数量)
+     * 我方实际检测样品数量（等于系统内样品数量）
+     */
+    @Column(name="test_num", columnDefinition = "smallint")
+    private Integer testNum;
+
+    /**
+     * 最终结算数量(不等于系统内录入样品数量)=甲方认定数量
      */
     @Column(name="sample_num", columnDefinition = "smallint")
     private int sampleNum;
@@ -71,6 +77,14 @@ public class SettlementSummary {
      */
     @Column(name="price_", columnDefinition = "decimal(10,2)")
     private Double price;
+
+//    /**
+//     * 扣款费用
+//     * 扣款费用=单价*最终结算数量
+//     * 甲方未认定数量=系统内数量(testNum)-最终结算数量(sampleNum)
+//     */
+//    @Column(name="deduction_amt", columnDefinition = "decimal(10,2)")
+//    private Double deductionAmount;
 
     /**
      * 合计金额
@@ -91,12 +105,6 @@ public class SettlementSummary {
     @Column(name="remark_", length = 512)
     private String remark;
 
-    /**
-     * 该项目的检测项目样品是否认为全部结算
-     * 结算数量可能是录入样品数量有出入（比如甲方仅认定部分样品）
-     */
-    @Column(name="is_all_settled", columnDefinition = "BIT")
-    private Boolean isAllSettled;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -118,6 +126,24 @@ public class SettlementSummary {
         this.price = price;
         this.sampleNum = Integer.parseInt(sampleNum + "");
         this.amount = amount;
+    }
+
+
+    public static SettlementSummary from(StlmSmryTemp temp, String mid) {
+        SettlementSummary smry = new SettlementSummary();
+        if (temp != null) {
+            smry.setMid(mid);
+            smry.setEntrustId(temp.getEntrustId());
+            smry.setCheckModuleId(temp.getCheckModuleId());
+            smry.setCheckModuleName(temp.getCheckModuleName());
+            smry.setSampleNum(temp.getSampleNum());
+            smry.setPrice(temp.getPrice().doubleValue());
+            smry.setAmount(temp.getAmount().doubleValue());
+            smry.setUnit(temp.getUnit());
+            smry.setRemark(temp.getRemark());
+            smry.setSortNo(temp.getSortNo());
+        }
+        return smry;
     }
 
 }

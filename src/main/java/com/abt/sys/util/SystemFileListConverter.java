@@ -1,7 +1,7 @@
 package com.abt.sys.util;
 
 import com.abt.common.util.JsonUtil;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

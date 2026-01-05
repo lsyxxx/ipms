@@ -9,7 +9,7 @@ import com.abt.market.entity.StlmTestTemp;
 import com.abt.market.model.ImportSample;
 import com.abt.market.repository.StlmTestTempRepository;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.testing.repository.EntrustRepository;

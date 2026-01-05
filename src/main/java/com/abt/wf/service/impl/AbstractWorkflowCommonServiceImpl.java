@@ -9,7 +9,7 @@ import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
@@ -17,7 +17,6 @@ import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.UserSignature;
 import com.abt.wf.entity.WorkflowBase;
 import com.abt.wf.entity.act.ActRuTask;
-import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
@@ -727,8 +726,8 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
 
     @Override
     public void export(R requestForm, HttpServletResponse response, String templatePath, String newFileName, Class<T> dataClass) throws IOException {
-        Assert.notNull(response, "response is null!");
-        Assert.notNull(templatePath, "templatePath is null!");
+        Assert.notNull(response, "Response is null!");
+        Assert.notNull(templatePath, "TemplatePath is null!");
         if (!Files.isRegularFile(Paths.get(templatePath))) {
             throw new BusinessException("未添加导出模板!");
         }

@@ -1,6 +1,6 @@
 package com.abt.sys.service;
 
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;

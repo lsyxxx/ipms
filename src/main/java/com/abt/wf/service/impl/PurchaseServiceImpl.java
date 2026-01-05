@@ -6,6 +6,7 @@ import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.OrgDTO;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.entity.FlowOperationLog;
@@ -49,7 +50,6 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -214,9 +214,13 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
             //查询登录用户的
             requestForm.setUserid(TokenUtil.getUseridFromAuthToken());
         }
+        // 转换部门列表
+        requestForm.convertDeptList();
         Pageable pageable = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Order.desc("createDate")));
         final Page<PurchaseApplyMain> paged = purchaseApplyMainRepository.findAllByQueryPaged(requestForm.getUserid(),
                 requestForm.getQuery(), requestForm.getState(),
+                requestForm.isDeptIgnore(),
+                requestForm.getDeptList(),
                 TimeUtil.toLocalDateTime(requestForm.getStartDate()),
                 TimeUtil.toLocalDateTime(requestForm.getEndDate()),
                 pageable);
@@ -494,18 +498,24 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         return file;
     }
 
+
     @Override
-    public void createPurchaseListExcel(List<PurchaseApplyMain> list, OutputStream outputStream) throws Exception {
-        //使用aspose创建excel
+    public void createPurchaseListExcel(List<PurchaseApplyMain> list, OutputStream outputStream) throws Exception { 
         Workbook workbook = new Workbook();
-        Worksheet worksheet = workbook.getWorksheets().get(0);
-        Cells cells = worksheet.getCells();
+        createPurchaseMainListSheet(workbook, list);
+        createPurchaseDetailListSheet(workbook, list);
+        workbook.save(outputStream, SaveFormat.XLSX);
+    }
+
+    /**
+     * 生成含明细的列表
+     */
+    public void createPurchaseDetailListSheet(Workbook workbook, List<PurchaseApplyMain> list) throws Exception {
         //表格标题: 序号	审批编号	总金额	状态	申请人	部门	创建时间	是否验收	验收时间	物品名称	规格型号	单位	采购数量	单价	用途
-        Style tableHeaderStyle = workbook.createStyle();
-        tableHeaderStyle.getFont().setBold(true);
-        tableHeaderStyle.getFont().setSize(12);
-        tableHeaderStyle.setHorizontalAlignment(TextAlignmentType.CENTER);
-        tableHeaderStyle.setVerticalAlignment(TextAlignmentType.CENTER);
+        Style tableHeaderStyle = createTableHeaderStyle(workbook);
+        Worksheet worksheet = workbook.getWorksheets().get(1);
+        worksheet.setName("含明细列表");
+        Cells cells = worksheet.getCells();
         cells.insertRow(0);
         cells.get(0, 0).putValue("序号");
         cells.get(0, 0).setStyle(tableHeaderStyle);
@@ -621,8 +631,83 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
             }
             seq++;
         }
-        //保存excel，并提供web下载
-        workbook.save(outputStream, SaveFormat.XLSX);
+    }
+
+    private Style createDataStyle(Workbook workbook) {
+        Style dataStyle = workbook.createStyle();
+        dataStyle.getFont().setSize(10);
+        dataStyle.getFont().setColor(Color.getBlack());
+        return dataStyle;
+    }
+
+    private Style createTableHeaderStyle(Workbook workbook) {
+        Style tableHeaderStyle = workbook.createStyle();
+        tableHeaderStyle.getFont().setBold(true);
+        tableHeaderStyle.getFont().setSize(12);
+        tableHeaderStyle.setHorizontalAlignment(TextAlignmentType.CENTER);
+        tableHeaderStyle.setVerticalAlignment(TextAlignmentType.CENTER);
+        return tableHeaderStyle;
+    }
+
+    /**
+     * 包含采购申请单
+     */
+    private void createPurchaseMainListSheet(Workbook workbook, List<PurchaseApplyMain> list) {
+        Worksheet worksheet = workbook.getWorksheets().get(0);
+        worksheet.setName("采购记录");
+        Cells cells = worksheet.getCells();
+        //表格标题: 序号	审批编号	总金额	状态	申请人	部门	创建时间	是否验收	验收时间
+        Style tableHeaderStyle = createTableHeaderStyle(workbook);
+        cells.insertRow(0);
+        cells.get(0, 0).putValue("序号");
+        cells.get(0, 0).setStyle(tableHeaderStyle);
+        cells.get(0, 1).putValue("审批编号");
+        cells.get(0, 1).setStyle(tableHeaderStyle);
+        cells.get(0, 2).putValue("总金额");
+        cells.get(0, 2).setStyle(tableHeaderStyle);
+        cells.get(0, 3).putValue("状态");
+        cells.get(0, 3).setStyle(tableHeaderStyle);
+        cells.get(0, 4).putValue("申请人");
+        cells.get(0, 4).setStyle(tableHeaderStyle);
+        cells.get(0, 5).putValue("部门");
+        cells.get(0, 5).setStyle(tableHeaderStyle);
+        cells.get(0, 6).putValue("创建时间");
+        cells.get(0, 6).setStyle(tableHeaderStyle);
+        cells.get(0, 7).putValue("是否验收");
+        cells.get(0, 7).setStyle(tableHeaderStyle);
+        cells.get(0, 8).putValue("验收时间");
+        cells.get(0, 8).setStyle(tableHeaderStyle);
+        int dataRow = 1;
+        Style dataStyle = createDataStyle(workbook);
+        int seq = 1;
+        for (PurchaseApplyMain main : list) {
+            cells.insertRow(dataRow);
+            cells.get(dataRow, 0).putValue(seq++);
+            cells.get(dataRow, 0).setStyle(dataStyle);
+            cells.get(dataRow, 1).putValue(main.getId());
+            cells.get(dataRow, 1).setStyle(dataStyle);
+            cells.get(dataRow, 2).putValue(main.getCost());
+            cells.get(dataRow, 2).setStyle(dataStyle);
+            cells.get(dataRow, 3).putValue(main.getBusinessState());
+            cells.get(dataRow, 3).setStyle(dataStyle);
+            cells.get(dataRow, 4).putValue(main.getCreateUsername());
+            cells.get(dataRow, 4).setStyle(dataStyle);
+            cells.get(dataRow, 5).putValue(main.getCreateDeptName());
+            cells.get(dataRow, 5).setStyle(dataStyle);
+            cells.get(dataRow, 6).putValue(TimeUtil.toYYYY_MM_DDString(main.getCreateDate()));
+            cells.get(dataRow, 6).setStyle(dataStyle);
+            cells.get(dataRow, 7).putValue(main.isAccepted() ? "是" : "否");
+            cells.get(dataRow, 7).setStyle(dataStyle);
+            cells.get(dataRow, 8).putValue(TimeUtil.toYYYY_MM_DDString(main.getAcceptDate()));
+            cells.get(dataRow, 8).setStyle(dataStyle);
+            dataRow++;
+        }
+    }
+
+
+    @Override
+    public List<OrgDTO> findDeptOptions() {
+        return purchaseApplyMainRepository.findDeptAll();
     }
 
 

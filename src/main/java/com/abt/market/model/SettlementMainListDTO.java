@@ -1,11 +1,8 @@
 package com.abt.market.model;
 
-import com.abt.market.entity.SettlementRelation;
-import com.abt.sys.model.entity.SystemFile;
-import com.abt.wf.entity.InvoiceApply;
+import com.abt.sys.model.SystemFile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

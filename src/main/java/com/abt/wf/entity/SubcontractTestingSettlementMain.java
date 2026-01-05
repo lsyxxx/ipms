@@ -1,6 +1,6 @@
 package com.abt.wf.entity;
 
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.wf.model.SbctSummaryData;
 import com.abt.wf.model.TaskCheckUser;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -122,7 +122,13 @@ public interface SettlementService {
      * 保存临时导入的数据
      * @return String
      */
-    String saveTempSummaryData(MultipartFile file) throws Exception;
+    String importBySummaryData(MultipartFile file) throws Exception;
 
     List<StlmSmryTemp> getTempSummaryData(String tempId);
+
+    /**
+     * 逻辑删除
+     * @param id id
+     */
+    void logicDelete(String id);
 }

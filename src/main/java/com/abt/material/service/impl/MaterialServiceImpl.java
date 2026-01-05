@@ -5,7 +5,6 @@ import com.abt.material.entity.MaterialDetail;
 import com.abt.material.model.MaterialRequestForm;
 import com.abt.material.repository.MaterialDetailRepository;
 import com.abt.material.service.MaterialService;
-import com.abt.sys.exception.BusinessException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -44,6 +43,17 @@ public class MaterialServiceImpl implements MaterialService {
                         Sort.Order.asc("name"),
                         Sort.Order.asc("specification")
                 ));
+    }
+
+
+    @Override
+    public List<MaterialDetail> findListByActive() {
+        return materialDetailRepository.findListByActive();
+    }
+
+    @Override
+    public List<MaterialDetail> findListByUnactive() {
+        return materialDetailRepository.findListByUnactive();
     }
 
     @Override

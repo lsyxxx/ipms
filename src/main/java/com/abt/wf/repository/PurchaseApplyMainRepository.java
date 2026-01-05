@@ -1,5 +1,6 @@
 package com.abt.wf.repository;
 
+import com.abt.sys.model.dto.OrgDTO;
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseSummaryAmount;
 import org.apache.poi.ss.usermodel.PageMargin;
@@ -46,10 +47,11 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
             "   or dtl.name like %:query%" +
             "   ) " +
             "and (:userid is null or :userid = '' or e.createUserid = :userid) " +
+            "and (:deptIgnore = true or e.createDeptId in :deptList) " +
             "AND (:startDate IS NULL  OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL  OR e.createDate <= :endDate) "
     )
-    Page<PurchaseApplyMain> findAllByQueryPaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+    Page<PurchaseApplyMain> findAllByQueryPaged(String userid, String query, String state, boolean deptIgnore, List<String> deptList, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
 
     @Query("select distinct e from PurchaseApplyMain e " +
@@ -119,5 +121,12 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
     )
     Page<PurchaseApplyMain> findMyDonePaged(String userid, String query, String state, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
+    @Query("""
+    select distinct new com.abt.sys.model.dto.OrgDTO(e.createDeptId, o.name)
+    from PurchaseApplyMain e
+    left join Org o on e.createDeptId = o.id
+    where e.createDeptId is not null
+""")
+    List<OrgDTO> findDeptAll();
 
 }

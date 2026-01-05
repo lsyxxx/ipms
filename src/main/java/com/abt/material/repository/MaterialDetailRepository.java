@@ -41,4 +41,15 @@ public interface MaterialDetailRepository extends JpaRepository<MaterialDetail, 
     List<IMaterialDetailDTO> findAllWithInventories(List<String> materialTypeIds, List<String> warehouseIds);
 
     List<MaterialDetail> findByIdIn(Collection<String> ids);
+
+
+    @Query("""
+    select m from MaterialDetail m where (m.isActive is null or m.isActive = '' or m.isActive = '1')
+""")
+    List<MaterialDetail> findListByActive();
+
+    @Query("""
+    select m from MaterialDetail m where (m.isActive = '2')
+""")
+    List<MaterialDetail> findListByUnactive();
 }

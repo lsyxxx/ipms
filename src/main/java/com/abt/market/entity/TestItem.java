@@ -108,4 +108,19 @@ public class TestItem {
         this.oldSampleNo = oldSampleNo;
         this.wellNo = wellNo;
     }
+
+
+    public static TestItem from(StlmTestTemp temp, String mid) {
+        TestItem item = new TestItem();
+        item.setMid(mid);
+        item.setEntrustId(temp.getEntrustId());
+        item.setSampleNo(temp.getSampleNo());
+        item.setCheckModuleId(temp.getCheckModuleId());
+        item.setCheckModuleName(temp.getCheckModuleName());
+        item.setSampleUnit(temp.getSampleUnit());
+        item.setPrice(temp.getPrice());
+        item.setOldSampleNo(temp.getOldSampleNo());
+        item.setWellNo(temp.getWellNo());   
+        return item;
+    }
 }

@@ -72,6 +72,12 @@ public class StlmTestTemp {
     @Column(name = "well_no")
     private String wellNo;
 
+    /**
+     * 导入时的排序
+     */
+    @Column(name="sort_no")
+    private Integer sortNo;
+
     public static StlmTestTemp from(ImportSample sample, String tempMid) {
         if (StringUtils.isBlank(tempMid)) {
             throw new IllegalArgumentException("tempMid不能为空");

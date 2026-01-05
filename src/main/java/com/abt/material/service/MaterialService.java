@@ -14,6 +14,13 @@ public interface MaterialService {
      */
     List<MaterialDetail> findAll();
 
+    /**
+     * 查询启用的
+     */
+    List<MaterialDetail> findListByActive();
+
+    List<MaterialDetail> findListByUnactive();
+
     Page<MaterialDetail> findByDeptPageable(MaterialRequestForm requestForm);
 
     /**

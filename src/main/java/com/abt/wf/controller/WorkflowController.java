@@ -7,7 +7,7 @@ import com.abt.common.util.JsonUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.model.dto.UserView;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.sys.service.IFileService;
 import com.abt.wf.entity.CostDetail;
 import com.abt.wf.entity.WorkflowBase;

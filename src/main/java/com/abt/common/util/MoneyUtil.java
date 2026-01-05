@@ -29,7 +29,7 @@ public class MoneyUtil {
         StringBuilder result = new StringBuilder();
         String integer = "";
         String point = "";
-        if (money.matches("^[0-9]{0,16}|[0-9]{0,16}+([.]{0,1}[0-9]{0,2})$")) {
+        if (money.matches("^[0-9]{0,16}|[0-9]{0,16}+([.]{0,1}[0-9]{0,4})$")) {
             BigDecimal bigDecimal = new BigDecimal(money);
             money = new DecimalFormat("##0.00").format(bigDecimal);
             integer = money.split("\\.").length == 1 ? money : money.split("\\.")[0];
@@ -74,7 +74,7 @@ public class MoneyUtil {
                 }
             }
         } else {
-            return "请检查金额（整数位不能超过16位,小数不能超过2位）";
+            return "请检查金额（整数位不能超过16位,小数不能超过4位）";
         }
         return result.toString();
     }
@@ -89,6 +89,12 @@ public class MoneyUtil {
         nf.setMinimumFractionDigits(scale); // 保留小数位
         nf.setMaximumFractionDigits(scale); // 最大小数位
         return nf.format(number);
+    }
+
+    public static void main(String[] args) {
+        String money = "4200";
+        final boolean matches = money.matches("^[0-9]{0,16}|[0-9]{0,16}+([.]{0,1}[0-9]{0,2})$");
+        System.out.println(matches);
     }
 
 

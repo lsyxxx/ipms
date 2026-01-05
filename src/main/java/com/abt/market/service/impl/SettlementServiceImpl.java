@@ -35,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -80,20 +81,21 @@ public class SettlementServiceImpl implements SettlementService {
     @Transactional
     @Override
     public void save(SettlementMain main) {
+        if (!CollectionUtils.isEmpty(main.getSummaryTab())) {
+            calculateBySummaryData(main);
+        }
         final SettlementMain save = settlementMainRepository.save(main);
         final String id = save.getId();
-
-
-        final List<String> err = validateCheckModules(main.getSummaryTab());
-        if (!err.isEmpty()) {
-            String error = String.join(";\n", err);
-            throw new BusinessException(error);
-        }
+        // 暂时去掉校验
+//        final List<String> err = validateCheckModules(main.getSummaryTab());
+//        if (!err.isEmpty()) {
+//            String error = String.join(";\n", err);
+//            throw new BusinessException(error);
+//        }
         //summarytab和testItems至少有一个有数据
-        if (CollectionUtils.isEmpty(save.getExpenseItems()) && CollectionUtils.isEmpty(save.getSummaryTab())) {
-            throw new BusinessException("样品汇总或样品列表数据为空，请至少输入一种数据!");
-        }
-
+//        if (CollectionUtils.isEmpty(save.getExpenseItems()) && CollectionUtils.isEmpty(save.getSummaryTab())) {
+//            throw new BusinessException("样品汇总或样品列表数据为空，请至少输入一种数据!");
+//        }
 
         // 保存汇总表数据
         if (main.getSummaryTab() != null && !main.getSummaryTab().isEmpty()) {
@@ -108,15 +110,17 @@ public class SettlementServiceImpl implements SettlementService {
             settlementSummaryRepository.saveAllAndFlush(main.getSummaryTab());
         }
 
+        testItemRepository.deleteByMid(id);
         // 保存检测项目
-        if (main.getTestItems() != null) {
-            testItemRepository.deleteByMid(id);
+        if (!CollectionUtils.isEmpty(main.getTestItems())) {
             testItemRepository.flush();
-
             for (TestItem testItem : main.getTestItems()) {
                 testItem.setMid(id);
             }
             testItemRepository.saveAllAndFlush(main.getTestItems());
+        } else if (StringUtils.isNotBlank(main.getTempSummaryId())) {
+            //有临时表的id，复制临时表的数据
+            testItemRepository.insertByStlmTestTemp(main.getTempSummaryId(), main.getId());
         }
 
         // 保存其他费用
@@ -139,15 +143,7 @@ public class SettlementServiceImpl implements SettlementService {
             }
             settlementRelationRepository.saveAllAndFlush(main.getRelations());
         }
-        
-        if (!CollectionUtils.isEmpty(main.getSummaryTab())) {
-            calculateBySummaryData(main);
-        } else {
-            //使用testItem计算
-            main.calculateAllAmount();
-        }
     }
-
 
     /**
      * 根据summaryTab计算所有数据
@@ -157,19 +153,17 @@ public class SettlementServiceImpl implements SettlementService {
         if (CollectionUtils.isEmpty(summaryTab)) {
             return;
         }
-        main.calculateExpenseAmount();
-
         // 根据SettlementSummary的amount计算合计金额
         BigDecimal grossAmount = BigDecimal.ZERO;
         for (SettlementSummary summary : summaryTab) {
             grossAmount = grossAmount.add(BigDecimal.valueOf(summary.getAmount()));
         }
+        grossAmount = grossAmount.setScale(2, RoundingMode.HALF_UP);
         main.setGrossTestAmount(grossAmount);
         main.setDiscountAmount(0.00);
         main.setDiscountPercentage(0.00);
         main.setNetTestAmount(grossAmount);
-        main.setTotalAmount(main.getNetTestAmount().add(main.getExpenseAmount()));
-
+        main.setTotalAmount(main.getNetTestAmount().add(main.getExpenseAmount()).setScale(2,  RoundingMode.HALF_UP));
     }
 
 
@@ -218,9 +212,9 @@ public class SettlementServiceImpl implements SettlementService {
      * @return List<TestItem> TestItem 结算的样品
      */
     public List<TestItem> relateSamples(SettlementMain main) {
-        if (!main.isEntrustMode()) {
-            return null;
-        }
+//        if (!main.isEntrustMode()) {
+//            return null;
+//        }
         final Set<SettlementSummary> summaryTab = main.getSummaryTab();
         Set<String> entrustIds = summaryTab.stream().map(SettlementSummary::getEntrustId).collect(Collectors.toSet());
         final Map<String, SettlementSummary> map = summaryTab.stream().collect(Collectors.toMap(st -> genKey(st.getEntrustId(), st.getCheckModuleId()), st -> st));
@@ -369,13 +363,78 @@ public class SettlementServiceImpl implements SettlementService {
             // 从模板文件读取工作簿
             Workbook workbook = new Workbook(settlementTemplate);
             createSummarySheet(settlementMain, workbook);
-            createSampleListSheet(workbook, settlementMain);
+            if (CollectionUtils.isEmpty(settlementMain.getTestItems())) {
+                createSampleListSheet(workbook, settlementMain);
+            }
+            createSummaryExcelSheet(settlementMain, workbook);
             workbook.save(outputStream, SaveFormat.XLSX);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException("生成结算单Excel失败", e);
         }
+    }
 
+    /**
+     * 汇总数据
+     * @param main
+     * @param workbook
+     */
+    public void createSummaryExcelSheet(SettlementMain main, Workbook workbook) {
+        Worksheet worksheet = workbook.getWorksheets().add("汇总表");
+        Cells cells = worksheet.getCells();
+        // 设置页面设置
+        PageSetup pageSetup = worksheet.getPageSetup();
+        pageSetup.setPaperSize(PaperSizeType.PAPER_A_4);
+        pageSetup.setOrientation(PageOrientationType.PORTRAIT);
+
+        //标题样式
+        Style headerStyle = workbook.createStyle();
+        headerStyle.getFont().setBold(true);
+        headerStyle.getFont().setSize(14);
+        headerStyle.setHorizontalAlignment(TextAlignmentType.CENTER);
+        headerStyle.setVerticalAlignment(TextAlignmentType.CENTER);
+        //标题:项目编号	检测项目编码	检测项目名称	实际样品数量	结算数量	单价	金额合计	备注
+        cells.get(0, 0).putValue("项目编号");
+        cells.get(0, 0).setStyle(headerStyle);
+        cells.get(0, 1).putValue("检测项目编码");
+        cells.get(0, 1).setStyle(headerStyle);
+        cells.get(0, 2).putValue("检测项目名称");
+        cells.get(0, 2).setStyle(headerStyle);
+        cells.get(0, 3).putValue("实际样品数量");
+        cells.get(0, 3).setStyle(headerStyle);
+        cells.get(0, 4).putValue("结算数量");
+        cells.get(0, 4).setStyle(headerStyle);
+        cells.get(0, 5).putValue("单价");
+        cells.get(0, 5).setStyle(headerStyle);
+        cells.get(0, 6).putValue("金额合计");
+        cells.get(0, 6).setStyle(headerStyle);
+        cells.get(0, 7).putValue("备注");
+        cells.get(0, 7).setStyle(headerStyle);
+
+        //数据样式
+        Style dataStyle = createDataStyle(workbook);
+
+        //数据
+        int dataRow = 1;
+        for (SettlementSummary summary : main.getSummaryTab()) {
+            cells.get(dataRow, 0).putValue(summary.getEntrustId());
+            cells.get(dataRow, 0).setStyle(dataStyle);
+            cells.get(dataRow, 1).putValue(summary.getCheckModuleId());
+            cells.get(dataRow, 1).setStyle(dataStyle);
+            cells.get(dataRow, 2).putValue(summary.getCheckModuleName());
+            cells.get(dataRow, 2).setStyle(dataStyle);
+            cells.get(dataRow, 3).putValue(summary.getTestNum());
+            cells.get(dataRow, 3).setStyle(dataStyle);
+            cells.get(dataRow, 4).putValue(summary.getSampleNum());
+            cells.get(dataRow, 4).setStyle(dataStyle);
+            cells.get(dataRow, 5).putValue(summary.getPrice());
+            cells.get(dataRow, 5).setStyle(dataStyle);
+            cells.get(dataRow, 6).putValue(summary.getAmount());
+            cells.get(dataRow, 6).setStyle(dataStyle);
+            cells.get(dataRow, 7).putValue(summary.getRemark());
+            cells.get(dataRow, 7).setStyle(dataStyle);
+            dataRow++;
+        }
     }
 
 
@@ -632,6 +691,7 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
 
+    @Transactional
     @Override
     public String importBySamples(List<ImportSample> list) {
         //1. 校验  
@@ -723,6 +783,7 @@ public class SettlementServiceImpl implements SettlementService {
         //2.1 写入stlm_test_temp表
         String tempMid = UUID.randomUUID().toString();
         List<StlmTestTemp> stlmTestTemps = new ArrayList<>();
+        int idx = 0;
         for (ImportSample sample : list) {
             StlmTestTemp stlmTestTemp = StlmTestTemp.from(sample, tempMid);
             //关联样品信息
@@ -730,11 +791,14 @@ public class SettlementServiceImpl implements SettlementService {
                 stlmTestTemp.setOldSampleNo(i.getOldSampleNo());
                 stlmTestTemp.setWellNo(i.getJname());
             });
-
+            stlmTestTemp.setSortNo(idx);
             stlmTestTemps.add(stlmTestTemp);
+            idx++;
         }
         stlmTestTempRepository.saveAllAndFlush(stlmTestTemps);
 
+        //2.2 生成并写入stlm_smry_temp表
+        stlmSmryTempRepository.createSummaryByTestItemTemp(tempMid);
         return tempMid;
     }
 
@@ -838,7 +902,7 @@ public class SettlementServiceImpl implements SettlementService {
 
 
     @Override
-    public String saveTempSummaryData(MultipartFile file) throws Exception {
+    public String importBySummaryData(MultipartFile file) throws Exception {
 
         //1. 读取数据，使用aspose.cell
         Workbook workbook = new Workbook(file.getInputStream());
@@ -851,13 +915,14 @@ public class SettlementServiceImpl implements SettlementService {
         validateTitleColumn(cells, "检测项目编码", 0, 1);
         //2.4 检测项目名称列
         validateTitleColumn(cells, "检测项目名称", 0, 2);
-        //2.4 结算数量列
-        validateTitleColumn(cells, "结算数量", 0, 3);
+        //实际检测样品数量
+        validateTitleColumn(cells, "实际样品数量", 0, 3);
+        //2.4 结算数量列/甲方认定数量
+        validateTitleColumn(cells, "结算数量", 0, 4);
         //2.5 单价列
-        validateTitleColumn(cells, "单价", 0, 4);
+        validateTitleColumn(cells, "单价", 0, 5);
         //2.6 金额合计
-        validateTitleColumn(cells, "金额合计", 0, 5);
-
+        validateTitleColumn(cells, "金额合计", 0, 6);
         //3. 读取数据
         List<StlmSmryTemp> summaryList = new ArrayList<>();
         String tempId = UUID.randomUUID().toString();
@@ -874,48 +939,53 @@ public class SettlementServiceImpl implements SettlementService {
             if (StringUtils.isEmpty(checkModuleId) && StringUtils.isEmpty(checkModuleName)) {
                 throw new BusinessException(String.format("第%d行检测项目编码和名称不能同时为空", rowIdx));
             }
+            //实际样品数量
+            String testNum = cells.get(rowIdx, 3).getStringValue().trim();
+            if (StringUtils.isEmpty(testNum)) {
+                throw new BusinessException(String.format("第%d行实际样品数量为空", rowIdx));
+            }
             // 结算数量必须有
-            String sampleNum = cells.get(rowIdx, 3).getStringValue().trim();
+            String sampleNum = cells.get(rowIdx, 4).getStringValue().trim();
             if (StringUtils.isEmpty(sampleNum)) {
                 throw new BusinessException(String.format("第%d行结算数量为空", rowIdx));
             }
             // 单价必须填
-            String price = cells.get(rowIdx, 4).getStringValue().trim();
+            String price = cells.get(rowIdx, 5).getStringValue().trim();
             if (StringUtils.isBlank(price)) {
                 throw new BusinessException(String.format("第%d行单价为空", rowIdx));
             }
             // 校验是否是数字
-            try {
-                new BigDecimal(price);
-            } catch (NumberFormatException e) {
-                throw new BusinessException(String.format("第%d行单价(%s)不是数字，请检查单价是否正确", rowIdx, price));
-            }
+            validateNumber(testNum, String.format("第%d行%s(%s)不是数字，请检查", rowIdx, "单价", testNum));
             // 金额合计必须填
-            String amount = cells.get(rowIdx, 5).getStringValue().trim();
+            String amount = cells.get(rowIdx, 6).getStringValue().trim();
             // 校验是否是数字
-            try {
-                new BigDecimal(amount);
-            } catch (NumberFormatException e) {
-                throw new BusinessException(String.format("第%d行金额合计(%s)不是数字，请检查金额合计是否正确", rowIdx, amount));
-            }
             if (StringUtils.isBlank(amount)) {
                 throw new BusinessException(String.format("第%d行金额合计为空", rowIdx));
             }
+            validateNumber(testNum, String.format("第%d行%s(%s)不是数字，请检查", rowIdx, "金额合计", testNum));
             summary.setEntrustId(entrustId);
             summary.setCheckModuleId(checkModuleId);
             summary.setCheckModuleName(checkModuleName);
+            summary.setTestNum(Integer.parseInt(testNum));
             summary.setSampleNum(Integer.parseInt(sampleNum));
             summary.setPrice(new BigDecimal(price));
             summary.setAmount(new BigDecimal(amount));
             summary.setSortNo(rowIdx);
             summary.setMid(tempId);
-            summary.setUnit(cells.get(rowIdx, 6).getStringValue().trim());
             summary.setRemark(cells.get(rowIdx, 7).getStringValue().trim());
             summaryList.add(summary);
         }
         //4. 保存数据
         stlmSmryTempRepository.saveAllAndFlush(summaryList);
         return tempId;
+    }
+
+    private void validateNumber(String text, String message) {
+        try {
+            new BigDecimal(text);
+        } catch (NumberFormatException e) {
+            throw new BusinessException(message);
+        }
     }
 
 
@@ -931,6 +1001,28 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     public List<StlmSmryTemp> getTempSummaryData(String tempId) {
         return stlmSmryTempRepository.findByMidOrderBySortNo(tempId);
+    }
+
+    @Override
+    public void logicDelete(String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("结算单号不能为空!");
+        }
+        settlementMainRepository.logicDelete(id);
+    }
+
+    /**
+     * 导入样品-校验是否重复结算
+     *
+     * @param tempId 临时导入数据mid
+     * @return 重复的样品信息
+     */
+    public List<ValidateDuplicatedSampleDTO> validateDuplicatedSamples(String tempId) {
+        final List<ValidateDuplicatedSampleDTO> list = testItemRepository.checkTempDuplicatedSamples(tempId);
+        if (CollectionUtils.isEmpty(list)) {
+            return new ArrayList<>();
+        }
+        return list.stream().filter(ValidateDuplicatedSampleDTO::isDuplicated).toList();
     }
 
 }

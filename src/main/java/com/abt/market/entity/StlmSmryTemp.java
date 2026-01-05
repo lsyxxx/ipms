@@ -22,7 +22,7 @@ public class StlmSmryTemp {
     @Column(name = "id", nullable = false)
     private String id;
 
-    @Column(name = "amt_", precision = 10, scale = 2)
+    @Column(name = "amt_", precision = 12, scale = 3)
     private BigDecimal amount;
 
     @Size(max = 255)
@@ -41,7 +41,7 @@ public class StlmSmryTemp {
     @Column(name = "m_id")
     private String mid;
 
-    @Column(name = "price_", precision = 10, scale = 2)
+    @Column(name = "price_", precision = 12, scale = 3)
     private BigDecimal price;
 
     @Size(max = 512, message = "备注信息不能超过100字")
@@ -50,6 +50,22 @@ public class StlmSmryTemp {
 
     @Column(name = "sample_num")
     private Integer sampleNum;
+
+
+//    /**
+//     * 扣款费用
+//     * 扣款费用=单价*最终结算数量
+//     * 甲方未认定数量=系统内数量(testNum)-最终结算数量(sampleNum)
+//     */
+//    @Column(name="deduction_amt", columnDefinition = "decimal(10,2)")
+//    private Double deductionAmount;
+
+    /**
+     * 我方实际检测样品数量（等于系统内样品数量）
+     */
+    @Column(name="test_num", columnDefinition = "smallint")
+    private Integer testNum;
+
 
     @Column(name = "sort_no")
     private Integer sortNo;

@@ -11,7 +11,8 @@ public enum SaveType {
     SAVE("保存"),
     INVALID("作废"),
     INVOICE("已开票"),
-    PAYED("已支付")
+    PAYED("已支付"),
+    LOGIC_DEL("逻辑删除")
     ;
 
     private final String description;

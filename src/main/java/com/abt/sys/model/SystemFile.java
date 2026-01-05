@@ -1,14 +1,8 @@
-package com.abt.sys.model.entity;
+package com.abt.sys.model;
 
 import com.abt.common.model.AuditInfo;
-import com.abt.common.model.RequestFile;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Comment;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.format.datetime.DateFormatter;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,14 +14,12 @@ import java.util.UUID;
 /**
  * 文件系统
  */
-
-
-@Data
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class SystemFile extends AuditInfo {
+@Getter
+@Setter
+public class SystemFile {
 
     private String id;
 
@@ -61,7 +53,6 @@ public class SystemFile extends AuditInfo {
     private boolean isDeleted = false;
 
     private String base64;
-
 
     public SystemFile(MultipartFile file, String service, String filePath, Boolean withTime) {
         super();

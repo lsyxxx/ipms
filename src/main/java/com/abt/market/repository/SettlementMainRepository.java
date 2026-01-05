@@ -80,6 +80,7 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
               lower(t.sampleNo) like lower(concat('%', :testLike, '%')) or  
               lower(t.checkModuleName) like lower(concat('%', :testLike, '%'))
     ))
+    and m.isDel = false
     """)
     Page<SettlementMainListDTO> findMainOnlyByQuery(
         @Param("query") String query,
@@ -114,4 +115,9 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
     @Modifying
     @Query("update SettlementMain set saveType = :saveType where id = :id")
     void updateSaveType(SaveType saveType, String id);
+
+
+    @Modifying
+    @Query("update SettlementMain set isDel = true where id = :id")
+    void logicDelete(String id);
 }

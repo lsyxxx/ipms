@@ -3,7 +3,7 @@ package com.abt.wf.model;
 import com.abt.common.entity.Company;
 import com.abt.common.util.JsonUtil;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.Reimburse;
 import com.fasterxml.jackson.core.type.TypeReference;

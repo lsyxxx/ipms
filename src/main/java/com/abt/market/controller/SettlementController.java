@@ -73,14 +73,12 @@ public class SettlementController {
         return R.success(entity, "加载成功");
     }
 
+    /**
+     * 删除结算单
+     */
     @GetMapping("/delete")
     public R<Object> delete(String id) {
         final SettlementMain main = settlementService.findSettlementMainOnly(id);
-        if (SaveType.TEMP == main.getSaveType()) {
-            settlementService.delete(id);
-        } else {
-            throw new BusinessException("只能删除暂存的结算单!");
-        }
         return R.success("删除成功");
     }
 
@@ -211,7 +209,7 @@ public class SettlementController {
      */
     @PostMapping("/import/bysummary")
     public R<String> importSummaryData(@RequestParam("file") MultipartFile file) throws Exception {
-        final String tempId = settlementService.saveTempSummaryData(file);
+        final String tempId = settlementService.importBySummaryData(file);
         return R.success(tempId, "导入成功");
     }
 

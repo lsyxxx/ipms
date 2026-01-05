@@ -1,11 +1,10 @@
 package com.abt.common.util;
 
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 

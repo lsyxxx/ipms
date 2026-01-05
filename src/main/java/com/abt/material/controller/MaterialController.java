@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +30,19 @@ public class MaterialController {
     @GetMapping("/find/all")
     public R<List<MaterialDetail>> findAllMaterialDetails() {
         final List<MaterialDetail> all = materialService.findAll();
+        return R.success(all);
+    }
+
+    @GetMapping("/find/active")
+    public R<List<MaterialDetail>> findListBy(MaterialRequestForm requestForm) {
+        List<MaterialDetail> all = new ArrayList<>();
+        if (requestForm.getIsActive() == null) {
+            materialService.findAll();
+        } else if (requestForm.getIsActive()) {
+            all = materialService.findListByActive();
+        } else {
+            all = materialService.findListByUnactive();
+        }
         return R.success(all);
     }
 

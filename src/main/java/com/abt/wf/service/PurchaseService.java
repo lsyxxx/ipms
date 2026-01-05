@@ -1,5 +1,6 @@
 package com.abt.wf.service;
 
+import com.abt.sys.model.dto.OrgDTO;
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 
@@ -48,4 +49,6 @@ public interface PurchaseService extends WorkFlowService<PurchaseApplyMain>, Bus
      * 生成导出的采购列表数据
      */
     void createPurchaseListExcel(List<PurchaseApplyMain> list, OutputStream outputStream) throws Exception;
+
+    List<OrgDTO> findDeptOptions();
 }

@@ -5,6 +5,7 @@ import com.abt.common.model.R;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
+import com.abt.sys.model.dto.OrgDTO;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyMain;
@@ -149,6 +150,7 @@ public class PurchaseController {
 
     @GetMapping("/all")
     public R<Page<PurchaseApplyMain>> allList(@ModelAttribute PurchaseApplyRequestForm requestForm) {
+        requestForm.convertDeptList();
         final Page<PurchaseApplyMain> page = purchaseService.findAllByQueryPageable(requestForm);
         if (!requestForm.isHasDetails()) {
             //不包含details
@@ -319,8 +321,15 @@ public class PurchaseController {
             final R<Object> fail = R.fail("下载采购申请记录Excel失败!");
             response.getWriter().println(JsonUtil.convertJson(fail));
         }
-        
+    }
 
+    /**
+     * 获取部门列表
+     */
+    @GetMapping("/dept")
+    public R<List<OrgDTO>> findDeptOptions() {
+        final List<OrgDTO> deptOptions = purchaseService.findDeptOptions();
+        return R.success(deptOptions);
     }
 
     public void accessAccept(PurchaseApplyMain main) {

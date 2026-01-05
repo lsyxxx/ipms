@@ -1,9 +1,13 @@
 package com.abt.market.repository;
 
 import com.abt.market.entity.TestItem;
+import com.abt.market.model.ValidateDuplicatedSampleDTO;
+
 import jakarta.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Set;
@@ -46,4 +50,37 @@ public interface TestItemRepository extends JpaRepository<TestItem, String> {
     and concat(t.sampleNo, t.checkModuleId) in :keys
 """)
   List<TestItem> findSubcontractSettledSamples(Set<String> keys);
+
+
+    /**
+     * 从临时表stlm_test_temp复制数据到stlm_test
+     * @param tempId stlm_test_temp的m_id（临时关联ID）
+     * @param mainId stlm_test的m_id（实际主表ID）
+     */
+    @Modifying
+    @Query(value = """
+        INSERT INTO stlm_test (id, m_id, entrust_id, sample_no, check_module_id, check_module_name, sample_unit, price_, old_sample_no, well_no)
+        SELECT NEWID(), :mainId, entrust_id, sample_no, check_module_id, check_module_name, sample_unit, price_, old_sample_no, well_no
+        FROM stlm_test_temp
+        WHERE m_id = :tempId
+        """, nativeQuery = true)
+    void insertByStlmTestTemp(@Param("tempId") String tempId, @Param("mainId") String mainId);
+
+    @Query(value = """
+    select :tempId as tempId, 
+           a.sample_no as tempSampleNo, 
+           a.check_module_id as tempCheckModuleId, 
+           a.check_module_name as tempCheckModuleName,
+           b.sample_no as sampleNo, 
+           b.check_module_id as checkModuleId,
+           b.check_module_name as checkModuleName,
+           main.id as mid
+    from stlm_test_temp a 
+    left join stlm_test b on a.sample_no = b.sample_no and a.check_module_id = b.check_module_id
+    left join stlm_main main on main.id = b.mid 
+    where a.m_id = :tempId
+    and main.save_type <> 'INVALID'
+    and main.is_del <> 1
+""", nativeQuery = true)
+    List<ValidateDuplicatedSampleDTO> checkTempDuplicatedSamples(@Param("tempId") String tempId);
 }

@@ -32,4 +32,9 @@ public class MaterialRequestForm extends RequestForm {
      * 排序属性
      */
     private List<String> orderBy;
+
+
+    private Boolean isActive;
+
+    
 }

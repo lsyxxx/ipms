@@ -6,7 +6,7 @@ import com.abt.salary.entity.SalaryHeader;
 import com.abt.salary.entity.SalaryMain;
 import com.abt.salary.entity.SalarySlip;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.wf.entity.UserSignature;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

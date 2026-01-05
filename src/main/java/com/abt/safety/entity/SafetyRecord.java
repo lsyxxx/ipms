@@ -1,8 +1,6 @@
 package com.abt.safety.entity;
 
 import com.abt.common.config.CommonJpaAuditListener;
-import com.abt.common.config.TimestampIdGenerator;
-import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
 import com.abt.safety.converter.SafetyFormConverter;
@@ -10,8 +8,6 @@ import com.abt.safety.model.CheckType;
 import com.abt.safety.model.LocationType;
 import com.abt.safety.model.RecordStatus;
 import com.abt.sys.model.WithQuery;
-import com.abt.sys.model.entity.SystemFile;
-import com.abt.sys.util.SystemFileListConverter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -13,7 +13,7 @@ import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserRole;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.Role;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.sys.service.UserService;
 import com.abt.sys.util.WithQueryUtil;
 import jakarta.servlet.http.HttpSession;

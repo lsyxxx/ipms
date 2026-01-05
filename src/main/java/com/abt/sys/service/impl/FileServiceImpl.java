@@ -3,7 +3,7 @@ package com.abt.sys.service.impl;
 import com.abt.common.util.FileUtil;
 import com.abt.common.util.MessageUtil;
 import com.abt.sys.exception.SystemFileNotFoundException;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.sys.service.IFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

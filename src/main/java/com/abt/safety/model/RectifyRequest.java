@@ -1,6 +1,6 @@
 package com.abt.safety.model;
 
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import lombok.Getter;
 import lombok.Setter;
 

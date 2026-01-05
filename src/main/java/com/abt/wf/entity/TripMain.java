@@ -138,7 +138,7 @@ public class TripMain extends WorkflowBase {
     /**
      * 补助详情
      */
-    @Column(name="allowance_dtls", columnDefinition = "TEXT")
+    @Column(name="allowance_dtls", columnDefinition = "nvarchar(max)")
     @Convert(converter =  TripAllowanceConverter.class)
     private List<TripAllowanceDetail> allowanceDetails;
 

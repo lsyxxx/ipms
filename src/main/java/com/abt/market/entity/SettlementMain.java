@@ -5,11 +5,11 @@ import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
 import com.abt.market.model.SaveType;
 import com.abt.market.model.SettlementRelationType;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
 import com.abt.wf.entity.InvoiceApply;
-import com.abt.wf.repository.InvoiceApplyRepository;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -18,10 +18,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -56,6 +55,7 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     /**
      * 结算客户id
      */
+    @NotBlank(message = "公司不能为空")
     @Column(name="client_id")
     private String clientId;
     /**
@@ -65,32 +65,30 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     private String clientName;
 
 
-    ///--  不是结算客户信息，因为开始写错了
-
     /**
      * 公司名称
      */
     @Column(name="company_name")
     private String companyName;
     /**
-     * 公司名称
+     * 纳税人识别号
      */
     @Column(name="tax_no", columnDefinition="VARCHAR(128)")
     private String taxNo;
     /**
-     * 公司名称
+     * 
      */
     @Column(name="tel_no", columnDefinition="VARCHAR(32)")
     private String telephoneNo;
 
     /**
-     * 公司名称
+     * 开户行
      */
     @Column(name="acc_bank", columnDefinition="VARCHAR(128)")
     private String accountBank;
 
     /**
-     * 公司名称
+     * 账户
      */
     @Column(name="acc_no", columnDefinition="VARCHAR(128)")
     private String accountNo;
@@ -114,19 +112,19 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     /**
      * 检测项目合计（优惠前）
      */
-    @Column(name="gross_test_amt", columnDefinition = "DECIMAL(10,3)")
+    @Column(name="gross_test_amt", columnDefinition = "DECIMAL(12,3)")
     private BigDecimal grossTestAmount;
 
     /**
      * 检测项目合计金额（优惠后）
      */
-    @Column(name="net_test_amount", columnDefinition = "DECIMAL(10,3)")
+    @Column(name="net_test_amount", columnDefinition = "DECIMAL(12,3)")
     private BigDecimal netTestAmount = BigDecimal.ZERO;
 
     /**
      * 其他费用合计金额
      */
-    @Column(name="expense_amt", columnDefinition = "DECIMAL(10,3)")
+    @Column(name="expense_amt", columnDefinition = "DECIMAL(12,3)")
     private BigDecimal expenseAmount;
 
     /**
@@ -138,23 +136,23 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     /**
      * 优惠金额，仅针对检测项目的费用优惠，不包含其他项目费用的
      */
-    @Column(name="discount_amt", columnDefinition = "DECIMAL(10,3)")
+    @Column(name="discount_amt", columnDefinition = "DECIMAL(12,3)")
     private Double discountAmount;
 
     /**
      * 本次结算总金额(不含税)
      */
-    @Column(name="total_amt", columnDefinition="DECIMAL(10,2)")
+    @Column(name="total_amt", columnDefinition="DECIMAL(12,3)")
     private BigDecimal totalAmount;
 
     /**
      * 含税价=totalAmount*(1+税率)
      */
-    @Column(name="tax_amt", columnDefinition = "DECIMAL(10,2)")
+    @Column(name="tax_amt", columnDefinition = "DECIMAL(12,3)")
     private BigDecimal taxAmount;
 
     /**
-     * 保存类型（暂存/保存）
+     * 保存类型/状态
      */
     @Enumerated(EnumType.STRING)
     @Column(name="save_type", columnDefinition="VARCHAR(16)")
@@ -162,6 +160,12 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
 
     @Column(name="remark_", length = 1000)
     private String remark;
+
+    /**
+     * 逻辑删除
+     */
+    @Column(name="is_del", columnDefinition = "BIT")
+    private boolean isDel = false;
 
     /**
      * 是否开票
@@ -187,12 +191,27 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     private String invalidReason;
 
     /**
+     * 作废人
+     */
+    @Column(name="invalid_userid", length = 128)
+    private String invalidUserid;
+
+    @Column(name="invalid_username", length = 32)
+    private String invalidUsername;
+
+    /**
+     * 作废时间
+     */
+    @Column(name="invalid_time")
+    private LocalDateTime invalidTime;
+
+    /**
      * 选择模式
      * sample: 直接选择样品
      * entrust: 选择项目，自动按编号大小顺序分配样品（小-大），可能不包含具体样品
      */
-    @Column(name="mode_", length = 32)
-    private String mode;
+//    @Column(name="mode_", length = 32)
+//    private String mode;
 
     /**
      * 关联结算检测项目
@@ -222,6 +241,12 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
     private Set<SettlementSummary> summaryTab;
 
     /**
+     * 临时表stlm_smry_temp/stlm_test_temp的id，2个表是同一个Id
+     */
+    @Transient
+    private String tempSummaryId;
+
+    /**
      * 关联合同
      */
     @Transient
@@ -241,72 +266,72 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
         return this.totalAmount;
     }
 
-    /**
-     * 计算检测项目合计金额
-     */
-    public void calculateGrossTestAmount() {
-        if (testItems == null || testItems.isEmpty()) {
-            this.grossTestAmount = BigDecimal.ZERO;
-            return;
-        }
-        this.grossTestAmount = testItems.stream()
-                .map(TestItem::getPrice)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    /**
-     * 计算优惠金额，仅对检测项目费用优惠
-     */
-    public void calculateDiscountAmount() {
-        if (this.discountPercentage != null && this.grossTestAmount != null) {
-            this.discountAmount = this.grossTestAmount.multiply(BigDecimal.valueOf(this.discountPercentage)).doubleValue();
-        } else {
-            this.discountAmount = 0.00;
-        }
-    }
-
-    /**
-     * 计算其他费用合计
-     */
-    public void calculateExpenseAmount() {
-        if (expenseItems == null || expenseItems.isEmpty()) {
-            this.expenseAmount = BigDecimal.ZERO;
-            return;
-        }
-        this.expenseAmount = expenseItems.stream().map(ExpenseItem::getAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-
-    public void calculateAllAmount() {
-        this.calculateTotalAmount();
-    }
-
-    public void calculateTestNetAmount() {
-        if (this.grossTestAmount != null && this.discountAmount != null) {
-            this.netTestAmount = this.grossTestAmount.subtract(BigDecimal.valueOf(this.discountAmount));
-        } else {
-            this.netTestAmount = BigDecimal.ZERO;
-        }
-    }
-
-    /**
-     * 计算最终金额
-     * 1. 检测总费用：检测项目*单价
-     * 2. 优惠金额：检测总费用*优惠
-     * 3. 实际检测费用：检测总费用-优惠
-     * 4. 其他费用
-     * 5. 最终金额=实际检测费用+其他费用
-     */
-    public void calculateTotalAmount() {
-        calculateGrossTestAmount();
-        calculateDiscountAmount();
-        calculateTestNetAmount();
-        calculateExpenseAmount();
-
-        this.totalAmount = this.netTestAmount.add(this.expenseAmount);
-
-    }
+//    /**
+//     * 计算检测项目合计金额
+//     */
+//    public void calculateGrossTestAmount() {
+//        if (testItems == null || testItems.isEmpty()) {
+//            this.grossTestAmount = BigDecimal.ZERO;
+//            return;
+//        }
+//        this.grossTestAmount = testItems.stream()
+//                .map(TestItem::getPrice)
+//                .filter(Objects::nonNull)
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//    }
+//
+//    /**
+//     * 计算优惠金额，仅对检测项目费用优惠
+//     */
+//    public void calculateDiscountAmount() {
+//        if (this.discountPercentage != null && this.grossTestAmount != null) {
+//            this.discountAmount = this.grossTestAmount.multiply(BigDecimal.valueOf(this.discountPercentage)).doubleValue();
+//        } else {
+//            this.discountAmount = 0.00;
+//        }
+//    }
+//
+//    /**
+//     * 计算其他费用合计
+//     */
+//    public void calculateExpenseAmount() {
+//        if (expenseItems == null || expenseItems.isEmpty()) {
+//            this.expenseAmount = BigDecimal.ZERO;
+//            return;
+//        }
+//        this.expenseAmount = expenseItems.stream().map(ExpenseItem::getAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+//    }
+//
+//
+//    public void calculateAllAmount() {
+//        this.calculateTotalAmount();
+//    }
+//
+//    public void calculateTestNetAmount() {
+//        if (this.grossTestAmount != null && this.discountAmount != null) {
+//            this.netTestAmount = this.grossTestAmount.subtract(BigDecimal.valueOf(this.discountAmount));
+//        } else {
+//            this.netTestAmount = BigDecimal.ZERO;
+//        }
+//    }
+//
+//    /**
+//     * 计算最终金额
+//     * 1. 检测总费用：检测项目*单价
+//     * 2. 优惠金额：检测总费用*优惠
+//     * 3. 实际检测费用：检测总费用-优惠
+//     * 4. 其他费用
+//     * 5. 最终金额=实际检测费用+其他费用
+//     */
+//    public void calculateTotalAmount() {
+//        calculateGrossTestAmount();
+//        calculateDiscountAmount();
+//        calculateTestNetAmount();
+//        calculateExpenseAmount();
+//
+//        this.totalAmount = this.netTestAmount.add(this.expenseAmount);
+//
+//    }
 
     /**
      * 获取关联的合同ID列表
@@ -346,24 +371,24 @@ public class SettlementMain extends AuditInfo implements CommonJpaAudit {
                 "} " + super.toString();
     }
 
-    public boolean isEntrustMode() {
-        return MODE_ENTRUST.equalsIgnoreCase(mode);
-    }
+//    public boolean isEntrustMode() {
+//        return MODE_ENTRUST.equalsIgnoreCase(mode);
+//    }
 
     /**
      * 项目模式
      */
-    public static final String MODE_ENTRUST = "entrust";
+//    public static final String MODE_ENTRUST = "entrust";
 
     /**
      * 样品模式
      */
-    public static final String MODE_SAMPLE = "sample";
+//    public static final String MODE_SAMPLE = "sample";
 
     /**
      * 项目-数量模式
      */
-    public static final String MODE_SUMMARY = "summary";
+//    public static final String MODE_SUMMARY = "summary";
 
 }
 

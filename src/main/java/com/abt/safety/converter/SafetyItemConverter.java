@@ -2,15 +2,12 @@ package com.abt.safety.converter;
 
 import com.abt.common.util.JsonUtil;
 import com.abt.safety.entity.SafetyItem;
-import com.abt.sys.model.entity.SystemFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.List;
 
 /**
  * json SafetyItem转换器

@@ -8,7 +8,7 @@ import com.abt.material.entity.*;
 import com.abt.material.model.*;
 import com.abt.material.service.StockService;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.SystemFile;
 import com.abt.sys.service.IFileService;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
