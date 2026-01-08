@@ -363,7 +363,7 @@ public class SettlementServiceImpl implements SettlementService {
             // 从模板文件读取工作簿
             Workbook workbook = new Workbook(settlementTemplate);
             createSummarySheet(settlementMain, workbook);
-            if (CollectionUtils.isEmpty(settlementMain.getTestItems())) {
+            if (!CollectionUtils.isEmpty(settlementMain.getTestItems())) {
                 createSampleListSheet(workbook, settlementMain);
             }
             createSummaryExcelSheet(settlementMain, workbook);

@@ -9,4 +9,6 @@ import java.util.List;
 public interface PaiBanRepository extends JpaRepository<PaiBan, String> {
 
   List<PaiBan> findByPaibandateBetweenOrderByPaibandateAsc(LocalDate start, LocalDate end);
+
+    List<PaiBan> findByPaibandate(LocalDate paibandate);
 }

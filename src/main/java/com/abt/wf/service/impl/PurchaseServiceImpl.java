@@ -513,7 +513,7 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     public void createPurchaseDetailListSheet(Workbook workbook, List<PurchaseApplyMain> list) throws Exception {
         //表格标题: 序号	审批编号	总金额	状态	申请人	部门	创建时间	是否验收	验收时间	物品名称	规格型号	单位	采购数量	单价	用途
         Style tableHeaderStyle = createTableHeaderStyle(workbook);
-        Worksheet worksheet = workbook.getWorksheets().get(1);
+        Worksheet worksheet = workbook.getWorksheets().get(workbook.getWorksheets().add());
         worksheet.setName("含明细列表");
         Cells cells = worksheet.getCells();
         cells.insertRow(0);
