@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -74,6 +75,9 @@ public interface TestItemRepository extends JpaRepository<TestItem, String> {
            b.sample_no as sampleNo, 
            b.check_module_id as checkModuleId,
            b.check_module_name as checkModuleName,
+           b.id as testItemId,
+           a.sample_no + '_' + a.check_module_id as tempKey,
+           b.sample_no + '_' + b.check_module_id as key,
            main.id as mid
     from stlm_test_temp a 
     left join stlm_test b on a.sample_no = b.sample_no and a.check_module_id = b.check_module_id
@@ -83,4 +87,11 @@ public interface TestItemRepository extends JpaRepository<TestItem, String> {
     and main.is_del <> 1
 """, nativeQuery = true)
     List<ValidateDuplicatedSampleDTO> checkTempDuplicatedSamples(@Param("tempId") String tempId);
+
+    @Query("""
+    select testItem from TestItem testItem left join SettlementMain main on testItem.mid = main.id
+    where main.saveType <> 'INVALID'
+    and main.isDel = false
+""")
+    List<TestItem> findSettledSamplesByEntrustIdIn(Collection<String> entrustIds);
 }

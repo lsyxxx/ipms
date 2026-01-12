@@ -44,9 +44,36 @@ public class ValidateDuplicatedSampleDTO {
     private String checkModuleName;
 
     /**
+     * testItem.id
+     */
+    private String testItemId;
+
+    /**
      * 已结算的结算单号
      */
     private String mid;
+
+    /**
+     * 临时key
+     */
+    private String tempKey;
+
+    /**
+     * 已结算的key
+     */
+    private String key;
+
+
+    private String genKey() {
+        this.key = String.join("_", sampleNo, checkModuleId);
+        return this.key;
+    }
+
+    private String genTempKey() {
+        this.tempKey = String.join("_", tempKey, tempCheckModuleId);
+        return this.tempKey;
+    }
+
 
     /**
      * 是否是重复结算
@@ -55,8 +82,8 @@ public class ValidateDuplicatedSampleDTO {
         if (StringUtils.isEmpty(sampleNo)) {
             return false;
         }
-        String key1 = String.join("_", tempSampleNo, tempCheckModuleId, tempCheckModuleName);
-        String key2 = String.join("_", sampleNo, checkModuleId, checkModuleName);
+        String key1 = String.join("_", tempSampleNo, tempCheckModuleId);
+        String key2 = String.join("_", sampleNo, checkModuleId);
         return key1.equals(key2);
     }
 }

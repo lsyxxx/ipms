@@ -145,6 +145,7 @@ public class SettlementServiceImpl implements SettlementService {
         }
     }
 
+
     /**
      * 根据summaryTab计算所有数据
      */
@@ -1013,16 +1014,51 @@ public class SettlementServiceImpl implements SettlementService {
 
     /**
      * 导入样品-校验是否重复结算
-     *
      * @param tempId 临时导入数据mid
      * @return 重复的样品信息
      */
-    public List<ValidateDuplicatedSampleDTO> validateDuplicatedSamples(String tempId) {
+    public List<ValidateDuplicatedSampleDTO> validateDuplicatedSampleByTempId(String tempId) {
         final List<ValidateDuplicatedSampleDTO> list = testItemRepository.checkTempDuplicatedSamples(tempId);
         if (CollectionUtils.isEmpty(list)) {
             return new ArrayList<>();
         }
         return list.stream().filter(ValidateDuplicatedSampleDTO::isDuplicated).toList();
+    }
+
+
+    private String getValidateKey(String sampleNo, String checkModuleId) {
+        return sampleNo + "_" + checkModuleId;
+    }
+
+    /**
+     * 根据testItems校验重复结算
+     * @param items 传入的testItems
+     */
+    public List<ValidateDuplicatedSampleDTO> validateDuplicatedSampleByItems(List<TestItem> items) {
+        List<ValidateDuplicatedSampleDTO> list = new  ArrayList<>();
+        Set<String> entrustIds = items.stream().map(TestItem::getEntrustId).collect(Collectors.toSet());
+        final List<TestItem> pool = testItemRepository.findSettledSamplesByEntrustIdIn(entrustIds);
+        for (TestItem item : items) {
+
+            String tempKey = getValidateKey(item.getSampleNo(), item.getCheckModuleId());
+            pool.stream().filter(i -> tempKey.equals(getValidateKey(i.getEntrustId(), item.getCheckModuleId()))).findFirst().
+                    ifPresent(i -> {
+                        // 有重复的
+                        ValidateDuplicatedSampleDTO dto = new ValidateDuplicatedSampleDTO();
+                        dto.setTempSampleNo(item.getSampleNo());
+                        dto.setTempCheckModuleId(item.getCheckModuleId());
+                        dto.setTempCheckModuleName(item.getCheckModuleName());
+                        dto.setSampleNo(i.getSampleNo());
+                        dto.setCheckModuleId(item.getCheckModuleId());
+                        dto.setCheckModuleName(item.getCheckModuleName());
+                        dto.setMid(item.getMid());
+                        dto.setTestItemId(item.getId());
+                        list.add(dto);
+                    });
+        }
+
+
+        return list;
     }
 
 }
