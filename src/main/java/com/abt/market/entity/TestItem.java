@@ -93,6 +93,12 @@ public class TestItem {
     @Transient
     private Entrust entrust;
 
+    /**
+     * 送样单位
+     */
+    @Transient
+    private String sendCompany;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     @JoinColumn(name = "m_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)

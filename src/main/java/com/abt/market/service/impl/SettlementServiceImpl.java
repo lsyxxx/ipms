@@ -492,8 +492,9 @@ public class SettlementServiceImpl implements SettlementService {
                 cells.get(currentRow, 4).putValue(summaryRow.getAmount());
                 cells.get(currentRow, 4).setStyle(dataStyle);
 
-                // 备注： 项目编号
-                cells.get(currentRow, 5).putValue(summaryRow.getEntrustId());
+                // 备注： 项目编号+送样单位
+                String entrustId = summaryRow.getEntrustId();
+                cells.get(currentRow, 5).putValue(entrustId);
                 cells.get(currentRow, 5).setStyle(dataStyle);
                 currentRow++;
             }
@@ -606,8 +607,8 @@ public class SettlementServiceImpl implements SettlementService {
             Entrust entrust = entMap.get(item.getEntrustId());
             if (entrust != null) {
                 item.setEntrust(entMap.get(item.getEntrustId()));
+                item.setSendCompany(entrust.getJiaFangCompany());
             }
-
         });
 
         WorkbookDesigner designer = new WorkbookDesigner();
@@ -1056,8 +1057,6 @@ public class SettlementServiceImpl implements SettlementService {
                         list.add(dto);
                     });
         }
-
-
         return list;
     }
 
