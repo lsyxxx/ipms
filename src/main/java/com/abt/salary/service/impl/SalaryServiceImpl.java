@@ -414,6 +414,10 @@ public class SalaryServiceImpl implements SalaryService {
             slip.setHrJobNumber(map.get(SL_CHK_HR).getJobNumber());
             slip.setHrName(map.get(SL_CHK_HR).getName());
         }
+        if (map.get(SL_CHK_CHIEF) != null) {
+            slip.setChiefJobNumber(map.get(SL_CHK_CHIEF).getJobNumber());
+            slip.setChiefName(map.get(SL_CHK_CHIEF).getName());
+        }
     }
 
     public void findSalaryMainByYearMonth(String yearMonth) {
@@ -508,6 +512,9 @@ public class SalaryServiceImpl implements SalaryService {
             if (StringUtils.isNotBlank(slip.getHrJobNumber())) {
                 smryChks.add(slip.getHrJobNumber());
             }
+            if (StringUtils.isNotBlank(slip.getChiefJobNumber())) {
+                smryChks.add(slip.getChiefJobNumber());
+            }
             for (SalaryCell cell : row) {
                 cell.setSlipId(saved.getId());
             }
@@ -563,6 +570,8 @@ public class SalaryServiceImpl implements SalaryService {
         main.setHrCheckCount((int) slips.stream().filter(SalarySlip::isHrCheck).count());
         main.setCeoAllCount((int) slips.stream().filter(SalarySlip::needCeoCheck).count());
         main.setCeoCheckCount((int) slips.stream().filter(SalarySlip::isCeoCheck).count());
+        main.setChiefAllCount((int) slips.stream().filter(SalarySlip::needChiefCheck).count());
+        main.setChiefCheckCount((int) slips.stream().filter(SalarySlip::isChiefCheck).count());
     }
 
     //根据 工资年月/工资组查看导入/发送工资条记录
@@ -903,7 +912,8 @@ public class SalaryServiceImpl implements SalaryService {
                         slip.getDmJobNumber(),
                         slip.getJobNumber(),
                         slip.getCeoJobNumber(),
-                        slip.getHrJobNumber()
+                        slip.getHrJobNumber(),
+                        slip.getChiefJobNumber()
                 ))
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.toSet());
@@ -925,6 +935,9 @@ public class SalaryServiceImpl implements SalaryService {
             }
             if (slip.isHrCheck()) {
                 slip.setHrSig(sigMap.getOrDefault(slip.getHrJobNumber(), null));
+            }
+            if (slip.isChiefCheck()) {
+                slip.setChiefSig(sigMap.getOrDefault(slip.getHrJobNumber(), null));
             }
         }
 
@@ -951,7 +964,7 @@ public class SalaryServiceImpl implements SalaryService {
             slips = salarySlipRepository.findByMainIdAndDceoJobNumber(mid, checkAuth.getJobNumber(), Sort.by(Sort.Order.asc("jobNumber")));
         } else if (SL_CHK_DM.equals(checkAuth.getViewAuth())) {
             slips = salarySlipRepository.findByMainIdAndDmJobNumber(mid, checkAuth.getJobNumber(), Sort.by(Sort.Order.asc("jobNumber")));
-        } else if (SL_CHK_HR.equals(checkAuth.getViewAuth()) || SL_CHK_CEO.equals(checkAuth.getRole())) {
+        } else if (SL_CHK_HR.equals(checkAuth.getViewAuth()) || SL_CHK_CEO.equals(checkAuth.getRole()) || SL_CHK_CHIEF.equals(checkAuth.getRole())) {
             slips = salarySlipRepository.findByMainId(mid);
         } else if (SL_CHK_USER.equals(checkAuth.getViewAuth())) {
             slips = salarySlipRepository.findByJobNumberAndMainId(checkAuth.getJobNumber(), mid);
@@ -1030,6 +1043,8 @@ public class SalaryServiceImpl implements SalaryService {
             salarySlipRepository.updateHrChecked(checkAuth.getJobNumber(), checkAuth.getName(), LocalDateTime.now(), slids);
         } else if (SL_CHK_CEO.equals(checkAuth.getRole())) {
             salarySlipRepository.updateCeoCheck(checkAuth.getJobNumber(), checkAuth.getName(), LocalDateTime.now(), slids);
+        } else if (SL_CHK_CHIEF.equals(checkAuth.getRole())) {
+            salarySlipRepository.updateChiefCheck(checkAuth.getJobNumber(), checkAuth.getName(), LocalDateTime.now(), slids);
         } else {
             log.warn("无权审批工资(role:{})", checkAuth.getRole());
             return R.warn("无权审批工资(role:" + checkAuth.getRole() + ")");
@@ -1225,7 +1240,8 @@ public class SalaryServiceImpl implements SalaryService {
         addSignatureColumn(header1);
         addSignatureColumn(header2);
         List<UserSignature> us = userSignatureRepository.findAllUserSignatures();
-        Map<String, UserSignature> usMap = us.stream().collect(Collectors.toMap(UserSignature::getJobNumber, i -> i));
+        Map<String, UserSignature> usMap = us.stream()
+                .collect(Collectors.toMap(UserSignature::getJobNumber, i -> i));
 
         //2. 创建excel
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
@@ -1324,6 +1340,12 @@ public class SalaryServiceImpl implements SalaryService {
                 if (StringUtils.isNotBlank(slip.getCeoJobNumber()) && slip.isCeoCheck()) {
                     UserSignature ceoSig = usMap.getOrDefault(slip.getCeoJobNumber(), empty);
                     insertImage(sigDir + ceoSig.getFileName(), workbook, sheet, row, col,r + 3);
+                }
+                col = col + 1;
+                // 董事长
+                if (StringUtils.isNotBlank(slip.getChiefJobNumber()) && slip.isChiefCheck()) {
+                    UserSignature chiefSig = usMap.getOrDefault(slip.getChiefSig(), empty);
+                    insertImage(sigDir + chiefSig.getFileName(), workbook, sheet, row, col,r + 3);
                 }
             }
             //---- 设置列宽
@@ -1487,6 +1509,14 @@ public class SalaryServiceImpl implements SalaryService {
         salarySlipRepository.hrCheckByYearMonth(yearMonth, LocalDateTime.now());
     }
 
+    @Override
+    public void chiefCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth) {
+        if  (StringUtils.isBlank(yearMonth)) {
+            throw new BusinessException("工资年月未知");
+        }
+        salarySlipRepository.chiefCheckByYearMonth(yearMonth, LocalDateTime.now());
+    }
+
     @Transactional
     @Override
     public void updateUserSlip(String slipId, SalaryMain main) {
@@ -1557,7 +1587,13 @@ public class SalaryServiceImpl implements SalaryService {
     public SlipCount dceoSlipCount(String mid, CheckAuth checkAuth) {
         final String jobNumber = checkAuth.getJobNumber();
         return salarySlipRepository.dceoSlipCount(mid, jobNumber);
+    }
 
+
+    @Override
+    public SlipCount chiefSlipCount(String mid, CheckAuth checkAuth) {
+        final String jobNumber = checkAuth.getJobNumber();
+        return salarySlipRepository.chiefSlipCount(mid, jobNumber);
     }
 
 }

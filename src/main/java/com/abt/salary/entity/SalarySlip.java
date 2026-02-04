@@ -197,6 +197,19 @@ public class SalarySlip extends AuditInfo{
     @Transient
     private String ceoSig;
 
+    /**
+     * 董事长审核
+     */
+    @Column(name = "chief_jno")
+    private String chiefJobNumber;
+    @Column(name="chief_name")
+    private String chiefName;
+    @Column(name="chief_time")
+    private LocalDateTime chiefTime;
+    @Transient
+    private String chiefSig;
+
+
 
     /**
      * 人事审批
@@ -353,6 +366,10 @@ public class SalarySlip extends AuditInfo{
         return this.ceoTime != null;
     }
 
+    public boolean isChiefCheck() {
+        return this.chiefTime != null;
+    }
+
     public boolean isHrCheck() {
         return this.hrTime != null;
     }
@@ -369,6 +386,10 @@ public class SalarySlip extends AuditInfo{
     }
     public boolean needCeoCheck() {
         return StringUtils.isNotBlank(this.ceoJobNumber);
+    }
+
+    public boolean needChiefCheck() {
+        return StringUtils.isNotBlank(this.chiefJobNumber);
     }
 
     @Transient

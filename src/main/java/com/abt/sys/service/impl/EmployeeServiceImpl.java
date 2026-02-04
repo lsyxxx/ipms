@@ -116,6 +116,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public List<EmployeeInfo> findByPosition(String position) {
+        return employeeRepository.findByPosition(position);
+    }
+
+    @Override
     public List<EmployeeInfo> findDms() {
         return employeeRepository.findDms();
     }

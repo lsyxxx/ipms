@@ -41,14 +41,14 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
     private final SaleAgreementRepository saleAgreementRepository;
 
 
-    public SaleAgreementServiceImpl(SaleAgreementRepository saleAgreementRepository) {
-        this.saleAgreementRepository = saleAgreementRepository;
-    }
-
     @Override
     public Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm) {
         Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "sortNo"));
         return saleAgreementRepository.findByQuery(requestForm.getQuery(), page);
+    }
+
+    public SaleAgreementServiceImpl(SaleAgreementRepository saleAgreementRepository) {
+        this.saleAgreementRepository = saleAgreementRepository;
     }
 
     @Override

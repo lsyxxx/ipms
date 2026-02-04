@@ -464,6 +464,12 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
     }
 
     @Override
+    public void setChief(String userid, PurchaseApplyMain form) {
+        form.setChief(userid);
+        form.setChiefCheckDate(LocalDateTime.now());
+    }
+
+    @Override
     public void delete(String id) {
         final PurchaseApplyMain main = purchaseApplyMainRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到流程(id=" + id + ")"));
         purchaseApplyMainRepository.deleteById(id);

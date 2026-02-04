@@ -30,6 +30,8 @@ public interface EmployeeService {
      */
     List<User> findDCEOs();
 
+    List<EmployeeInfo> findByPosition(String position);
+
     /**
      * 查询部门经理
      */

@@ -168,6 +168,8 @@ public interface SalaryService {
 
     void hrCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth);
 
+    void chiefCheckAllByYearMonth(String yearMonth, CheckAuth checkAuth);
+
     /**
      * 更新实发，用工成本
      */
@@ -195,4 +197,6 @@ public interface SalaryService {
     SlipCount hrSlipCount(String mid);
 
     SlipCount dceoSlipCount(String mid, CheckAuth checkAuth);
+
+    SlipCount chiefSlipCount(String mid, CheckAuth checkAuth);
 }

@@ -222,6 +222,10 @@ public class SalaryMain extends AuditInfo {
     private Integer ceoAllCount;
     @Transient
     private Integer ceoCheckCount;
+    @Transient
+    private Integer chiefCheckCount;
+    @Transient
+    private Integer chiefAllCount;
 
     @Column(name="auto_check_time")
     private LocalDateTime autoCheckTime;

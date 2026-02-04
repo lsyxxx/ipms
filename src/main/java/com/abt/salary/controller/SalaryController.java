@@ -323,7 +323,9 @@ public class SalaryController {
             salaryService.ceoCheckAllByYearMonth(yearMonth, auth);
         } else if (SL_CHK_HR.equals(auth.getRole())) {
             salaryService.hrCheckAllByYearMonth(yearMonth, auth);
-        }else {
+        } else if (SL_CHK_CHIEF.equals(auth.getRole())) {
+            salaryService.chiefCheckAllByYearMonth(yearMonth, auth);
+        } else {
             throw new BusinessException("您无权进行全部审批");
         }
         return R.success(String.format("%s工资已全部审批", yearMonth));
@@ -510,11 +512,17 @@ public class SalaryController {
         }
         //总经理
         if (map.get(SL_CHK_CEO) != null) {
-            //是否是部门经理
             auth.setRole(SL_CHK_CEO);
             auth.setViewAuth(SL_CHK_CEO);
             auth.addOrgLeaderDepts(map.get(SL_CHK_CEO));
         }
+
+        if (map.get(SL_CHK_CHIEF) != null) {
+            auth.setRole(SL_CHK_CHIEF);
+            auth.setViewAuth(SL_CHK_CHIEF);
+            auth.addOrgLeaderDepts(map.get(SL_CHK_CHIEF));
+        }
+
         //1.1 查看所有，具有审批所有的角色权限。如果已有上面的角色，则按上面的
         final Optional<Role> op = uv.getAuthorities().stream().filter(a -> a.getId().equals("SL_CHECK_ALL")).findFirst();
         if (op.isPresent() && StringUtils.isBlank(auth.getRole())) {

@@ -72,4 +72,9 @@ public class CheckAuth {
     public static final String SL_CHK_HR = "hr";
 
     public static final String SL_CHK_CEO = "ceo";
+
+    // 董事长
+    public static final String SL_CHK_CHIEF = "chief";
+
+
 }

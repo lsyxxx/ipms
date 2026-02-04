@@ -95,6 +95,12 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
 """)
     void updateCeoCheck(String jm, String uname, LocalDateTime checkTime, List<String> ids);
 
+    @Transactional
+    @Modifying
+    @Query("""
+       update SalarySlip s set s.chiefJobNumber = :jm, s.chiefName = :uname, s.chiefTime = :checkTime where s.id in :ids
+""")
+    void updateChiefCheck(String jm, String uname,  LocalDateTime checkTime, List<String> ids);
 
     @Query(""" 
         select s from SalarySlip s where s.id in :ids and s.isCheck = false
@@ -181,6 +187,13 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     @Modifying
     @Transactional
     @Query("""
+        update SalarySlip s set s.chiefTime = :checkTime where s.yearMonth = :yearMonth and (s.chiefJobNumber is not null or TRIM(s.chiefJobNumber) <> '')
+""")
+    void chiefCheckByYearMonth(String yearMonth, LocalDateTime checkTime);
+
+    @Modifying
+    @Transactional
+    @Query("""
     update SalarySlip s set s.isCheck = true, s.checkTime = :checkTime, s.checkType = 'manual'
     where s.yearMonth = :yearMonth and s.isCheck = false and s.isForceCheck = true
 """)
@@ -217,6 +230,13 @@ public interface SalarySlipRepository extends JpaRepository<SalarySlip, String> 
     and s.dceoJobNumber = :jobNumber
 """)
     SlipCount dceoSlipCount(String mainId, String jobNumber);
+
+    @Query("""
+    select new com.abt.salary.model.SlipCount('', count(s.chiefJobNumber), count(s.chiefTime), (count(s.chiefJobNumber)-count(s.chiefTime))) from SalarySlip s 
+    where s.mainId = :mainId
+    and s.chiefJobNumber = :jobNumber
+""")
+    SlipCount chiefSlipCount(String mainId, String jobNumber);
 
     @Modifying
     @Query("""
