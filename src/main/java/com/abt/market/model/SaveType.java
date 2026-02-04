@@ -10,6 +10,7 @@ public enum SaveType {
     TEMP("暂存"),
     SAVE("保存"),
     INVALID("作废"),
+    INVOICING("开票中"),
     INVOICE("已开票"),
     PAYED("已支付"),
     LOGIC_DEL("逻辑删除")

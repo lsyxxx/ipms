@@ -4,6 +4,7 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.market.entity.SettlementRelation;
+import com.abt.market.model.SaveType;
 import com.abt.market.model.SettlementRelationType;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.model.dto.UserView;
@@ -49,6 +50,8 @@ public class InvoiceApplyController {
             if (StringUtils.isNotBlank(entity.getSettlementId())) {
                 //删除关联结算
                 settlementService.deleteRefBy(entity.getSettlementId(), entity.getId());
+                //更新结算单状态
+                settlementService.updateSaveType(SaveType.SAVE, entity.getSettlementId());
             }
         }
 
@@ -64,7 +67,9 @@ public class InvoiceApplyController {
     @PostMapping("/apply")
     public R<Object> apply(@Validated({ValidateGroup.Apply.class}) @RequestBody InvoiceApply form) {
         final InvoiceApply saved = invoiceApplyService.apply(form);
-
+        if (StringUtils.isNotBlank(saved.getSettlementId())) {
+            settlementService.updateSaveType(SaveType.INVOICING, form.getSettlementId());
+        }
         return R.success();
     }
 

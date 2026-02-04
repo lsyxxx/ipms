@@ -339,7 +339,7 @@ public class SettlementServiceImpl implements SettlementService {
         if (!list.isEmpty()) {
             final Set<String> idSet = list.stream().map(SettlementMainListDTO::getId).collect(Collectors.toSet());
             // 关联的发票
-            final List<InvoiceApply> invs = invoiceApplyRepository.findBySettlementIdIn(idSet);
+            final List<InvoiceApply> invs = invoiceApplyRepository.findApproveOrPassBySettlementId(idSet);
             for (SettlementMainListDTO dto : list) {
                 String mid = dto.getId();
                 final List<InvoiceApply> invList = invs.stream().filter(i -> i.getSettlementId().equals(mid)).toList();
@@ -1059,5 +1059,7 @@ public class SettlementServiceImpl implements SettlementService {
         }
         return list;
     }
+
+
 
 }

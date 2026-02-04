@@ -121,6 +121,15 @@ public interface InvoiceApplyRepository extends JpaRepository<InvoiceApply, Stri
 
     List<InvoiceApply> findBySettlementIdIn(Collection<String> settlementIds);
 
+    /**
+     * 查询正在进行或通过的发票
+     */
+    @Query("""
+    select e from InvoiceApply e where e.settlementId in :settlementIds and (e.businessState = '审批中' or e.businessState = '已通过' )
+""")
+    List<InvoiceApply> findApproveOrPassBySettlementId(Collection<String> settlementIds);
+
+
 
     /**
      * 查询结算单关联的发票(必须是审批通过的发票)

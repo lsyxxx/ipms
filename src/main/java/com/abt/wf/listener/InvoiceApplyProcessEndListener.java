@@ -50,8 +50,8 @@ public class InvoiceApplyProcessEndListener implements ExecutionListener {
                 }
                 invoiceApply.setProcessEnd();
                 invoiceApplyService.saveEntity(invoiceApply);
-                // 关联结算
-                if (StringUtils.isNotBlank(invoiceApply.getSettlementId())) {
+                // 关联结算，已通过
+                if (StringUtils.isNotBlank(invoiceApply.getSettlementId()) && Constants.STATE_DETAIL_PASS.equals(invoiceApply.getBusinessState())) {
                     SettlementRelation ref = new  SettlementRelation();
                     ref.setMid(invoiceApply.getSettlementId());
                     ref.setBizType(SettlementRelationType.INVOICE);
