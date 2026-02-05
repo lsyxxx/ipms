@@ -311,10 +311,10 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     }
 
 
-    /**
-     * 查询结算是否开票
-     */
-    public void querySettled() {
-
+    @Override
+    public List<InvoiceApply> findSaleAgreementInvoices(String contractNo) {
+        return invoiceApplyRepository.findRunningOrPassByContractNo(contractNo);
     }
+
+
 }

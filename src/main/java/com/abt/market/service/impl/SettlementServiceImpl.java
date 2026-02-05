@@ -1061,5 +1061,11 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
 
+    @Override
+    public List<SettlementAgreementDTO> findSettlementsByContractNo(String contractNo) {
+        return settlementMainRepository.findSettlementAgreementDTOListByContractNo(contractNo, List.of(SaveType.SAVE, SaveType.INVOICING, SaveType.INVOICE, SaveType.PAYED));
+    }
+
+
 
 }

@@ -142,4 +142,10 @@ public interface InvoiceApplyRepository extends JpaRepository<InvoiceApply, Stri
     and inv.settlementId = :settlementId
 """)
     List<InvoiceApply> findRefSettlement(String settlementId);
+
+
+    @Query("""
+    select e from InvoiceApply e where e.contractNo = :contractNo and (e.businessState = '审批中' or e.businessState = '已通过')
+""")
+    List<InvoiceApply> findRunningOrPassByContractNo(String contractNo);
 }

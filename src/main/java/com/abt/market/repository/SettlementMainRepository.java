@@ -1,10 +1,7 @@
 package com.abt.market.repository;
 
 import com.abt.market.entity.SettlementMain;
-import com.abt.market.model.SaveType;
-import com.abt.market.model.SettlementEntrustDTO;
-import com.abt.market.model.SettlementMainListDTO;
-import com.abt.market.model.SettlementRequestForm;
+import com.abt.market.model.*;
 import com.abt.sys.model.entity.CustomerInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -120,4 +117,17 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
     @Modifying
     @Query("update SettlementMain set isDel = true where id = :id")
     void logicDelete(String id);
+
+
+    @Query("""
+    select new com.abt.market.model.SettlementAgreementDTO(main.id, main.totalAmount, main.clientName, main.remark, main.createUsername, main.createDate, main.saveType) 
+    from SettlementMain main 
+    left join SettlementRelation rel on main.id = rel.mid
+    left join SaleAgreement sale on sale.id = rel.rid
+    where rel.bizType = 'AGREEMENT'
+    and main.saveType in :saveTypes
+    and sale.code = :contractNo
+""")
+    List<SettlementAgreementDTO> findSettlementAgreementDTOListByContractNo(String contractNo, List<SaveType> saveTypes);
+
 }

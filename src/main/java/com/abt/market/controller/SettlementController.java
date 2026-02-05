@@ -219,4 +219,11 @@ public class SettlementController {
         final List<StlmSmryTemp> list = settlementService.getTempSummaryData(tempMid);
         return R.success(list, "查询成功");
     }
+
+
+    @GetMapping("/find/stlmAgr")
+    public R<List<SettlementAgreementDTO>> findSettlementAgreementDTOList(String contractNo) {
+        final List<SettlementAgreementDTO> list = settlementService.findSettlementsByContractNo(contractNo);
+        return R.success(list);
+    }
 }

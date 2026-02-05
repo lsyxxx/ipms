@@ -3,15 +3,12 @@ package com.abt.wf.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
-import com.abt.market.entity.SettlementRelation;
 import com.abt.market.model.SaveType;
-import com.abt.market.model.SettlementRelationType;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.InvoiceApply;
-import com.abt.wf.entity.Reimburse;
 import com.abt.wf.model.InvoiceApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceApplyService;
@@ -145,6 +142,13 @@ public class InvoiceApplyController {
     public R<List<FlowOperationLog>> update(@RequestBody InvoiceApply form) {
         invoiceApplyService.saveEntity(form);
         return R.success("更新成功");
+    }
+
+
+    @GetMapping("/find/byContractNo")
+    public R<List<InvoiceApply>> findInvoicesByContractNo(String contractNo) {
+        final List<InvoiceApply> list = invoiceApplyService.findSaleAgreementInvoices(contractNo);
+        return R.success(list);
     }
 
     public void setTokenUser(InvoiceApplyRequestForm form) {

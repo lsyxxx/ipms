@@ -6,11 +6,14 @@ import com.abt.common.util.JsonUtil;
 import com.abt.common.util.QueryUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.market.entity.SaleAgreement;
+import com.abt.market.model.AgreementInvoiceSummary;
 import com.abt.market.model.SaleAgreementRequestForm;
 import com.abt.market.repository.SaleAgreementRepository;
 import com.abt.market.service.SaleAgreementService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.CountQuery;
+import com.abt.wf.entity.InvoiceApply;
+import com.abt.wf.repository.InvoiceApplyRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.persistence.criteria.Predicate;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -40,6 +44,8 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
 
     private final SaleAgreementRepository saleAgreementRepository;
 
+    private final InvoiceApplyRepository invoiceApplyRepository;
+
 
     @Override
     public Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm) {
@@ -47,8 +53,9 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
         return saleAgreementRepository.findByQuery(requestForm.getQuery(), page);
     }
 
-    public SaleAgreementServiceImpl(SaleAgreementRepository saleAgreementRepository) {
+    public SaleAgreementServiceImpl(SaleAgreementRepository saleAgreementRepository, InvoiceApplyRepository invoiceApplyRepository) {
         this.saleAgreementRepository = saleAgreementRepository;
+        this.invoiceApplyRepository = invoiceApplyRepository;
     }
 
     @Override
@@ -244,4 +251,27 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
             };
         }
     }
+
+//    @Override
+//    public List<AgreementInvoiceSummary> summaryByMonth(YearMonth yearMonth, String id) {
+//        // 合同
+//        final SaleAgreement entity = saleAgreementRepository.findById(id).orElseThrow(() -> new BusinessException(String.format("未查询到指定合同(合同编号: %s)", id)));
+//        //查询开票，区分已通过的，正在进行的，总计（通过+进行）
+//        final List<InvoiceApply> invs = invoiceApplyRepository.findRunningOrPassByContractNo(entity.getId());
+//
+//        //统计开票金额，使用lambda表达式，并根据businessState分组,分别计算每种状态的开票金额合计
+//        final Map<String, Double> totalAmountByState = invs.stream()
+//                .collect(Collectors.groupingBy(InvoiceApply::getBusinessState,
+//                        Collectors.summingDouble(InvoiceApply::getInvoiceAmount)));
+//        //转为agreementInvoiceSummary列表
+//        List<AgreementInvoiceSummary> summaryList = totalAmountByState.entrySet().stream()
+//                .map(entry -> {
+//                    return new AgreementInvoiceSummary(entity.getId(), entry.getValue(), entry.getKey());
+//                })
+//                .toList();
+//        List<AgreementInvoiceSummary> list = new ArrayList<>(summaryList);
+//        //添加全部的
+//        list.add(new AgreementInvoiceSummary(entity.getId(), totalAmountByState.values().stream().reduce(0.0, Double::sum), "全部"));
+//        return list;
+//    }
 }

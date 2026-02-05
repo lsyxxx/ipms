@@ -131,4 +131,9 @@ public interface SettlementService {
      * @param id id
      */
     void logicDelete(String id);
+
+    /**
+     * 根据合同编号查询关联结算单
+     */
+    List<SettlementAgreementDTO> findSettlementsByContractNo(String contractNo);
 }
