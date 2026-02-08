@@ -42,8 +42,14 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
             "   or s.code like %:query% " +
             "   or s.name like %:query% " +
             "   or s.partyA like %:query% " +
-            "   or FUNCTION('STR', s.amount) like %:query%) ")
-    Page<SaleAgreement> findByQuery(String query, Pageable pageable);
+            "   or FUNCTION('STR', s.amount) like %:query%) " +
+            "and (:contractType is null or :contractType = '' or s.type = :contractType) " +
+            "and (:partyA is null or :partyA = '' or s.partyA = :partyA) " +
+            "and (:partyB is null or :partyB = '' or s.partyB = :partyB) " +
+            "and (:attribute is null or :attribute = '' or s.attribute = :attribute)" +
+            "order by s.createDate desc"
+    )
+    Page<SaleAgreement> findByQuery(String query, String contractType, String partyA, String partyB, String attribute, Pageable pageable);
 
     List<SaleAgreement> findByIdIsIn(Collection<String> ids);
 }

@@ -305,8 +305,11 @@ public class SalaryController {
     @PostMapping("/chk/dept/do")
     public R<List<SalarySlip>> deptCheck(@RequestBody List<String> slipIds) {
         final CheckAuth auth = getCheckAuth(TokenUtil.getUserFromAuthToken());
-        if (!SL_CHK_DCEO.equals(auth.getRole()) && !SL_CHK_DM.equals(auth.getRole())
-                && !SL_CHK_HR.equals(auth.getRole()) && !SL_CHK_CEO.equals(auth.getRole())) {
+        if (!SL_CHK_DCEO.equals(auth.getRole())
+                && !SL_CHK_DM.equals(auth.getRole())
+                && !SL_CHK_CHIEF.equals(auth.getRole())
+                && !SL_CHK_HR.equals(auth.getRole())
+                && !SL_CHK_CEO.equals(auth.getRole())) {
             return R.fail("您无权审批(角色:" + auth.getRole() + ")");
         }
         return salaryService.deptCheck(auth, slipIds);

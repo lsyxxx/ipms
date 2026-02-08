@@ -5,6 +5,7 @@ import com.abt.market.model.AgreementInvoiceSummary;
 import com.abt.market.model.SaleAgreementRequestForm;
 import org.springframework.data.domain.Page;
 
+import java.io.OutputStream;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ public interface SaleAgreementService {
 
     //市场看板数据
     Map<String, Object> marketBoardData(int currentYear);
+
+    void exportSaleAgreementList(List<SaleAgreement> list, OutputStream outputStream) throws Exception;
 
 //    /**
 //     * 统计某年月某合同的开票金额

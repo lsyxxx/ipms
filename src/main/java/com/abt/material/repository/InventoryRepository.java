@@ -2,6 +2,8 @@ package com.abt.material.repository;
 
 import com.abt.material.entity.Inventory;
 import com.abt.material.entity.MaterialDetail;
+import com.abt.material.model.IStockTimelineDTO;
+
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
@@ -96,4 +98,22 @@ public interface InventoryRepository extends JpaRepository<Inventory, String> {
        WHERE t.rn = 1;
 """, nativeQuery = true)
     List<Tuple> findGiftLatestInventory(String startDate, String endDate);
+
+
+    @Query("""
+    select md.id as materialId, md.name as materialName, wh.id as warehouseId, wh.name as warehouseName,
+        so.id as stockOrderId, so.stockType as stockType, inv.createDate as createDate, so.createUsername as createUsername, so.username as username, so.deptName as deptName, 
+        inv.quantity as quantity, sd.num as num
+    from Inventory inv
+    left join Warehouse wh on inv.warehouseId = wh.id
+    left join MaterialDetail md on inv.materialId = md.id
+    left join StockOrder so on inv.orderId = so.id
+    left join Stock sd on sd.orderId = so.id and sd.materialId = :materialId
+    where inv.materialId = :materialId
+    and inv.warehouseId = :whid
+    and so.isDeleted = false
+    and inv.createDate >= :startDate and inv.createDate < :endDate
+    order by inv.createDate
+""")
+    List<IStockTimelineDTO> findStockInventoryHistory(String materialId, String whid, LocalDateTime startDate, LocalDateTime endDate);
 }

@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -1046,6 +1047,17 @@ public class StockServiceImpl implements StockService {
 
         //保存excel
         workbook.save(outputStream, SaveFormat.XLSX);
+    }
+
+
+    @Override
+    public List<IStockTimelineDTO> getStockHistory(String materialId, String whid, LocalDateTime startDate, LocalDateTime endDate) {
+        final MaterialDetail material = materialDetailRepository.findById(materialId).orElseThrow(() -> new BusinessException("未查询到物品资料(id=" + materialId + ")"));
+        final Warehouse warehouse = warehouseRepository.findById(whid).orElseThrow(() -> new BusinessException("未查询到指定仓库(id=" + whid + ")"));
+
+        //库存记录
+        final List<IStockTimelineDTO> list = inventoryRepository.findStockInventoryHistory(materialId, whid, startDate, endDate);
+        return list;
     }
 
 }

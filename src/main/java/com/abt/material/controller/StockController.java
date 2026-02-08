@@ -450,7 +450,26 @@ public class StockController {
             final R<Object> fail = R.fail("下载礼品采购明细Excel失败!");
             response.getWriter().println(JsonUtil.toJson(fail));
         }
-        
+    }
+
+    @GetMapping("/history/inventory")
+    public R<List<IStockTimelineDTO>> getStockTimeline(InventoryRequestForm requestForm) {
+        //没有时间就默认最近3个月内
+        if (requestForm.getLocalEndDate() == null) {
+            requestForm.setLocalEndDate(LocalDate.now());
+        }
+        if (requestForm.getLocalStartDate() == null) {
+            LocalDate now = LocalDate.now();
+            requestForm.setLocalEndDate(now);
+            // 前3个月的月初
+            final LocalDate startDate = now.minusMonths(3).withDayOfMonth(1);
+            requestForm.setLocalStartDate(startDate);
+        }
+
+        final List<IStockTimelineDTO> list = stockService.getStockHistory(requestForm.getMaterialId(), requestForm.getWarehouseId(),
+                requestForm.getLocalStartDate().atStartOfDay(), requestForm.getLocalEndDate().atStartOfDay());
+
+        return R.success(list);
     }
 
 }

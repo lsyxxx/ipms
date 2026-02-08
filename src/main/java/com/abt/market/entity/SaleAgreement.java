@@ -4,7 +4,13 @@ import com.abt.common.config.CommonJpaAuditListener;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
+import com.abt.common.util.JsonUtil;
+import com.abt.sys.model.SystemFile;
+import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -13,7 +19,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.abt.market.Constant.DEFAULT_TAX;
 
@@ -25,7 +37,7 @@ import static com.abt.market.Constant.DEFAULT_TAX;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners({CommonJpaAuditListener.class})
-public class SaleAgreement extends AuditInfo implements CommonJpaAudit {
+public class SaleAgreement extends AuditInfo implements CommonJpaAudit, WithQuery<SaleAgreement> {
 
     @Id
     @Column(name = "id_", nullable = false)
@@ -54,9 +66,25 @@ public class SaleAgreement extends AuditInfo implements CommonJpaAudit {
     @NotNull(message = "甲方名称不能为空", groups = {ValidateGroup.Save.class})
     @Column(name = "party_a", nullable = false, columnDefinition = "VARCHAR(128)")
     private String partyA;
+
+    /**
+     * 乙方
+     */
     @NotNull(message = "乙方名称不能为空", groups = {ValidateGroup.Save.class})
     @Column(name = "party_b", columnDefinition = "VARCHAR(128)")
     private String partyB;
+
+    /**
+     * 乙方项目负责人
+     */
+    @Column(name = "project_manager", columnDefinition = "VARCHAR(128)")
+    private String projectManager;
+
+    /**
+     * 乙方项目负责人联系方式
+     */
+    @Column(name = "project_manager_tel", columnDefinition = "VARCHAR(128)")
+    private String projectMangerTel;
     /**
      * 合同金额，开口合同可能没有，或者非数字类型
      */
@@ -137,7 +165,9 @@ public class SaleAgreement extends AuditInfo implements CommonJpaAudit {
     @Column(name = "end_dur", columnDefinition = "INT")
     private Integer endDuration;
 
-
+    /**
+     * 备注
+     */
     @Column(name = "note_", columnDefinition = "VARCHAR(500)")
     private String note;
     /**
@@ -170,18 +200,27 @@ public class SaleAgreement extends AuditInfo implements CommonJpaAudit {
      */
     @Column(name = "is_tax", columnDefinition = "BIT")
     private boolean includeTax;
+
+    @Transient
+    private String includeTaxStr;
+
     /**
      * 税率，填写百分比数字，如6%，就填写6。
      * 含税由税率
      */
     @Column(name = "tax_rate", columnDefinition = "DECIMAL(10,2)")
     private Double taxRate;
-
     /**
      * 附件
      */
     @Column(name = "file_list", columnDefinition = "VARCHAR(MAX)")
     private String fileList;
+
+    /**
+     * 附件名称
+     */
+    @Transient
+    private String fileNames;
 
     /**
      * 签订日期
@@ -198,6 +237,71 @@ public class SaleAgreement extends AuditInfo implements CommonJpaAudit {
      */
     @Transient
     private String endDateStr;
+
+    /**
+     * 开票数量
+     */
+    @Transient
+    private int invoiceCount;
+
+    /**
+     * 开票审批id
+     */
+    @Transient
+    private String invoiceIds;
+
+    /**
+     * 开票总金额
+     */
+    @Transient
+    private BigDecimal invoiceTotal;
+
+
+    /**
+     * 结算单数量
+     */
+    @Transient
+    private int settlementCount;
+
+    @Transient
+    private String settlementIds;
+
+    /**
+     * 结算单金额合计
+     */
+    @Transient
+    private BigDecimal settlementTotal;
+
+
+    /**
+     * 中期检查/验收日期
+     */
+    @Column(name="mid_acpt_date")
+    private LocalDate midAcceptanceDate;
+
+    @Column(name="mid_acpt_note", columnDefinition = "VARCHAR(500)")
+    private String midAcceptanceNode;
+
+    /**
+     * 最终验收日期
+     */
+    @Column(name="final_acpt_date")
+    private LocalDate finalAcceptanceDate;
+
+    /**
+     * 最终验收说明
+     */
+    @Column(name="final_acpt_note", columnDefinition = "VARCHAR(500)")
+    private String finalAcceptanceNote;
+
+    @Column(name="alert_date", columnDefinition = "VARCHAR(500)")
+    private String alertDate;
+
+    /**
+     * 质保金期限
+     */
+    @Column(name="retention_note", columnDefinition = "VARCHAR(500)")
+    private String retentionNote;
 
     /**
      * 根据年月日生成
@@ -248,5 +352,27 @@ public class SaleAgreement extends AuditInfo implements CommonJpaAudit {
         }
     }
 
+    public String translateBoolean(boolean bool) {
+        return bool ? "是" : "否";
+    }
 
+
+    public List<SystemFile> convertSystemFiles() {
+        if (StringUtils.isBlank(this.fileList)) {
+            return List.of();
+        }
+        ObjectMapper objectMapper = JsonUtil.ObjectMapper();
+        try {
+            return objectMapper.readValue(this.fileList, new TypeReference<List<SystemFile>>() {});
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Convert List SystemFile error", e);
+        }
+    }
+
+
+    @Override
+    public SaleAgreement afterQuery() {
+        this.format();
+        return this;
+    }
 }

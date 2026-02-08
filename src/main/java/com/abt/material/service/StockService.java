@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -139,4 +139,15 @@ public interface StockService {
      * @throws Exception
      */
     void createPurchasingDetailExcel(OutputStream outputStream, LocalDate startDate, LocalDate endDate) throws Exception;
+
+    /**
+     * 物品出入详细timeline
+     *
+     * @param materialId 物品id
+     * @param whid       库房id
+     * @param startDate  查询开始日期（含）
+     * @param endDate    查询结束日期（不含）
+     * @return
+     */
+    List<IStockTimelineDTO> getStockHistory(String materialId, String whid, LocalDateTime startDate, LocalDateTime endDate);
 }

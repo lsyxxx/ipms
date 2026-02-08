@@ -1344,7 +1344,7 @@ public class SalaryServiceImpl implements SalaryService {
                 col = col + 1;
                 // 董事长
                 if (StringUtils.isNotBlank(slip.getChiefJobNumber()) && slip.isChiefCheck()) {
-                    UserSignature chiefSig = usMap.getOrDefault(slip.getChiefSig(), empty);
+                    UserSignature chiefSig = usMap.getOrDefault(slip.getChiefJobNumber(), empty);
                     insertImage(sigDir + chiefSig.getFileName(), workbook, sheet, row, col,r + 3);
                 }
             }
@@ -1428,6 +1428,7 @@ public class SalaryServiceImpl implements SalaryService {
         header.add(new SalaryHeader("副总审核"));
         header.add(new SalaryHeader("人事审核"));
         header.add(new SalaryHeader("总经理审核"));
+        header.add(new SalaryHeader("董事长审批"));
     }
 
     CellStyle createCellStyle(Workbook workbook) {

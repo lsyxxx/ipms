@@ -187,3 +187,8 @@ abt:
   settlement:
     excel:
       template: template/settlement_template.xlsx
+
+  #-- saleagreement
+  saleAgreement:
+    export:
+      template: template/saleagreement_export_template.xlsx

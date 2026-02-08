@@ -192,3 +192,8 @@ abt:
   settlement:
     excel:
       template: E:\\temp\\import\\settlement_template.xlsx
+
+  #-- saleagreement
+  saleAgreement:
+    export:
+      template: E:\\temp\\export\\settlement_template.xlsx

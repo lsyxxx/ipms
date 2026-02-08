@@ -17,6 +17,9 @@ public class InventoryRequestForm extends RequestForm {
     private List<String> materialTypeIds;
     private List<String> warehouseIds;
 
+    private String materialId;
+    private String warehouseId;
+
     private int year1;
     private int year2;
     private List<Integer> monthIn;

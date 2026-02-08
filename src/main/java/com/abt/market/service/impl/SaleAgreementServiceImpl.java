@@ -6,19 +6,22 @@ import com.abt.common.util.JsonUtil;
 import com.abt.common.util.QueryUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.market.entity.SaleAgreement;
-import com.abt.market.model.AgreementInvoiceSummary;
 import com.abt.market.model.SaleAgreementRequestForm;
 import com.abt.market.repository.SaleAgreementRepository;
 import com.abt.market.service.SaleAgreementService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.CountQuery;
-import com.abt.wf.entity.InvoiceApply;
+import com.abt.sys.util.WithQueryUtil;
 import com.abt.wf.repository.InvoiceApplyRepository;
+import com.aspose.cells.SaveFormat;
+import com.aspose.cells.Workbook;
+import com.aspose.cells.WorkbookDesigner;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,9 +29,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -44,18 +47,20 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
 
     private final SaleAgreementRepository saleAgreementRepository;
 
-    private final InvoiceApplyRepository invoiceApplyRepository;
+    @Value("${abt.saleAgreement.export.template}")
+    private String exportTemplate;
 
 
     @Override
     public Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm) {
         Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "sortNo"));
-        return saleAgreementRepository.findByQuery(requestForm.getQuery(), page);
+        final Page<SaleAgreement> result = saleAgreementRepository.findByQuery(requestForm.getQuery(), requestForm.getType(), requestForm.getPartyA(), requestForm.getPartyB(), requestForm.getAttribute(), page);
+        return WithQueryUtil.build(result);
+
     }
 
-    public SaleAgreementServiceImpl(SaleAgreementRepository saleAgreementRepository, InvoiceApplyRepository invoiceApplyRepository) {
+    public SaleAgreementServiceImpl(SaleAgreementRepository saleAgreementRepository) {
         this.saleAgreementRepository = saleAgreementRepository;
-        this.invoiceApplyRepository = invoiceApplyRepository;
     }
 
     @Override
@@ -274,4 +279,18 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
 //        list.add(new AgreementInvoiceSummary(entity.getId(), totalAmountByState.values().stream().reduce(0.0, Double::sum), "全部"));
 //        return list;
 //    }
+
+
+    @Override
+    public void exportSaleAgreementList(List<SaleAgreement> list, OutputStream outputStream) throws Exception {
+        Workbook workbook = new Workbook(exportTemplate);
+
+        WorkbookDesigner designer = new WorkbookDesigner();
+        designer.setWorkbook(workbook);
+        designer.setDataSource("list", list);
+        designer.process(true);
+
+        workbook.save(outputStream, SaveFormat.XLSX);
+    }
+
 }

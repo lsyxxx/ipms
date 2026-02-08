@@ -4,6 +4,7 @@ import com.abt.material.entity.Inventory;
 import com.abt.material.entity.MaterialType;
 import com.abt.material.entity.Stock;
 import com.abt.material.entity.StockOrder;
+import com.abt.material.model.IStockTimelineDTO;
 import com.abt.material.model.InventoryRequestForm;
 import com.abt.material.model.StockSummaryTable;
 import com.abt.material.service.StockService;
@@ -15,8 +16,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,5 +67,16 @@ class StockServiceImplTest {
     @Test
     void testPurchaseSummary() {
 
+    }
+
+    @Test
+    void testRecords() {
+        String materialId = "e144f5a4-4463-4965-af5c-8ba71bac3596";
+        String whid = "44746bb0-30dd-48ad-a57d-de1e160bf1d4";
+        LocalDateTime startDate = LocalDate.of(2025,1,1).atStartOfDay();
+        LocalDateTime endDate = LocalDateTime.now();
+
+        final List<IStockTimelineDTO> list = stockService.getStockHistory(materialId, whid, startDate, endDate);
+        System.out.println(list.size());
     }
 }
