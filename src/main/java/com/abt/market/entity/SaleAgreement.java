@@ -294,11 +294,14 @@ public class SaleAgreement extends AuditInfo implements CommonJpaAudit, WithQuer
     @Column(name="final_acpt_note", columnDefinition = "VARCHAR(500)")
     private String finalAcceptanceNote;
 
-    @Column(name="alert_date", columnDefinition = "VARCHAR(500)")
-    private String alertDate;
+    /**
+     * 质保金金额
+     */
+    @Column(name="retention_amt")
+    private Double retentionAmount;
 
     /**
-     * 质保金期限
+     * 质保金说明
      */
     @Column(name="retention_note", columnDefinition = "VARCHAR(500)")
     private String retentionNote;

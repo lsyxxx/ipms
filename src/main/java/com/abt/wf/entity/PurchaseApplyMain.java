@@ -99,7 +99,7 @@ public class PurchaseApplyMain extends WorkflowBase{
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name="chief_check_date")
-    private LocalDateTime chiefCheckDate;;
+    private LocalDateTime chiefCheckDate;
 
     @Transient
     private String saveType;
