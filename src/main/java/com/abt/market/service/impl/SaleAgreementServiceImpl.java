@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -50,13 +51,39 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
     @Value("${abt.saleAgreement.export.template}")
     private String exportTemplate;
 
-
     @Override
     public Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm) {
         Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "sortNo"));
-        final Page<SaleAgreement> result = saleAgreementRepository.findByQuery(requestForm.getQuery(), requestForm.getType(), requestForm.getPartyA(), requestForm.getPartyB(), requestForm.getAttribute(), page);
+        // 1. 处理创建时间 (直接调用父类封装好的方法，内部已经自动处理了结束时间加1天)
+        LocalDateTime actualCreateDateStart = requestForm.toLocalStartTime();
+        LocalDateTime actualCreateDateEnd = requestForm.toLocalEndTime();
+        // 2. 处理签订时间的整数转换
+        Integer signDateStartInt = null;
+        if (requestForm.getSignDateStart() != null) {
+            // 修正类型为 LocalDate
+            LocalDate start = requestForm.getSignDateStart();
+            signDateStartInt = start.getYear() * 10000 + start.getMonthValue() * 100 + start.getDayOfMonth();
+        }
+        Integer signDateEndInt = null;
+        if (requestForm.getSignDateEnd() != null) {
+            // 修正类型为 LocalDate，并保留加1天的逻辑
+            LocalDate end = requestForm.getSignDateEnd().plusDays(1);
+            signDateEndInt = end.getYear() * 10000 + end.getMonthValue() * 100 + end.getDayOfMonth();
+        }
+        // 3. 传递给 Repository
+        final Page<SaleAgreement> result = saleAgreementRepository.findByQuery(
+                requestForm.getQuery(),
+                requestForm.getType(),
+                requestForm.getPartyA(),
+                requestForm.getPartyB(),
+                requestForm.getAttribute(),
+                actualCreateDateStart, // 传入获取好的开始时间
+                actualCreateDateEnd,   // 传入获取好的结束时间
+                signDateStartInt,
+                signDateEndInt,
+                page
+        );
         return WithQueryUtil.build(result);
-
     }
 
     public SaleAgreementServiceImpl(SaleAgreementRepository saleAgreementRepository) {
@@ -256,29 +283,6 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
             };
         }
     }
-
-//    @Override
-//    public List<AgreementInvoiceSummary> summaryByMonth(YearMonth yearMonth, String id) {
-//        // 合同
-//        final SaleAgreement entity = saleAgreementRepository.findById(id).orElseThrow(() -> new BusinessException(String.format("未查询到指定合同(合同编号: %s)", id)));
-//        //查询开票，区分已通过的，正在进行的，总计（通过+进行）
-//        final List<InvoiceApply> invs = invoiceApplyRepository.findRunningOrPassByContractNo(entity.getId());
-//
-//        //统计开票金额，使用lambda表达式，并根据businessState分组,分别计算每种状态的开票金额合计
-//        final Map<String, Double> totalAmountByState = invs.stream()
-//                .collect(Collectors.groupingBy(InvoiceApply::getBusinessState,
-//                        Collectors.summingDouble(InvoiceApply::getInvoiceAmount)));
-//        //转为agreementInvoiceSummary列表
-//        List<AgreementInvoiceSummary> summaryList = totalAmountByState.entrySet().stream()
-//                .map(entry -> {
-//                    return new AgreementInvoiceSummary(entity.getId(), entry.getValue(), entry.getKey());
-//                })
-//                .toList();
-//        List<AgreementInvoiceSummary> list = new ArrayList<>(summaryList);
-//        //添加全部的
-//        list.add(new AgreementInvoiceSummary(entity.getId(), totalAmountByState.values().stream().reduce(0.0, Double::sum), "全部"));
-//        return list;
-//    }
 
 
     @Override
