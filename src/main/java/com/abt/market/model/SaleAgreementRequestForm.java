@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 
 /**
  *
@@ -32,16 +31,5 @@ public class SaleAgreementRequestForm extends RequestForm {
      * 登记年月
      */
     private String registerYM;
-
-    //localStartDate 和 localEndDate用父类的
-    /**
-     * 签订时间开始 (按照领导规范使用 LocalDate)
-     */
-    private LocalDate signDateStart;
-
-    /**
-     * 签订时间结束 (按照领导规范使用 LocalDate)
-     */
-    private LocalDate signDateEnd;
 
 }

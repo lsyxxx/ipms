@@ -2,33 +2,46 @@ package com.abt.market.repository;
 
 import com.abt.market.entity.SaleAgreement;
 import com.abt.sys.model.CountQuery;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
 public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, String>, JpaSpecificationExecutor<SaleAgreement> {
-    // **
-    // 财务和结算等其他关联模块极度依赖的方法
-    // **
-    List<SaleAgreement> findByIdIsIn(List<String> ids);
-    // **
-    // 底层 SQL 范围查询方法（包含处理缺月的日期逻辑，10个参数）
-    // **
+
+    List<SaleAgreement> findByCreateDateBetweenOrderByCreateDateDesc(LocalDateTime startDate, LocalDateTime endDate);
+    int countByCreateDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    @Query("SELECT new com.abt.sys.model.CountQuery(c.partyA, COUNT(c)) " +
+            "FROM SaleAgreement c " +
+            "GROUP BY c.partyA " +
+            "ORDER BY COUNT(c) DESC")
+    List<CountQuery> findPartyAWithMostContracts(Pageable pageable);
+
+    @Query("SELECT COUNT(DISTINCT(c.partyA)) FROM SaleAgreement c ")
+    int countAllDistinctByPartyA();
+
+    @Query("SELECT new com.abt.sys.model.CountQuery(MONTH(sa.createDate), COUNT(sa))  " +
+            "FROM SaleAgreement sa " +
+            "WHERE YEAR(sa.createDate) = :currentYear " +
+            "GROUP BY MONTH(sa.createDate) " +
+            "ORDER BY MONTH(sa.createDate) ASC ")
+    List<CountQuery> countContractsByYearMonth(@Param("currentYear") int currentYear);
+
     @Query("select s from SaleAgreement s where " +
             "(:query is null or :query = '' " +
-            "or s.code like CONCAT('%', :query, '%') " +
-            "or s.name like CONCAT('%', :query, '%') " +
-            "or s.partyA like CONCAT('%', :query, '%') " +
-            "or FUNCTION('STR', s.amount) like CONCAT('%', :query, '%')) " +
+            "   or s.code like %:query% " +
+            "   or s.name like %:query% " +
+            "   or s.partyA like %:query% " +
+            "   or FUNCTION('STR', s.amount) like %:query%) " +
             "and (:contractType is null or :contractType = '' or s.type = :contractType) " +
             "and (:partyA is null or :partyA = '' or s.partyA = :partyA) " +
             "and (:partyB is null or :partyB = '' or s.partyB = :partyB) " +
@@ -49,14 +62,6 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
             @Param("signDateEndInt") Integer signDateEndInt,
             Pageable pageable
     );
-    // 根据创建时间范围查询（用于本周/本月/今年新增统计）
-    List<SaleAgreement> findByCreateDateBetweenOrderByCreateDateDesc(LocalDateTime start, LocalDateTime end);
-    // 根据创建时间范围统计数量（用于看板统计）
-    int countByCreateDateBetween(LocalDateTime start, LocalDateTime end);
-    // 统计所有去重后的甲方数量（用于看板统计）
-    @Query("select count(distinct s.partyA) from SaleAgreement s")
-    int countAllDistinctByPartyA();
-    // 统计合同最多的甲方客户（用于看板统计）
-    @Query("select new com.abt.sys.model.CountQuery(s.partyA, count(s.id)) from SaleAgreement s group by s.partyA order by count(s.id) desc")
-    List<CountQuery> findPartyAWithMostContracts(Pageable pageable);
+
+    List<SaleAgreement> findByIdIsIn(Collection<String> ids);
 }

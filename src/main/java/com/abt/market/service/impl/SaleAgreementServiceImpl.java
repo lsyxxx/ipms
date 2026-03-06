@@ -22,6 +22,7 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -54,33 +55,34 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
     @Override
     public Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm) {
         Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "sortNo"));
-        // 1. 处理创建时间 (直接调用父类封装好的方法，内部已经自动处理了结束时间加1天)
-        LocalDateTime actualCreateDateStart = requestForm.toLocalStartTime();
-        LocalDateTime actualCreateDateEnd = requestForm.toLocalEndTime();
-        // 2. 处理签订时间的整数转换
-        Integer signDateStartInt = null;
-        if (requestForm.getSignDateStart() != null) {
-            // 修正类型为 LocalDate
-            LocalDate start = requestForm.getSignDateStart();
-            signDateStartInt = start.getYear() * 10000 + start.getMonthValue() * 100 + start.getDayOfMonth();
+        LocalDateTime startCreateDate = null;
+        if(requestForm.getLocalStartDate() != null) {
+            startCreateDate = requestForm.getLocalStartDate().atStartOfDay();
         }
-        Integer signDateEndInt = null;
-        if (requestForm.getSignDateEnd() != null) {
-            // 修正类型为 LocalDate，并保留加1天的逻辑
-            LocalDate end = requestForm.getSignDateEnd().plusDays(1);
-            signDateEndInt = end.getYear() * 10000 + end.getMonthValue() * 100 + end.getDayOfMonth();
+        LocalDateTime endCreateDate = null;
+        if(requestForm.getLocalEndDate() != null) {
+            endCreateDate = requestForm.getLocalEndDate().plusDays(1).atStartOfDay();
         }
-        // 3. 传递给 Repository
+        Integer startSignDate = null;
+        if(requestForm.getLocalStartSignDate() != null) {
+            LocalDate start = requestForm.getLocalStartSignDate();
+            startSignDate = start.getYear() * 10000 + start.getMonthValue() * 100 + start.getDayOfMonth();
+        }
+        Integer endSignDate = null;
+        if(requestForm.getLocalEndSignDate() != null) {
+            LocalDate end = requestForm.getLocalEndSignDate().plusDays(1);
+            endSignDate = end.getYear() * 10000 + end.getMonthValue() * 100 + end.getDayOfMonth();
+        }
         final Page<SaleAgreement> result = saleAgreementRepository.findByQuery(
                 requestForm.getQuery(),
                 requestForm.getType(),
                 requestForm.getPartyA(),
                 requestForm.getPartyB(),
                 requestForm.getAttribute(),
-                actualCreateDateStart, // 传入获取好的开始时间
-                actualCreateDateEnd,   // 传入获取好的结束时间
-                signDateStartInt,
-                signDateEndInt,
+                startCreateDate,
+                endCreateDate,
+                startSignDate,
+                endSignDate,
                 page
         );
         return WithQueryUtil.build(result);

@@ -68,11 +68,23 @@ public class RequestForm {
      */
     private String startDate;
     private LocalDate localStartDate;
+
+    /**
+     * 合同签订时间开始日期
+     */
+    private LocalDate localStartSignDate;
+
     /**
      * 结束日期;
      */
     private String endDate;
     private LocalDate localEndDate;
+
+    /**
+     * 合同签订时间结束日期
+     */
+    private LocalDate localEndSignDate;
+
     private String createUserid;
 
     private boolean enabled;
