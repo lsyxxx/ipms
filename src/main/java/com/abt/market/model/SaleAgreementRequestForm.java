@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
+
 /**
  *
  */
@@ -31,6 +34,14 @@ public class SaleAgreementRequestForm extends RequestForm {
      */
     private String registerYM;
 
+    /**
+     * 合同签订时间开始日期
+     */
+    private LocalDate localStartSignDate;
 
+    /**
+     * 合同签订时间结束日期
+     */
+    private LocalDate localEndSignDate;
 
 }

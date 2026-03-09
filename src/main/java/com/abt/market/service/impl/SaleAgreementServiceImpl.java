@@ -22,6 +22,7 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -50,13 +52,40 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
     @Value("${abt.saleAgreement.export.template}")
     private String exportTemplate;
 
-
     @Override
     public Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm) {
         Pageable page = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(), Sort.by(Sort.Direction.DESC, "sortNo"));
-        final Page<SaleAgreement> result = saleAgreementRepository.findByQuery(requestForm.getQuery(), requestForm.getType(), requestForm.getPartyA(), requestForm.getPartyB(), requestForm.getAttribute(), page);
+        LocalDateTime startCreateDate = null;
+        if(requestForm.getLocalStartDate() != null) {
+            startCreateDate = requestForm.getLocalStartDate().atStartOfDay();
+        }
+        LocalDateTime endCreateDate = null;
+        if(requestForm.getLocalEndDate() != null) {
+            endCreateDate = requestForm.getLocalEndDate().plusDays(1).atStartOfDay();
+        }
+        Integer startSignDate = null;
+        if(requestForm.getLocalStartSignDate() != null) {
+            LocalDate start = requestForm.getLocalStartSignDate();
+            startSignDate = start.getYear() * 10000 + start.getMonthValue() * 100 + start.getDayOfMonth();
+        }
+        Integer endSignDate = null;
+        if(requestForm.getLocalEndSignDate() != null) {
+            LocalDate end = requestForm.getLocalEndSignDate().plusDays(1);
+            endSignDate = end.getYear() * 10000 + end.getMonthValue() * 100 + end.getDayOfMonth();
+        }
+        final Page<SaleAgreement> result = saleAgreementRepository.findByQuery(
+                requestForm.getQuery(),
+                requestForm.getType(),
+                requestForm.getPartyA(),
+                requestForm.getPartyB(),
+                requestForm.getAttribute(),
+                startCreateDate,
+                endCreateDate,
+                startSignDate,
+                endSignDate,
+                page
+        );
         return WithQueryUtil.build(result);
-
     }
 
     public SaleAgreementServiceImpl(SaleAgreementRepository saleAgreementRepository) {
@@ -256,29 +285,6 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
             };
         }
     }
-
-//    @Override
-//    public List<AgreementInvoiceSummary> summaryByMonth(YearMonth yearMonth, String id) {
-//        // 合同
-//        final SaleAgreement entity = saleAgreementRepository.findById(id).orElseThrow(() -> new BusinessException(String.format("未查询到指定合同(合同编号: %s)", id)));
-//        //查询开票，区分已通过的，正在进行的，总计（通过+进行）
-//        final List<InvoiceApply> invs = invoiceApplyRepository.findRunningOrPassByContractNo(entity.getId());
-//
-//        //统计开票金额，使用lambda表达式，并根据businessState分组,分别计算每种状态的开票金额合计
-//        final Map<String, Double> totalAmountByState = invs.stream()
-//                .collect(Collectors.groupingBy(InvoiceApply::getBusinessState,
-//                        Collectors.summingDouble(InvoiceApply::getInvoiceAmount)));
-//        //转为agreementInvoiceSummary列表
-//        List<AgreementInvoiceSummary> summaryList = totalAmountByState.entrySet().stream()
-//                .map(entry -> {
-//                    return new AgreementInvoiceSummary(entity.getId(), entry.getValue(), entry.getKey());
-//                })
-//                .toList();
-//        List<AgreementInvoiceSummary> list = new ArrayList<>(summaryList);
-//        //添加全部的
-//        list.add(new AgreementInvoiceSummary(entity.getId(), totalAmountByState.values().stream().reduce(0.0, Double::sum), "全部"));
-//        return list;
-//    }
 
 
     @Override

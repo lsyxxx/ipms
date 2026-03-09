@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -37,8 +36,8 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
             "ORDER BY MONTH(sa.createDate) ASC ")
     List<CountQuery> countContractsByYearMonth(@Param("currentYear") int currentYear);
 
-    @Query("select s from SaleAgreement s " +
-            "where (:query is null or :query = '' " +
+    @Query("select s from SaleAgreement s where " +
+            "(:query is null or :query = '' " +
             "   or s.code like %:query% " +
             "   or s.name like %:query% " +
             "   or s.partyA like %:query% " +
@@ -46,10 +45,23 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
             "and (:contractType is null or :contractType = '' or s.type = :contractType) " +
             "and (:partyA is null or :partyA = '' or s.partyA = :partyA) " +
             "and (:partyB is null or :partyB = '' or s.partyB = :partyB) " +
-            "and (:attribute is null or :attribute = '' or s.attribute = :attribute)" +
-            "order by s.createDate desc"
-    )
-    Page<SaleAgreement> findByQuery(String query, String contractType, String partyA, String partyB, String attribute, Pageable pageable);
+            "and (:attribute is null or :attribute = '' or s.attribute = :attribute) " +
+            "and (:createDateStart is null or s.createDate >= :createDateStart) " +
+            "and (:createDateEnd is null or s.createDate < :createDateEnd) " +
+            "and (:signDateStartInt is null or s.signYear is null or (s.signYear * 10000 + COALESCE(s.signMonth, 12) * 100 + COALESCE(s.signDay, 31)) >= :signDateStartInt) " +
+            "and (:signDateEndInt is null or s.signYear is null or (s.signYear * 10000 + COALESCE(s.signMonth, 1) * 100 + COALESCE(s.signDay, 1)) < :signDateEndInt)")
+    Page<SaleAgreement> findByQuery(
+            @Param("query") String query,
+            @Param("contractType") String contractType,
+            @Param("partyA") String partyA,
+            @Param("partyB") String partyB,
+            @Param("attribute") String attribute,
+            @Param("createDateStart") LocalDateTime createDateStart,
+            @Param("createDateEnd") LocalDateTime createDateEnd,
+            @Param("signDateStartInt") Integer signDateStartInt,
+            @Param("signDateEndInt") Integer signDateEndInt,
+            Pageable pageable
+    );
 
     List<SaleAgreement> findByIdIsIn(Collection<String> ids);
 }
