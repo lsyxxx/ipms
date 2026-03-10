@@ -3,16 +3,19 @@ package com.abt.market.controller;
 import cn.idev.excel.FastExcel;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
+import com.abt.common.util.TokenUtil;
 import com.abt.market.entity.SettlementMain;
 import com.abt.market.entity.SettlementSummary;
 import com.abt.market.entity.StlmSmryTemp;
 import com.abt.market.entity.StlmTestTemp;
 import com.abt.market.model.*;
 import com.abt.market.service.SettlementService;
+import com.abt.sys.model.dto.UserView;
 import com.abt.testing.entity.SampleRegistCheckModeuleItem;
 import com.abt.testing.service.SampleRegistCheckModeuleItemService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.CustomerInfo;
+import com.abt.wf.entity.InvoiceApply;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -120,9 +124,29 @@ public class SettlementController {
     @GetMapping("/invalid")
     public R<Object> invalid(String id, String reason) {
         final SettlementMain main = settlementService.findSettlementMainOnly(id);
+        //1. 只能自己作废
+        final UserView user = TokenUtil.getUserFromAuthToken();
+        if (!user.getId().equals(main.getCreateUserid())) {
+            throw new BusinessException(String.format("只有创建人(%s)可以作废该结算单(%s)", main.getCreateUsername(), main.getId()));
+        }
         main.setInvalidReason(reason);
         settlementService.invalid(main);
         return R.success("作废成功");
+    }
+
+
+    /**
+     * 结算单作废前校验
+     */
+    @GetMapping("/invalid/prepare")
+    public R<List<String>> invalidPrepare(String id) {
+        // 是否存在已开票、进行中的流程
+        final List<InvoiceApply> runInvs = settlementService.hasRunningOrPassInvoice(id);
+        if (!CollectionUtils.isEmpty(runInvs)) {
+            List<String> ids = runInvs.stream().map(InvoiceApply::getId).toList();
+            return R.success(ids, "");
+        }
+        return R.success(List.of(), "");
     }
 
     /**

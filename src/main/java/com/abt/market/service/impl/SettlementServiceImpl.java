@@ -1,13 +1,11 @@
 package com.abt.market.service.impl;
 
 import com.abt.common.util.MoneyUtil;
-import com.abt.common.util.TokenUtil;
 import com.abt.market.entity.*;
 import com.abt.market.model.*;
 import com.abt.market.repository.*;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.CustomerInfo;
 import com.abt.testing.entity.Entrust;
 import com.abt.testing.entity.SampleRegist;
@@ -648,11 +646,6 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     public void invalid(SettlementMain main) {
         final SaveType saveType = main.getSaveType();
-        //1. 只能自己作废
-        final UserView user = TokenUtil.getUserFromAuthToken();
-        if (!user.getId().equals(main.getCreateUserid())) {
-            throw new BusinessException(String.format("只有创建人(%s)可以作废该结算单(%s)", main.getCreateUsername(), main.getId()));
-        }
         if (SaveType.SAVE == saveType) {
             //1. 查找开票
             final List<Double> invList = settlementRelationRepository.findInvoiceApplyByMid(main.getId());
@@ -671,6 +664,12 @@ public class SettlementServiceImpl implements SettlementService {
             main.setSaveType(SaveType.INVALID);
             settlementMainRepository.save(main);
         }
+    }
+
+    @Override
+    public List<InvoiceApply> hasRunningOrPassInvoice(String id) {
+        final List<InvoiceApply> list = invoiceApplyRepository.findRunningOrPassBySettlementId(id);
+        return list;
     }
 
     @Override

@@ -145,7 +145,12 @@ public interface InvoiceApplyRepository extends JpaRepository<InvoiceApply, Stri
 
 
     @Query("""
-    select e from InvoiceApply e where e.contractNo = :contractNo and (e.businessState = '审批中' or e.businessState = '已通过')
+    select e from InvoiceApply e where e.contractNo = :contractNo and (e.businessState = '审批中' or e.businessState = '已通过') and e.isDelete = false
 """)
     List<InvoiceApply> findRunningOrPassByContractNo(String contractNo);
+
+    @Query("""
+    select e from InvoiceApply e where e.settlementId = :settlementId and (e.businessState = '审批中' or e.businessState = '已通过') and e.isDelete = false
+""")
+    List<InvoiceApply> findRunningOrPassBySettlementId(String settlementId);
 }

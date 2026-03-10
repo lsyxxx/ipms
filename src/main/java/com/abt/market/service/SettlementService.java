@@ -3,6 +3,7 @@ package com.abt.market.service;
 import com.abt.market.entity.*;
 import com.abt.market.model.*;
 import com.abt.sys.model.entity.CustomerInfo;
+import com.abt.wf.entity.InvoiceApply;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -74,6 +75,13 @@ public interface SettlementService {
      * 3. 已作废：不变
      */
     void invalid(SettlementMain main);
+
+    /**
+     * 是否存在正在进行或通过的开票记录
+     * @param id 结算单id
+     * @return
+     */
+    List<InvoiceApply> hasRunningOrPassInvoice(String id);
 
     /**
      * 获取所有为作废的结算单的客户
