@@ -3,7 +3,7 @@ encoding: utf-8
 # --------- environment
 spring:
   profiles:
-    active: dev
+    active: prod
   
   # ---- spring
   servlet:
