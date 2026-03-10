@@ -64,4 +64,6 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
     );
 
     List<SaleAgreement> findByIdIsIn(Collection<String> ids);
+
+    
 }
