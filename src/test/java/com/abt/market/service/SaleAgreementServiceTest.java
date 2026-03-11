@@ -11,16 +11,16 @@ import java.util.List;
 @SpringBootTest
 class SaleAgreementServiceTest {
 
-    // 注入我们修改好的 Service 接口
     @Autowired
     private SaleAgreementService saleAgreementService;
 
     @Test
     void getContractEntrustSampleCountList() {
-
-        List<ContractEntrust> resultList = saleAgreementService.getContractEntrustSampleCountList();
+        // 填入想测试的真实合同 ID
+        String testContractId = "d74b95ad-28c6-4c86-8af6-e55f34463b56";
+        List<ContractEntrust> resultList = saleAgreementService.getContractEntrustSampleCountList(testContractId);
         Assert.notNull(resultList, "Service 返回的列表不能为 null");
-        System.out.println("成功获取对象数量: " + resultList.size());
+        System.out.println("成功获取指定合同的数据，总条数: " + resultList.size());
         for (int i = 0; i < resultList.size(); i++) {
             ContractEntrust item = resultList.get(i);
             System.out.println(String.format("第 %d 条 -> [合同ID: %s, 编号: %s, 名称: %s, 客户: %s, 委托单: %s, 项目: %s, 甲方公司: %s, 样品数: %d]",

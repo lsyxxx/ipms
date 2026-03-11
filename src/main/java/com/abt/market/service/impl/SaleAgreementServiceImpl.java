@@ -300,7 +300,7 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
     }
 
     @Override
-    public List<ContractEntrust> getContractEntrustSampleCountList() {
-        return saleAgreementRepository.findContractEntrustSampleCountList();
+    public List<ContractEntrust> getContractEntrustSampleCountList(String contractId) {
+        return saleAgreementRepository.findContractEntrustSampleCountList(contractId);
     }
 }

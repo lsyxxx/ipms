@@ -76,8 +76,8 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
             "LEFT JOIN SettlementSummary s ON r.mid = s.mid " +
             "LEFT JOIN Entrust e ON s.entrustId = e.id " +
             "LEFT JOIN SampleRegistCheckModeuleItem c ON s.entrustId = c.entrustId " +
-            "WHERE s.entrustId IS NOT NULL " +
+            "WHERE s.entrustId IS NOT NULL AND a.id = :contractId " +
             "GROUP BY a.id, a.code, a.name, a.partyA, s.entrustId, e.projectName, e.jiaFangCompany " +
             "ORDER BY s.entrustId DESC")
-    List<ContractEntrust> findContractEntrustSampleCountList();
+    List<ContractEntrust> findContractEntrustSampleCountList(@Param("contractId") String contractId);
 }
