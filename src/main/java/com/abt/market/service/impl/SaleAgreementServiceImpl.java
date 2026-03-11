@@ -37,7 +37,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
+import com.abt.market.model.ContractEntrust;
 import static com.abt.common.util.QueryUtil.ensureProperty;
 
 /**
@@ -299,4 +299,8 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
         workbook.save(outputStream, SaveFormat.XLSX);
     }
 
+    @Override
+    public List<ContractEntrust> getContractEntrustSampleCountList() {
+        return saleAgreementRepository.findContractEntrustSampleCountList();
+    }
 }

@@ -1,6 +1,7 @@
 package com.abt.market.repository;
 
 import com.abt.market.entity.SaleAgreement;
+import com.abt.market.model.ContractEntrust;
 import com.abt.sys.model.CountQuery;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Page;
@@ -65,5 +66,18 @@ public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, St
 
     List<SaleAgreement> findByIdIsIn(Collection<String> ids);
 
-    
+    @Query("SELECT new com.abt.market.model.ContractEntrust(" +
+            "    a.id, a.code, a.name, a.partyA, " +
+            "    s.entrustId, e.projectName, e.jiaFangCompany, " +
+            "    COUNT(DISTINCT c.sampleRegistId)" +
+            ") " +
+            "FROM SaleAgreement a " +
+            "LEFT JOIN SettlementRelation r ON a.id = r.rid AND r.bizType = com.abt.market.model.SettlementRelationType.AGREEMENT " +
+            "LEFT JOIN SettlementSummary s ON r.mid = s.mid " +
+            "LEFT JOIN Entrust e ON s.entrustId = e.id " +
+            "LEFT JOIN SampleRegistCheckModeuleItem c ON s.entrustId = c.entrustId " +
+            "WHERE s.entrustId IS NOT NULL " +
+            "GROUP BY a.id, a.code, a.name, a.partyA, s.entrustId, e.projectName, e.jiaFangCompany " +
+            "ORDER BY s.entrustId DESC")
+    List<ContractEntrust> findContractEntrustSampleCountList();
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import com.abt.market.model.ContractEntrust;
 
 /**
  *
@@ -161,6 +162,12 @@ public class SaleAgreementController {
             log.error("导出销售合同失败", e);
             throw new BusinessException("生成销售合同Excel失败！");
         }
+    }
+
+    @GetMapping("/sample-count-list")
+    public R<List<ContractEntrust>> getContractEntrustSampleCountList() {
+        List<ContractEntrust> list = saleAgreementService.getContractEntrustSampleCountList();
+        return R.success(list);
     }
 
 
