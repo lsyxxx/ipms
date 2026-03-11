@@ -45,9 +45,9 @@ public class SaleAgreementRepositoryTest {
 
     @Test
     void findContractEntrustSampleCountList() {
-        // 填入想测试的真实合同 ID
-        String testContractId = "d74b95ad-28c6-4c86-8af6-e55f34463b56";
-        List<ContractEntrust> resultList = saleAgreementRepository.findContractEntrustSampleCountList(testContractId);
+        //  填入想测试的真实合同 ID
+        String testId = "d74b95ad-28c6-4c86-8af6-e55f34463b56";
+        List<ContractEntrust> resultList = saleAgreementRepository.findContractEntrustSampleCountList(testId);
         System.out.println("共查出数据条数: " + resultList.size());
         Assert.notNull(resultList, "查询结果不能为 null");
         System.out.println("数据明细 (全部展示)");

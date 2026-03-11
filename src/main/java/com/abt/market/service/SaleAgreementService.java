@@ -16,7 +16,7 @@ public interface SaleAgreementService {
 
     Page<SaleAgreement> findPaged(SaleAgreementRequestForm requestForm);
 
-    List<ContractEntrust> getContractEntrustSampleCountList(String contractId);
+    List<ContractEntrust> getContractEntrustSampleCountList(String id);
 
     void delete(String id);
 
