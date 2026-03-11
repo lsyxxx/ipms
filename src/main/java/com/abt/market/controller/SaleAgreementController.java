@@ -165,11 +165,7 @@ public class SaleAgreementController {
     }
 
     @GetMapping("/sample")
-    public R<List<ContractEntrust>> getContractEntrustSampleCountList(SaleAgreementRequestForm requestForm) {
-        String id = requestForm.getId();
-        if (id == null || id.trim().isEmpty()) {
-            return R.fail("合同ID不能为空");
-        }
+    public R<List<ContractEntrust>> getContractEntrustSampleCountList(String id) {
         List<ContractEntrust> list = saleAgreementService.getContractEntrustSampleCountList(id);
         return R.success(list);
     }
