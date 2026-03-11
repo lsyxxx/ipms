@@ -9,11 +9,14 @@ import java.io.OutputStream;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import com.abt.market.model.ContractEntrust;
 
 public interface SaleAgreementService {
     Page<SaleAgreement> findByQuery(SaleAgreementRequestForm requestForm);
 
     Page<SaleAgreement> findPaged(SaleAgreementRequestForm requestForm);
+
+    List<ContractEntrust> getContractEntrustSampleCountList(String id);
 
     void delete(String id);
 

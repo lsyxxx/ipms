@@ -3,8 +3,8 @@ encoding: utf-8
 # --------- environment
 spring:
   profiles:
-    active: prod
-  
+    active: yuan
+
   # ---- spring
   servlet:
     multipart:
