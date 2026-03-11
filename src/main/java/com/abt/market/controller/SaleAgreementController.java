@@ -164,6 +164,10 @@ public class SaleAgreementController {
         }
     }
 
+    /**
+     * 查询指定合同下所有委托单及样品数量
+     * @param id 合同编号
+     */
     @GetMapping("/sample")
     public R<List<ContractEntrust>> getContractEntrustSampleCountList(String id) {
         List<ContractEntrust> list = saleAgreementService.getContractEntrustSampleCountList(id);
