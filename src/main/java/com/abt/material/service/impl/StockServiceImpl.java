@@ -40,7 +40,7 @@ import static com.abt.material.entity.StockOrder.*;
 import static java.util.stream.Collectors.collectingAndThen;
 import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
-import com.abt.wf.service.PurchaseService;
+
 /**
  * 出入库
  */
@@ -56,7 +56,6 @@ public class StockServiceImpl implements StockService {
     private final MaterialTypeRepository materialTypeRepository;
     private final InventoryAlertRepository inventoryAlertRepository;
     private final PurchaseApplyDetailRepository purchaseApplyDetailRepository;
-    private final PurchaseService purchaseService;
     @Value("${abt.stock.export.week.template}")
     private String stockWeekTemplate;
 
@@ -64,7 +63,7 @@ public class StockServiceImpl implements StockService {
     private String stockWeekFilePath;
 
 
-    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository, PurchaseApplyDetailRepository purchaseApplyDetailRepository, CommonIdGenerator commonIdGenerator, PurchaseService purchaseService) {
+    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository, PurchaseApplyDetailRepository purchaseApplyDetailRepository, CommonIdGenerator commonIdGenerator) {
         this.stockOrderRepository = stockOrderRepository;
         this.stockRepository = stockRepository;
         this.warehouseRepository = warehouseRepository;
@@ -73,20 +72,15 @@ public class StockServiceImpl implements StockService {
         this.materialTypeRepository = materialTypeRepository;
         this.inventoryAlertRepository = inventoryAlertRepository;
         this.purchaseApplyDetailRepository = purchaseApplyDetailRepository;
-        this.purchaseService = purchaseService;
     }
 
     @Override
-    public StockOrder generateStockOrderFromPurchase(String purchaseId) {
-        PurchaseApplyMain purchase = purchaseService.load(purchaseId);
-        if (!purchase.isAccepted()) {
-            throw new BusinessException("该采购单尚未完成验收，无法提取明细");
-        }
+    public StockOrder generateStockOrderFromPurchase(PurchaseApplyMain purchase) {
         StockOrder stockOrder = new StockOrder();
         stockOrder.setStockType(StockOrder.STOCK_TYPE_IN);
         stockOrder.setOrderDate(LocalDate.now());
         List<Stock> stockList = new ArrayList<>();
-        if (purchase.getDetails() != null) {
+        if (purchase != null && purchase.getDetails() != null) {
             for (PurchaseApplyDetail pd : purchase.getDetails()) {
                 Stock stock = new Stock();
                 stock.setMaterialId(pd.getDetailId());

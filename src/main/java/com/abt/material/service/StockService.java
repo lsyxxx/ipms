@@ -2,6 +2,7 @@ package com.abt.material.service;
 
 import com.abt.material.entity.*;
 import com.abt.material.model.*;
+import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseSummaryAmount;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -154,5 +155,5 @@ public interface StockService {
     /**
      * 根据采购单生成入库单草稿数据
      */
-    StockOrder generateStockOrderFromPurchase(String purchaseId);
+    StockOrder generateStockOrderFromPurchase(PurchaseApplyMain purchase);
 }
