@@ -38,3 +38,4 @@ build/
 !**/src/main/**/application-dev0.properties
 !**/src/main/**/application-dev1.properties
 
+/log
