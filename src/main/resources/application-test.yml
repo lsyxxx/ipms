@@ -1,8 +1,6 @@
 # --------- environment
 server:
   port: 8081
-  # servlet:
-  #   context-path: /test
 
 # --------- log
 logging:
@@ -15,34 +13,39 @@ logging:
             JdbcTemplate: debug
         security: TRACE
       hibernate:
+        orm:
+          jdbc:
+            bind: TRACE
         type:
           descriptor:
             sql:
               BasicBinder: TRACE
+        SQL: DEBUG
     com:
       abt: TRACE
       camunda: debug
-    # sql: trace
+    sql: trace
     web: DEBUG
 
 spring:
-  # 显示 SQL 语句
+  # ---- jpa
   jpa:
     show-sql: true
-    # 格式化 SQL 语句
     properties:
       hibernate:
         format_sql: true
-        
+
   # --------- datasource
   datasource:
-    url: jdbc:sqlserver://localhost:1433;database=zjdata;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost:1433;database=ZJData;trustServerCertificate=true
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: sa
-    password: sasa
+    password: "123456"
     # password: abt@23328
     type: com.zaxxer.hikari.HikariDataSource
-    
+    hikari:
+      maximum-pool-size: 20
+
   # --------- messages
   messages:
     basename: i18n/message
@@ -50,9 +53,12 @@ spring:
 # ---- camunda wf
 camunda:
   bpm:
+    history-level: full
     admin-user:
       id: demo
       password: demo
+    filter:
+      create: All Tasks
     database:
       schema-update: true
     auto-deployment-enabled: true
@@ -96,7 +102,7 @@ abt:
       template: E:\\fw_atd\\fieldwork_atd_model2.xlsx
       tempfile:
         path: E:\\fw_atd\\fw_export.xlsx
-  
+
   # ------ app
   app:
     bak:
@@ -110,30 +116,77 @@ abt:
       ios:
         url: /05_app_bak/run/ios_apk.apk
       dir: /05_app_bak/run/
-  
+
   # ---- templates
   rbs:
     excel:
-      template: C:\\Users\\Administrator\\Desktop\\rbs_template.xlsx
+      template: template/rbs_template.xlsx
+      dtl:
+        template: template/rbs_dtl_template.xlsx
     pur:
       dir: C:\\Users\\Administrator\\Desktop\\temp\\
-  
+
   pay:
     excel:
-      template: C:\\Users\\Administrator\\Desktop\\pay_template.xlsx
-      
+      template: template/pay_template.xlsx
+
   pur:
     excel:
-      template: C:\\Users\\Administrator\\Desktop\\purchase_apply_template.xlsx
+      template: template/purchase_apply_template.xlsx
     accept:
       excel:
-        template: C:\\Users\\Administrator\\Desktop\\purchase_accept_template.xlsx
+        template: template/purchase_accept_template.xlsx
     tmp:
       name: purchase.xlsx
-      
+
+  trip:
+    excel:
+      template: template/trip_template.xlsx
+
   temp:
     dir: C:\\Users\\Administrator\\Desktop\\temp\\
-  
+
+  # ---- stock
+  stock:
+    inv:
+      export:
+        template: template/materials_inventory_template.xlsx
+      alert:
+        export:
+          template: template/inventory_alert_template.xlsx
+          template2: template/inventory_alert_template2.xlsx
+    export:
+      week:
+        template: template/stock_gift_export.xlsx
+        path: C:\\Users\\Administrator\\Desktop\\temp\\
+
   # ---- signature
   sig:
-    dir: F:\\sig\\ 
+    dir: F:\\sig\\
+
+  # ---- sl check
+  sl:
+    check: C:\\Users\\Administrator\\Desktop\\
+
+  # ---- wf sbct
+  wf:
+    sbct:
+      rock:
+        template: template/sbct_samplelist_rock.xlsx
+      fluid:
+        template: template/sbct_samplelist_fluid.xlsx
+      form:
+        template: template/sbct_form_export.xlsx
+      export:
+        dir: C:\\Users\\Administrator\\Desktop\\temp\\
+
+
+  # --- settlement
+  settlement:
+    excel:
+      template: template/settlement_template.xlsx
+
+  #-- saleagreement
+  saleAgreement:
+    export:
+      template: template/saleagreement_export_template.xlsx

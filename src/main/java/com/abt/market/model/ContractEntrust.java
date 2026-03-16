@@ -33,7 +33,7 @@ public class ContractEntrust implements Serializable {
     /** 7. 委托单甲方公司 */
     private String jiafangCompany;
 
-    /** 8. 样品数量 (前端可能需要 Integer) */
+    /** 8. 样品数量 */
     private Integer sampleCount;
 
 
