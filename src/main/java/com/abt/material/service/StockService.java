@@ -150,4 +150,9 @@ public interface StockService {
      * @return
      */
     List<IStockTimelineDTO> getStockHistory(String materialId, String whid, LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * 根据采购单生成入库单草稿数据
+     */
+    StockOrder generateStockOrderFromPurchase(String purchaseId);
 }

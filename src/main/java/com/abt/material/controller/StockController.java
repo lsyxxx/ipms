@@ -472,4 +472,13 @@ public class StockController {
         return R.success(list);
     }
 
+    /**
+     * 根据采购单拉取明细，用于前端一键预填入库表单
+     */
+    @GetMapping("/generateFromPurchase")
+    public R<StockOrder> generateFromPurchase(String purchaseId) {
+        StockOrder stockOrder = stockService.generateStockOrderFromPurchase(purchaseId);
+        return R.success(stockOrder);
+    }
+
 }
