@@ -354,4 +354,15 @@ public class PurchaseController {
         form.setSubmitUsername(user.getUsername());
     }
 
+    /**
+     * 校验采购单是否已验收 (用于入库前的前置拦截校验)
+     */
+    @GetMapping("/checkAccepted")
+    public R<Boolean> checkPurchaseAccepted(String purchaseId) {
+        PurchaseApplyMain purchase = purchaseService.load(purchaseId);
+        if (!purchase.isAccepted()) {
+            return R.fail("未验收");
+        }
+        return R.success(true, "该采购单已验收");
+    }
 }

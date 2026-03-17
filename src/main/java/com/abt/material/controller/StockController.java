@@ -16,7 +16,9 @@ import cn.idev.excel.util.MapUtils;
 import cn.idev.excel.write.metadata.WriteSheet;
 import cn.idev.excel.write.metadata.fill.FillConfig;
 import cn.idev.excel.write.metadata.fill.FillWrapper;
+import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseSummaryAmount;
+import com.abt.wf.service.PurchaseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,6 +53,7 @@ import java.util.Map;
 public class StockController {
     private final StockService stockService;
     private final IFileService iFileService;
+    private final PurchaseService purchaseService;
 
     @Value("${abt.stock.inv.export.template}")
     private String templatePath;
@@ -64,10 +67,10 @@ public class StockController {
     @Value("${com.abt.file.upload.save}")
     private String savedRoot;
 
-
-    public StockController(StockService stockService, IFileService iFileService) {
+    public StockController(StockService stockService, IFileService iFileService, PurchaseService purchaseService) {
         this.stockService = stockService;
         this.iFileService = iFileService;
+        this.purchaseService = purchaseService;
     }
 
 
@@ -429,8 +432,8 @@ public class StockController {
 
     /**
      * 导出采购明细
-     * @throws IOException 
-     * @throws JsonProcessingException 
+     * @throws IOException
+     * @throws JsonProcessingException
      */
     @GetMapping("/export/purchase/dtl")
     public void exportPurchasingDetails(HttpServletResponse response, @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate, @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) throws JsonProcessingException, IOException  {
@@ -470,6 +473,19 @@ public class StockController {
                 requestForm.getLocalStartDate().atStartOfDay(), requestForm.getLocalEndDate().atStartOfDay());
 
         return R.success(list);
+    }
+
+    /**
+     * 根据采购单拉取明细，用于前端一键预填入库表单
+     */
+    @GetMapping("/generateFromPurchase")
+    public R<StockOrder> generateFromPurchase(@RequestParam String purchaseId) {
+        PurchaseApplyMain purchase = purchaseService.load(purchaseId);
+        if (!purchase.isAccepted()) {
+            return R.fail("该采购单尚未完成验收，无法提取明细");
+        }
+        StockOrder stockOrder = stockService.generateStockOrderFromPurchase(purchase);
+        return R.success(stockOrder);
     }
 
 }
