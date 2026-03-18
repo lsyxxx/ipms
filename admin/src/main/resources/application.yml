@@ -121,4 +121,5 @@ wf:
       pre: /wf/inv/detail/
   trip:
     url:
-      pre: /wf/trip/detail/ 
+      pre: /wf/trip/detail/
+
