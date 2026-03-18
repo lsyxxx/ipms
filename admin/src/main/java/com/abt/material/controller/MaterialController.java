@@ -1,0 +1,56 @@
+package com.abt.material.controller;
+
+import com.abt.common.model.R;
+import com.abt.material.entity.MaterialDetail;
+import com.abt.material.model.MaterialRequestForm;
+import com.abt.material.service.MaterialService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ */
+@RestController
+@Slf4j
+@RequestMapping("/mtr")
+@Tag(name = "MaterialController", description = "")
+public class MaterialController {
+    private final MaterialService materialService;
+
+    public MaterialController(MaterialService materialService) {
+        this.materialService = materialService;
+    }
+
+    @GetMapping("/find/all")
+    public R<List<MaterialDetail>> findAllMaterialDetails() {
+        final List<MaterialDetail> all = materialService.findAll();
+        return R.success(all);
+    }
+
+    @GetMapping("/find/active")
+    public R<List<MaterialDetail>> findListBy(MaterialRequestForm requestForm) {
+        List<MaterialDetail> all = new ArrayList<>();
+        if (requestForm.getIsActive() == null) {
+            materialService.findAll();
+        } else if (requestForm.getIsActive()) {
+            all = materialService.findListByActive();
+        } else {
+            all = materialService.findListByUnactive();
+        }
+        return R.success(all);
+    }
+
+    @GetMapping("/find/dept")
+    public R<List<MaterialDetail>> findMaterialByDept(MaterialRequestForm requestForm) {
+        final List<MaterialDetail> all = materialService.findAll();
+        return R.success(all);
+    }
+
+
+}

@@ -1,0 +1,50 @@
+server:
+  port: 8090
+# --------- log
+logging:
+  file:
+    path: E:\\java-web-log
+  level:
+    root: info
+    org:
+      springframework:
+        data: trace
+        jdbc:
+          core:
+            JdbcTemplate: debug
+        security: TRACE
+      hibernate:
+        orm:
+          jdbc:
+            bind: TRACE
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+        SQL: DEBUG
+    com:
+      abt: TRACE
+    sql: trace
+    web: DEBUG
+  config: classpath:logback-spring.xml
+
+spring:
+  # ------ jpa
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        
+  # --------- datasource
+  datasource:
+    url: jdbc:sqlserver://127.0.0.1:1433;database=ZJData;trustServerCertificate=true
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: sa
+    password: abt@23328
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 50
