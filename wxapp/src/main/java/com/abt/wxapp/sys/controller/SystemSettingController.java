@@ -24,9 +24,9 @@ public class SystemSettingController {
     /**
      * 根据 ID 获取系统配置参数
      */
-    @GetMapping("/id")
+    @GetMapping("/{id}")
     public R<SystemSetting> getById(@PathVariable("id") String id) {
-        log.info("接收到查询系统配置的请求，参数 ID:", id);
+        log.info("接收到查询系统配置的请求，参数 ID {}:", id);
         SystemSetting setting = systemSettingService.findById(id);
         return R.success(setting);
     }
