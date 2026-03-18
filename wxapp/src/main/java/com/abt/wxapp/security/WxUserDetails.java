@@ -43,4 +43,32 @@ public class WxUserDetails implements UserDetails {
     public String getUsername() {
         return openid;
     }
+
+    /**
+     * 账号登录过期
+     * @return 是否过期
+     */
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    /**
+     * 凭证（密码）是否未过期，是否强制修改密码
+     * @return 是否过期
+     */
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return false;
+    }
 }
