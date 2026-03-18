@@ -3,7 +3,7 @@ server:
 # --------- log
 logging:
   file:
-    path: E:\\java-web-log
+    path: E:\\wxapp-log
   level:
     root: info
     org:
@@ -48,3 +48,9 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       maximum-pool-size: 50
+
+
+#--- jwt
+jwt:
+  expire-days: 30
+  secret: test_secret

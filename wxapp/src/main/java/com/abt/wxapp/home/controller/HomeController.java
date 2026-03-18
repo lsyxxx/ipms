@@ -16,7 +16,7 @@ public class HomeController {
 
     @GetMapping("/hello")
     public R<Object> hello() {
-        return R.success();
+        return R.success("hello");
     }
 
 

@@ -44,4 +44,12 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       maximum-pool-size: 20
-    
+
+#--- jwt
+jwt:
+  expire-days: 30
+  secret: test_secret
+
+
+
+
