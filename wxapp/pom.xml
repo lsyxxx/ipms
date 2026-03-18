@@ -84,6 +84,12 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+<!--        abt公共组件-->
+        <dependency>
+            <groupId>com.abt</groupId>
+            <artifactId>common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -148,7 +154,7 @@
                             <target>
                                 <mkdir dir="E:\001_jar_bak"/>
                                 <copy file="${project.build.directory}\${project.build.finalName}.jar"
-                                      tofile="E:\001_jar_bak\wxapp\abt-wxapp-${maven.build.timestamp}.jar"/>
+                                      tofile="E:\001_jar_bak\abt-wxapp-${maven.build.timestamp}.jar"/>
                             </target>
                         </configuration>
                     </execution>

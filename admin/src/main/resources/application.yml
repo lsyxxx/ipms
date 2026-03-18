@@ -10,7 +10,7 @@ spring:
   application:
     name: admin
   profiles:
-    active: dev
+    active: prod
 
   # ---- spring
   servlet:

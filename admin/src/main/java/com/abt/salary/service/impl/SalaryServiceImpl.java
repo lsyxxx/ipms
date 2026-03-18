@@ -937,7 +937,7 @@ public class SalaryServiceImpl implements SalaryService {
                 slip.setHrSig(sigMap.getOrDefault(slip.getHrJobNumber(), null));
             }
             if (slip.isChiefCheck()) {
-                slip.setChiefSig(sigMap.getOrDefault(slip.getHrJobNumber(), null));
+                slip.setChiefSig(sigMap.getOrDefault(slip.getChiefJobNumber(), null));
             }
         }
 

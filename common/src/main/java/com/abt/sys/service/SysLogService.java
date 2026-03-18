@@ -1,9 +1,5 @@
 package com.abt.sys.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-
 public interface SysLogService {
 
     String APPLICATION = "JavaService";
