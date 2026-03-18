@@ -38,7 +38,7 @@ public class SecurityConfig {
                 // 路由权限规则
                 .authorizeHttpRequests(auth -> auth
                         // 无需认证接口
-                        .requestMatchers("/home/**", "/login/**", "/pub/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/home/**", "/login/**", "/pub/**", "/sys/setting", "/favicon.ico").permitAll()
 //                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         // 其余所有接口均需要认证
                         .anyRequest().authenticated()
