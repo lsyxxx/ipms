@@ -392,6 +392,19 @@ public class SalaryController {
 
 
     /**
+     * 仅更新统计数据，计算合计数据
+     */
+    @GetMapping("/stats/update")
+    public R<Object> updateSalarySumData(String mid) {
+        final SalaryMain main = salaryService.findSalaryMainById(mid);
+        //重新计算并保存
+        salaryService.recalculateSalaryMainSumData(mid, main);
+
+        return R.success("统计数据更新成功(" + mid + ")");
+    }
+
+
+    /**
      * 导出审批表
      * @param yearMonth 工资年月
      * @param company 工资分组
