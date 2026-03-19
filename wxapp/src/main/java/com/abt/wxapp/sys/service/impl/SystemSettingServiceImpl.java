@@ -1,5 +1,6 @@
 package com.abt.wxapp.sys.service.impl;
 
+import com.abt.wxapp.exception.BusinessException;
 import com.abt.wxapp.sys.entity.SystemSetting;
 import com.abt.wxapp.sys.repository.SystemSettingRepository;
 import com.abt.wxapp.sys.service.SystemSettingService;
@@ -18,6 +19,6 @@ public class SystemSettingServiceImpl implements SystemSettingService {
     @Override
     public SystemSetting findById(String id) {
         return systemSettingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("数据库中未找到该配置参数，ID: " + id));
+                .orElseThrow(() -> new BusinessException("数据库中未找到该配置参数，ID: " + id));
     }
 }
