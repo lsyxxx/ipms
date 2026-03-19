@@ -159,6 +159,8 @@ abt:
       week:
         template: template/stock_gift_export.xlsx
         path: C:\\Users\\Administrator\\Desktop\\temp\\
+    dtl:
+      template: template/stock_dtl_table_export.xlsx
   
   # ---- signature
   sig:

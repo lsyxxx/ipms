@@ -156,4 +156,12 @@ public interface StockService {
      * 根据采购单生成入库单草稿数据
      */
     StockOrder generateStockOrderFromPurchase(PurchaseApplyMain purchase);
+
+    /**
+     * 生成出入库明细excel
+     * @param list 出入库明细表
+     * @param outputStream
+     * @throws Exception
+     */
+    void createStockDetailExcel(List<Stock> list, OutputStream outputStream) throws Exception;
 }

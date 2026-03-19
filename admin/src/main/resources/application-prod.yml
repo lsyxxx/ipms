@@ -167,6 +167,8 @@ abt:
     gift:
       compare:
         dir: E:\\temp\\temp\\stock\\week\\
+    dtl:
+      template: E:\\temp\\temp\\stock\\stock_dtl_table_export.xlsx
   
   # ---- signature
   sig:

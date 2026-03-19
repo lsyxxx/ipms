@@ -476,16 +476,43 @@ public class StockController {
     }
 
     /**
-     * 根据采购单拉取明细，用于前端一键预填入库表单
+     * 根据采购单直接生成入库单
      */
     @GetMapping("/generateFromPurchase")
     public R<StockOrder> generateFromPurchase(@RequestParam String purchaseId) {
         PurchaseApplyMain purchase = purchaseService.load(purchaseId);
         if (!purchase.isAccepted()) {
-            return R.fail("该采购单尚未完成验收，无法提取明细");
+            return R.fail("该采购单(" + purchaseId + ")未验收，无法直接入库。请先验收");
         }
         StockOrder stockOrder = stockService.generateStockOrderFromPurchase(purchase);
         return R.success(stockOrder);
+    }
+
+
+    /**
+     * 导出出入库明细excel
+     */
+    @PostMapping("/dtl/export")
+    public void exportStockDetailList(@RequestBody StockOrderRequestForm requestForm,  HttpServletResponse response) {
+        try {
+            //不分页
+            requestForm.setPage(1);
+            requestForm.setLimit(99999);
+            final Page<Stock> page = stockService.findStocksByQueryPageable(requestForm);
+            final List<Stock> list = page.getContent();
+            stockService.createStockDetailExcel(list, response.getOutputStream());
+            // 构建文件名
+            String fileName = "出入库明细.xlsx";
+
+            // 设置响应头
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1) + "\"");
+        } catch (Exception e) {
+            log.error("导出出入库明细失败", e);
+            throw new BusinessException("导出出入库明细失败！");
+        }
+
     }
 
 }

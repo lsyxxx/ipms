@@ -124,6 +124,9 @@ public class Stock implements WithQuery<Stock> {
     private int stockType;
 
     @Transient
+    private String stockTypeName;
+
+    @Transient
     private String jobNumber;
     @Transient
     private String username;

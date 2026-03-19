@@ -1,5 +1,7 @@
 package com.abt.material.service.impl;
 
+import com.abt.common.entity.Category;
+import com.abt.common.repository.CategoryRepository;
 import com.abt.common.util.TimeUtil;
 import com.abt.material.entity.*;
 import com.abt.material.listener.ImportCheckBillListener;
@@ -56,14 +58,19 @@ public class StockServiceImpl implements StockService {
     private final MaterialTypeRepository materialTypeRepository;
     private final InventoryAlertRepository inventoryAlertRepository;
     private final PurchaseApplyDetailRepository purchaseApplyDetailRepository;
+    private final CategoryRepository categoryRepository;
+
     @Value("${abt.stock.export.week.template}")
     private String stockWeekTemplate;
 
     @Value("${abt.stock.export.week.path}")
     private String stockWeekFilePath;
 
+    @Value("${abt.stock.dtl.template}")
+    private String stockDetailListTemplate;
 
-    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository, PurchaseApplyDetailRepository purchaseApplyDetailRepository, CommonIdGenerator commonIdGenerator) {
+
+    public StockServiceImpl(StockOrderRepository stockOrderRepository, StockRepository stockRepository, WarehouseRepository warehouseRepository, MaterialDetailRepository materialDetailRepository, InventoryRepository inventoryRepository, MaterialTypeRepository materialTypeRepository, InventoryAlertRepository inventoryAlertRepository, PurchaseApplyDetailRepository purchaseApplyDetailRepository, CommonIdGenerator commonIdGenerator, CategoryRepository categoryRepository) {
         this.stockOrderRepository = stockOrderRepository;
         this.stockRepository = stockRepository;
         this.warehouseRepository = warehouseRepository;
@@ -72,6 +79,7 @@ public class StockServiceImpl implements StockService {
         this.materialTypeRepository = materialTypeRepository;
         this.inventoryAlertRepository = inventoryAlertRepository;
         this.purchaseApplyDetailRepository = purchaseApplyDetailRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -1090,6 +1098,25 @@ public class StockServiceImpl implements StockService {
         //库存记录
         final List<IStockTimelineDTO> list = inventoryRepository.findStockInventoryHistory(materialId, whid, startDate, endDate);
         return list;
+    }
+
+    public static final String CAT_STOCK_TYPE_KEY = "stock_in_out";
+
+    @Override
+    public void createStockDetailExcel(List<Stock> list, OutputStream outputStream) throws Exception {
+        final List<Category> cats = categoryRepository.findByTypeId(CAT_STOCK_TYPE_KEY);
+        list.forEach(stock -> {
+            String catName = cats.stream().filter(i -> i.getDtValue().equals(String.valueOf(stock.getStockType()))).findFirst().get().getName();
+            stock.setStockTypeName(catName);
+        });
+
+        Workbook workbook = new Workbook(stockDetailListTemplate);
+        WorkbookDesigner designer = new WorkbookDesigner();
+        designer.setWorkbook(workbook);
+        designer.setDataSource("list", list);
+        designer.process(true);
+
+        workbook.save(outputStream, SaveFormat.XLSX);
     }
 
 }
