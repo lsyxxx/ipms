@@ -10,7 +10,7 @@ import com.abt.finance.service.CreditBookService;
 import com.abt.finance.service.InvoiceService;
 import com.abt.market.service.impl.SaleAgreementServiceImpl;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.SystemFile;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.WorkFlowConfig;

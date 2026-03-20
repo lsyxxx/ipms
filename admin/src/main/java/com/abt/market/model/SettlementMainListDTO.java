@@ -1,6 +1,6 @@
 package com.abt.market.model;
 
-import com.abt.sys.model.SystemFile;
+import com.abt.sys.model.entity.SystemFile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

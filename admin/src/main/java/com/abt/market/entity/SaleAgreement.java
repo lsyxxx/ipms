@@ -5,7 +5,7 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
 import com.abt.common.util.JsonUtil;
-import com.abt.sys.model.SystemFile;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.model.WithQuery;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;

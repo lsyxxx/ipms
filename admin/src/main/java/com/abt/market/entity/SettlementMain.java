@@ -5,7 +5,7 @@ import com.abt.common.model.AuditInfo;
 import com.abt.common.service.CommonJpaAudit;
 import com.abt.market.model.SaveType;
 import com.abt.market.model.SettlementRelationType;
-import com.abt.sys.model.SystemFile;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
 import com.abt.wf.entity.InvoiceApply;
 import jakarta.persistence.*;

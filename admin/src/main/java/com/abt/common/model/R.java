@@ -1,6 +1,6 @@
 package com.abt.common.model;
 
-import com.abt.sys.model.SystemFile;
+import com.abt.sys.model.entity.SystemFile;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;

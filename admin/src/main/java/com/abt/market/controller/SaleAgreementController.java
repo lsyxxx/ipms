@@ -8,7 +8,7 @@ import com.abt.market.model.SettlementAgreementDTO;
 import com.abt.market.service.SaleAgreementService;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.exception.BusinessException;
-import com.abt.sys.model.SystemFile;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.service.InvoiceApplyService;
 import jakarta.servlet.http.HttpServletResponse;

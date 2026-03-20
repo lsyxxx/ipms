@@ -1,6 +1,6 @@
 package com.abt.wf.repository;
 
-import com.abt.sys.model.SystemFile;
+import com.abt.sys.model.entity.SystemFile;
 import com.abt.wf.entity.TripDetail;
 import com.abt.wf.entity.TripMain;
 import org.junit.jupiter.api.AfterEach;
