@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -30,11 +31,12 @@ import java.util.Optional;
 public class Cart extends AuditInfo {
 
     @Id
-    @Column(name = "id", nullable = false, length = 50)
+    @Column(name = "id", nullable = false)
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "user_id", length = 50)
+    @NotNull(message = "用户id不能为空")
+    @Column(name = "user_id")
     private String userId;
 
     @Column(name = "check_module_id", length = 50)
@@ -46,8 +48,12 @@ public class Cart extends AuditInfo {
     @Column(name = "sample_count")
     private Integer sampleCount;
 
-    @Column(name = "check_item_field_data", length = 2000)
-    private String checkItemFieldData;
+    /**
+     * 用户输入表单数据id
+     * TODO: dynamic form data
+     */
+    @Column(name = "form_data_id")
+    private String formDataId;
 
     @Column(name = "total_price", length = 50)
     private String totalPrice;
@@ -55,7 +61,7 @@ public class Cart extends AuditInfo {
     @Column(name = "image", length = 500)
     private String image;
 
-    @Column(name = "check_item_params_brief", length = 500)
-    private String checkItemParamsBrief;
+//    @Column(name = "check_item_params_brief", length = 500)
+//    private String checkItemParamsBrief;
 
 }

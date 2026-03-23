@@ -22,4 +22,18 @@ class CartRepositoryTest {
         Assertions.assertFalse(list.isEmpty());
 
     }
+
+
+    @Test
+    void save() {
+        Cart cart = new Cart();
+        cart.setUserId("123");
+        cart.setCheckModuleId("CKM_1");
+
+        cartRepository.save(cart);
+
+
+
+
+    }
 }
