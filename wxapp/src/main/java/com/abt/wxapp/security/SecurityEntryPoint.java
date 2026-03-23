@@ -1,8 +1,7 @@
 package com.abt.wxapp.security;
 
 import com.abt.wxapp.common.model.R;
-import com.abt.wxapp.util.JsonUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.abt.common.util.JsonUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

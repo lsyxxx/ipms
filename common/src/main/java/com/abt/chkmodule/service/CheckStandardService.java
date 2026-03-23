@@ -1,4 +1,4 @@
-package com.abt.chkstd.service;
+package com.abt.chkmodule.service;
 
 public interface CheckStandardService {
 }

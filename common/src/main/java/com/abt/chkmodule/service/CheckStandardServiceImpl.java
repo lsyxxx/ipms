@@ -1,7 +1,6 @@
-package com.abt.chkstd.service;
+package com.abt.chkmodule.service;
 
-import com.abt.chkstd.entity.CheckStandard;
-import com.abt.chkstd.respository.CheckStandardRepository;
+import com.abt.chkmodule.repository.CheckStandardRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,6 @@ public class CheckStandardServiceImpl implements CheckStandardService {
 
     private final CheckStandardRepository checkStandardRepository;
 
-    
+
 
 }

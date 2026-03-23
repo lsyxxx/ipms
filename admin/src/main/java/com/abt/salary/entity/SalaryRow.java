@@ -1,23 +1,6 @@
 package com.abt.salary.entity;
 
-import com.abt.common.listener.JpaListStringConverter;
-import com.abt.common.model.User;
-import com.abt.sys.model.entity.EmployeeInfo;
-import com.abt.wf.entity.UserSignature;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 上传工资表的数据

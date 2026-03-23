@@ -1,10 +1,9 @@
 package com.abt.salary.entity;
 
-import com.abt.common.listener.JpaListStringConverter;
+import com.abt.common.config.JpaListStringConverter;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
-import com.abt.wf.entity.UserSignature;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -24,7 +23,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  *

@@ -1,6 +1,6 @@
-package com.abt.chkstd.respository;
+package com.abt.chkmodule.repository;
 
-import com.abt.chkstd.entity.CheckStandard;
+import com.abt.chkmodule.entity.CheckStandard;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CheckStandardRepository extends JpaRepository<CheckStandard, String> {
