@@ -25,8 +25,8 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @MappedSuperclass
-@EntityListeners({AuditingEntityListener.class})
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@EntityListeners(AuditingEntityListener.class)
 public class AuditInfo {
 
     @LastModifiedDate
@@ -38,14 +38,10 @@ public class AuditInfo {
     @LastModifiedBy
     @Column(name="update_userid")
     private String updateUserid;
-    @Column(name="update_username")
-    private String updateUsername;
 
     @CreatedBy
     @Column(name="create_userid")
     private String createUserid;
-    @Column(name="create_username")
-    private String createUsername;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @CreatedDate
