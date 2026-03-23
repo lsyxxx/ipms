@@ -54,5 +54,11 @@ public class CheckModule {
      */
     private List<Instrument>  instruments;
 
+    //TODO: 检测参数
+
+    //TODO: 检测标准
+
+
+
 
 }
