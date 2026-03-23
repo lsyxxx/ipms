@@ -1,14 +1,18 @@
 package com.abt.wxapp.cart.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 /**
  * 微信小程序购物车实体类
  */
-@Data
+@Getter
+@Setter
 @Entity
+@ToString
 @Table(name = "wx_cart")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Cart {
 
     @Id
