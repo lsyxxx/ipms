@@ -1,5 +1,6 @@
 package com.abt.wxapp.security;
 
+import com.abt.wxapp.exception.InvalidTokenException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -44,5 +45,17 @@ public final class SecurityUtil {
      */
     public static Optional<String> currentUserId() {
         return currentUser().map(WxUserDetails::getUserId);
+    }
+
+
+    /**
+     * 获取登录用户，未找到就异常
+     */
+    public static WxUserDetails loginUser() {
+        final Optional<WxUserDetails> opt = currentUser();
+        if (opt.isPresent()) {
+            return opt.get();
+        }
+        throw new InvalidTokenException("登录超时，请重新登录");
     }
 }
