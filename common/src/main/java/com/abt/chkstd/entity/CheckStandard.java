@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 
 /**
- * 检测标准
+ * 检测标准资料库
  */
 @Getter
 @Setter
@@ -42,15 +42,21 @@ public class CheckStandard {
 
     @Size(max = 2)
     @Column(name = "isFlag", length = 2)
-    private String isFlag;
+    private String isFlag = FLAG_RUNNING;
 
     @Size(max = 2)
     @Column(name = "biaozhunLevel", length = 2)
     private String biaozhunLevel;
 
+    /**
+     * 发布时间
+     */
     @Column(name = "fabudate")
     private LocalDateTime fabudate;
 
+    /**
+     * 实施时间
+     */
     @Column(name = "shishidate")
     private LocalDateTime shishidate;
 
@@ -60,7 +66,7 @@ public class CheckStandard {
 
     @Size(max = 2)
     @Column(name = "Isactive", length = 2)
-    private String isactive;
+    private String isactive = ACTIVE_RUNNING;
 
     @Size(max = 200)
     @Column(name = "note", length = 200)
@@ -77,6 +83,16 @@ public class CheckStandard {
     public static final String ACTIVE_FAKE = "0";
 
     /**
+     * 删除
+     */
+    public static final String FLAG_DELETED = "1";
+
+    /**
+     * 正常
+     */
+    public static final String FLAG_RUNNING = "0";
+
+    /**
      * 标准正在实行
      */
     public void setActive() {
@@ -88,6 +104,10 @@ public class CheckStandard {
      */
     public void setFake() {
         this.isactive = ACTIVE_FAKE;
+    }
+
+    public void setDeleted() {
+        this.isFlag = FLAG_DELETED;
     }
 
 }
