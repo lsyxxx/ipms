@@ -1,5 +1,7 @@
-package com.abt.instrument.model;
+package com.abt.instrument.entity;
 
+import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.util.SystemFileListConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -7,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 实验仪器设备
@@ -17,6 +20,7 @@ import java.time.LocalDateTime;
 @Table(name = "T_shebeiguanli")
 public class Instrument {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Size(max = 50)
     @Column(name = "id", nullable = false, length = 50)
     private String id;
@@ -39,6 +43,7 @@ public class Instrument {
 
     /**
      * 设备编号
+     * TODO: 根据其他数据自动生成
      */
     @Size(max = 50)
     @Column(name = "shebeibianhao", length = 50)
@@ -161,7 +166,8 @@ public class Instrument {
      */
     @Lob
     @Column(name = "filePath")
-    private String filePath;
+    @Convert(converter = SystemFileListConverter.class)
+    private List<SystemFile> filePath;
 
 
     @Size(max = 50)

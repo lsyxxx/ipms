@@ -1,7 +1,6 @@
 package com.abt.wxapp.checkmodule.model;
 
-import com.abt.instrument.model.Instrument;
-import jakarta.annotation.Nullable;
+import com.abt.instrument.entity.Instrument;
 import lombok.Getter;
 import lombok.Setter;
 
