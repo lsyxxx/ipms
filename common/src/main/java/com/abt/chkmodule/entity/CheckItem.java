@@ -2,11 +2,9 @@ package com.abt.chkmodule.entity;
 
 import com.abt.chkmodule.CheckStandardListConverter;
 import com.abt.common.AuditInfo;
-import com.abt.sys.util.SystemFileListConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.util.List;
 
@@ -77,6 +75,5 @@ public class CheckItem extends AuditInfo {
     @Column(name="stds", length = 1024)
     @Convert(converter = CheckStandardListConverter.class)
     private List<CheckStandard> standards;
-
 
 }

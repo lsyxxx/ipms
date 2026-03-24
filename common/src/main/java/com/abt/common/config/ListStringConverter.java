@@ -14,7 +14,7 @@ import java.util.List;
  * jps实体中json转为List<String>类型
  */
 @Converter
-public class JpaListStringConverter implements AttributeConverter<List<String>, String> {
+public class ListStringConverter implements AttributeConverter<List<String>, String> {
 
     @Override
     public String convertToDatabaseColumn(List<String> attribute) {

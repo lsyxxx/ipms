@@ -1,27 +1,19 @@
 package com.abt.chkmodule.entity;
 
+import com.abt.chkmodule.InstrumentListConverter;
 import com.abt.chkmodule.SimpleCheckModuleListConverter;
 import com.abt.chkmodule.model.SimpleCheckModule;
 import com.abt.common.AuditInfo;
 import com.abt.common.config.ValidateGroup;
-import com.abt.instrument.entity.Instrument;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,6 +149,12 @@ public class CheckModule extends AuditInfo {
     @Convert(converter = SimpleCheckModuleListConverter.class)
     private List<SimpleCheckModule> relatedCheckModules;
 
+    /**
+     * 单价，可以非数字，如面议
+     */
+    @Column(name="price",  length = 32)
+    private String price;
+
     public static final String CERTIFICATE_CMA = "CMA";
 
     public static final String CERTIFICATE_CNAS = "CNAS";
@@ -199,13 +197,11 @@ public class CheckModule extends AuditInfo {
         return false;
     }
 
-    //TODO: 检测子参数
-
-
     /**
      * 检测关联仪器
      */
-    @Transient
+    @Convert(converter = InstrumentListConverter.class)
+    @Column(name="instrument", length = 1024)
     private List<Instrument> instruments;
 
 
