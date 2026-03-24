@@ -1,6 +1,6 @@
 package com.abt.wf.entity;
 
-import com.abt.common.config.JpaListStringConverter;
+import com.abt.common.config.ListStringConverter;
 import com.abt.common.listener.JpaListUserConverter;
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.SystemFile;
@@ -142,7 +142,7 @@ public class SubcontractTesting extends WorkflowBase {
      * 报告交付内容
      * 电子文件/纸质，可多选
      */
-    @Convert(converter = JpaListStringConverter.class)
+    @Convert(converter = ListStringConverter.class)
     @Column(name = "report_delivery", length = 255)
     private List<String> reportDelivery;
 
