@@ -1,6 +1,6 @@
 package com.abt.wf.entity;
 
-import com.abt.common.listener.JpaListStringConverter;
+import com.abt.common.config.JpaListStringConverter;
 import com.abt.common.listener.JpaListUserConverter;
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.SystemFile;

@@ -1,0 +1,213 @@
+package com.abt.chkmodule.entity;
+
+import com.abt.chkmodule.SimpleCheckModuleListConverter;
+import com.abt.chkmodule.model.SimpleCheckModule;
+import com.abt.common.AuditInfo;
+import com.abt.common.config.ValidateGroup;
+import com.abt.instrument.entity.Instrument;
+import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.util.SystemFileListConverter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.abt.chkmodule.Constant.USE_CHANNEL_WEB;
+import static com.abt.chkmodule.Constant.USE_CHANNEL_WX;
+
+
+/**
+ * 检测项目
+ */
+@Getter
+@Setter
+@Entity
+@Table(name = "check_module")
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class CheckModule extends AuditInfo {
+
+    @Id
+    @Size(max = 128)
+    @Column(name = "id", nullable = false, length = 128)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
+    /**
+     * 代码编号
+     */
+    @Size(max = 32)
+    @NotNull(message = "请输入检测项目编码", groups = {ValidateGroup.Save.class})
+    @Column(name = "code", nullable = false, length = 32)
+    private String code;
+
+    /**
+     * 名称
+     */
+    @Size(max = 128)
+    @NotNull(message = "请输入检测项目名称", groups =  {ValidateGroup.Save.class})
+    @Column(name = "name", nullable = false, length = 128)
+    private String name;
+
+    /**
+     * 分类id
+     */
+    @Size(max = 128)
+    @Column(name = "cu_id", length = 128, nullable = false)
+    private String checkUnitId;
+
+    /**
+     * 备注
+     */
+    @Size(max = 500)
+    @Column(name = "note", length = 500)
+    private String note;
+
+    /**
+     * 是否启用。默认启用
+     */
+    @Column(name="active", columnDefinition = "BIT")
+    private boolean active = true;
+
+    /**
+     * 删除标志。默认未删除
+     */
+    @Column(name = "is_del", columnDefinition = "BIT")
+    private boolean isDeleted = false;
+
+    /**
+     * 其他常用名称，可以多个，用逗号分隔
+     */
+    @Size(max = 512)
+    @Column(name = "alias_name", length = 512)
+    private String aliasNames;
+
+    /**
+     * 预约须知
+     * TODO: 富文本
+     */
+    @Size(max = 1000)
+    @Column(name="intro", length = 1024)
+    private String notice;
+
+    /**
+     * 使用渠道
+     */
+    @NotNull(message = "请输入检测项目使用渠道", groups = {ValidateGroup.Save.class})
+    @Column(name="use_chn", length = 16, nullable = false)
+    private String useChannel;
+
+    public boolean isWxChannel() {
+        return USE_CHANNEL_WX.equals(useChannel);
+    }
+    public boolean isWebChannel() {
+        return USE_CHANNEL_WEB.equals(useChannel);
+    }
+
+    /**
+     * 封面图片url
+     */
+    @Column(name="cover_img")
+    private String coverImage;
+
+    /**
+     * 一般工作时间
+     */
+    @Column(name="duration")
+    private String duration;
+
+    /**
+     * 结果说明
+     * TODO: 富文本
+     */
+    @Column(name="result_desc", length = 1024)
+    private String resultDescription;
+
+    /**
+     * 结果展示附图url列表
+     * 可多图，可无
+     */
+    @Column(name="result_img", length = 1024)
+    @Convert(converter = SystemFileListConverter.class)
+    private List<SystemFile> resultImages;
+
+    /**
+     * 资质，可多个。用逗号分隔
+     * TODO: 资质一般对应的是子参数(checkItem)，目前暂定：如果子参数中有CMA/CNAS认证的，则这里表示有资质
+     */
+    @Transient
+    private List<String> certificateList;
+
+    /**
+     * 相关的检测项目
+     */
+    @Column(name="rel_cm", length = 1024)
+    @Convert(converter = SimpleCheckModuleListConverter.class)
+    private List<SimpleCheckModule> relatedCheckModules;
+
+    public static final String CERTIFICATE_CMA = "CMA";
+
+    public static final String CERTIFICATE_CNAS = "CNAS";
+
+    public void addCma() {
+        if (this.certificateList == null) {
+            this.certificateList = new ArrayList<>();
+        }
+        this.certificateList.add(CERTIFICATE_CMA);
+    }
+
+    public void addCnas() {
+        if (this.certificateList == null) {
+            this.certificateList = new ArrayList<>();
+        }
+        this.certificateList.add(CERTIFICATE_CNAS);
+    }
+
+    /**
+     * 是否有CMA资质
+     */
+    public boolean isCma() {
+        for (String c : this.certificateList) {
+            if (CERTIFICATE_CMA.equals(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 是否有CNAS资质
+     */
+    public boolean isCnas() {
+        for (String c : this.certificateList) {
+            if (CERTIFICATE_CNAS.equals(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //TODO: 检测子参数
+
+
+    /**
+     * 检测关联仪器
+     */
+    @Transient
+    private List<Instrument> instruments;
+
+
+
+}

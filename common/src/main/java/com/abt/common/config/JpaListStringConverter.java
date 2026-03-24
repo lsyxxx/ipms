@@ -1,4 +1,4 @@
-package com.abt.common.listener;
+package com.abt.common.config;
 
 import com.abt.common.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;

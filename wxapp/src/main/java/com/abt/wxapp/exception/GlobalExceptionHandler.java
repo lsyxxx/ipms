@@ -1,5 +1,6 @@
 package com.abt.wxapp.exception;
 
+import com.abt.sys.exception.SystemException;
 import com.abt.wxapp.common.model.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -99,5 +100,15 @@ public class GlobalExceptionHandler {
     public R<Void> handleException(Exception e) {
         log.error("系统异常", e);
         return R.fail("系统繁忙，请稍后重试");
+    }
+
+    /**
+     * 系统代码级错误
+     */
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(SystemException.class)
+    public R<Void> handleSystemException(Exception e) {
+        log.error("系统错误", e);
+        return R.fail("系统异常，如有问题请联系管理员");
     }
 }
