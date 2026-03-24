@@ -1,4 +1,4 @@
-package com.abt.wxapp.user.service;
+package com.abt.wxapp.user.userInfo.service;
 
 public interface UserService {
 

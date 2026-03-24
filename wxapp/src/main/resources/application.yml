@@ -3,7 +3,7 @@ spring:
   application:
     name: wxapp
   profiles:
-    active: dev
+    active: yuan
 
 
   jpa:

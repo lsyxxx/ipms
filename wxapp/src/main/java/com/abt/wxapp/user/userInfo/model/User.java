@@ -1,4 +1,4 @@
-package com.abt.wxapp.user.model;
+package com.abt.wxapp.user.userInfo.model;
 
 import lombok.Getter;
 import lombok.Setter;
