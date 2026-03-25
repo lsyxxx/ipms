@@ -43,7 +43,7 @@ public class OpenUserClient extends AuditInfo {
     private String contactEmail;
 
     @Column(name = "is_default", nullable = false)
-    private Boolean isDefault = false;
+    private boolean isDefault = false;
 
 
 }
