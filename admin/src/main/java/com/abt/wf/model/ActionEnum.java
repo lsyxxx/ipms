@@ -14,7 +14,8 @@ public enum ActionEnum {
     DELETE("删除"),
     COPY("抄送"),
     ASSIGN("转交"),
-    AUTOPASS("系统自动通过")
+    AUTOPASS("系统自动通过"),
+    STOCKIN("入库")
     ;
     private String action;
     ActionEnum(String action) {

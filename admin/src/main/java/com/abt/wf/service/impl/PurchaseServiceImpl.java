@@ -13,6 +13,7 @@ import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PurchaseApplyDetail;
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.listener.PurchaseNameMergeHandler;
+import com.abt.wf.model.ActionEnum;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.repository.PurchaseApplyMainRepository;
@@ -33,6 +34,7 @@ import cn.idev.excel.metadata.data.ImageData;
 import cn.idev.excel.metadata.data.WriteCellData;
 import cn.idev.excel.write.metadata.WriteSheet;
 import cn.idev.excel.write.metadata.fill.FillConfig;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -716,5 +718,22 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         return purchaseApplyMainRepository.findDeptAll();
     }
 
+    @Override
+    public void addStockInFlowLog(@NotNull PurchaseApplyMain main, String userid, String username, String comment, LocalDateTime taskStartTime, LocalDateTime taskEndTime) {
+        FlowOperationLog log = FlowOperationLog.create(userid, username, main);
+        log.setEntityId(main.getId());
+        log.setTaskName("入库");
+        log.setTaskResult(STATE_STOCK_IN);
+        log.setComment(comment);
+        log.setAction(ActionEnum.STOCKIN.name());
+        log.setTaskStartTime(taskStartTime);
+        log.setTaskEndTime(taskEndTime);
+        flowOperationLogService.saveLog(log);
+    }
+
+    @Override
+    public PurchaseApplyMain loadEntityOnly(String id) {
+        return purchaseApplyMainRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到采购流程(审批编号: " + id + ")"));
+    }
 
 }

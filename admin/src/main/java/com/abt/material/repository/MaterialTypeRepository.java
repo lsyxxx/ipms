@@ -19,5 +19,11 @@ public interface MaterialTypeRepository extends JpaRepository<MaterialType, Stri
 
     List<MaterialType> findByNameContaining(String name);
 
+    @Query("""
+    select b from MaterialDetail a left join MaterialType b on b.id = a.materialTypeId where a.id = :id
+""")
+    MaterialType findByMaterialDetailId(String id);
+
+
 
 }

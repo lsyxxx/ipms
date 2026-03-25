@@ -162,6 +162,18 @@ public class Stock implements WithQuery<Stock> {
     private String quantityStr;
     @Transient
     private String orderDateStr;
+
+    /**
+     * 采购数量
+     */
+    @Transient
+    private Double purchaseQuantity;
+
+    /**
+     * 已入库数量
+     */
+    @Transient
+    private Double registeredQuantity;
     
     /* 添加stockOrder信息 */
     @Override

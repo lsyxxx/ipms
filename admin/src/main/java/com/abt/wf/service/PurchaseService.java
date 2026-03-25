@@ -3,10 +3,12 @@ package com.abt.wf.service;
 import com.abt.sys.model.dto.OrgDTO;
 import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseApplyRequestForm;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -53,4 +55,15 @@ public interface PurchaseService extends WorkFlowService<PurchaseApplyMain>, Bus
     void createPurchaseListExcel(List<PurchaseApplyMain> list, OutputStream outputStream) throws Exception;
 
     List<OrgDTO> findDeptOptions();
+
+    /**
+     * 入库时添加评论到流程中
+     */
+    void addStockInFlowLog(@NotNull PurchaseApplyMain main, String userid, String username, String comment, LocalDateTime taskStartTime, LocalDateTime taskEndTime);
+
+    /**
+     * 仅读取main，不读取
+     * @param id
+     */
+    PurchaseApplyMain loadEntityOnly(String id);
 }

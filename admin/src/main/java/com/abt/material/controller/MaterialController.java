@@ -53,4 +53,15 @@ public class MaterialController {
     }
 
 
+    /**
+     * 仅查询采购单中的物品信息
+     * @param purchaseId 采购单id
+     */
+    @GetMapping("/find/pur")
+    public R<List<MaterialDetail>> findByPurchaseId(String purchaseId) {
+        final List<MaterialDetail> list = materialService.findMaterialsByPurchaseId(purchaseId);
+        return R.success(list);
+    }
+
+
 }

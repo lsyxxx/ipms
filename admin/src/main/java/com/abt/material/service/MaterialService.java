@@ -28,4 +28,6 @@ public interface MaterialService {
      * query 关联
      */
     Page<MaterialDetail> findByQueryPageable(MaterialRequestForm requestForm);
+
+    List<MaterialDetail> findMaterialsByPurchaseId(String purchaseId);
 }
