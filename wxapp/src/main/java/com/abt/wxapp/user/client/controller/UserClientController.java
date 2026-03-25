@@ -1,10 +1,12 @@
 package com.abt.wxapp.user.client.controller;
 
-import com.abt.wxapp.common.model.R; // 🚨 这里引用了你们项目里的统一返回包装类
+import com.abt.common.config.ValidateGroup;
+import com.abt.wxapp.common.model.R;
 import com.abt.wxapp.user.client.service.ClientService;
 import com.abt.wxapp.user.userInfo.entity.OpenUserClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,21 +24,11 @@ public class UserClientController {
 
 
     /**
-     * 新增委托人信息
+     * 新增/更新委托人信息
      */
-    @PostMapping("/insert")
-    public R<OpenUserClient> insertClient(@RequestBody OpenUserClient client) {
-        OpenUserClient savedClient = clientService.insertClient(client);
-        return R.success(savedClient);
-    }
-
-    /**
-     * 更新委托人信息
-     */
-    @PostMapping("/update")
-    public R<OpenUserClient> updateClient(@RequestBody OpenUserClient client) {
-        OpenUserClient updatedClient = clientService.updateClient(client);
-        return R.success(updatedClient);
+    @PostMapping("/save")
+    public R<OpenUserClient> saveClient(@Validated({ValidateGroup.Save.class}) @RequestBody OpenUserClient client) {
+        return R.success(clientService.saveClient(client));
     }
 
     /**
@@ -55,5 +47,14 @@ public class UserClientController {
     public R<String> deleteClient(String id) {
         clientService.deleteClient(id);
         return R.success("删除成功");
+    }
+
+    /**
+     * 设置默认委托人信息
+     */
+    @GetMapping("/setDefault")
+    public R<String> setDefaultClient(String userId, String id) {
+        clientService.setDefaultClient(userId, id);
+        return R.success("默认委托人设置成功");
     }
 }

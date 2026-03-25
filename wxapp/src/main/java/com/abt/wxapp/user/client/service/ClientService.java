@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface ClientService {
 
-    OpenUserClient insertClient(OpenUserClient openUserClient);
-
-    OpenUserClient updateClient(OpenUserClient openUserClient);
+    OpenUserClient saveClient(OpenUserClient client);
 
     void deleteClient(String id);
 
     List<OpenUserClient> findClientsByUserId(String userId);
+
+    void setDefaultClient(String userId, String id);
 }

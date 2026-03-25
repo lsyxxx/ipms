@@ -1,6 +1,5 @@
 package com.abt.wxapp.user.client.service.Impl;
 
-import com.abt.wxapp.exception.BusinessException;
 import com.abt.wxapp.user.client.repository.UserClientRepository;
 import com.abt.wxapp.user.client.service.ClientService;
 import com.abt.wxapp.user.userInfo.entity.OpenUserClient;
@@ -16,22 +15,11 @@ public class ClientServiceImpl implements ClientService {
     private final UserClientRepository userClientRepository;
 
     /**
-     * 新增委托人信息
+     * 新增/修改委托人信息
      */
     @Override
-    public OpenUserClient insertClient(OpenUserClient openUserClient) {
-        return userClientRepository.save(openUserClient);
-    }
-
-    /**
-     * 更新委托人信息
-     */
-    @Override
-    public OpenUserClient updateClient(OpenUserClient updateInfo) {
-        OpenUserClient existingClient = userClientRepository.findById(updateInfo.getId())
-                .orElseThrow(() -> new BusinessException("操作失败：未找到编号为 " + updateInfo.getId() + " 的委托人信息"));
-        org.springframework.beans.BeanUtils.copyProperties(updateInfo, existingClient, "id");
-        return userClientRepository.save(existingClient);
+    public OpenUserClient saveClient(OpenUserClient client) {
+        return userClientRepository.save(client);
     }
 
     /**
@@ -48,6 +36,14 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public void deleteClient(String id) {
         userClientRepository.deleteById(id);
+    }
+
+    /**
+    * 设置默认委托人信息
+    */
+    @Override
+    public void setDefaultClient(String userId, String id) {
+        userClientRepository.updateDefaultStatus(userId, id);
     }
 
 }

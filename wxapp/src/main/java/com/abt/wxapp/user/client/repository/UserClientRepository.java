@@ -2,7 +2,10 @@ package com.abt.wxapp.user.client.repository;
 
 import com.abt.wxapp.user.userInfo.entity.OpenUserClient;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,4 +18,8 @@ public interface UserClientRepository extends JpaRepository<OpenUserClient, Stri
 
     List<OpenUserClient> findClientsByUserIdOrderByCreateDateDesc(String userId);
 
+    @Modifying
+    @Transactional
+    @Query("UPDATE OpenUserClient c SET c.isDefault = (CASE WHEN c.id = :id THEN true ELSE false END) WHERE c.userId = :userId")
+    void updateDefaultStatus(String userId, String id);
 }
