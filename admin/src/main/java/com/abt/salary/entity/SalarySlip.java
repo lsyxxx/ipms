@@ -1,6 +1,6 @@
 package com.abt.salary.entity;
 
-import com.abt.common.config.JpaListStringConverter;
+import com.abt.common.config.ListStringConverter;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
@@ -225,7 +225,7 @@ public class SalarySlip extends AuditInfo{
      * 异常信息
      */
     @Column(name="error_", columnDefinition = "VARCHAR(MAX)")
-    @Convert(converter = JpaListStringConverter.class)
+    @Convert(converter = ListStringConverter.class)
     private List<String> error;
 
     public boolean isError() {

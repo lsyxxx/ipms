@@ -1,0 +1,188 @@
+package com.abt.chkmodule.entity;
+
+import com.abt.common.config.ListStringConverter;
+import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.util.SystemFileListConverter;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * 实验仪器设备
+ */
+@Getter
+@Setter
+@Entity
+@Table(name = "check_instrument")
+public class Instrument {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, length = 128)
+    private String id;
+
+    /**
+     * 设备名称
+     */
+    @Column(name="name", nullable = false)
+    private String name;
+
+    /**
+     * 档案盒号
+     */
+    @Column(name="box_no", length = 16)
+    private String boxNo;
+
+    /**
+     * 设备分类
+     * todo: 使用字典表翻译
+     */
+    @Size(max = 2)
+    @NotNull
+    @Column(name = "type", nullable = false, length = 2)
+    private String type;
+
+    /**
+     * 设备状态
+     * todo: 使用字典表翻译
+     */
+    @Size(max = 2)
+    @NotNull
+    @Column(name = "status", nullable = false, length = 2)
+    private String status;
+
+    /**
+     * 设备编号
+     * TODO: 根据其他数据自动生成
+     */
+    @Size(max = 32)
+    @Column(name = "code", length = 32)
+    private String code;
+
+
+    /**
+     * 设备规格
+     */
+    @Size(max = 32)
+    @NotNull
+    @Column(name = "spec", nullable = false, length = 32)
+    private String specification;
+
+    /**
+     * 设备数量
+     */
+    @Column(name = "num")
+    private Integer num;
+
+    /**
+     * 制造厂家
+     */
+    @Column(name = "manufacturer")
+    private String manufacturer;
+
+    /**
+     * 出厂编号
+     */
+    @Column(name = "factory_code")
+    private String factoryCode;
+
+    /**
+     * 测量范围
+     */
+    @Column(name = "measure_range")
+    private String measureRange;
+
+    /**
+     * 示值误差或准确度等级
+     */
+    @Size(max = 100)
+    @Column(name = "accuracy", length = 100)
+    private String accuracy;
+
+    /**
+     * 资产来源，允许用户自由输入
+     */
+    @Column(name = "source", length = 32)
+    private String source;
+
+    /**
+     * 购入时间
+     */
+    @Column(name = "buy_time")
+    private LocalDate buyTime;
+
+    /**
+     * 使用部门名称
+     */
+    @Column(name = "use_dept", length = 128)
+    private String useDept;
+
+    /**
+     * 负责人userid
+     */
+    @Column(name = "user_id", length = 128)
+    private String userid;
+
+    /**
+     * 负责人姓名
+     */
+    @Column(name="user_name", length = 32)
+    private String username;
+
+    /**
+     * 安装地址
+     */
+    @Column(name = "setup_addr")
+    private String setupAddress;
+
+    /**
+     * 供应商
+     */
+    @Column(name = "supplier")
+    private String supplier;
+
+    /**
+     * 供应商联系人
+     */
+    @Column(name = "supplier_user", length = 32)
+    private String supplierUser;
+
+    /**
+     * 供应商联系人电话
+     */
+    @Column(name = "supplier_tel", length = 128)
+    private String supplierTel;
+
+    /**
+     * 备注
+     */
+    @Column(name = "note", length = 512)
+    private String note;
+
+    /**
+     * 附件地址
+     */
+    @Lob
+    @Column(name = "file_path")
+    @Convert(converter = SystemFileListConverter.class)
+    private List<SystemFile> filePath;
+
+    /**
+     * 设备图片
+     */
+    @Lob
+    @Column(name="images")
+    @Convert(converter = ListStringConverter.class)
+    private List<String> imageUrls;
+
+    /**
+     * 价格
+     */
+    @Column(name = "price", columnDefinition = "decimal(11,2)")
+    private Double price;
+
+}

@@ -83,18 +83,6 @@ public class Stock implements WithQuery<Stock> {
     @Column(name = "unit", length = 50)
     private String unit;
 
-    /**
-     * 物品单价
-     */
-    @Column(name = "price",  precision = 18, scale = 2)
-    private BigDecimal price;
-
-    /**
-     * 物品总价
-     */
-    @Column(name = "total_price", precision = 18, scale = 2)
-    private BigDecimal totalPrice;
-
     @Size(max = 500)
     @Column(name = "remark", length = 500)
     private String remark;
@@ -140,6 +128,24 @@ public class Stock implements WithQuery<Stock> {
     private String bizType;
     @Column(name="usage_")
     private String usage = "";
+
+    //--- 库管验收相关 -----
+    /**
+     * 实际到货物品单价
+     */
+    @Column(name = "price",  precision = 18, scale = 2)
+    private BigDecimal price;
+    /**
+     * 实际到货物品总价
+     */
+    @Column(name = "total_price", precision = 18, scale = 2)
+    private BigDecimal totalPrice;
+
+    /**
+     * 关联采购单详情id
+     */
+    @Column(name="pur_dtl_id")
+    private String purchaseDetailId;
 
     @Transient
     private Double inventory;

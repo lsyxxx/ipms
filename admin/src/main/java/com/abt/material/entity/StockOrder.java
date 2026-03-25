@@ -21,6 +21,7 @@ import lombok.Setter;
 import org.hibernate.annotations.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,6 +133,18 @@ public class StockOrder extends AuditInfo implements CommonJpaAudit, WithQuery<S
 
     @Column(name="is_del", columnDefinition = "BIT")
     private boolean isDeleted = false;
+
+    /**
+     * 关联采购单id，目前只允许关联一个
+     */
+    @Column(name="pur_main_id")
+    private String purchaseApplyId;
+
+    /**
+     * 实际到货总金额
+     */
+    @Column(name="rec_total_cost", columnDefinition = "decimal(11,2)")
+    private BigDecimal receiveTotalCost;
 
     @Transient
     private String bizType;
