@@ -27,8 +27,9 @@ public class UserClientController {
      * 新增/更新委托人信息
      */
     @PostMapping("/save")
-    public R<OpenUserClient> saveClient(@Validated({ValidateGroup.Save.class}) @RequestBody OpenUserClient client) {
-        return R.success(clientService.saveClient(client));
+    public R<String> saveClient(@Validated({ValidateGroup.Save.class}) @RequestBody OpenUserClient client) {
+        clientService.saveClient(client);
+        return R.success("保存委托人信息成功");
     }
 
     /**
