@@ -5,18 +5,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "open_user_client")
+@DynamicUpdate
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners({AuditingEntityListener.class})
 public class OpenUserClient extends AuditInfo {
 
     @Id
-    @Column(name = "id", length = 50)
+    @Column(name = "id", length = 50, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @Column(name = "user_id", length = 50)

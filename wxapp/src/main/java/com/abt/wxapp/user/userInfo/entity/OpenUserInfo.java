@@ -2,6 +2,7 @@ package com.abt.wxapp.user.userInfo.entity;
 
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.wxapp.db.AuditInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +18,7 @@ import lombok.ToString;
 @Table(name = "open_user_info")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 
-public class OpenUserInfo {
+public class OpenUserInfo extends AuditInfo {
 
     @Id
     @Column(name = "id", nullable = false)

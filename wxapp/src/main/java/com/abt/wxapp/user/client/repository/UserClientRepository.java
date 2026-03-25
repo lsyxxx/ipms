@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Repository
 public interface UserClientRepository extends JpaRepository<OpenUserClient, String> {
-    List<OpenUserClient> findClientsByUserId(String userId);
 
+    List<OpenUserClient> findClientsByUserIdOrderByCreateDateDesc(String userId);
 
 }

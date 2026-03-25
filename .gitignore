@@ -40,3 +40,18 @@ build/
 
 /log
 
+wxapp/wxapp_log/web_info.log
+wxapp/wxapp_log/web_error.log
+wxapp/wxapp_log/web_warn.log
+*.log
+*.yml
+wxapp/src/main/resources/application.yml
+*.yml
+wxapp/src/test/java/com/abt/wxapp/sys/service/SystemSettingServiceTest.java
+wxapp/src/test/java/com/abt/wxapp/cart/service/CartServiceTest.java
+wxapp/src/test/java/com/abt/wxapp/user/client/repository/UserClientRepositoryTest.java
+wxapp/src/test/java/com/abt/wxapp/user/userInfo/repository/OpenUserInfoRepositoryTest.java
+wxapp/src/main/resources/logback-spring.xml
+wxapp/src/main/resources/application.yml
+wxapp/src/main/java/com/abt/wxapp/cart/entity/CheckModule.java
+wxapp/src/main/java/com/abt/wxapp/cart/model/CartDTO.java
