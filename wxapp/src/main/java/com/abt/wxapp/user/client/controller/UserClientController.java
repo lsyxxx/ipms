@@ -3,7 +3,7 @@ package com.abt.wxapp.user.client.controller;
 import com.abt.common.config.ValidateGroup;
 import com.abt.wxapp.common.model.R;
 import com.abt.wxapp.user.client.service.ClientService;
-import com.abt.wxapp.user.userInfo.entity.OpenUserClient;
+import com.abt.wxapp.user.client.entity.OpenUserClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -34,7 +34,7 @@ public class UserClientController {
     /**
      * 获取指定用户的委托人列表
      */
-    @GetMapping("/find")
+    @GetMapping("/find/Clients")
     public R<List<OpenUserClient>> findClientsByUserId(String userId) {
         List<OpenUserClient> list = clientService.findClientsByUserId(userId);
         return R.success(list);
@@ -56,5 +56,10 @@ public class UserClientController {
     public R<String> setDefaultClient(String userId, String id) {
         clientService.setDefaultClient(userId, id);
         return R.success("默认委托人设置成功");
+    }
+
+    @GetMapping("/find/Client")
+    public R<OpenUserClient> findClientById(String id) {
+        return R.success(clientService.findClientById(id));
     }
 }

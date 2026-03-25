@@ -2,7 +2,7 @@ package com.abt.wxapp.user.client.service.Impl;
 
 import com.abt.wxapp.user.client.repository.UserClientRepository;
 import com.abt.wxapp.user.client.service.ClientService;
-import com.abt.wxapp.user.userInfo.entity.OpenUserClient;
+import com.abt.wxapp.user.client.entity.OpenUserClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -46,4 +46,8 @@ public class ClientServiceImpl implements ClientService {
         userClientRepository.updateDefaultStatus(userId, id);
     }
 
+    @Override
+    public OpenUserClient findClientById(String id) {
+        return userClientRepository.findClientById(id);
+    }
 }

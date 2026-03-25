@@ -1,6 +1,6 @@
 package com.abt.wxapp.user.client.repository;
 
-import com.abt.wxapp.user.userInfo.entity.OpenUserClient;
+import com.abt.wxapp.user.client.entity.OpenUserClient;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +17,8 @@ import java.util.List;
 public interface UserClientRepository extends JpaRepository<OpenUserClient, String> {
 
     List<OpenUserClient> findClientsByUserIdOrderByCreateDateDesc(String userId);
+
+    OpenUserClient findClientById(String id);
 
     @Modifying
     @Transactional

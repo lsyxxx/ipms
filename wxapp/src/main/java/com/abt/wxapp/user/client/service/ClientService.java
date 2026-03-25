@@ -1,6 +1,6 @@
 package com.abt.wxapp.user.client.service;
 
-import com.abt.wxapp.user.userInfo.entity.OpenUserClient;
+import com.abt.wxapp.user.client.entity.OpenUserClient;
 
 import java.util.List;
 
@@ -13,4 +13,6 @@ public interface ClientService {
     List<OpenUserClient> findClientsByUserId(String userId);
 
     void setDefaultClient(String userId, String id);
+
+    OpenUserClient findClientById(String id);
 }
