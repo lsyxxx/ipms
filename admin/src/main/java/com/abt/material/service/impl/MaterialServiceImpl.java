@@ -85,4 +85,10 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
 
+    @Override
+    public List<MaterialDetail> findMaterialsByPurchaseId(String purchaseId) {
+        return materialDetailRepository.findByPurchaseId(purchaseId);
+    }
+
+
 }

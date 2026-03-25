@@ -4,6 +4,7 @@ import com.abt.material.entity.MaterialDetail;
 import com.abt.material.model.IMaterialDetailDTO;
 import com.abt.material.model.MaterialDetailDTO;
 import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,4 +45,15 @@ class MaterialDetailRepositoryTest {
         System.out.println(list.size());
     }
 
+    @Test
+    void findByPurchaseId() {
+        final List<MaterialDetail> list = materialDetailRepository.findByPurchaseId("202601211768962281164");
+        Assertions.assertNotNull(list);
+        System.out.println(list.size());
+        list.forEach(i -> {
+            System.out.println(i.toString());
+        });
+
+
+    }
 }

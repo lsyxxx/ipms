@@ -79,7 +79,11 @@ public class StockController {
      */
     @PostMapping("/reg")
     public R<Object> stockInOrder(@RequestBody @Validated({ValidateGroup.Save.class}) StockOrder order) {
-        stockService.saveStockOrder(order);
+        final StockOrder saved = stockService.saveStockOrder(order);
+        if (!StringUtils.isBlank(order.getPurchaseApplyId())) {
+            final PurchaseApplyMain main = purchaseService.loadEntityOnly(order.getPurchaseApplyId());
+            purchaseService.addStockInFlowLog(main, saved.getCreateUserid(), saved.getCreateUsername(), order.getRemark(), saved.getCreateDate(), saved.getCreateDate());
+        }
         return R.success("登记成功!");
     }
 

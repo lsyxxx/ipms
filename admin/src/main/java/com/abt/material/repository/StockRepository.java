@@ -1,10 +1,12 @@
 package com.abt.material.repository;
 
+import com.abt.common.model.Pair;
 import com.abt.material.entity.Stock;
 import com.abt.material.model.IMaterialDetailDTO;
 import com.abt.material.model.MonthlyStockStatsDTO;
 import com.abt.material.model.StockQuantitySummary;
 import com.abt.material.model.StockType;
+import jakarta.persistence.Tuple;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface StockRepository extends JpaRepository<Stock, String> {
 
@@ -129,4 +132,13 @@ public interface StockRepository extends JpaRepository<Stock, String> {
             """)
     List<MonthlyStockStatsDTO> findGiftMonthlyDataBy(@Param("year") int year, @Param("monthIn") List<Integer> monthIn, @NotNull @Param("stockTypeValue") Integer stockTypeValue);
 
+
+    @Query("""
+    select sum(sd.num) as cnt, sd.materialId as materialId
+    from Stock  sd
+    left join StockOrder so on sd.stockOrder.id = so.id
+    where so.purchaseApplyId = :purchaseId
+    group by sd.materialId
+""")
+    List<Tuple> countRegisteredByPurchaseId(String purchaseId);
 }

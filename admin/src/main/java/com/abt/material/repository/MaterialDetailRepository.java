@@ -52,4 +52,18 @@ public interface MaterialDetailRepository extends JpaRepository<MaterialDetail, 
     select m from MaterialDetail m where (m.isActive = '2')
 """)
     List<MaterialDetail> findListByUnactive();
+
+
+    @Query("""
+        SELECT d
+        FROM MaterialDetail d
+        WHERE EXISTS (
+          SELECT 1
+          FROM PurchaseApplyDetail pd
+          WHERE pd.detailId = d.id
+            AND pd.main.id = :id
+        )
+        order by d.name
+""")
+    List<MaterialDetail> findByPurchaseId(String id);
 }

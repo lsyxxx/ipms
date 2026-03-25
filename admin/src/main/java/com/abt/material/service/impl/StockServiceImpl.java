@@ -17,6 +17,7 @@ import com.abt.wf.model.PurchaseSummaryAmount;
 import com.abt.wf.repository.PurchaseApplyDetailRepository;
 import com.aspose.cells.*;
 import jakarta.persistence.Tuple;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -82,15 +83,34 @@ public class StockServiceImpl implements StockService {
         this.categoryRepository = categoryRepository;
     }
 
+
+    /**
+     * 查询采购订单中已入库的物品数量
+     */
+    private Map<String, Double> findRegisteredDetailCount(@NotNull String purchaseId) {
+        final List<Tuple> tuples = stockRepository.countRegisteredByPurchaseId(purchaseId);
+        return tuples.stream()
+                .collect(Collectors.toMap(
+                        t -> t.get("materialId", String.class),
+                        t -> t.get("cnt", Double.class)
+                ));
+    }
+
     @Override
-    public StockOrder generateStockOrderFromPurchase(PurchaseApplyMain purchase) {
+    public StockOrder generateStockOrderFromPurchase(@NotNull PurchaseApplyMain purchase) {
         StockOrder stockOrder = new StockOrder();
         stockOrder.setStockType(StockOrder.STOCK_TYPE_IN);
         stockOrder.setOrderDate(LocalDate.now());
         List<Stock> stockList = new ArrayList<>();
-        if (purchase != null && purchase.getDetails() != null) {
+        final Map<String, Double> countMap = findRegisteredDetailCount(purchase.getId());
+        if (purchase.getDetails() != null) {
             for (PurchaseApplyDetail pd : purchase.getDetails()) {
                 Stock stock = new Stock();
+                final MaterialType type = materialTypeRepository.findByMaterialDetailId(pd.getDetailId());
+                if (type != null) {
+                    stock.setMaterialTypeId(type.getId());
+                    stock.setMaterialTypeName(type.getName());
+                }
                 stock.setMaterialId(pd.getDetailId());
                 stock.setMaterialName(pd.getName());
                 stock.setSpecification(pd.getSpecification());
@@ -101,17 +121,20 @@ public class StockServiceImpl implements StockService {
                 stock.setTotalPrice(pd.getCost());
                 if (pd.getCurrentQuantity() != null) {
                     stock.setNum(pd.getCurrentQuantity().doubleValue());
-                } else if (pd.getQuantity() != null) {
-                    stock.setNum(pd.getQuantity().doubleValue());
+                    stock.setPurchaseQuantity(pd.getCurrentQuantity().doubleValue());
                 } else {
                     stock.setNum(0.0);
+                    stock.setPurchaseQuantity(0.0);
                 }
+                stock.setRegisteredQuantity(countMap.get(pd.getDetailId()));
                 stockList.add(stock);
+
             }
         }
         stockOrder.setStockList(stockList);
         return stockOrder;
     }
+
 
     @Transactional
     @Override
