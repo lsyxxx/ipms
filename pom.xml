@@ -21,13 +21,23 @@
         <!-- 覆盖 Spring Boot BOM 管理的 Lombok 版本以兼容 JDK 21 编译器 -->
         <lombok.version>1.18.30</lombok.version>
         <!-- 第三方库版本统一管理 -->
-        <commons-io.version>2.15.1</commons-io.version>
+        <!-- 与 fastexcel-core（cn.idev.excel:fastexcel 1.1.0）声明的 commons-io 2.16.1 对齐，避免与 POI/FastExcel 传递依赖冲突 -->
+        <commons-io.version>2.16.1</commons-io.version>
         <springdoc.version>2.1.0</springdoc.version>
         <httpclient5.version>5.2.1</httpclient5.version>
         <fluent-hc.version>4.5.13</fluent-hc.version>
         <fastexcel.version>1.1.0</fastexcel.version>
         <poi.version>5.3.0</poi.version>
         <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
+        <!-- 仅个别模块使用，版本仍由父 POM 统一 -->
+        <jjwt.version>0.12.6</jjwt.version>
+        <camunda.version>7.21.0-alpha1</camunda.version>
+        <getui.version>1.0.6.0</getui.version>
+        <aspose.version>21.11</aspose.version>
+        <!-- 与 admin/wxapp 构建脚本对齐 -->
+        <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+        <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
     </properties>
 
     <modules>
@@ -94,7 +104,65 @@
                 <artifactId>annotations</artifactId>
                 <version>${jetbrains-annotations.version}</version>
             </dependency>
+
+            <!-- JWT（wxapp） -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- Camunda（admin） -->
+            <dependency>
+                <groupId>org.camunda.bpm.springboot</groupId>
+                <artifactId>camunda-bpm-spring-boot-starter-webapp</artifactId>
+                <version>${camunda.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.camunda.bpm.springboot</groupId>
+                <artifactId>camunda-bpm-spring-boot-starter</artifactId>
+                <version>${camunda.version}</version>
+            </dependency>
+
+            <!-- 个推（admin） -->
+            <dependency>
+                <groupId>com.getui.push</groupId>
+                <artifactId>restful-sdk</artifactId>
+                <version>${getui.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven-resources-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${maven-antrun-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>
