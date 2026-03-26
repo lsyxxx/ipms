@@ -22,13 +22,10 @@ import java.util.List;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
-@Table(name = "check_dynamic_form")
+@Table(name = "check_dynamic_scheme")
 @EntityListeners(AuditingEntityListener.class)
-public class DynamicForm extends AuditInfo {
+public class DynamicScheme extends AuditInfo {
 
-    /**
-     * 主键：数据库自增（如 SQL Server {@code BIGINT IDENTITY}），单调递增、可比较大小。
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, updatable = false)
@@ -61,13 +58,15 @@ public class DynamicForm extends AuditInfo {
     private String description;
 
     /**
-     * 持久化为 JSON
+     * component json，保存组件列表的json
      */
     @Convert(converter = CheckComponentListConverter.class)
     @Column(name = "comp_json", columnDefinition = "NVARCHAR(MAX)")
     private List<CheckComponent> components;
 
-    /** 再插入一条新版本时清空 id，由库生成新自增值 */
+    /**
+     * 重置id为空
+     */
     public void resetId() {
         this.id = null;
     }

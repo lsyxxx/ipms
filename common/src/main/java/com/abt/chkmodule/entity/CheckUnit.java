@@ -1,13 +1,12 @@
 package com.abt.chkmodule.entity;
 
+import com.abt.chkmodule.model.ChannelEnum;
+import com.abt.common.AuditInfo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-
-import static com.abt.chkmodule.Constant.USE_CHANNEL_WEB;
-import static com.abt.chkmodule.Constant.USE_CHANNEL_WX;
 
 /**
  * 检测分类
@@ -16,7 +15,7 @@ import static com.abt.chkmodule.Constant.USE_CHANNEL_WX;
 @Setter
 @Entity
 @Table(name = "check_unit")
-public class CheckUnit {
+public class CheckUnit extends AuditInfo implements UseChannel{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -32,8 +31,9 @@ public class CheckUnit {
     /**
      * 使用渠道, USE_CHANNEL_WXAPP/WEB
      */
+    @Enumerated(EnumType.STRING)
     @Column(name="use_chn",  nullable = false, length = 16)
-    private String useChannel;
+    private ChannelEnum useChannel;
 
     /**
      * 依据标准号
@@ -41,10 +41,8 @@ public class CheckUnit {
     @Column(name="stds")
     private List<CheckStandard> standards;
 
-    public boolean isWxChannel() {
-        return USE_CHANNEL_WX.equals(useChannel);
-    }
-    public boolean isWebChannel() {
-        return USE_CHANNEL_WEB.equals(useChannel);
+    @Override
+    public ChannelEnum getChannel() {
+        return this.useChannel;
     }
 }

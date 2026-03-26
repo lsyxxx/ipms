@@ -1,4 +1,4 @@
-package com.abt.wxapp.user.userInfo.entity;
+package com.abt.chkmodule.model;
 
 /**
  * 用户来源渠道枚举

@@ -17,9 +17,7 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OptionItem {
 
-    /** 选项值（提交用），兼容 JSON 字段名 {@code value} */
-    @JsonAlias("value")
-    private String id;
+    private String value;
 
     /** 展示标签 */
     private String label;
