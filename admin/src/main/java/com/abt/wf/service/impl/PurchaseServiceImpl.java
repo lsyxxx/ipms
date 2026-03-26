@@ -417,19 +417,23 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         }
         if (form.getPurchaserCheckDate() != null) {
             final WriteCellData<Void> writeCellData = setExcelSig(form.getPurchaser());
-            //设置合并单元格
-            final ImageData imageData = writeCellData.getImageDataList().get(0);
-            imageData.setRelativeFirstRowIndex(0);
-            imageData.setRelativeFirstColumnIndex(0);
-            imageData.setRelativeLastRowIndex(0);
-            imageData.setRelativeLastColumnIndex(1);
-            map.put("purchaserSig", writeCellData);
+            if (writeCellData != null) {
+                //设置合并单元格
+                final ImageData imageData = writeCellData.getImageDataList().get(0);
+                imageData.setRelativeFirstRowIndex(0);
+                imageData.setRelativeFirstColumnIndex(0);
+                imageData.setRelativeLastRowIndex(0);
+                imageData.setRelativeLastColumnIndex(1);
+                map.put("purchaserSig", writeCellData);
+            } else {
+                map.put("purchaserSig", "/");
+            }
+
         }
         if (form.getCeoCheckDate() != null) {
             map.put("ceoSig", Objects.requireNonNullElse(setExcelSig(form.getCeo()), "/"));
         }
-
-        map.put("createUserSig", setExcelSig(form.getCreateUserid()));
+        map.put("createUserSig", Objects.requireNonNullElse(setExcelSig(form.getCreateUserid()), "/"));
         map.put("total", form.getCost());
         File newFile = new File(pdfPath);
         try (ExcelWriter excelWriter = EasyExcel.write(newFile).withTemplate(excelTemplate).build()) {

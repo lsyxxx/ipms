@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * 检测子参数
- * 直接关联checkModule，不再使用关系表
+ * 直接关联checkModule，不再使用关系表。
  */
 @Getter
 @Setter

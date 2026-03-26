@@ -144,7 +144,7 @@ abt:
       template: template/trip_template.xlsx
       
   temp:
-    dir: C:\\Users\\Administrator\\Desktop\\temp\\
+    dir: template/
   
   # ---- stock
   stock:

@@ -6,17 +6,20 @@ import cn.idev.excel.metadata.data.WriteCellData;
 import com.aspose.cells.AutoFitterOptions;
 import com.aspose.cells.PdfSaveOptions;
 import com.aspose.cells.Workbook;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.List;
 
 /**
  *
  */
+@Slf4j
 public class ExcelUtil {
 
     /**
@@ -48,16 +51,21 @@ public class ExcelUtil {
      * @return WriteCellData
      */
     public static WriteCellData<Void> createImageData(File imageFile) throws IOException {
-        WriteCellData<Void> writeCellData = new WriteCellData<>();
-        ImageData imageData = new ImageData();
-        imageData.setImage(Files.readAllBytes(imageFile.toPath()));
-        imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
-        imageData.setTop(10);
-        imageData.setBottom(10);
-        imageData.setLeft(10);
-        imageData.setRight(10);
-        writeCellData.setImageDataList(List.of(imageData));
-        return writeCellData;
+        try {
+            WriteCellData<Void> writeCellData = new WriteCellData<>();
+            ImageData imageData = new ImageData();
+            imageData.setImage(Files.readAllBytes(imageFile.toPath()));
+            imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
+            imageData.setTop(10);
+            imageData.setBottom(10);
+            imageData.setLeft(10);
+            imageData.setRight(10);
+            writeCellData.setImageDataList(List.of(imageData));
+            return writeCellData;
+        } catch (NoSuchFileException e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
     }
 
     public static WriteCellData<Void> createImageDataWithMargin2(File imageFile) throws IOException {
