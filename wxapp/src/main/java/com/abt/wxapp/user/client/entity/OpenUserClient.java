@@ -1,4 +1,4 @@
-package com.abt.wxapp.user.userInfo.entity;
+package com.abt.wxapp.user.client.entity;
 
 import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.wxapp.db.AuditInfo;
