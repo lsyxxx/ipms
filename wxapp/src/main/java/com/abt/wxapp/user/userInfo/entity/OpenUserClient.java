@@ -1,5 +1,6 @@
 package com.abt.wxapp.user.userInfo.entity;
 
+import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.wxapp.db.AuditInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -36,6 +37,4 @@ public class OpenUserClient extends AuditInfo {
 
     @Column(name = "is_default", nullable = false)
     private Boolean isDefault = false;
-
-
 }

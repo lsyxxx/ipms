@@ -25,8 +25,11 @@ public abstract class AbstractUploadOptions implements CheckOptions {
     /** 单文件大小上限（MB） */
     private Double sizeLimit;
 
-    /** 允许的类型，如 xlsx、word、pdf 等 */
-    private List<String> accept;
+    /**
+     * 允许的类型，如 xlsx、word、pdf 等
+     * 多个用逗号分隔.
+     */
+    private String accept;
 
     private String placeholder;
 }

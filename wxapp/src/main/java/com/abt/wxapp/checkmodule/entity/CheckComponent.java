@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 /**
  * 检测项目组件。{@link #type} 与 {@link #options} 中 JSON 的 {@code kind} 应对应同一类控件（如 input + kind=input）。
  */
 @Getter
 @Setter
-@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CheckComponent {
 
@@ -55,5 +55,12 @@ public class CheckComponent {
      * 单价
      */
     private BigDecimal price;
+
+
+    public CheckComponent() {
+        this.id = UUID.randomUUID().toString();
+    }
+
+
 
 }

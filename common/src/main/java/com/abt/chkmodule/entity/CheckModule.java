@@ -2,6 +2,7 @@ package com.abt.chkmodule.entity;
 
 import com.abt.chkmodule.InstrumentListConverter;
 import com.abt.chkmodule.SimpleCheckModuleListConverter;
+import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.chkmodule.model.SimpleCheckModule;
 import com.abt.common.AuditInfo;
 import com.abt.common.config.ValidateGroup;
@@ -17,9 +18,6 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.abt.chkmodule.Constant.USE_CHANNEL_WEB;
-import static com.abt.chkmodule.Constant.USE_CHANNEL_WX;
-
 
 /**
  * 检测项目
@@ -29,7 +27,7 @@ import static com.abt.chkmodule.Constant.USE_CHANNEL_WX;
 @Entity
 @Table(name = "check_module")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class CheckModule extends AuditInfo {
+public class CheckModule extends AuditInfo implements UseChannel {
 
     @Id
     @Size(max = 128)
@@ -98,15 +96,9 @@ public class CheckModule extends AuditInfo {
      * 使用渠道
      */
     @NotNull(message = "请输入检测项目使用渠道", groups = {ValidateGroup.Save.class})
+    @Enumerated(EnumType.STRING)
     @Column(name="use_chn", length = 16, nullable = false)
-    private String useChannel;
-
-    public boolean isWxChannel() {
-        return USE_CHANNEL_WX.equals(useChannel);
-    }
-    public boolean isWebChannel() {
-        return USE_CHANNEL_WEB.equals(useChannel);
-    }
+    private ChannelEnum useChannel;
 
     /**
      * 封面图片url
@@ -205,5 +197,8 @@ public class CheckModule extends AuditInfo {
     private List<Instrument> instruments;
 
 
-
+    @Override
+    public ChannelEnum getChannel() {
+        return this.useChannel;
+    }
 }
