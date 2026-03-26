@@ -28,11 +28,11 @@ public class OpenUserInvTitle extends AuditInfo {
     @Column(name = "userid", length = 50)
     private String userId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "title_type", length = 20)
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "title_type", columnDefinition = "tinyint COMMENT '0-单位, 1-个人'")
     private TitleTypeEnum titleType;
 
-    @NotNull(message = "抬头名称不能为空", groups = {ValidateGroup.Save.class})
+    @NotNull(message = "单位名称不能为空", groups = {ValidateGroup.Save.class})
     @Column(name = "com_name", length = 100)
     private String comName;
 

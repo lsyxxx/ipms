@@ -11,9 +11,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum TitleTypeEnum {
 
-    ENTERPRISE("0"), // 单位
-    PERSONAL("1");   // 个人
+    ENTERPRISE(0), // 单位
+    PERSONAL(1);   // 个人
 
     @JsonValue
-    private final String code;
+    private final int code;
 }
