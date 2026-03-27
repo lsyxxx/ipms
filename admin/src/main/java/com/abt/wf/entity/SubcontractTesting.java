@@ -57,7 +57,7 @@ public class SubcontractTesting extends WorkflowBase {
     @Column(name = "upload_sample_list", columnDefinition = "VARCHAR(MAX)")
     private List<SystemFile> uploadSampleList; // 上传样品清单
 
-    @Size(max = 1000, message = "外送原因最多不超过250字")
+    @Size(max = 250, message = "外送原因最多不超过250字")
     @Column(name="reason_", length = 1000)
     private String reason;
 

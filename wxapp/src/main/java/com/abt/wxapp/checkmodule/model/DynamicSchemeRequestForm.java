@@ -9,5 +9,5 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class DynamicFormRequestForm extends PageRequestForm {
+public class DynamicSchemeRequestForm extends PageRequestForm {
 }

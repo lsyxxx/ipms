@@ -24,7 +24,7 @@ public class SysLog {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Size(max = 1000)
+    @Size(max = 500)
     @Nationalized
     @Column(name = "Content", length = 1000)
     private String content;
