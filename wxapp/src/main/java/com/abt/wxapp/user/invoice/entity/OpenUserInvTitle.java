@@ -33,8 +33,8 @@ public class OpenUserInvTitle extends AuditInfo {
     private TitleTypeEnum titleType;
 
     @NotNull(message = "单位名称不能为空", groups = {ValidateGroup.Save.class})
-    @Column(name = "com_name", length = 100)
-    private String comName;
+    @Column(name = "company_name", length = 100)
+    private String companyName;
 
     @NotNull(message = "税号不能为空", groups = {ValidateGroup.Save.class})
     @Column(name = "tax_no", length = 50)
