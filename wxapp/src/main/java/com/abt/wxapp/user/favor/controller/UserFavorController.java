@@ -13,7 +13,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/wxapp/user/favor")
+@RequestMapping("/pub/wxapp/user/favor")
 @RequiredArgsConstructor
 public class UserFavorController {
 

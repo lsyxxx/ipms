@@ -19,8 +19,8 @@ public interface OpenUserFavorRepository extends JpaRepository<OpenUserFavor, St
             "m.coverImage, " +
             "m.price, " +
             "m.duration, " +
-            "m.active, " +
-            // 🎯 核心优化：不统计数量，只判断是否存在！只要查到1个就短路返回 true
+           // "m.active," +
+            "true, " +
             "(CASE WHEN EXISTS (SELECT 1 FROM CheckItem i WHERE i.checkModuleId = m.id AND i.isCma = true) THEN true ELSE false END), " +
             "(CASE WHEN EXISTS (SELECT 1 FROM CheckItem i WHERE i.checkModuleId = m.id AND i.isCnas = true) THEN true ELSE false END)) " +
             "FROM OpenUserFavor f " +
