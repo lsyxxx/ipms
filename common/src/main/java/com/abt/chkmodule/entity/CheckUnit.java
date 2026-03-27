@@ -19,7 +19,7 @@ public class CheckUnit extends AuditInfo implements UseChannel{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id_", nullable = false, length = 128)
+    @Column(name = "id", nullable = false, length = 128)
     private String id;
 
     @Column(name="code_",  nullable = false, length = 32)

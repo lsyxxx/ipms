@@ -1,5 +1,6 @@
 package com.abt.chkmodule.entity;
 
+import com.abt.common.AuditInfo;
 import com.abt.common.config.ListStringConverter;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
@@ -19,16 +20,22 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "check_instrument")
-public class Instrument {
+public class Instrument extends AuditInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, length = 128)
     private String id;
 
     /**
+     * 排序序号
+     */
+    @Column(name="sort_no")
+    private Integer sortNo;
+
+    /**
      * 设备名称
      */
-    @Column(name="name", nullable = false)
+    @Column(name="name_", nullable = false)
     private String name;
 
     /**
@@ -38,29 +45,31 @@ public class Instrument {
     private String boxNo;
 
     /**
-     * 设备分类
-     * todo: 使用字典表翻译
+     * 设备分类，EnumlibshebeiType
      */
-    @Size(max = 2)
     @NotNull
-    @Column(name = "type", nullable = false, length = 2)
+    @Column(name = "type_", nullable = false, length = 2)
     private String type;
 
     /**
      * 设备状态
      * todo: 使用字典表翻译
+     * 1. 使用中
      */
     @Size(max = 2)
     @NotNull
-    @Column(name = "status", nullable = false, length = 2)
-    private String status;
+    @Column(name = "status_", nullable = false, length = 2)
+    private String status = STATUS_OK;
+
+    public static final String STATUS_OK = "1";
+
 
     /**
      * 设备编号
      * TODO: 根据其他数据自动生成
      */
     @Size(max = 32)
-    @Column(name = "code", length = 32)
+    @Column(name = "code_", length = 32)
     private String code;
 
 
@@ -69,13 +78,13 @@ public class Instrument {
      */
     @Size(max = 32)
     @NotNull
-    @Column(name = "spec", nullable = false, length = 32)
+    @Column(name = "spec_", nullable = false, length = 32)
     private String specification;
 
     /**
      * 设备数量
      */
-    @Column(name = "num")
+    @Column(name = "num_")
     private Integer num;
 
     /**
@@ -99,21 +108,20 @@ public class Instrument {
     /**
      * 示值误差或准确度等级
      */
-    @Size(max = 100)
-    @Column(name = "accuracy", length = 100)
+    @Column(name = "accuracy")
     private String accuracy;
 
     /**
      * 资产来源，允许用户自由输入
      */
-    @Column(name = "source", length = 32)
+    @Column(name = "source")
     private String source;
 
     /**
      * 购入时间
      */
     @Column(name = "buy_time")
-    private LocalDate buyTime;
+    private String buyTime;
 
     /**
      * 使用部门名称
@@ -160,7 +168,7 @@ public class Instrument {
     /**
      * 备注
      */
-    @Column(name = "note", length = 512)
+    @Column(name = "note_", length = 512)
     private String note;
 
     /**

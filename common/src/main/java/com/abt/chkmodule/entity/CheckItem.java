@@ -3,6 +3,7 @@ package com.abt.chkmodule.entity;
 import com.abt.chkmodule.CheckStandardListConverter;
 import com.abt.common.AuditInfo;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,12 +25,16 @@ public class CheckItem extends AuditInfo {
     private String id;
 
     /**
-     * 代码
+     * 检测子参数代码
      */
     @Column(name="code_",  nullable = false, length = 32)
     private String code;
 
-    @Column(name="name_", nullable = false, length = 128)
+    /**
+     * 禁止重名
+     */
+    @Size(max = 100, message = "检测子参数名称，最多输入100字")
+    @Column(name="name_", nullable = false, length = 200, unique = true)
     private String name;
 
     /**
@@ -73,10 +78,16 @@ public class CheckItem extends AuditInfo {
     private String checkModuleId;
 
     /**
-     * 依据标准
+     * 限制范围说明
      */
-    @Column(name="stds", length = 1024)
-    @Convert(converter = CheckStandardListConverter.class)
+    @Size(max = 500, message = "最多输入250字")
+    @Column(name="restrict_", length = 500)
+    private String restrict;
+
+    /**
+     * 依据标准，不做jpa关联了
+     */
+    @Transient
     private List<CheckStandard> standards;
 
 }

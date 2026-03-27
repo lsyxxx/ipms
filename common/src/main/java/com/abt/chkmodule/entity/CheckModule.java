@@ -47,7 +47,7 @@ public class CheckModule extends AuditInfo implements UseChannel {
      * 名称
      */
     @Size(max = 128)
-    @NotNull(message = "请输入检测项目名称", groups =  {ValidateGroup.Save.class})
+    @NotNull(message = "请输入检测项目名称", groups =  {ValidateGroup.Save.class, ValidateGroup.Temp.class})
     @Column(name = "name_", nullable = false, length = 128)
     private String name;
 
@@ -62,13 +62,13 @@ public class CheckModule extends AuditInfo implements UseChannel {
      * 备注
      */
     @Size(max = 500)
-    @Column(name = "note", length = 500)
+    @Column(name = "note_", length = 500)
     private String note;
 
     /**
      * 是否启用。默认启用
      */
-    @Column(name="enabled", columnDefinition = "BIT")
+    @Column(name="enabled_", columnDefinition = "BIT")
     private boolean enabled = true;
 
     /**
@@ -89,7 +89,7 @@ public class CheckModule extends AuditInfo implements UseChannel {
      * TODO: 富文本
      */
     @Size(max = 1000)
-    @Column(name="intro", length = 1024)
+    @Column(name="intro_", length = 1024)
     private String notice;
 
     /**
@@ -109,7 +109,7 @@ public class CheckModule extends AuditInfo implements UseChannel {
     /**
      * 一般工作时间
      */
-    @Column(name="duration")
+    @Column(name="duration_")
     private String duration;
 
     /**
@@ -201,9 +201,14 @@ public class CheckModule extends AuditInfo implements UseChannel {
     /**
      * 检测关联仪器
      */
-    @Convert(converter = InstrumentListConverter.class)
-    @Column(name="instrument", length = 1024)
+    @Transient
     private List<Instrument> instruments;
+
+    /**
+     * 关联子参数
+     */
+    @Transient
+    private List<CheckItem> checkItems;
 
 
     @Override
