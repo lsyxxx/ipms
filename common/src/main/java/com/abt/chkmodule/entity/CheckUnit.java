@@ -19,13 +19,13 @@ public class CheckUnit extends AuditInfo implements UseChannel{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false, length = 128)
+    @Column(name = "id_", nullable = false, length = 128)
     private String id;
 
-    @Column(name="code",  nullable = false, length = 32)
+    @Column(name="code_",  nullable = false, length = 32)
     private String code;
 
-    @Column(name="name", nullable = false, length = 128)
+    @Column(name="name_", nullable = false, length = 128)
     private String name;
 
     /**
@@ -36,10 +36,10 @@ public class CheckUnit extends AuditInfo implements UseChannel{
     private ChannelEnum useChannel;
 
     /**
-     * 依据标准号
+     * 是否启用
      */
-    @Column(name="stds")
-    private List<CheckStandard> standards;
+    @Column(name="enabled", columnDefinition = "BIT")
+    private boolean enabled = true;
 
     @Override
     public ChannelEnum getChannel() {

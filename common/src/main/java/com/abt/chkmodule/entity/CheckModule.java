@@ -40,7 +40,7 @@ public class CheckModule extends AuditInfo implements UseChannel {
      */
     @Size(max = 32)
     @NotNull(message = "请输入检测项目编码", groups = {ValidateGroup.Save.class})
-    @Column(name = "code", nullable = false, length = 32)
+    @Column(name = "code_", nullable = false, length = 32)
     private String code;
 
     /**
@@ -48,7 +48,7 @@ public class CheckModule extends AuditInfo implements UseChannel {
      */
     @Size(max = 128)
     @NotNull(message = "请输入检测项目名称", groups =  {ValidateGroup.Save.class})
-    @Column(name = "name", nullable = false, length = 128)
+    @Column(name = "name_", nullable = false, length = 128)
     private String name;
 
     /**
@@ -68,8 +68,8 @@ public class CheckModule extends AuditInfo implements UseChannel {
     /**
      * 是否启用。默认启用
      */
-    @Column(name="active", columnDefinition = "BIT")
-    private boolean active = true;
+    @Column(name="enabled", columnDefinition = "BIT")
+    private boolean enabled = true;
 
     /**
      * 删除标志。默认未删除
@@ -146,6 +146,15 @@ public class CheckModule extends AuditInfo implements UseChannel {
      */
     @Column(name="price",  length = 32)
     private String price;
+
+    /**
+     * 状态：草稿0，已发布1
+     */
+    @Column(name="status_", columnDefinition = "TINYINT")
+    private int status = STATUS_TEMP;
+
+    public static final int STATUS_TEMP = 0;
+    public static final int STATUS_PUBLISHED = 1;
 
     public static final String CERTIFICATE_CMA = "CMA";
 

@@ -26,16 +26,16 @@ public class CheckItem extends AuditInfo {
     /**
      * 代码
      */
-    @Column(name="code",  nullable = false, length = 32)
+    @Column(name="code_",  nullable = false, length = 32)
     private String code;
 
-    @Column(name="name", nullable = false, length = 128)
+    @Column(name="name_", nullable = false, length = 128)
     private String name;
 
     /**
      * 简要描述
      */
-    @Column(name="desc", length = 128)
+    @Column(name="desc_", length = 128)
     private String description;
 
     /**
@@ -43,9 +43,6 @@ public class CheckItem extends AuditInfo {
      */
     @Column(name="alias_name", length = 512)
     private String aliasName;
-
-    @Column(name="is_del", columnDefinition = "BIT")
-    private boolean isDeleted = false;
 
     /**
      * 是否有CMA资质
@@ -58,6 +55,12 @@ public class CheckItem extends AuditInfo {
      */
     @Column(name="is_cnas", columnDefinition = "BIT")
     private boolean isCnas = false;
+
+    /**
+     * 其他资质证书，多个用逗号分隔
+     */
+    @Column(name="oth_cert", length = 512)
+    private String otherCertificate;
 
     /**
      * 是否启用，默认启用
