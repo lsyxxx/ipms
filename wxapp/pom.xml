@@ -104,7 +104,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.abt.AbtApplication</mainClass>
+                    <mainClass>com.abt.wxapp.WxappApplication</mainClass>
                     <includeSystemScope>true</includeSystemScope>
                     <excludes>
                         <exclude>

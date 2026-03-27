@@ -8,5 +8,5 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class CheckModuleServiceImpl implements CheckModuleService {
+public class WxCheckModuleServiceImpl implements WxCheckModuleService {
 }
