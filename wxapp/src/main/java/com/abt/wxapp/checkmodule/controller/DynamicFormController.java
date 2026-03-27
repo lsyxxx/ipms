@@ -1,8 +1,8 @@
 package com.abt.wxapp.checkmodule.controller;
 
 import com.abt.common.config.ValidateGroup;
-import com.abt.wxapp.checkmodule.entity.DynamicForm;
-import com.abt.wxapp.checkmodule.service.DynamicFormService;
+import com.abt.wxapp.checkmodule.entity.DynamicScheme;
+import com.abt.wxapp.checkmodule.service.DynamicSchemeService;
 import com.abt.wxapp.common.model.PageRequestForm;
 import com.abt.wxapp.common.model.R;
 import lombok.extern.slf4j.Slf4j;
@@ -19,19 +19,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/chk/dyform")
 public class DynamicFormController {
 
-    private final DynamicFormService dynamicFormService;
+    private final DynamicSchemeService dynamicFormService;
 
-    public DynamicFormController(DynamicFormService dynamicFormService) {
+    public DynamicFormController(DynamicSchemeService dynamicFormService) {
         this.dynamicFormService = dynamicFormService;
     }
-
 
     /**
      * 新增表单，只能新增，不能修改（修改即再插入一条新记录）
      * @param form 表单内容
      */
     @PostMapping("/save")
-    public R<Object> save(@Validated(ValidateGroup.Save.class) @RequestBody DynamicForm form) {
+    public R<Object> save(@Validated(ValidateGroup.Save.class) @RequestBody DynamicScheme form) {
         dynamicFormService.save(form);
         return R.success("保存成功");
     }
@@ -43,8 +42,8 @@ public class DynamicFormController {
      * @return 表单内容
      */
     @GetMapping("/find/cm/newest")
-    public R<DynamicForm> findNewestByCheckModule(String checkModuleId, String checkModuleName) {
-        DynamicForm form = dynamicFormService.findNewestByCheckModuleId(checkModuleId, checkModuleName);
+    public R<DynamicScheme> findNewestByCheckModule(String checkModuleId, String checkModuleName) {
+        DynamicScheme form = dynamicFormService.findNewestByCheckModuleId(checkModuleId, checkModuleName);
         return R.success(form);
     }
 
