@@ -51,5 +51,13 @@ jwt:
   secret: test_secret
 
 
+# --------- file
+com:
+  abt:
+    file:
+      upload:
+        save: E:\\upload
+
+
 
 
