@@ -24,7 +24,7 @@ public class DynamicSchemeServiceImpl implements DynamicSchemeService {
 
     @Override
     public void save(DynamicScheme form) {
-        // 只能新建不能更新；新行由库分配自增 id，同一检测项目下「最新」用 max(id)
+        // 只能新建不能更新；新行由库分配自增 id，同一检测项目下最新的用 max(id)
         form.resetId();
         dynamicFormRepository.save(form);
     }
