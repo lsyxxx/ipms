@@ -3,6 +3,7 @@ package com.abt.wxapp.user.userInfo.entity;
 
 import com.abt.chkmodule.entity.UseChannel;
 import com.abt.chkmodule.model.ChannelEnum;
+import com.abt.common.AuditInfo;
 import com.abt.common.config.ValidateGroup;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -21,8 +22,7 @@ import java.io.Serializable;
 @ToString
 @Table(name = "open_user_info")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-
-public class OpenUserInfo implements UseChannel {
+public class OpenUserInfo extends AuditInfo implements UseChannel {
 
     @Id
     @Column(name = "id", nullable = false)
