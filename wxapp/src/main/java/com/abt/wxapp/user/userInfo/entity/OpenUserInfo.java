@@ -1,6 +1,5 @@
 package com.abt.wxapp.user.userInfo.entity;
 
-
 import com.abt.chkmodule.entity.UseChannel;
 import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.common.AuditInfo;

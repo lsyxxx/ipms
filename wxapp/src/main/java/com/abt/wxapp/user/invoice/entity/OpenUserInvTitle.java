@@ -41,7 +41,7 @@ public class OpenUserInvTitle extends AuditInfo {
     private String taxNo;
 
     @Column(name = "com_addr", length = 200)
-    private String comAddr;
+    private String companyAddress;
 
     @Column(name = "phone", length = 20)
     private String phone;

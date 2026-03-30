@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaAuditing
 @EnableScheduling
 @EnableAsync
-@EntityScan(basePackages = {"com.abt.wxapp", "com.abt.chkmodule.entity"})
 public class WxappApplication {
 
     public static void main(String[] args) {
