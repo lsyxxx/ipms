@@ -15,7 +15,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class UserFavorDTO {
 
@@ -69,7 +68,6 @@ public class UserFavorDTO {
 
 
 
-    // 🎯 专供 JPQL 调用的构造函数：直接接收 boolean 类型的 hasCma 和 hasCnas
     public UserFavorDTO(String favorId, LocalDateTime createDate, String checkModuleId,
                         String checkModuleName, String coverImage, String price,
                         String duration, boolean active, boolean hasCma, boolean hasCnas) {
