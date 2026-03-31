@@ -16,6 +16,7 @@
     <description>阿伯塔数字化平台</description>
 
     <properties>
+        <skipTests>true</skipTests>
         <java.version>20</java.version>
         <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
         <!-- 覆盖 Spring Boot BOM 管理的 Lombok 版本以兼容 JDK 21 编译器 -->

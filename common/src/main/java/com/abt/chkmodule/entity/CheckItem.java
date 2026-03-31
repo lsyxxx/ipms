@@ -31,10 +31,10 @@ public class CheckItem extends AuditInfo {
     private String code;
 
     /**
-     * 禁止重名
+     * 检测子参数名称
      */
-    @Size(max = 100, message = "检测子参数名称，最多输入100字")
-    @Column(name="name_", nullable = false, length = 200, unique = true)
+    @Size(max = 50, message = "检测子参数名称，最多输入50字")
+    @Column(name="name_", nullable = false, length = 50)
     private String name;
 
     /**
@@ -89,5 +89,11 @@ public class CheckItem extends AuditInfo {
      */
     @Transient
     private List<CheckStandard> standards;
+
+    /**
+     * 前端传入
+     */
+    @Transient
+    private List<CheckItemStandardRel> stdRels;
 
 }
