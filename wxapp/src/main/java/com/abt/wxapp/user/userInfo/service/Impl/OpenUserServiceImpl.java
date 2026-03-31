@@ -21,7 +21,7 @@ public class OpenUserServiceImpl implements OpenUserService {
         return openUserInfoRepository.findByQuery(
                 form.getQuery(),
                 form.getChannel(),
-                PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Direction.DESC, "createDate"))
+                PageRequest.of(form.getPage(), form.getLimit(), Sort.by(Sort.Direction.DESC, "createDate"))
         );
     }
 }
