@@ -17,10 +17,10 @@ public class CheckItemStandardRel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name="ci_id")
+    @Column(name="ci_id", nullable = false)
     private String checkItemId;
 
-    @Column(name="std_id")
+    @Column(name="std_id", nullable = false)
     private String standardId;
 
     /**

@@ -1,9 +1,6 @@
 package com.abt.chkmodule.entity;
 
-import com.abt.chkmodule.InstrumentListConverter;
-import com.abt.chkmodule.SimpleCheckModuleListConverter;
 import com.abt.chkmodule.model.ChannelEnum;
-import com.abt.chkmodule.model.SimpleCheckModule;
 import com.abt.common.AuditInfo;
 import com.abt.common.config.ValidateGroup;
 import com.abt.sys.model.entity.SystemFile;
@@ -72,12 +69,6 @@ public class CheckModule extends AuditInfo implements UseChannel {
     private boolean enabled = true;
 
     /**
-     * 删除标志。默认未删除
-     */
-    @Column(name = "is_del", columnDefinition = "BIT")
-    private boolean isDeleted = false;
-
-    /**
      * 其他常用名称，可以多个，用逗号分隔
      */
     @Size(max = 512)
@@ -135,13 +126,6 @@ public class CheckModule extends AuditInfo implements UseChannel {
     private List<String> certificateList;
 
     /**
-     * 相关的检测项目
-     */
-    @Column(name="rel_cm", length = 1024)
-    @Convert(converter = SimpleCheckModuleListConverter.class)
-    private List<SimpleCheckModule> relatedCheckModules;
-
-    /**
      * 单价，可以非数字，如面议
      */
     @Column(name="price",  length = 32)
@@ -159,6 +143,22 @@ public class CheckModule extends AuditInfo implements UseChannel {
     public static final String CERTIFICATE_CMA = "CMA";
 
     public static final String CERTIFICATE_CNAS = "CNAS";
+
+    /**
+     * 设置为草稿，不启用
+     */
+    public void setStatusTemp() {
+        this.status = STATUS_TEMP;
+        this.enabled = false;
+    }
+
+    /**
+     * 设置为正式发布状态
+     */
+    public void setPublished() {
+        this.status = STATUS_PUBLISHED;
+        this.enabled = true;
+    }
 
     public void addCma() {
         if (this.certificateList == null) {
@@ -203,6 +203,12 @@ public class CheckModule extends AuditInfo implements UseChannel {
      */
     @Transient
     private List<Instrument> instruments;
+
+    /**
+     * 关联检测仪器
+     */
+    @Transient
+    private List<CheckModuleInstrumentRel> instrumentRels;
 
     /**
      * 关联子参数

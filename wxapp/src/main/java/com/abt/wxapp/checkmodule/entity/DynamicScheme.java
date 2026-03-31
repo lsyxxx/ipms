@@ -15,7 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.util.List;
 
 /**
- * 动态表单定义（Schema）。组件列表以 JSON 存于 {@code components_json}，接口返回时可与库中结构一致。
+ * 动态表单定义结构
  */
 @Getter
 @Setter
@@ -32,7 +32,8 @@ public class DynamicScheme extends AuditInfo {
     private Long id;
 
     /**
-     * 关联检测项目 id
+     * 关联检测项目 id。是单独为小程序设计的检测项目。比如薄片鉴定，有2个，一个是用于小程序，一个用于WEB
+     * TODO:
      */
     @Column(name = "cm_id", nullable = false)
     @NotNull(message = "请选择检测项目", groups = {ValidateGroup.Save.class})
@@ -40,6 +41,7 @@ public class DynamicScheme extends AuditInfo {
 
     /**
      * 检测项目名称
+     * TODO:
      */
     @Column(name = "cm_name", nullable = false)
     private String checkModuleName;

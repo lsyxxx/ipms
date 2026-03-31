@@ -17,9 +17,9 @@ public class CheckModuleInstrumentRel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     
-    @Column(name="cm_id")
+    @Column(name="cm_id", nullable = false)
     private String checkModuleId;
     
-    @Column(name="instru_id")
+    @Column(name="instru_id", nullable = false)
     private String instrumentId;
 }
