@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,5 +24,10 @@ class DynamicFormRepositoryTest {
     @Autowired
     private DynamicSchemeRepository dynamicFormRepository;
 
+    @Test
+    void test() {
+        final Optional<DynamicScheme> byId = dynamicFormRepository.findById(1L);
+        assertTrue(byId.isPresent());
+    }
 
 }
