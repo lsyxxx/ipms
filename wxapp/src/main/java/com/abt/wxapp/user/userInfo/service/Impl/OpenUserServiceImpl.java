@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,5 +24,11 @@ public class OpenUserServiceImpl implements OpenUserService {
                 form.getChannel(),
                 PageRequest.of(form.getPage(), form.getLimit(), Sort.by(Sort.Direction.DESC, "createDate"))
         );
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveUser(OpenUserInfo openUserInfo) {
+        openUserInfoRepository.save(openUserInfo);
     }
 }
