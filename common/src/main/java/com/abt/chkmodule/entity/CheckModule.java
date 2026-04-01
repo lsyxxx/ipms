@@ -1,7 +1,9 @@
 package com.abt.chkmodule.entity;
 
 import com.abt.chkmodule.model.ChannelEnum;
+import com.abt.chkmodule.model.SimpleCheckModule;
 import com.abt.common.AuditInfo;
+import com.abt.chkmodule.converter.ListStringConverter;
 import com.abt.common.config.ValidateGroup;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
@@ -199,6 +201,20 @@ public class CheckModule extends AuditInfo implements UseChannel {
     }
 
     /**
+     * 相关的检测项目，仅id
+     */
+    @Column(name="rel_cm", columnDefinition = "VARCHAR(MAX)")
+    @Convert(converter = ListStringConverter.class)
+    private List<String> relatedCheckModuleIds;
+
+
+    /**
+     * 关联检测项目对象，仅返回简单数据
+     */
+    @Transient
+    private List<SimpleCheckModule> relatedCheckModuleList;
+
+    /**
      * 检测关联仪器
      */
     @Transient
@@ -215,6 +231,9 @@ public class CheckModule extends AuditInfo implements UseChannel {
      */
     @Transient
     private List<CheckItem> checkItems;
+
+
+
 
 
     @Override

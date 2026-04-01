@@ -1,6 +1,6 @@
 package com.abt.salary.entity;
 
-import com.abt.common.config.ListStringConverter;
+import com.abt.chkmodule.converter.ListStringConverter;
 import com.abt.common.model.AuditInfo;
 import com.abt.common.model.User;
 import com.abt.sys.model.entity.EmployeeInfo;
