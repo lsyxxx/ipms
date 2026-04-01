@@ -27,7 +27,6 @@ public class OpenUserServiceImpl implements OpenUserService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void saveUser(OpenUserInfo openUserInfo) {
         openUserInfoRepository.save(openUserInfo);
     }

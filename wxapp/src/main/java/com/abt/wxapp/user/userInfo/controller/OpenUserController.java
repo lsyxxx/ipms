@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 微信小程序用户信息 Controller
  */
-@RequestMapping("/pub/wxapp/user/info")
+@RequestMapping("/wxapp/user/info")
 @RequiredArgsConstructor
-@RestController("wxappUserController")
+@RestController
 public class OpenUserController {
 
     private final OpenUserService openUserInfoService;
