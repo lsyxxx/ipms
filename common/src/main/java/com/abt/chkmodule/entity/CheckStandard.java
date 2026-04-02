@@ -1,5 +1,6 @@
 package com.abt.chkmodule.entity;
 
+import com.abt.sys.SystemFileConverter;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
 import jakarta.persistence.*;
@@ -77,8 +78,8 @@ public class CheckStandard {
     /**
      * 标准文件地址
      */
-    @Convert(converter = SystemFileListConverter.class)
+    @Convert(converter = SystemFileConverter.class)
     @Column(name="file_path", length = 1024)
-    private List<SystemFile> filePath;
+    private SystemFile filePath;
 
 }

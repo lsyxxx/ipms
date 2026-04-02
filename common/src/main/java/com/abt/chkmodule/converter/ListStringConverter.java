@@ -1,4 +1,4 @@
-package com.abt.common.config;
+package com.abt.chkmodule.converter;
 
 import com.abt.common.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
