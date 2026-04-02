@@ -1,6 +1,5 @@
 package com.abt.wxapp.user.client.entity;
 
-import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.wxapp.db.AuditInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;

@@ -22,7 +22,7 @@ public class PageRequestForm {
     /**
      * 通用关键字查询
      */
-    private String key;
+    private String query;
 
     private LocalDate startDate;
     private LocalDate endDate;

@@ -6,20 +6,19 @@ import com.abt.wxapp.user.favor.service.UserFavorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/pub/wxapp/user/favor")
+@RequestMapping("/wxapp/user/favor")
 @RequiredArgsConstructor
 public class UserFavorController {
 
     private final UserFavorService userFavorService;
 
-    @PostMapping("/save")
+    @GetMapping("/save")
     public R<String> insertUserFavor(String userId, String checkModuleId) {
         userFavorService.insertUserFavor(userId, checkModuleId);
         return R.success("收藏成功");

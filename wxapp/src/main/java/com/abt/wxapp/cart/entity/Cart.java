@@ -28,6 +28,8 @@ import java.util.Optional;
 @Table(name = "wx_cart")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @EntityListeners({AuditingEntityListener.class})
+@NoArgsConstructor
+@AllArgsConstructor
 public class Cart extends AuditInfo {
 
     @Id
@@ -61,6 +63,8 @@ public class Cart extends AuditInfo {
     @Column(name = "image", length = 500)
     private String image;
 
+    @Transient
+    private boolean active;
 //    @Column(name = "check_item_params_brief", length = 500)
 //    private String checkItemParamsBrief;
 
