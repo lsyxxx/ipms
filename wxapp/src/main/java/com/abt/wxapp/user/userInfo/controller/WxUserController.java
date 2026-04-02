@@ -2,11 +2,9 @@ package com.abt.wxapp.user.userInfo.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.wxapp.common.model.R;
-import com.abt.wxapp.user.userInfo.entity.OpenUserInfo;
-import com.abt.wxapp.user.userInfo.model.OpenUserInfoRequestForm;
-import com.abt.wxapp.user.userInfo.service.OpenUserService;
+import com.abt.openuser.entity.OpenUserInfo;
+import com.abt.wxapp.user.userInfo.service.WxUserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,24 +14,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/wxapp/user/info")
 @RequiredArgsConstructor
 @RestController
-public class OpenUserController {
+public class WxUserController {
 
-    private final OpenUserService openUserInfoService;
+    private final WxUserService wxUserService;
 
-    /**
-     * 分页多条件查询用户信息
-     */
-    @GetMapping("/page")
-    public Page<OpenUserInfo> findByQuery(OpenUserInfoRequestForm requestForm) {
-        return openUserInfoService.findByQuery(requestForm);
-    }
 
     /**
      * 编辑/保存客户信息
      */
     @PostMapping("/save")
     public R<String> save(@RequestBody @Validated(ValidateGroup.Save.class) OpenUserInfo openUserInfo) {
-        openUserInfoService.saveUser(openUserInfo);
+//        wxUserService.saveUser(openUserInfo);
         return R.success("保存成功");
     }
 }

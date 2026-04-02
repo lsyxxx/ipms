@@ -1,4 +1,4 @@
-package com.abt.wxapp.user.userInfo.entity;
+package com.abt.openuser.entity;
 
 import com.abt.chkmodule.entity.UseChannel;
 import com.abt.chkmodule.model.ChannelEnum;
@@ -11,8 +11,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.io.Serializable;
 
 
 @Getter

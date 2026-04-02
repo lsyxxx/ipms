@@ -1,12 +1,11 @@
-package com.abt.wxapp.user.userInfo.repository;
+package com.abt.openuser.repository;
 
 import com.abt.chkmodule.model.ChannelEnum;
-import com.abt.wxapp.user.userInfo.entity.OpenUserInfo;
+import com.abt.openuser.entity.OpenUserInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
