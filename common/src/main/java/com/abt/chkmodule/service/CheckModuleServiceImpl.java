@@ -3,6 +3,7 @@ package com.abt.chkmodule.service;
 import com.abt.chkmodule.entity.*;
 import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.chkmodule.repository.*;
+import com.abt.sys.exception.BusinessException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -110,10 +111,25 @@ public class CheckModuleServiceImpl implements CheckModuleService {
         return checkModuleRepository.findById(id);
     }
 
+    @Override
+    @Transactional
+    public void disabledCheckModule(String id) {
+        checkModuleRepository.updateCheckModuleDisableById(id);
+    }
 
     @Override
-    public void disabledCheckModule(String id) {
+    @Transactional
+    public void enabledCheckModule(String id) {
+        checkModuleRepository.updateCheckModuleEnableById(id);
+    }
 
+    @Override
+    @Transactional
+    public void deleteCheckModuleDraft(String id) {
+        checkItemStandardRelRepository.deleteByCheckModuleId(id);
+        checkItemRepository.deleteByCheckModuleId(id);
+        checkModuleInstrumentRelRepository.deleteByCheckModuleId(id);
+        checkModuleRepository.deleteCheckModuleById(id);
     }
 
     /**

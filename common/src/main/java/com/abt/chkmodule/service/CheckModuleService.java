@@ -5,6 +5,7 @@ import com.abt.chkmodule.entity.CheckModule;
 import com.abt.chkmodule.entity.CheckUnit;
 import com.abt.chkmodule.model.ChannelEnum;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,16 +47,23 @@ public interface CheckModuleService {
     void saveCheckItemList(String checkModuleId, List<CheckItem> checkItemList);
 
     /**
-     * 保存（正式发布）一个
+     * 检测项目-发布新增/暂存
      * @param checkModule 检测项目对象，含关联的子参数等
      */
     void saveCheckModule(CheckModule checkModule);
 
     /**
-     * 不启用检测项目
-     * @param id id
+     * 检测项目-启用
+     */
+    void enabledCheckModule(String id);
+
+    /**
+     * 检测项目-禁用
      */
     void disabledCheckModule(String id);
-
-    void deleteCheckModuleById(String id);
+    /**
+     * 检测项目-删除暂存
+     * @param id 检测项目id
+     */
+    void deleteCheckModuleDraft(String id);
 }

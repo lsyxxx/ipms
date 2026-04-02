@@ -20,7 +20,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/chk/setting")
+@RequestMapping("/pub/chk/setting")
 public class CheckSettingController {
 
     private final CheckModuleService checkModuleService;
