@@ -101,7 +101,6 @@ public class CheckSettingController {
      */
     @GetMapping("/module/draft/delete")
     public R<Object> deleteCheckModuleDraft(String id) {
-        // 调用你最开始在 Service 里写好并测试通过的物理删除逻辑
         checkModuleService.deleteCheckModuleDraft(id);
         return R.success("删除暂存成功");
     }
