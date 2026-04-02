@@ -66,4 +66,6 @@ public interface CheckModuleService {
      * @param id 检测项目id
      */
     void deleteCheckModuleDraft(String id);
+
+    void deleteCheckModuleById(String id);
 }

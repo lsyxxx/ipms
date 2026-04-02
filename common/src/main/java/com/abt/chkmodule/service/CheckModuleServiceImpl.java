@@ -3,7 +3,6 @@ package com.abt.chkmodule.service;
 import com.abt.chkmodule.entity.*;
 import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.chkmodule.repository.*;
-import com.abt.sys.exception.BusinessException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
