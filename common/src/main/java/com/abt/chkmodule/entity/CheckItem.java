@@ -1,7 +1,5 @@
 package com.abt.chkmodule.entity;
 
-import com.abt.chkmodule.CheckStandardListConverter;
-import com.abt.common.AuditInfo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -18,7 +16,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "check_item")
-public class CheckItem extends AuditInfo {
+public class CheckItem extends AuditedCheckModuleEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
@@ -72,10 +70,6 @@ public class CheckItem extends AuditInfo {
      */
     @Column(name="is_enabled", columnDefinition = "BIT")
     private boolean enabled = true;
-
-
-    @Column(name="cm_id", nullable = false, length = 128)
-    private String checkModuleId;
 
     /**
      * 限制范围说明

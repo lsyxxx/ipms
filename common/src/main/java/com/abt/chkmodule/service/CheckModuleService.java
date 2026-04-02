@@ -56,4 +56,6 @@ public interface CheckModuleService {
      * @param id id
      */
     void disabledCheckModule(String id);
+
+    void deleteCheckModuleById(String id);
 }

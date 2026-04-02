@@ -131,4 +131,12 @@ public class CheckModuleServiceImpl implements CheckModuleService {
     }
 
 
+    @Override
+    public void deleteCheckModuleById(String id) {
+        checkModuleRepository.deleteById(id);
+    }
+
+
+
+
 }

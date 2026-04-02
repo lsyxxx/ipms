@@ -11,15 +11,12 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "check_module_instru")
-public class CheckModuleInstrumentRel {
+public class CheckModuleInstrumentRel extends CheckModuleScoped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    
-    @Column(name="cm_id", nullable = false)
-    private String checkModuleId;
-    
-    @Column(name="instru_id", nullable = false)
+
+    @Column(name = "instru_id", nullable = false)
     private String instrumentId;
 }

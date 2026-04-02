@@ -14,7 +14,7 @@ public interface InstrumentRepository extends JpaRepository<Instrument, String> 
     select i
     from Instrument i
     left join CheckModuleInstrumentRel rel on i.id = rel.instrumentId
-    where rel.checkModuleId = :checkModuleId
+    where rel.checkModuleRef.checkModuleId = :checkModuleId
 """)
     List<Instrument> findByCheckModule(String checkModuleId);
 

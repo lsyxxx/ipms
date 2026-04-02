@@ -8,6 +8,7 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.sys.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -53,38 +54,54 @@ public class CheckSettingController {
 
 
     /**
-     * 暂存一个检测检测项目
-     * 只用输入名称
+     * 检测项目-暂存
      */
     @PostMapping("/module/draft")
     public R<Object> checkModuleDraft(@Validated(ValidateGroup.Temp.class) @RequestBody CheckModule checkModule) {
-        checkModule.setStatus(CheckModule.STATUS_TEMP);
+        checkModule.setStatusTemp();
         checkModuleService.saveCheckModule(checkModule);
         return R.success("暂存成功");
     }
 
     /**
-     * 正式保存一个检测项目
+     * 检测项目-发布新增
      */
     @PostMapping("/module/save")
-    public void checkModuleSave(@Validated(ValidateGroup.Save.class) @RequestBody CheckModule checkModule) {
-        //校验
+    public R<Object> checkModuleSave(@Validated(ValidateGroup.Save.class) @RequestBody CheckModule checkModule) {
         if (CollectionUtils.isEmpty(checkModule.getCheckItems())) {
             throw new BusinessException("提交失败！未关联检测子参数。");
         }
-        checkModule.setStatus(CheckModule.STATUS_PUBLISHED);
+        checkModule.setPublished();
         checkModuleService.saveCheckModule(checkModule);
+
+        return R.success("发布成功");
     }
 
+    /**
+     * 检测项目-启用
+     */
+    @GetMapping("/module/enable")
+    public R<Object> enableModule(String id) {
+        checkModuleService.enabledCheckModule(id);
+        return R.success("启用成功");
+    }
 
     /**
-     * 删除检测项目中一个检测子参数
-     *
-     * @param id 子参数id
+     * 检测项目-禁用
      */
-    @GetMapping("/item/delete")
-    public R<Object> deleteCheckItem(String id) {
-        checkModuleService.deleteCheckItem(id);
-        return R.success("删除检测子参数成功");
+    @GetMapping("/module/disable")
+    public R<Object> disableModule(String id) {
+        checkModuleService.disabledCheckModule(id);
+        return R.success("禁用成功");
+    }
+
+    /**
+     * 检测项目-删除暂存
+     * * @param id 检测项目主键ID
+     */
+    @GetMapping("/module/draft/delete")
+    public R<Object> deleteCheckModuleDraft(String id) {
+        checkModuleService.deleteCheckModuleDraft(id);
+        return R.success("删除暂存成功");
     }
 }
