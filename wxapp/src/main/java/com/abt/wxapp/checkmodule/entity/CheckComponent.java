@@ -56,6 +56,11 @@ public class CheckComponent {
      */
     private BigDecimal price;
 
+    /**
+     * 组件顺序，必须
+     */
+    private int sortNo;
+
 
     public CheckComponent() {
         this.id = UUID.randomUUID().toString();

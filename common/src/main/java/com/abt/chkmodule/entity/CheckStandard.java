@@ -1,5 +1,6 @@
 package com.abt.chkmodule.entity;
 
+import com.abt.chkmodule.model.StandardStatus;
 import com.abt.sys.SystemFileConverter;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
@@ -51,10 +52,11 @@ public class CheckStandard {
     private String note;
 
     /**
-     * 标准状态，现行/废弃
+     * 标准状态
      */
-    @Column(name = "status_", length = 16, nullable = false)
-    private String status;
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "status_", nullable = false, columnDefinition = "tinyint")
+    private StandardStatus status;
 
     /**
      * 标准等级：国家/行业/地方/企业/团体/国外

@@ -49,7 +49,7 @@ public class DynamicScheme extends AuditInfo {
     /**
      * 表单标题（可选）
      */
-    @Column(name = "title_")
+    @Column(name = "title_", nullable = false)
     private String title;
 
     /**

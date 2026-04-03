@@ -16,17 +16,21 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-@RequestMapping("/chk/dyform")
-public class DynamicFormController {
+@RequestMapping("/chk/dyscheme")
+public class DynamicSchemeController {
 
     private final DynamicSchemeService dynamicFormService;
 
-    public DynamicFormController(DynamicSchemeService dynamicFormService) {
+    public DynamicSchemeController(DynamicSchemeService dynamicFormService) {
         this.dynamicFormService = dynamicFormService;
     }
 
     /**
      * 新增表单，只能新增，不能修改（修改即再插入一条新记录）
+     * TODO:
+     * 1. scheme必填内容
+     * 2. 必须有组件
+     * 3. 每个组件内容必须按要求填写
      * @param form 表单内容
      */
     @PostMapping("/save")

@@ -2,6 +2,7 @@ package com.abt.chkmodule.entity;
 
 import com.abt.common.AuditInfo;
 import com.abt.chkmodule.converter.ListStringConverter;
+import com.abt.common.model.SaveMode;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
 import jakarta.persistence.*;
@@ -191,5 +192,13 @@ public class Instrument extends AuditInfo {
      */
     @Column(name = "price", columnDefinition = "decimal(11,2)")
     private Double price;
+
+    /**
+     * 暂存/保存
+     * 0：暂存, 1: 保存
+     */
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "save_mode")
+    private SaveMode saveMode = SaveMode.TEMP;
 
 }
