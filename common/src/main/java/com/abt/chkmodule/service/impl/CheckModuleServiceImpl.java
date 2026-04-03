@@ -7,8 +7,6 @@ import com.abt.chkmodule.service.CheckModuleService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -25,11 +23,11 @@ import java.util.Optional;
 public class CheckModuleServiceImpl implements CheckModuleService {
 
     private final CheckModuleRepository checkModuleRepository;
-    private final CheckUnitRepository checkUnitRepository;
     private final InstrumentRepository instrumentRepository;
     private final CheckItemRepository checkItemRepository;
     private final CheckItemStandardRelRepository checkItemStandardRelRepository;
     private final CheckModuleInstrumentRelRepository checkModuleInstrumentRelRepository;
+    private final CheckUnitRepository checkUnitRepository;
 
 
     @Override
@@ -42,7 +40,7 @@ public class CheckModuleServiceImpl implements CheckModuleService {
      * @param checkModuleId 检测项目id
      */
     public List<Instrument> findInstrumentsByCheckModuleId(String checkModuleId) {
-        if (StringUtils.hasText(checkModuleId)) {
+        if (!StringUtils.hasText(checkModuleId)) {
             return new ArrayList<>();
         }
         return instrumentRepository.findByCheckModule(checkModuleId);
@@ -130,20 +128,6 @@ public class CheckModuleServiceImpl implements CheckModuleService {
         checkItemRepository.deleteByCheckModuleId(id);
         checkModuleInstrumentRelRepository.deleteByCheckModuleId(id);
         checkModuleRepository.deleteCheckModuleById(id);
-    }
-
-    /**
-     * 模糊查询检测项目列表，分页数据
-     * @param query 模糊查询字段
-     * @param name 单字段模糊查询name
-     * @return 分页数据
-     */
-    public Page<CheckModule> findCheckModulesPage(String query, String name, PageRequest pageRequest) {
-
-
-
-        return null;
-
     }
 
 

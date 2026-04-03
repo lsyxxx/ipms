@@ -7,8 +7,8 @@ import com.abt.chkmodule.service.CheckModuleService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.sys.exception.BusinessException;
+import com.abt.testing.service.CheckModuleSettingService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +20,15 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/pub/chk/setting")
+@RequestMapping("/chk/setting")
 public class CheckSettingController {
 
     private final CheckModuleService checkModuleService;
+    private final CheckModuleSettingService checkModuleSettingService;
 
-    public CheckSettingController(CheckModuleService checkModuleService) {
+    public CheckSettingController(CheckModuleService checkModuleService, CheckModuleSettingService checkModuleSettingService) {
         this.checkModuleService = checkModuleService;
+        this.checkModuleSettingService = checkModuleSettingService;
     }
 
 
@@ -103,5 +105,17 @@ public class CheckSettingController {
     public R<Object> deleteCheckModuleDraft(String id) {
         checkModuleService.deleteCheckModuleDraft(id);
         return R.success("删除暂存成功");
+    }
+
+
+    /**
+     * 删除指定检测项目
+     * @param id 检测项目Id
+     */
+    @GetMapping("/module/delete")
+    public R<Object> deleteCheckModule(String id) {
+        checkModuleSettingService.deleteCheckModuleById(id);
+        return R.success("删除成功");
+
     }
 }

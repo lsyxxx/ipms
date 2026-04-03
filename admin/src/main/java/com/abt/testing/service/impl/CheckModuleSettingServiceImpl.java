@@ -2,10 +2,12 @@ package com.abt.testing.service.impl;
 
 import com.abt.chkmodule.repository.CheckModuleRepository;
 import com.abt.chkmodule.service.CheckModuleReference;
+import com.abt.sys.exception.BusinessException;
 import com.abt.testing.service.CheckModuleSettingService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -46,25 +48,14 @@ public class CheckModuleSettingServiceImpl implements CheckModuleSettingService 
             for (CheckModuleReference checkModuleReference : serviceList) {
                 final boolean exists = checkModuleReference.existsByCheckModuleId(id);
                 if (exists) {
-                    err.add(checkModuleReference.getServiceChineseName());
+                    err.add(checkModuleReference.getServiceChineseName() + "(" + checkModuleReference.getTableName() + ")");
                 }
             }
         }
-
         return err;
 
     }
 
-
-    /**
-     * 删除检测项目关联表
-     * @param id 检测项目id
-     */
-    private void deleteCheckModuleRelated(String id) {
-        //TODO;
-
-
-    }
 
     /**
      * 仅删除checkModule
@@ -75,21 +66,18 @@ public class CheckModuleSettingServiceImpl implements CheckModuleSettingService 
     }
 
 
-    /**
-     * 删除检测项目
-     * 双重验证保证正确删除：
-     * 1. 业务表查询
-     * 2. 数据库外键
-     * @param id 检测项目id
-     */
     @Transactional
+    @Override
     public void deleteCheckModuleById(String id) {
         if (!StringUtils.hasText(id)) {
             log.warn("deleteCheckModuleById: 未传入检测项目id");
             return;
         }
-        checkModuleDeleteValidate(id);
-        deleteCheckModuleRelated(id);
+        final List<String> err = checkModuleDeleteValidate(id);
+        if (!CollectionUtils.isEmpty(err)) {
+            String errTxt = String.join("; ", err);
+            throw new BusinessException(errTxt);
+        }
         deleteCheckModuleRecordById(id);
     }
 }
