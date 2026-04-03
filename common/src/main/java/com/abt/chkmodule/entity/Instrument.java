@@ -68,7 +68,7 @@ public class Instrument extends AuditInfo {
      * TODO: 根据其他数据自动生成
      */
     @Size(max = 32)
-    @Column(name = "code_", length = 32)
+    @Column(name = "code_", length = 32, nullable = false)
     private String code;
 
 

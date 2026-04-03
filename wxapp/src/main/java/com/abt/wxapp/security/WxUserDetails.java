@@ -45,6 +45,13 @@ public class WxUserDetails implements UserDetails {
     }
 
     /**
+     * TODO: 显示用户名
+     */
+    public String getDisplayName() {
+        return (username != null && !username.isBlank()) ? username : openid;
+    }
+
+    /**
      * 账号登录过期
      * @return 是否过期
      */
