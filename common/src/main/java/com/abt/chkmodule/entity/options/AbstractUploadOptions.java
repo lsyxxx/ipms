@@ -1,11 +1,9 @@
-package com.abt.wxapp.checkmodule.entity.options;
+package com.abt.chkmodule.entity.options;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * 上传组件公共字段：{@code imageUpload} / {@code fileUpload} 共用

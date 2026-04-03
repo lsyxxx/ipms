@@ -1,10 +1,10 @@
-package com.abt.wxapp.checkmodule.entity.options;
+package com.abt.chkmodule.entity.options;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * 组件类型专属配置，与 {@link com.abt.wxapp.checkmodule.model.CheckComponentType} 对应。
+ * 组件类型专属配置，与 {@link com.abt.chkmodule.model.CheckComponentType} 对应。
  * JSON 中通过 {@code kind} 区分具体结构，便于序列化/反序列化与前端渲染。
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "kind")

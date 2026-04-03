@@ -1,4 +1,4 @@
-package com.abt.wxapp.checkmodule.entity.options;
+package com.abt.chkmodule.entity.options;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -6,17 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 /**
- * {@code checkbox} 配置
+ * {@code textarea} 富文本/多行文本配置
  */
 @Getter
 @Setter
 @NoArgsConstructor
-@JsonTypeName("checkbox")
+@JsonTypeName("textarea")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public final class CheckboxOptions implements CheckOptions {
+public final class TextareaOptions extends TextInputOptions {
 
-    private List<OptionItem> items;
 }

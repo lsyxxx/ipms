@@ -1,13 +1,11 @@
-package com.abt.wxapp.checkmodule.controller;
+package com.abt.testing.controller;
 
+import com.abt.chkmodule.entity.DynamicScheme;
+import com.abt.chkmodule.service.DynamicSchemeService;
 import com.abt.common.config.ValidateGroup;
-import com.abt.wxapp.checkmodule.entity.DynamicScheme;
-import com.abt.wxapp.checkmodule.service.DynamicSchemeService;
-import com.abt.wxapp.common.model.PageRequestForm;
-import com.abt.wxapp.common.model.R;
+import com.abt.common.model.R;
+import com.abt.testing.model.DynamicSchemeRequestForm;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +22,7 @@ public class DynamicSchemeController {
     public DynamicSchemeController(DynamicSchemeService dynamicFormService) {
         this.dynamicFormService = dynamicFormService;
     }
+
 
     /**
      * 新增表单，只能新增，不能修改（修改即再插入一条新记录）
@@ -71,11 +70,18 @@ public class DynamicSchemeController {
     }
 
     /**
-     * 条件查询
+     * 条件查询表单
      * @param form 条件查询表单
      */
     @GetMapping("/find/page/query")
-    public void findByQuery(@ModelAttribute PageRequestForm form) {
+    public void findByQuery(@ModelAttribute DynamicSchemeRequestForm form) {
+
+    }
+
+    /**
+     * 读取一个表单配置
+     */
+    public void loadScheme(String id) {
 
     }
 
