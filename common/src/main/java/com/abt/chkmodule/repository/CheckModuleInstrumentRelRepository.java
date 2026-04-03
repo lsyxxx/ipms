@@ -12,7 +12,11 @@ public interface CheckModuleInstrumentRelRepository extends JpaRepository<CheckM
       * @param moduleId
      */
     @Modifying
-    @Query("DELETE FROM CheckItemStandardRel r WHERE r.checkItemId IN (SELECT i.id FROM CheckItem i WHERE i.checkModuleId = :moduleId)")
+    @Query("DELETE FROM CheckItemStandardRel r WHERE r.checkItemId IN (SELECT i.id FROM CheckItem i WHERE i.checkModuleRef.checkModuleId = :moduleId)")
     void deleteByCheckModuleId(String moduleId);
 
+
+
+    @Query("select case when count(rel) > 0 then true else false end from CheckModuleInstrumentRel rel where rel.checkModuleRef.checkModuleId = :checkModuleId")
+    boolean existsByCheckModuleId(String checkModuleId);
 }

@@ -1,8 +1,9 @@
-package com.abt.chkmodule.service;
+package com.abt.chkmodule.service.impl;
 
 import com.abt.chkmodule.entity.*;
 import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.chkmodule.repository.*;
+import com.abt.chkmodule.service.CheckModuleService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -150,7 +151,6 @@ public class CheckModuleServiceImpl implements CheckModuleService {
     public void deleteCheckModuleById(String id) {
         checkModuleRepository.deleteById(id);
     }
-
 
 
 

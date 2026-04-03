@@ -9,10 +9,12 @@ public interface CheckItemRepository extends JpaRepository<CheckItem, String> {
 
     /**
      * 删除一个检测项目关联的所有子参数
-     * @param moduleId
      */
     @Modifying
-    @Query("DELETE FROM CheckItem c WHERE c.checkModuleId = :moduleId")
+    @Query("DELETE FROM CheckItem c WHERE c.checkModuleRef.checkModuleId = :moduleId")
     void deleteByCheckModuleId(String moduleId);
 
+
+    @Query("select case when count(ci) > 0 then true else false end from CheckItem ci where ci.checkModuleRef.checkModuleId = :checkModuleId")
+    boolean existsByCheckModuleId(String checkModuleId);
 }

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * jps实体中json转为List<String>类型
  */
-@Converter
+@Converter(autoApply = true)
 public class ListStringConverter implements AttributeConverter<List<String>, String> {
 
     @Override

@@ -12,6 +12,6 @@ public interface CheckItemStandardRelRepository extends JpaRepository<CheckItemS
      * @param moduleId
      */
     @Modifying
-    @Query("DELETE FROM CheckItemStandardRel r WHERE r.checkItemId IN (SELECT i.id FROM CheckItem i WHERE i.checkModuleId = :moduleId)")
+    @Query("DELETE FROM CheckItemStandardRel r WHERE r.checkItemId IN (SELECT i.id FROM CheckItem i WHERE i.checkModuleRef.checkModuleId = :moduleId)")
     void deleteByCheckModuleId(String moduleId);
 }

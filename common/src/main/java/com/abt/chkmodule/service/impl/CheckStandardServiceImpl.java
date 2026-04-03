@@ -1,7 +1,8 @@
-package com.abt.chkmodule.service;
+package com.abt.chkmodule.service.impl;
 
 import com.abt.chkmodule.entity.CheckStandard;
 import com.abt.chkmodule.repository.CheckStandardRepository;
+import com.abt.chkmodule.service.CheckStandardService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,4 @@ public class CheckStandardServiceImpl implements CheckStandardService {
 
         return new ArrayList<>();
     }
-
 }
