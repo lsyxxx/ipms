@@ -177,4 +177,17 @@ public class CheckModuleServiceImpl implements CheckModuleService {
         }
         return page;
     }
+
+    @Override
+    public CheckModule findCheckModuleDetail(String id) {
+        CheckModule module = checkModuleRepository.findById(id).get();
+        module.setInstruments(instrumentRepository.findByCheckModule(id));
+        List<String> relatedIds = module.getRelatedCheckModuleIds();
+        if (relatedIds != null && !relatedIds.isEmpty()) {
+            module.setRelatedCheckModuleList(
+                    checkModuleRepository.findSimpleModulesByIds(relatedIds)
+            );
+        }
+        return module;
+    }
 }

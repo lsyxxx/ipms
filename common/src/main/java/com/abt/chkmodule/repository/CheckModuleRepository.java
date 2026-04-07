@@ -2,11 +2,14 @@ package com.abt.chkmodule.repository;
 
 import com.abt.chkmodule.entity.CheckModule;
 import com.abt.chkmodule.model.ChannelEnum;
+import com.abt.chkmodule.model.SimpleCheckModule;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 public interface CheckModuleRepository extends JpaRepository<CheckModule, String>{
 
@@ -56,4 +59,7 @@ public interface CheckModuleRepository extends JpaRepository<CheckModule, String
             boolean reqCnas,
             boolean reqOther,
             Pageable pageable);
+
+    @Query("SELECT new com.abt.chkmodule.model.SimpleCheckModule(c.id, c.name, c.code, c.checkUnitId) FROM CheckModule c WHERE c.id IN :ids")
+    List<SimpleCheckModule> findSimpleModulesByIds(List<String> ids);
 }

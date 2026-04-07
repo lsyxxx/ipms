@@ -79,4 +79,9 @@ public interface CheckModuleService {
                                            Integer status,
                                            List<String> certificates,
                                            Pageable pageable);
-}
+
+    /**
+     * 获取检测项目基础详情（包含关联仪器、关联检测项目，不含子参数）
+     * @param id 检测项目ID
+     */
+    CheckModule findCheckModuleDetail(String id);}

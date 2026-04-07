@@ -126,4 +126,13 @@ public class CheckSettingController {
         );
         return R.success(page);
     }
+
+    /**
+     * 检测项目基础详情
+      * @param id 检测项目ID
+     */
+    @GetMapping("/module/find")
+    public R<CheckModule> findCheckModuleDetail(String id) {
+        return R.success(checkModuleService.findCheckModuleDetail(id));
+    }
 }
