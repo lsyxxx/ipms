@@ -6,10 +6,12 @@ import com.abt.chkmodule.entity.CheckUnit;
 import com.abt.chkmodule.model.ChannelEnum;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import java.util.List;
 
 import java.util.List;
 import java.util.Optional;
-
 public interface CheckModuleService {
     /**
      * 一般查询检测分类
@@ -67,5 +69,14 @@ public interface CheckModuleService {
      */
     void deleteCheckModuleDraft(String id);
 
-    void deleteCheckModuleById(String id);
+    /**
+     * 检测项目-条件分页查询
+     */
+    Page<CheckModule> findCheckModulesPage(String query,
+                                           String checkUnitId,
+                                           ChannelEnum useChannel,
+                                           Boolean enabled,
+                                           Integer status,
+                                           List<String> certificates,
+                                           Pageable pageable);
 }

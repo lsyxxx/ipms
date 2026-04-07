@@ -7,8 +7,10 @@ import com.abt.chkmodule.service.CheckModuleService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.sys.exception.BusinessException;
+import com.abt.testing.model.CheckModuleRequestForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +22,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/pub/chk/setting")
+@RequestMapping("/test/chk/setting")
 public class CheckSettingController {
 
     private final CheckModuleService checkModuleService;
@@ -103,5 +105,25 @@ public class CheckSettingController {
     public R<Object> deleteCheckModuleDraft(String id) {
         checkModuleService.deleteCheckModuleDraft(id);
         return R.success("删除暂存成功");
+    }
+
+    /**
+     * 检测项目-条件分页查询
+     * @param form 动态查询表单
+     */
+    @PostMapping("/page")
+    public R<Page<CheckModule>> findModulePage(@RequestBody CheckModuleRequestForm form) {
+        form.forcePaged();
+        Pageable pageable = form.createDefaultPageable();
+        Page<CheckModule> page = checkModuleService.findCheckModulesPage(
+                form.getQuery(),
+                form.getCheckUnitId(),
+                form.getUseChannel(),
+                form.getEnabled(),
+                form.getStatus(),
+                form.getCertificates(),
+                pageable
+        );
+        return R.success(page);
     }
 }
