@@ -22,7 +22,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/test/chk/setting")
+@RequestMapping("/chk/setting")
 public class CheckSettingController {
 
     private final CheckModuleService checkModuleService;
