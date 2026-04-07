@@ -1,13 +1,11 @@
-package com.abt.wxapp.checkmodule.controller;
+package com.abt.testing.controller;
 
+import com.abt.chkmodule.entity.DynamicScheme;
+import com.abt.chkmodule.service.DynamicSchemeService;
 import com.abt.common.config.ValidateGroup;
-import com.abt.wxapp.checkmodule.entity.DynamicScheme;
-import com.abt.wxapp.checkmodule.service.DynamicSchemeService;
-import com.abt.wxapp.common.model.PageRequestForm;
-import com.abt.wxapp.common.model.R;
+import com.abt.common.model.R;
+import com.abt.testing.model.DynamicSchemeRequestForm;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,17 +14,22 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-@RequestMapping("/chk/dyform")
-public class DynamicFormController {
+@RequestMapping("/chk/dyscheme")
+public class DynamicSchemeController {
 
     private final DynamicSchemeService dynamicFormService;
 
-    public DynamicFormController(DynamicSchemeService dynamicFormService) {
+    public DynamicSchemeController(DynamicSchemeService dynamicFormService) {
         this.dynamicFormService = dynamicFormService;
     }
 
+
     /**
      * 新增表单，只能新增，不能修改（修改即再插入一条新记录）
+     * TODO:
+     * 1. scheme必填内容
+     * 2. 必须有组件
+     * 3. 每个组件内容必须按要求填写
      * @param form 表单内容
      */
     @PostMapping("/save")
@@ -67,11 +70,18 @@ public class DynamicFormController {
     }
 
     /**
-     * 条件查询
+     * 条件查询表单
      * @param form 条件查询表单
      */
     @GetMapping("/find/page/query")
-    public void findByQuery(@ModelAttribute PageRequestForm form) {
+    public void findByQuery(@ModelAttribute DynamicSchemeRequestForm form) {
+
+    }
+
+    /**
+     * 读取一个表单配置
+     */
+    public void loadScheme(String id) {
 
     }
 

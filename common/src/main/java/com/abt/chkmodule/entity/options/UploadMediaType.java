@@ -1,4 +1,4 @@
-package com.abt.wxapp.checkmodule.entity.options;
+package com.abt.chkmodule.entity.options;
 
 /**
  * 上传组件类型：图片或文件

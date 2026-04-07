@@ -2,6 +2,7 @@ package com.abt.chkmodule.entity;
 
 import com.abt.common.AuditInfo;
 import com.abt.chkmodule.converter.ListStringConverter;
+import com.abt.common.model.SaveMode;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
 import jakarta.persistence.*;
@@ -68,7 +69,7 @@ public class Instrument extends AuditInfo {
      * TODO: 根据其他数据自动生成
      */
     @Size(max = 32)
-    @Column(name = "code_", length = 32)
+    @Column(name = "code_", length = 32, nullable = false)
     private String code;
 
 
@@ -191,5 +192,13 @@ public class Instrument extends AuditInfo {
      */
     @Column(name = "price", columnDefinition = "decimal(11,2)")
     private Double price;
+
+    /**
+     * 暂存/保存
+     * 0：暂存, 1: 保存
+     */
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "save_mode")
+    private SaveMode saveMode = SaveMode.TEMP;
 
 }

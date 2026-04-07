@@ -1,7 +1,7 @@
-package com.abt.wxapp.checkmodule.service;
+package com.abt.chkmodule.service;
 
 
-import com.abt.wxapp.checkmodule.entity.DynamicScheme;
+import com.abt.chkmodule.entity.DynamicScheme;
 
 import java.util.List;
 

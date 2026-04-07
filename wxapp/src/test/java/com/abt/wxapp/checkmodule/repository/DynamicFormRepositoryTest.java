@@ -1,10 +1,10 @@
 package com.abt.wxapp.checkmodule.repository;
 
-import com.abt.wxapp.checkmodule.entity.CheckComponent;
-import com.abt.wxapp.checkmodule.entity.DynamicScheme;
-import com.abt.wxapp.checkmodule.entity.options.*;
-import com.abt.wxapp.checkmodule.model.CheckComponentType;
-import com.abt.wxapp.checkmodule.model.PayType;
+import com.abt.chkmodule.entity.CheckComponent;
+import com.abt.chkmodule.entity.DynamicScheme;
+import com.abt.chkmodule.entity.options.*;
+import com.abt.chkmodule.model.CheckComponentType;
+import com.abt.chkmodule.model.PayType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

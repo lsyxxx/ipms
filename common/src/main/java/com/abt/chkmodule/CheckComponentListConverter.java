@@ -1,6 +1,6 @@
-package com.abt.wxapp.checkmodule;
+package com.abt.chkmodule;
 
-import com.abt.wxapp.checkmodule.entity.CheckComponent;
+import com.abt.chkmodule.entity.CheckComponent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

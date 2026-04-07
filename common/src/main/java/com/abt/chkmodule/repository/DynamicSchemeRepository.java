@@ -1,6 +1,6 @@
-package com.abt.wxapp.checkmodule.repository;
+package com.abt.chkmodule.repository;
 
-import com.abt.wxapp.checkmodule.entity.DynamicScheme;
+import com.abt.chkmodule.entity.DynamicScheme;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

@@ -1,9 +1,8 @@
-package com.abt.wxapp.checkmodule.entity.options;
+package com.abt.chkmodule.entity.options;
 
-import com.abt.wxapp.checkmodule.model.CheckComponentType;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,14 +10,15 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * {@code radio} 配置
+ * {@code checkbox} 配置
  */
 @Getter
 @Setter
 @NoArgsConstructor
-@JsonTypeName("radio")
+@JsonTypeName("checkbox")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public final class RadioOptions implements CheckOptions {
+public final class CheckboxOptions implements CheckOptions {
 
+    @Valid
     private List<OptionItem> items;
 }

@@ -1,5 +1,6 @@
 package com.abt.common;
 
+import com.abt.common.audit.AuditInfoListener;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
@@ -24,7 +25,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @MappedSuperclass
-@EntityListeners({AuditingEntityListener.class})
+@EntityListeners({AuditingEntityListener.class, AuditInfoListener.class})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class AuditInfo {
 

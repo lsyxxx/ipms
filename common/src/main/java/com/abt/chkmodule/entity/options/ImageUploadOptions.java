@@ -1,5 +1,4 @@
-package com.abt.wxapp.checkmodule.entity.options;
-
+package com.abt.chkmodule.entity.options;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
