@@ -23,6 +23,7 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -40,10 +41,18 @@ public class FileController {
     @Value("${com.abt.file.upload.temp}")
     private String tempAccess;
 
+    /**
+     * IIS网站附件根目录
+     */
+    @Value("${com.abt.file.iis.root}")
+    private String iisRoot;
+
 //    @Value("${com.abt.file.web.root}")
     private static final String tempRoot = "E:\\质检OA附件记录";
 
     private final IFileService fileService;
+
+
 
     public FileController(IFileService fileService) {
         this.fileService = fileService;
@@ -158,6 +167,42 @@ public class FileController {
         //复制文件到外网临时地址
         FileUtils.copyFile(file, tempFile);
         return R.success(tempAccess + File.separator + rename, "获取新的url");
+    }
+
+    /**
+     * 上传至IIS附件文件夹iisRoot，文件实际路径为iisRoot+path+文件名。返回文件的完整URL。文件保存要防止重名，返回SystemFile记录真实的文件名
+     * 单文件上传
+     * @param file 上传的文件
+     * @param path 子文件夹路径
+     * @return R<SystemFile>
+     */
+    @PostMapping("/upload/iis")
+    public R<SystemFile> uploadIIS(@RequestParam("file") MultipartFile file, String path) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("未上传文件");
+        }
+        String subPath = path == null ? "" : path.trim();
+        if (subPath.contains("..")) {
+            throw new BusinessException("非法路径参数");
+        }
+        subPath = subPath.replace("/", File.separator).replace("\\", File.separator);
+        while (subPath.startsWith(File.separator)) {
+            subPath = subPath.substring(1);
+        }
+        String saveDir = iisRoot;
+        if (!subPath.isEmpty()) {
+            saveDir = iisRoot + File.separator + subPath;
+        }
+        final String newName = FileUtil.saveFile(file, saveDir, true);
+        SystemFile systemFile = new SystemFile();
+        systemFile.setId(UUID.randomUUID().toString());
+        systemFile.setOriginalName(file.getOriginalFilename());
+        systemFile.setName(newName);
+        systemFile.setService(path);
+        systemFile.setUrl(subPath + File.separator + newName);
+        systemFile.setFullPath(new File(saveDir, newName).getAbsolutePath());
+        systemFile.setType(FileUtil.getFileExtension(newName));
+        return R.success(systemFile, "上传成功");
     }
 
 

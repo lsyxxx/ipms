@@ -77,6 +77,8 @@ com:
       upload:
         save: E:\\upload
         temp: temp-attachments
+      iis:
+        root: E:\\质检OA附件记录
 
 # ---------- spring doc/swagger
 springdoc:
