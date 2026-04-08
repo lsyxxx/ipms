@@ -7,8 +7,10 @@ import com.abt.chkmodule.service.CheckModuleService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.sys.exception.BusinessException;
-import com.abt.testing.service.CheckModuleSettingService;
+import com.abt.testing.model.CheckModuleRequestForm;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +26,9 @@ import java.util.List;
 public class CheckSettingController {
 
     private final CheckModuleService checkModuleService;
-    private final CheckModuleSettingService checkModuleSettingService;
 
-    public CheckSettingController(CheckModuleService checkModuleService, CheckModuleSettingService checkModuleSettingService) {
+    public CheckSettingController(CheckModuleService checkModuleService) {
         this.checkModuleService = checkModuleService;
-        this.checkModuleSettingService = checkModuleSettingService;
     }
 
 
@@ -107,15 +107,32 @@ public class CheckSettingController {
         return R.success("删除暂存成功");
     }
 
+    /**
+     * 检测项目-条件分页查询
+     * @param form 动态查询表单
+     */
+    @PostMapping("/page")
+    public R<Page<CheckModule>> findModulePage(@RequestBody CheckModuleRequestForm form) {
+        form.forcePaged();
+        Pageable pageable = form.createDefaultPageable();
+        Page<CheckModule> page = checkModuleService.findCheckModulesPage(
+                form.getQuery(),
+                form.getCheckUnitId(),
+                form.getUseChannel(),
+                form.getEnabled(),
+                form.getStatus(),
+                form.getCertificates(),
+                pageable
+        );
+        return R.success(page);
+    }
 
     /**
-     * 删除指定检测项目
-     * @param id 检测项目Id
+     * 检测项目基础详情
+      * @param id 检测项目ID
      */
-    @GetMapping("/module/delete")
-    public R<Object> deleteCheckModule(String id) {
-        checkModuleSettingService.deleteCheckModuleById(id);
-        return R.success("删除成功");
-
+    @GetMapping("/module/find")
+    public R<CheckModule> findCheckModuleDetail(String id) {
+        return R.success(checkModuleService.findCheckModuleDetail(id));
     }
 }

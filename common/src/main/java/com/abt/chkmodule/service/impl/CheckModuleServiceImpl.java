@@ -7,6 +7,8 @@ import com.abt.chkmodule.service.CheckModuleService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -23,11 +25,11 @@ import java.util.Optional;
 public class CheckModuleServiceImpl implements CheckModuleService {
 
     private final CheckModuleRepository checkModuleRepository;
+    private final CheckUnitRepository checkUnitRepository;
     private final InstrumentRepository instrumentRepository;
     private final CheckItemRepository checkItemRepository;
     private final CheckItemStandardRelRepository checkItemStandardRelRepository;
     private final CheckModuleInstrumentRelRepository checkModuleInstrumentRelRepository;
-    private final CheckUnitRepository checkUnitRepository;
 
 
     @Override
@@ -40,7 +42,7 @@ public class CheckModuleServiceImpl implements CheckModuleService {
      * @param checkModuleId 检测项目id
      */
     public List<Instrument> findInstrumentsByCheckModuleId(String checkModuleId) {
-        if (!StringUtils.hasText(checkModuleId)) {
+        if (StringUtils.hasText(checkModuleId)) {
             return new ArrayList<>();
         }
         return instrumentRepository.findByCheckModule(checkModuleId);
@@ -130,12 +132,62 @@ public class CheckModuleServiceImpl implements CheckModuleService {
         checkModuleRepository.deleteCheckModuleById(id);
     }
 
-
     @Override
-    public void deleteCheckModuleById(String id) {
-        checkModuleRepository.deleteById(id);
+    public Page<CheckModule> findCheckModulesPage(String query,
+                                                  String checkUnitId,
+                                                  ChannelEnum useChannel,
+                                                  Boolean enabled,
+                                                  Integer status,
+                                                  List<String> certificates,
+                                                  Pageable pageable) {
+        boolean hasCerts = certificates != null && !certificates.isEmpty();
+        boolean reqCma = hasCerts && certificates.contains(CheckModule.CERTIFICATE_CMA);
+        boolean reqCnas = hasCerts && certificates.contains(CheckModule.CERTIFICATE_CNAS);
+        boolean reqOther = hasCerts && certificates.contains("other");
+        Page<CheckModule> page = checkModuleRepository.findByQuery(
+                query,
+                checkUnitId,
+                useChannel,
+                enabled,
+                status,
+                reqCma, reqCnas, reqOther,
+                pageable
+        );
+        if (page.hasContent()) {
+            List<String> moduleIds = page.getContent().stream().map(CheckModule::getId).toList();
+            List<CheckItem> allItems = checkItemRepository.findByCheckModuleIdIn(moduleIds);
+            for (CheckModule module : page.getContent()) {
+                if (module.getCertificateList() == null) {
+                    module.setCertificateList(new ArrayList<>());
+                }
+                for (CheckItem item : allItems) {
+                    if (module.getId().equals(item.getCheckModuleId())) {
+                        if (item.isCma() && !module.isCma()) {
+                            module.addCma();
+                        }
+                        if (item.isCnas() && !module.isCnas()) {
+                            module.addCnas();
+                        }
+                        if (StringUtils.hasText(item.getOtherCertificate()) && !module.getCertificateList().contains("other")) {
+                            module.getCertificateList().add("other");
+                        }
+                    }
+                }
+            }
+        }
+        return page;
     }
 
-
-
+    @Override
+    public CheckModule findCheckModuleDetail(String id) {
+        CheckModule module = checkModuleRepository.findById(id).get();
+        module.setInstruments(instrumentRepository.findByCheckModule(id));
+        List<String> relatedIds = module.getRelatedCheckModuleIds();
+        if (relatedIds != null && !relatedIds.isEmpty()) {
+            module.setRelatedCheckModuleList(
+                    checkModuleRepository.findSimpleModulesByIds(relatedIds)
+            );
+        }
+        return module;
+    }
 }
