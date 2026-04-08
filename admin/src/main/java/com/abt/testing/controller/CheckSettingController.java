@@ -1,8 +1,10 @@
 package com.abt.testing.controller;
 
+import com.abt.chkmodule.entity.CheckItem;
 import com.abt.chkmodule.entity.CheckModule;
 import com.abt.chkmodule.entity.CheckUnit;
 import com.abt.chkmodule.model.ChannelEnum;
+import com.abt.chkmodule.service.CheckItemService;
 import com.abt.chkmodule.service.CheckModuleService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
@@ -22,13 +24,16 @@ import java.util.List;
  */
 @RestController
 @Slf4j
-@RequestMapping("/chk/setting")
+@RequestMapping("/test/chk/setting")
 public class CheckSettingController {
 
     private final CheckModuleService checkModuleService;
 
-    public CheckSettingController(CheckModuleService checkModuleService) {
+    private final CheckItemService checkItemService;
+
+    public CheckSettingController(CheckModuleService checkModuleService, CheckItemService checkItemService) {
         this.checkModuleService = checkModuleService;
+        this.checkItemService = checkItemService;
     }
 
 
@@ -135,4 +140,34 @@ public class CheckSettingController {
     public R<CheckModule> findCheckModuleDetail(String id) {
         return R.success(checkModuleService.findCheckModuleDetail(id));
     }
+
+    /**
+     * 查询指定检测项目的子参数列
+     * @param checkModuleId 检测项目的主键 ID
+     */
+    @GetMapping("/item/find")
+    public R<List<CheckItem>> findCheckItems(String checkModuleId) {
+        List<CheckItem> items = checkItemService.findCheckItemsByModuleId(checkModuleId);
+        return R.success(items);
+    }
+
+    /**
+     * 子参数-禁用与启用
+     * @param id 子参数ID
+     * @param enabled 启用状态
+     */
+    @GetMapping("/item/enabled")
+    public R<Object> toggleItemEnabled(String id, boolean enabled) {
+        checkItemService.updateItemEnabled(id, enabled);
+        return R.success("状态更新成功");
+    }
+
+    /**
+     * 子参数-保存/编辑
+     * @param checkItem 子参数实体
+     */
+    @PostMapping("/item/save")
+    public R<Object> saveItem(@RequestBody CheckItem checkItem) {
+        checkItemService.saveItem(checkItem);
+        return R.success("操作成功");
 }

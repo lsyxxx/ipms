@@ -25,4 +25,19 @@ public interface CheckItemRepository extends JpaRepository<CheckItem, String> {
      */
     @Query("SELECT c FROM CheckItem c WHERE c.checkModuleRef.checkModuleId IN :checkModuleIds")
     List<CheckItem> findByCheckModuleIdIn(List<String> checkModuleIds);
+
+    /**
+     * 根据检测项目主表 ID 查询所有子参数
+     */
+    @Query("SELECT c FROM CheckItem c WHERE c.checkModuleRef.checkModuleId = :moduleId")
+    List<CheckItem> findByModuleId(String moduleId);
+
+
+    @Modifying
+    @Query("""
+            UPDATE CheckItem c 
+            SET c.enabled = :enabled 
+            WHERE c.id = :id
+            """)
+    void updateEnabledStatus(String id, boolean enabled);
 }

@@ -2,6 +2,7 @@ package com.abt.chkmodule.model;
 
 import com.abt.chkmodule.entity.CheckItem;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 public class SimpleCheckModule {
     private String id;
     private String name;

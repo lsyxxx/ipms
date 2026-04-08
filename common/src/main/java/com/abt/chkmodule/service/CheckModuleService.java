@@ -70,6 +70,13 @@ public interface CheckModuleService {
     void deleteCheckModuleDraft(String id);
 
     /**
+     * 安全加载检测项目，如果不存在则抛出业务异常
+     * @param id 检测项目ID
+     * @return CheckModule
+     */
+    CheckModule loadCheckModule(String id);
+
+    /**
      * 检测项目-条件分页查询
      */
     Page<CheckModule> findCheckModulesPage(String query,

@@ -4,6 +4,7 @@ import com.abt.chkmodule.entity.*;
 import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.chkmodule.repository.*;
 import com.abt.chkmodule.service.CheckModuleService;
+import com.abt.sys.exception.BusinessException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -133,6 +134,12 @@ public class CheckModuleServiceImpl implements CheckModuleService {
     }
 
     @Override
+    public CheckModule loadCheckModule(String id) {
+        return checkModuleRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("未查询到指定的检测项目(id=" + id + ")"));
+    }
+
+    @Override
     public Page<CheckModule> findCheckModulesPage(String query,
                                                   String checkUnitId,
                                                   ChannelEnum useChannel,
@@ -180,7 +187,7 @@ public class CheckModuleServiceImpl implements CheckModuleService {
 
     @Override
     public CheckModule findCheckModuleDetail(String id) {
-        CheckModule module = checkModuleRepository.findById(id).get();
+        CheckModule module = this.loadCheckModule(id);
         module.setInstruments(instrumentRepository.findByCheckModule(id));
         List<String> relatedIds = module.getRelatedCheckModuleIds();
         if (relatedIds != null && !relatedIds.isEmpty()) {
