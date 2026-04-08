@@ -32,7 +32,7 @@ public interface SaleAgreementService {
 
     void saveSaleAgreement(SaleAgreement saleAgreement);
 
-    SaleAgreement LoadSaleAgreement(String id);
+    SaleAgreement loadSaleAgreement(String id);
 
     //市场看板数据
     Map<String, Object> marketBoardData(int currentYear);

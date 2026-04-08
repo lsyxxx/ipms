@@ -3,6 +3,7 @@ package com.abt.chkmodule.service.impl;
 import com.abt.chkmodule.entity.DynamicScheme;
 import com.abt.chkmodule.repository.DynamicSchemeRepository;
 import com.abt.chkmodule.service.DynamicSchemeService;
+import com.abt.common.model.SaveMode;
 import com.abt.sys.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,10 +26,20 @@ public class DynamicSchemeServiceImpl implements DynamicSchemeService {
 
 
     @Override
-    public void save(DynamicScheme form) {
-        // 只能新建不能更新；新行由库分配自增 id，同一检测项目下最新的用 max(id)
-        form.resetId();
+    public void publish(DynamicScheme form) {
+        // 只能新建不能更新
+        if (form.getStatus() != SaveMode.TEMP) {
+            //如果是已发布的修改再保存
+            form.resetId();
+        }
+        form.setPublish();
         //1. scheme本身
+        dynamicSchemeRepository.save(form);
+    }
+
+    @Override
+    public void tempSave(DynamicScheme form) {
+        form.setTemp();
         dynamicSchemeRepository.save(form);
     }
 
@@ -37,7 +48,7 @@ public class DynamicSchemeServiceImpl implements DynamicSchemeService {
     public DynamicScheme findNewestByCheckModuleId(String checkModuleId, String checkModuleName) {
         return dynamicSchemeRepository
                 .findFirstByCheckModuleIdOrderByIdDesc(checkModuleId)
-                .orElseThrow(() -> new BusinessException("未找到检测项目[" + checkModuleName + "]的微信小程序配置表单"));
+                .orElseThrow(() -> new BusinessException(String.format("未找到检测项目[%s(%s)]的微信小程序配置表单",  checkModuleName, checkModuleId)));
     }
 
     /**

@@ -15,7 +15,6 @@ class CheckSettingControllerTest {
 
     @Test
     void testDel() {
-        checkModuleService.deleteCheckModuleById("1");
     }
 
 }

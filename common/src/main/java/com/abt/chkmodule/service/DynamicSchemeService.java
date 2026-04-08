@@ -6,7 +6,12 @@ import com.abt.chkmodule.entity.DynamicScheme;
 import java.util.List;
 
 public interface DynamicSchemeService {
-    void save(DynamicScheme form);
+    void publish(DynamicScheme form);
+
+    /**
+     * 暂存
+     */
+    void tempSave(DynamicScheme form);
 
     DynamicScheme findNewestByCheckModuleId(String checkModuleId, String checkModuleName);
 

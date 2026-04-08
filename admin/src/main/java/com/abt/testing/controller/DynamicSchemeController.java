@@ -26,16 +26,26 @@ public class DynamicSchemeController {
 
     /**
      * 新增表单，只能新增，不能修改（修改即再插入一条新记录）
-     * TODO:
      * 1. scheme必填内容
      * 2. 必须有组件
      * 3. 每个组件内容必须按要求填写
      * @param form 表单内容
      */
-    @PostMapping("/save")
+    @PostMapping("/save/publish")
     public R<Object> save(@Validated(ValidateGroup.Save.class) @RequestBody DynamicScheme form) {
-        dynamicFormService.save(form);
+        dynamicFormService.publish(form);
         return R.success("保存成功");
+    }
+
+    /**
+     * 暂存，只用输入检测项目和表单名称
+     * 暂存允许修改自己
+     * 已发布的改为暂存应该不能影响已提交的表单
+     * @param form 表单
+     */
+    @PostMapping("/save/temp")
+    public void temp(@Validated(ValidateGroup.Temp.class) @RequestBody DynamicScheme form) {
+        dynamicFormService.tempSave(form);
     }
 
     /**
@@ -53,10 +63,9 @@ public class DynamicSchemeController {
     /**
      * 查询指定检测项目的历史版本记录
      * @param checkModuleId 检测项目Id
-     * @param checkModuleName 检测项目名称，用于报错
      */
     @GetMapping("/find/cm/history")
-    public void findHistory(String checkModuleId, String checkModuleName) {
+    public void findHistory(String checkModuleId) {
 
     }
 
