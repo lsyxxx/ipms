@@ -129,7 +129,7 @@ public class CheckModule extends AuditInfo implements UseChannel {
      * TODO: 资质一般对应的是子参数(checkItem)，目前暂定：如果子参数中有CMA/CNAS认证的，则这里表示有资质
      */
     @Transient
-    private List<String> certificateList;
+    private List<String> certificateList = new ArrayList<>();
 
     /**
      * 单价，可以非数字，如面议
