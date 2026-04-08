@@ -103,7 +103,7 @@ public class SaleAgreementController {
 
     @GetMapping("/load")
     public R<SaleAgreement> load(String id) {
-        final SaleAgreement saleAgreement = saleAgreementService.LoadSaleAgreement(id);
+        final SaleAgreement saleAgreement = saleAgreementService.loadSaleAgreement(id);
         return R.success(saleAgreement);
     }
 

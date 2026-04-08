@@ -72,6 +72,8 @@ com:
       upload:
         save: E:\\upload
         temp: temp-attachments
+      iis:
+        root: E:\\iis_files
 
 # ---------- spring doc/swagger
 springdoc:

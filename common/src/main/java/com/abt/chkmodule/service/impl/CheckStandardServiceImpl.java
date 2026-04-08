@@ -25,7 +25,7 @@ public class CheckStandardServiceImpl implements CheckStandardService {
     @Override
     public List<CheckStandard> findByCheckItemIdIn(List<String> checkItemIds) {
         if (!CollectionUtils.isEmpty(checkItemIds)) {
-            checkStandardRepository.findByCheckItemIds(checkItemIds);
+            return checkStandardRepository.findByCheckItemIds(checkItemIds);
         }
 
         return new ArrayList<>();

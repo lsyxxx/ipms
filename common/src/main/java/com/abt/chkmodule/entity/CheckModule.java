@@ -96,12 +96,14 @@ public class CheckModule extends AuditInfo implements UseChannel {
     /**
      * 封面图片url
      */
+    @Size(max = 255)
     @Column(name="cover_img")
     private String coverImage;
 
     /**
      * 一般工作时间
      */
+    @Size(max = 255)
     @Column(name="duration_")
     private String duration;
 
@@ -109,6 +111,7 @@ public class CheckModule extends AuditInfo implements UseChannel {
      * 结果说明
      * TODO: 富文本
      */
+    @Size(max = 1024)
     @Column(name="result_desc", length = 1024)
     private String resultDescription;
 
@@ -116,7 +119,8 @@ public class CheckModule extends AuditInfo implements UseChannel {
      * 结果展示附图url列表
      * 可多图，可无
      */
-    @Column(name="result_img", length = 1024)
+    @Size(max = 5000)
+    @Column(name="result_img", length = 5000)
     @Convert(converter = SystemFileListConverter.class)
     private List<SystemFile> resultImages;
 

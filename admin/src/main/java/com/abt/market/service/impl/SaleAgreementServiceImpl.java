@@ -12,7 +12,6 @@ import com.abt.market.service.SaleAgreementService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.CountQuery;
 import com.abt.sys.util.WithQueryUtil;
-import com.abt.wf.repository.InvoiceApplyRepository;
 import com.aspose.cells.SaveFormat;
 import com.aspose.cells.Workbook;
 import com.aspose.cells.WorkbookDesigner;
@@ -22,7 +21,6 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -166,7 +164,7 @@ public class SaleAgreementServiceImpl implements SaleAgreementService {
     }
 
     @Override
-    public SaleAgreement LoadSaleAgreement(String id) {
+    public SaleAgreement loadSaleAgreement(String id) {
         final SaleAgreement saleAgreement = saleAgreementRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到销售合同(id=" + id + ")"));
         saleAgreement.format();
         return saleAgreement;
