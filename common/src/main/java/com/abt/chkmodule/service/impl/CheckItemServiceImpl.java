@@ -65,7 +65,7 @@ public class CheckItemServiceImpl implements CheckItemService {
         }
 
         List<String> itemIds = items.stream().map(CheckItem::getId).toList();
-        List<Object[]> stdArrays = checkStandardRepository.findByCheckItemIds(itemIds);
+        List<Object[]> stdArrays = checkStandardRepository.findStandardsArrayByItemIds(itemIds);
 
         Map<String, List<CheckStandard>> stdMap = stdArrays.stream()
                 .collect(Collectors.groupingBy(

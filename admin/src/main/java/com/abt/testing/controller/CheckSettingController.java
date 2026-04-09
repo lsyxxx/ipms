@@ -39,6 +39,7 @@ public class CheckSettingController {
 
     /**
      * 一般查询检测分类
+     *
      * @param channel 渠道。不传默认全部
      * @param enabled 是否启用。不传默认全部
      */
@@ -51,6 +52,7 @@ public class CheckSettingController {
 
     /**
      * 校验名称是否重复
+     *
      * @param name 检测项目名称
      */
     @GetMapping("/module/validate/name")
@@ -114,6 +116,7 @@ public class CheckSettingController {
 
     /**
      * 检测项目-条件分页查询
+     *
      * @param form 动态查询表单
      */
     @PostMapping("/page")
@@ -134,7 +137,8 @@ public class CheckSettingController {
 
     /**
      * 检测项目基础详情
-      * @param id 检测项目ID
+     *
+     * @param id 检测项目ID
      */
     @GetMapping("/module/find")
     public R<CheckModule> findCheckModuleDetail(String id) {
@@ -143,6 +147,7 @@ public class CheckSettingController {
 
     /**
      * 查询指定检测项目的子参数列
+     *
      * @param checkModuleId 检测项目的主键 ID
      */
     @GetMapping("/item/find")
@@ -153,7 +158,8 @@ public class CheckSettingController {
 
     /**
      * 子参数-禁用与启用
-     * @param id 子参数ID
+     *
+     * @param id      子参数ID
      * @param enabled 启用状态
      */
     @GetMapping("/item/enabled")
@@ -164,10 +170,12 @@ public class CheckSettingController {
 
     /**
      * 子参数-保存/编辑
+     *
      * @param checkItem 子参数实体
      */
     @PostMapping("/item/save")
     public R<Object> saveItem(@RequestBody CheckItem checkItem) {
         checkItemService.saveItem(checkItem);
         return R.success("操作成功");
+    }
 }
