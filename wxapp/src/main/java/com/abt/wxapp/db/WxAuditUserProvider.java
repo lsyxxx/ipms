@@ -16,6 +16,6 @@ public class WxAuditUserProvider implements AuditUserProvider {
     @Override
     public Optional<String> currentUsername() {
         Optional<WxUserDetails> opt = SecurityUtil.currentUser();
-        return opt.map(WxUserDetails::getDisplayNameForAudit);
+        return opt.map(WxUserDetails::getDisplayName);
     }
 }

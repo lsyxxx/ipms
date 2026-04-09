@@ -20,8 +20,8 @@ public interface OpenUserFavorRepository extends JpaRepository<OpenUserFavor, St
             "m.price, " +
             "m.duration, " +
             "m.enabled," +
-            "(CASE WHEN EXISTS (SELECT 1 FROM CheckItem i WHERE i.checkModuleId = m.id AND i.isCma = true) THEN true ELSE false END), " +
-            "(CASE WHEN EXISTS (SELECT 1 FROM CheckItem i WHERE i.checkModuleId = m.id AND i.isCnas = true) THEN true ELSE false END)) " +
+            "(CASE WHEN EXISTS (SELECT 1 FROM CheckItem i WHERE i.checkModuleRef.checkModuleId = m.id AND i.isCma = true) THEN true ELSE false END), " +
+            "(CASE WHEN EXISTS (SELECT 1 FROM CheckItem i WHERE i.checkModuleRef.checkModuleId = m.id AND i.isCnas = true) THEN true ELSE false END)) " +
             "FROM OpenUserFavor f " +
             "LEFT JOIN CheckModule m ON f.checkModuleId = m.id " +
             "WHERE f.userId =:userId " +
