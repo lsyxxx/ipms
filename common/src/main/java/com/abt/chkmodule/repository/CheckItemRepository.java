@@ -35,8 +35,8 @@ public interface CheckItemRepository extends JpaRepository<CheckItem, String> {
 
     @Modifying
     @Query("""
-            UPDATE CheckItem c 
-            SET c.enabled = :enabled 
+            UPDATE CheckItem c
+            SET c.enabled = :enabled
             WHERE c.id = :id
             """)
     void updateEnabledStatus(String id, boolean enabled);

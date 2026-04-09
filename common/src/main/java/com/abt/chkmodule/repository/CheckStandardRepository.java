@@ -18,13 +18,13 @@ public interface CheckStandardRepository extends JpaRepository<CheckStandard, St
     List<CheckStandard> findByCheckItemIds(List<String> checkItemIds);
 
 
-@Query("""
-            SELECT rel.checkItemId, c
+    @Query("""
+            SELECT c
             FROM CheckStandard c
             JOIN CheckItemStandardRel rel ON c.id = rel.standardId
-            WHERE rel.checkItemId IN :itemIds
-""")
-    List<Object[]> findStandardsArrayByItemIds(List<String> itemIds);
+            WHERE rel.checkItemId = :itemId
+            """)
+    List<CheckStandard> findStandardsByItemId(String itemId);
 
 
 

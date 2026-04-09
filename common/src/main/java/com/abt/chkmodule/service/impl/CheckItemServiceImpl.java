@@ -1,13 +1,16 @@
 package com.abt.chkmodule.service.impl;
 
 import com.abt.chkmodule.entity.CheckItem;
+import com.abt.chkmodule.entity.CheckItemStandardRel;
 import com.abt.chkmodule.entity.CheckStandard;
 import com.abt.chkmodule.repository.CheckItemRepository;
+import com.abt.chkmodule.repository.CheckItemStandardRelRepository;
 import com.abt.chkmodule.repository.CheckStandardRepository;
 import com.abt.chkmodule.service.CheckItemService;
 import com.abt.chkmodule.service.CheckModuleReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +25,11 @@ public class CheckItemServiceImpl implements CheckItemService {
     private final CheckItemRepository checkItemRepository;
 
     private final CheckStandardRepository checkStandardRepository;
-
-    public CheckItemServiceImpl(CheckItemRepository checkItemRepository, CheckStandardRepository checkStandardRepository) {
+    private final CheckItemStandardRelRepository checkItemStandardRelRepository;
+    public CheckItemServiceImpl(CheckItemRepository checkItemRepository, CheckStandardRepository checkStandardRepository, CheckItemStandardRelRepository checkItemStandardRelRepository ) {
         this.checkItemRepository = checkItemRepository;
         this.checkStandardRepository = checkStandardRepository;
+        this.checkItemStandardRelRepository = checkItemStandardRelRepository;
     }
 
 
@@ -60,22 +64,10 @@ public class CheckItemServiceImpl implements CheckItemService {
     @Override
     public List<CheckItem> findCheckItemsByModuleId(String checkModuleId) {
         List<CheckItem> items = checkItemRepository.findByModuleId(checkModuleId);
-        if (items.isEmpty()) {
-            return items;
-        }
-
-        List<String> itemIds = items.stream().map(CheckItem::getId).toList();
-        List<Object[]> stdArrays = checkStandardRepository.findStandardsArrayByItemIds(itemIds);
-
-        Map<String, List<CheckStandard>> stdMap = stdArrays.stream()
-                .collect(Collectors.groupingBy(
-                        obj -> (String) obj[0],
-                        Collectors.mapping(obj -> (CheckStandard) obj[1], Collectors.toList())
-                ));
         for (CheckItem item : items) {
-            item.setStandards(stdMap.getOrDefault(item.getId(), new ArrayList<>()));
+            List<CheckStandard> standards = checkStandardRepository.findStandardsByItemId(item.getId());
+            item.setStandards(standards);
         }
-
         return items;
     }
 
@@ -88,6 +80,24 @@ public class CheckItemServiceImpl implements CheckItemService {
     @Override
     @Transactional
     public void saveItem(CheckItem checkItem) {
+
         checkItemRepository.save(checkItem);
+
+        checkItemStandardRelRepository.deleteByCheckItemId(checkItem.getId());
+
+        if (!CollectionUtils.isEmpty(checkItem.getStandards())) {
+
+            List<CheckItemStandardRel> relsToSave = new ArrayList<>();
+
+            for (CheckStandard std : checkItem.getStandards()) {
+                CheckItemStandardRel rel = new CheckItemStandardRel();
+                rel.setCheckItemId(checkItem.getId());
+                rel.setStandardId(std.getId());
+                relsToSave.add(rel);
+            }
+
+
+            checkItemStandardRelRepository.saveAll(relsToSave);
+        }
     }
 }
