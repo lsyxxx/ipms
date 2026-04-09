@@ -23,10 +23,9 @@ public class CheckModuleRequestForm extends RequestForm {
     private ChannelEnum useChannel;
 
     /**
-     * 是否启用
-     * 默认启用 = true
+     * 是否无
      */
-    private Boolean enabled = true;
+    private Boolean enabled;
 
     /**
      * 项目状态
