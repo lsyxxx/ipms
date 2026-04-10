@@ -89,5 +89,4 @@ public class CheckItem extends AuditedCheckModuleEntity{
      */
     @Transient
     private List<CheckItemStandardRel> stdRels;
-
 }
