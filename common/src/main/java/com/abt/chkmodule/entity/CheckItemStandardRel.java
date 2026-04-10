@@ -1,7 +1,9 @@
 package com.abt.chkmodule.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -9,6 +11,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "check_item_std")
 public class CheckItemStandardRel {
@@ -28,4 +32,12 @@ public class CheckItemStandardRel {
      */
     @Column(name="chapter_no")
     private String chapterNo;
+
+
+
+
+    public CheckItemStandardRel(String checkItemId, String standardId) {
+        this.checkItemId = checkItemId;
+        this.standardId = standardId;
+    }
 }

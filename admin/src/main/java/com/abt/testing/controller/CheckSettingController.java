@@ -4,6 +4,7 @@ import com.abt.chkmodule.entity.CheckItem;
 import com.abt.chkmodule.entity.CheckModule;
 import com.abt.chkmodule.entity.CheckUnit;
 import com.abt.chkmodule.model.ChannelEnum;
+import com.abt.chkmodule.model.CheckItemSaveDTO;
 import com.abt.chkmodule.service.CheckItemService;
 import com.abt.chkmodule.service.CheckModuleService;
 import com.abt.common.config.ValidateGroup;
@@ -170,12 +171,11 @@ public class CheckSettingController {
 
     /**
      * 子参数-保存/编辑
-     *
-     * @param checkItem 子参数实体
+     * * @param dto 子参数保存传输对象
      */
     @PostMapping("/item/save")
-    public R<Object> saveItem(@RequestBody CheckItem checkItem) {
-        checkItemService.saveItem(checkItem);
+    public R<Object> saveItem(@RequestBody CheckItemSaveDTO dto) {
+        checkItemService.saveItem(dto);
         return R.success("操作成功");
     }
 }
