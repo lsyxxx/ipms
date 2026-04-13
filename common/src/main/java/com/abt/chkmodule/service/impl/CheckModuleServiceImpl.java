@@ -175,8 +175,14 @@ public class CheckModuleServiceImpl implements CheckModuleService {
                         if (item.isCnas() && !module.isCnas()) {
                             module.addCnas();
                         }
-                        if (StringUtils.hasText(item.getOtherCertificate()) && !module.getCertificateList().contains("other")) {
-                            module.getCertificateList().add("other");
+                        if (StringUtils.hasText(item.getOtherCertificate())) {
+                            String[] otherCerts = item.getOtherCertificate().split(",");
+                            for (String cert : otherCerts) {
+                                String cleanCert = cert.trim();
+                                if (!module.getCertificateList().contains(cleanCert)) {
+                                    module.getCertificateList().add(cleanCert);
+                                }
+                            }
                         }
                     }
                 }

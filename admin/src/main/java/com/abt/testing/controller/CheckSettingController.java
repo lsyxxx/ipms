@@ -3,14 +3,17 @@ package com.abt.testing.controller;
 import com.abt.chkmodule.entity.CheckItem;
 import com.abt.chkmodule.entity.CheckModule;
 import com.abt.chkmodule.entity.CheckUnit;
+import com.abt.chkmodule.entity.Instrument;
 import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.chkmodule.model.CheckItemSaveDTO;
 import com.abt.chkmodule.service.CheckItemService;
 import com.abt.chkmodule.service.CheckModuleService;
+import com.abt.chkmodule.service.InstrumentService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.sys.exception.BusinessException;
 import com.abt.testing.model.CheckModuleRequestForm;
+import com.abt.testing.model.InstrumentRequestForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,12 +32,13 @@ import java.util.List;
 public class CheckSettingController {
 
     private final CheckModuleService checkModuleService;
-
     private final CheckItemService checkItemService;
+    private final InstrumentService instrumentService;
 
-    public CheckSettingController(CheckModuleService checkModuleService, CheckItemService checkItemService) {
+    public CheckSettingController(CheckModuleService checkModuleService, CheckItemService checkItemService, InstrumentService instrumentService) {
         this.checkModuleService = checkModuleService;
         this.checkItemService = checkItemService;
+        this.instrumentService = instrumentService;
     }
 
 
@@ -176,6 +180,45 @@ public class CheckSettingController {
     @PostMapping("/item/save")
     public R<Object> saveItem(@RequestBody CheckItemSaveDTO dto) {
         checkItemService.saveItem(dto);
+        return R.success("操作成功");
+    }
+
+    /**
+     * 设备-列表条件查询
+     */
+    @PostMapping("/instrument/page")
+    public R<Page<Instrument>> findInstrumentPage(@RequestBody InstrumentRequestForm form) {
+        form.forcePaged();
+        Pageable pageable = form.createDefaultPageable();
+        Page<Instrument> page = instrumentService.findInstrumentPage(
+                form.getQuery(),
+                form.getTypes(),
+                form.getStatus(),
+                form.getUseDepts(),
+                pageable
+        );
+        return R.success(page);
+    }
+
+    /**
+     /**
+     * 设备-生成设备编号
+     *
+     * @param typePrefix 设备分类
+     * @param deptPrefix 使用部门
+     */
+    @GetMapping("/instrument/generate-code")
+    public R<String> generateInstrumentCode(String typePrefix, String deptPrefix) {
+        String newCode = instrumentService.generateInstrumentCode(typePrefix, deptPrefix);
+        return R.success(newCode);
+    }
+
+    /**
+     * 设备-保存/编辑
+     */
+    @PostMapping("/instrument/save")
+    public R<Object> saveInstrument(@RequestBody Instrument instrument) {
+        instrumentService.saveInstrument(instrument);
         return R.success("操作成功");
     }
 }
