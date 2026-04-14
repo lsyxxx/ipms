@@ -50,4 +50,6 @@ public interface InstrumentRepository extends JpaRepository<Instrument, String> 
     boolean existsByCode(String code);
 
     boolean existsByCodeAndIdNot(String code, String id);
+
+    Instrument findInstrumentById(String id);
 }

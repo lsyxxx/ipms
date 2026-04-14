@@ -1,0 +1,72 @@
+package com.abt.instrument.controller;
+
+import com.abt.chkmodule.entity.Instrument;
+import com.abt.chkmodule.service.InstrumentService;
+import com.abt.common.model.R;
+import com.abt.testing.model.InstrumentRequestForm;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@Slf4j
+@RequestMapping("/test/instrument")
+public class InstrumentController {
+
+    private final InstrumentService instrumentService;
+
+    public InstrumentController(InstrumentService instrumentService) {
+        this.instrumentService = instrumentService;
+    }
+    /**
+     * 设备-列表条件查询
+     */
+    @PostMapping("/page")
+    public R<Page<Instrument>> findInstrumentPage(@RequestBody InstrumentRequestForm form) {
+        form.forcePaged();
+        Pageable pageable = form.createDefaultPageable();
+        Page<Instrument> page = instrumentService.findInstrumentPage(
+                form.getQuery(),
+                form.getTypes(),
+                form.getStatus(),
+                form.getUseDepts(),
+                pageable
+        );
+        return R.success(page);
+    }
+
+    /**
+     /**
+     * 设备-生成设备编号
+     *
+     * @param typePrefix 设备分类
+     * @param deptPrefix 使用部门
+     */
+    @GetMapping("/generate-code")
+    public R<String> generateInstrumentCode(String typePrefix, String deptPrefix) {
+        String newCode = instrumentService.generateInstrumentCode(typePrefix, deptPrefix);
+        return R.success(newCode);
+    }
+
+    /**
+     * 设备-保存/编辑
+     */
+    @PostMapping("/save")
+    public R<Object> saveInstrument(@RequestBody Instrument instrument) {
+        instrumentService.saveInstrument(instrument);
+        return R.success("操作成功");
+    }
+
+    /**
+     * 设备管理-查看详情
+     */
+    @GetMapping("/find")
+    public R<Instrument> findInstrumentDetail(String id) {
+        return R.success(instrumentService.findInstrumentById(id));
+    }
+
+
+
+
+}

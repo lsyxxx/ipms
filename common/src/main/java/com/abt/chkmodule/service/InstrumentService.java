@@ -27,6 +27,5 @@ public interface InstrumentService extends CheckModuleReference {
     /**
      * 设备管理-查看详情
      */
-    Optional<Instrument> findInstrumentById(String id);
-
+    Instrument findInstrumentById(String id);
 }

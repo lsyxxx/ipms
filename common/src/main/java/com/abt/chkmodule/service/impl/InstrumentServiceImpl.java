@@ -69,8 +69,10 @@ public class InstrumentServiceImpl implements InstrumentService {
         return prefix + String.format("%03d", nextSeq);
     }
 
-    @Override
-    public void saveInstrument(Instrument instrument) {
+    /**
+     * 校验设备编号的唯一性
+     */
+    private void validateInstrumentCode(Instrument instrument) {
         boolean isDuplicate;
         if (StringUtils.hasText(instrument.getId())) {
             isDuplicate = instrumentRepository.existsByCodeAndIdNot(instrument.getCode(), instrument.getId());
@@ -80,11 +82,16 @@ public class InstrumentServiceImpl implements InstrumentService {
         if (isDuplicate) {
             throw new BusinessException("设备编号[" + instrument.getCode() + "]已存在，请重新输入");
         }
+    }
+
+    @Override
+    public void saveInstrument(Instrument instrument) {
+        validateInstrumentCode(instrument);
         instrumentRepository.save(instrument);
     }
 
     @Override
-    public Optional<Instrument> findInstrumentById(String id) {
-        return instrumentRepository.findById(id);
+    public Instrument findInstrumentById(String id) {
+        return instrumentRepository.findInstrumentById(id);
     }
 }
