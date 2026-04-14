@@ -4,6 +4,7 @@ import com.abt.chkmodule.entity.Instrument;
 import java.util.List;
 import java.util.Optional;
 
+import com.abt.chkmodule.model.SimpleCheckModule;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -28,4 +29,9 @@ public interface InstrumentService extends CheckModuleReference {
      * 设备管理-查看详情
      */
     Instrument findInstrumentById(String id);
+
+    /**
+     * 设备-查询指定设备关联的检测项目
+     */
+    List<SimpleCheckModule> findModulesByInstrumentId(String instrumentId);
 }

@@ -80,16 +80,23 @@ public class CheckItemServiceImpl implements CheckItemService {
         checkItemRepository.updateEnabledStatus(id, enabled);
     }
 
+    /**
+     * 校验并初始化子参数实体
+     * @param id 子参数ID
+     * @return 查出的已有实体，或全新的实体
+     */
+    private CheckItem validateAndGetCheckItem(String id) {
+        if (StringUtils.hasText(id)) {
+            return checkItemRepository.findById(id)
+                    .orElseThrow(() -> new BusinessException("操作失败：未找到指定的子参数 (ID: [" + id + "])"));
+        }
+        return new CheckItem();
+    }
+
     @Override
     @Transactional
     public void saveItem(CheckItemSaveDTO dto) {
-        CheckItem entityToSave;
-        if (StringUtils.hasText(dto.getId())) {
-            entityToSave = checkItemRepository.findById(dto.getId())
-                    .orElseThrow(() -> new BusinessException("该子参数不存在"));
-        } else {
-            entityToSave = new CheckItem();
-        }
+        CheckItem entityToSave = validateAndGetCheckItem(dto.getId());
         entityToSave.updateFromDTO(dto);
         entityToSave = checkItemRepository.save(entityToSave);
         checkItemStandardRelRepository.deleteByCheckItemId(entityToSave.getId());

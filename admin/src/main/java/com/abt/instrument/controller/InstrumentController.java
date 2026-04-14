@@ -1,6 +1,7 @@
 package com.abt.instrument.controller;
 
 import com.abt.chkmodule.entity.Instrument;
+import com.abt.chkmodule.model.SimpleCheckModule;
 import com.abt.chkmodule.service.InstrumentService;
 import com.abt.common.model.R;
 import com.abt.testing.model.InstrumentRequestForm;
@@ -8,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -66,7 +69,14 @@ public class InstrumentController {
         return R.success(instrumentService.findInstrumentById(id));
     }
 
-
+    /**
+     * 设备-查询指定设备关联的检测项目
+     * @param instrumentId 设备id
+     */
+    @GetMapping("/modules/list")
+    public R<List<SimpleCheckModule>> findModulesByInstrumentId(String instrumentId) {
+        return R.success(instrumentService.findModulesByInstrumentId(instrumentId));
+    }
 
 
 }
