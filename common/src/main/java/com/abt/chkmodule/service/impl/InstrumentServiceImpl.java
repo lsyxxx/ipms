@@ -6,6 +6,8 @@ import com.abt.chkmodule.repository.InstrumentRepository;
 import com.abt.chkmodule.service.InstrumentService;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -62,17 +64,27 @@ public class InstrumentServiceImpl implements InstrumentService {
     @Override
     public String generateInstrumentCode(String typePrefix, String deptPrefix) {
         String prefix = typePrefix + "-" + deptPrefix + "-";
-        String maxCode = instrumentRepository.findMaxCodeByPrefix(prefix);
-        int nextSeq = 1;
-        if (maxCode != null) {
-            nextSeq = Integer.parseInt(maxCode.substring(prefix.length())) + 1;
-        }
+        Integer maxSortNo = instrumentRepository.findMaxSortNoByPrefix(prefix);
+        int nextSeq = (maxSortNo != null) ? maxSortNo + 1 : 1;
         return prefix + String.format("%03d", nextSeq);
     }
 
     @Override
-    @Transactional
     public void saveInstrument(Instrument instrument) {
+        boolean isDuplicate;
+        if (StringUtils.hasText(instrument.getId())) {
+            isDuplicate = instrumentRepository.existsByCodeAndIdNot(instrument.getCode(), instrument.getId());
+        } else {
+            isDuplicate = instrumentRepository.existsByCode(instrument.getCode());
+        }
+        if (isDuplicate) {
+            throw new BusinessException("设备编号[" + instrument.getCode() + "]已存在，请重新输入");
+        }
         instrumentRepository.save(instrument);
+    }
+
+    @Override
+    public Optional<Instrument> findInstrumentById(String id) {
+        return instrumentRepository.findById(id);
     }
 }

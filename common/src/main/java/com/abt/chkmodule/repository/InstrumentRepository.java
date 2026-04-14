@@ -44,9 +44,10 @@ public interface InstrumentRepository extends JpaRepository<Instrument, String> 
                                         Pageable pageable);
 
 
-    @Query("SELECT MAX(i.code) " +
-            "FROM Instrument i " +
-            "WHERE i.code LIKE CONCAT(:prefix, '%')")
-    String findMaxCodeByPrefix(String prefix);
+    @Query("SELECT MAX(i.sortNo) FROM Instrument i WHERE i.code LIKE CONCAT(:prefix, '%')")
+    Integer findMaxSortNoByPrefix(String prefix);
 
+    boolean existsByCode(String code);
+
+    boolean existsByCodeAndIdNot(String code, String id);
 }

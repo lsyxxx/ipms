@@ -2,6 +2,8 @@ package com.abt.chkmodule.service;
 
 import com.abt.chkmodule.entity.Instrument;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +23,10 @@ public interface InstrumentService extends CheckModuleReference {
      * 设备-保存/编辑
      */
     void saveInstrument(Instrument instrument);
+
+    /**
+     * 设备管理-查看详情
+     */
+    Optional<Instrument> findInstrumentById(String id);
+
 }

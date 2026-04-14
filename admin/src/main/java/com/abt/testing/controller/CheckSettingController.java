@@ -22,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 检测项目相关，包含检测分类，检测项目等
@@ -220,5 +221,13 @@ public class CheckSettingController {
     public R<Object> saveInstrument(@RequestBody Instrument instrument) {
         instrumentService.saveInstrument(instrument);
         return R.success("操作成功");
+    }
+
+    /**
+     * 设备管理-查看详情
+     */
+    @GetMapping("/instrument/find")
+    public R<Optional<Instrument>> findInstrumentDetail(String id) {
+        return R.success(instrumentService.findInstrumentById(id));
     }
 }
