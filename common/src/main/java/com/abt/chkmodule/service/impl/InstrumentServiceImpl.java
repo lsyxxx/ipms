@@ -115,10 +115,6 @@ public class InstrumentServiceImpl implements InstrumentService {
     @Override
     public List<SimpleCheckModule> findModulesByInstrumentId(String instrumentId) {
         validateInstrumentId(instrumentId);
-        List<String> moduleIds = checkModuleInstrumentRelRepository.findModuleIdsByInstrumentId(instrumentId);
-        if (moduleIds.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return checkModuleRepository.findSimpleModulesByIds(moduleIds);
+        return checkModuleRepository.findSimpleModulesByInstrumentId(instrumentId);
     }
 }

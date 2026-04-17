@@ -62,4 +62,11 @@ public interface CheckModuleRepository extends JpaRepository<CheckModule, String
 
     @Query("SELECT new com.abt.chkmodule.model.SimpleCheckModule(c.id, c.name, c.code, c.checkUnitId) FROM CheckModule c WHERE c.id IN :ids")
     List<SimpleCheckModule> findSimpleModulesByIds(List<String> ids);
+    
+    @Query("SELECT new com.abt.chkmodule.model.SimpleCheckModule(cm.id, cm.name, cm.code, cm.checkUnitId, cu.name) " +
+            "FROM CheckModuleInstrumentRel rel " +
+            "LEFT JOIN CheckModule cm ON rel.checkModuleRef.checkModuleId = cm.id " +
+            "LEFT JOIN CheckUnit cu ON cm.checkUnitId = cu.id " +
+            "WHERE rel.instrumentId = :instrumentId")
+    List<SimpleCheckModule> findSimpleModulesByInstrumentId(String instrumentId);
 }
