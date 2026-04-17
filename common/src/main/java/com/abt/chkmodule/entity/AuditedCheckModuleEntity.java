@@ -1,6 +1,7 @@
 package com.abt.chkmodule.entity;
 
 import com.abt.common.AuditInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.MappedSuperclass;
@@ -13,7 +14,7 @@ import jakarta.persistence.MappedSuperclass;
 public abstract class AuditedCheckModuleEntity extends AuditInfo {
 
     @Embedded
-    @JsonUnwrapped
+    @JsonIgnore
     protected CheckModuleRef checkModuleRef = new CheckModuleRef();
 
     public String getCheckModuleId() {

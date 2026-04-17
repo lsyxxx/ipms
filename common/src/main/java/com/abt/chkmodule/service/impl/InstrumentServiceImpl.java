@@ -1,10 +1,14 @@
 package com.abt.chkmodule.service.impl;
 
 import com.abt.chkmodule.entity.Instrument;
+import com.abt.chkmodule.model.SimpleCheckModule;
 import com.abt.chkmodule.repository.CheckModuleInstrumentRelRepository;
+import com.abt.chkmodule.repository.CheckModuleRepository;
 import com.abt.chkmodule.repository.InstrumentRepository;
 import com.abt.chkmodule.service.InstrumentService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,8 +28,9 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final InstrumentRepository instrumentRepository;
 
     private final CheckModuleInstrumentRelRepository checkModuleInstrumentRelRepository;
-
-    public InstrumentServiceImpl(InstrumentRepository instrumentRepository, CheckModuleInstrumentRelRepository checkModuleInstrumentRelRepository) {
+    private final CheckModuleRepository checkModuleRepository;
+    public InstrumentServiceImpl(InstrumentRepository instrumentRepository, CheckModuleInstrumentRelRepository checkModuleInstrumentRelRepository, CheckModuleRepository checkModuleRepository) {
+        this.checkModuleRepository = checkModuleRepository;
         this.instrumentRepository = instrumentRepository;
         this.checkModuleInstrumentRelRepository = checkModuleInstrumentRelRepository;
     }
@@ -90,8 +95,26 @@ public class InstrumentServiceImpl implements InstrumentService {
         instrumentRepository.save(instrument);
     }
 
+    /**
+     * 校验设备ID
+     * @param id 设备ID
+     */
+    private void validateInstrumentId(String id) {
+        if (!StringUtils.hasText(id)) {
+            throw new BusinessException("设备ID不能为空!");
+        }
+    }
+
     @Override
     public Instrument findInstrumentById(String id) {
-        return instrumentRepository.findInstrumentById(id);
+        validateInstrumentId(id);
+        return instrumentRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("未查询到设备详情(id=" + id + ")"));
+    }
+
+    @Override
+    public List<SimpleCheckModule> findModulesByInstrumentId(String instrumentId) {
+        validateInstrumentId(instrumentId);
+        return checkModuleRepository.findSimpleModulesByInstrumentId(instrumentId);
     }
 }

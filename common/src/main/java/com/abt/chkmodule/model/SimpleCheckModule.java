@@ -19,6 +19,7 @@ public class SimpleCheckModule {
     private String code;
 
     private String checkUnitId;
+    private String checkUnitName;
 
     private List<CheckItem> checkItems;
 
@@ -27,6 +28,14 @@ public class SimpleCheckModule {
         this.name = name;
         this.code = code;
         this.checkUnitId = checkUnitId;
+    }
+
+    public SimpleCheckModule(String id, String name, String code, String checkUnitId, String checkUnitName) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.checkUnitId = checkUnitId;
+        this.checkUnitName = checkUnitName;
     }
 
 }

@@ -70,4 +70,11 @@ public interface CheckModuleRepository extends JpaRepository<CheckModule, String
     boolean existsByNameAndUseChannel(String name, ChannelEnum useChannel);
 
     boolean existsByNameAndUseChannelAndCheckUnitId(String name, ChannelEnum useChannel, String checkUnitId);
+
+    @Query("SELECT new com.abt.chkmodule.model.SimpleCheckModule(cm.id, cm.name, cm.code, cm.checkUnitId, cu.name) " +
+            "FROM CheckModuleInstrumentRel rel " +
+            "LEFT JOIN CheckModule cm ON rel.checkModuleRef.checkModuleId = cm.id " +
+            "LEFT JOIN CheckUnit cu ON cm.checkUnitId = cu.id " +
+            "WHERE rel.instrumentId = :instrumentId")
+    List<SimpleCheckModule> findSimpleModulesByInstrumentId(String instrumentId);
 }

@@ -3,22 +3,17 @@ package com.abt.chkmodule.service.impl;
 import com.abt.chkmodule.entity.CheckItem;
 import com.abt.chkmodule.entity.CheckItemStandardRel;
 import com.abt.chkmodule.entity.CheckStandard;
-import com.abt.chkmodule.model.CheckItemSaveDTO;
 import com.abt.chkmodule.repository.CheckItemRepository;
 import com.abt.chkmodule.repository.CheckItemStandardRelRepository;
 import com.abt.chkmodule.repository.CheckStandardRepository;
 import com.abt.chkmodule.service.CheckItemService;
-import com.abt.chkmodule.service.CheckModuleReference;
 import com.abt.sys.exception.BusinessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 检测子参数
@@ -82,23 +77,15 @@ public class CheckItemServiceImpl implements CheckItemService {
 
     @Override
     @Transactional
-    public void saveItem(CheckItemSaveDTO dto) {
-        CheckItem entityToSave;
-        if (StringUtils.hasText(dto.getId())) {
-            entityToSave = checkItemRepository.findById(dto.getId())
-                    .orElseThrow(() -> new BusinessException("该子参数不存在"));
-        } else {
-            entityToSave = new CheckItem();
-        }
-        entityToSave.updateFromDTO(dto);
-        entityToSave = checkItemRepository.save(entityToSave);
-        checkItemStandardRelRepository.deleteByCheckItemId(entityToSave.getId());
-        if (!CollectionUtils.isEmpty(dto.getStandardIds())) {
-            List<CheckItemStandardRel> rels = new ArrayList<>();
-            for (String stdId : dto.getStandardIds()) {
-                rels.add(new CheckItemStandardRel(entityToSave.getId(), stdId));
+    public void saveItem(CheckItem checkItem) {
+        CheckItem savedItem = checkItemRepository.save(checkItem);
+        checkItemStandardRelRepository.deleteByCheckItemId(savedItem.getId());
+        List<CheckItemStandardRel> stdRels = checkItem.getStdRels();
+        if (!CollectionUtils.isEmpty(stdRels)) {
+            for (CheckItemStandardRel rel : stdRels) {
+                rel.setCheckItemId(savedItem.getId());
             }
-            checkItemStandardRelRepository.saveAll(rels);
+            checkItemStandardRelRepository.saveAll(stdRels);
         }
     }
 }

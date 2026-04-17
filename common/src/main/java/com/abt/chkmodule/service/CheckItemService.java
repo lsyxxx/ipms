@@ -1,7 +1,6 @@
 package com.abt.chkmodule.service;
 
 import com.abt.chkmodule.entity.CheckItem;
-import com.abt.chkmodule.model.CheckItemSaveDTO;
 
 import java.util.List;
 
@@ -20,5 +19,5 @@ public interface CheckItemService extends CheckModuleReference {
     /**
      * 保存或编辑子参数
      */
-    void saveItem(CheckItemSaveDTO dto);
+    void saveItem(CheckItem checkItem);
 }
