@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @Slf4j
-@RequestMapping("/test/instrument")
+@RequestMapping("/instrument")
 public class InstrumentController {
 
     private final InstrumentService instrumentService;

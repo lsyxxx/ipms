@@ -3,22 +3,17 @@ package com.abt.chkmodule.service.impl;
 import com.abt.chkmodule.entity.CheckItem;
 import com.abt.chkmodule.entity.CheckItemStandardRel;
 import com.abt.chkmodule.entity.CheckStandard;
-import com.abt.chkmodule.model.CheckItemSaveDTO;
 import com.abt.chkmodule.repository.CheckItemRepository;
 import com.abt.chkmodule.repository.CheckItemStandardRelRepository;
 import com.abt.chkmodule.repository.CheckStandardRepository;
 import com.abt.chkmodule.service.CheckItemService;
-import com.abt.chkmodule.service.CheckModuleReference;
 import com.abt.sys.exception.BusinessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 检测子参数
@@ -81,31 +76,32 @@ public class CheckItemServiceImpl implements CheckItemService {
     }
 
     /**
-     * 校验并初始化子参数实体
+     * 严格校验子参数是否存在
      * @param id 子参数ID
-     * @return 查出的已有实体，或全新的实体
      */
-    private CheckItem validateAndGetCheckItem(String id) {
-        if (StringUtils.hasText(id)) {
-            return checkItemRepository.findById(id)
-                    .orElseThrow(() -> new BusinessException("操作失败：未找到指定的子参数 (ID: [" + id + "])"));
+    private void validateCheckItemExists(String id) {
+        if (id == null) {
+            throw new BusinessException("操作失败：编辑子参数时必须提供 ID，参数不能为空");
         }
-        return new CheckItem();
+        if (!checkItemRepository.existsById(id)) {
+            throw new BusinessException("操作失败：未找到指定的子参数 (ID: [" + id + "])");
+        }
     }
 
     @Override
     @Transactional
-    public void saveItem(CheckItemSaveDTO dto) {
-        CheckItem entityToSave = validateAndGetCheckItem(dto.getId());
-        entityToSave.updateFromDTO(dto);
-        entityToSave = checkItemRepository.save(entityToSave);
-        checkItemStandardRelRepository.deleteByCheckItemId(entityToSave.getId());
-        if (!CollectionUtils.isEmpty(dto.getStandardIds())) {
-            List<CheckItemStandardRel> rels = new ArrayList<>();
-            for (String stdId : dto.getStandardIds()) {
-                rels.add(new CheckItemStandardRel(entityToSave.getId(), stdId));
+    public void saveItem(CheckItem checkItem) {
+        if (StringUtils.hasText(checkItem.getId())) {
+            validateCheckItemExists(checkItem.getId());
+        }
+        CheckItem savedItem = checkItemRepository.save(checkItem);
+        checkItemStandardRelRepository.deleteByCheckItemId(savedItem.getId());
+        List<CheckItemStandardRel> stdRels = checkItem.getStdRels();
+        if (!CollectionUtils.isEmpty(stdRels)) {
+            for (CheckItemStandardRel rel : stdRels) {
+                rel.setCheckItemId(savedItem.getId());
             }
-            checkItemStandardRelRepository.saveAll(rels);
+            checkItemStandardRelRepository.saveAll(stdRels);
         }
     }
 }

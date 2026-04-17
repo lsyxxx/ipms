@@ -7,6 +7,8 @@ import com.abt.chkmodule.repository.CheckModuleRepository;
 import com.abt.chkmodule.repository.InstrumentRepository;
 import com.abt.chkmodule.service.InstrumentService;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,30 +96,29 @@ public class InstrumentServiceImpl implements InstrumentService {
     }
 
     /**
-     * 校验并获取设备实体
+     * 校验设备ID
      * @param id 设备ID
-     * @return 设备实体
      */
-    private Instrument validateAndGetInstrument(String id) {
+    private void validateInstrumentId(String id) {
         if (!StringUtils.hasText(id)) {
-            throw new BusinessException("操作失败：设备ID不能为空，请检查参数");
+            throw new BusinessException("设备ID不能为空!");
         }
-
-        Instrument instrument = instrumentRepository.findInstrumentById(id);
-        if (instrument == null) {
-            throw new BusinessException("操作失败：未找到指定的设备 (ID: [" + id + "])，数据可能已被删除或参数错误");
-        }
-        return instrument;
     }
 
     @Override
     public Instrument findInstrumentById(String id) {
-        return validateAndGetInstrument(id);
+        validateInstrumentId(id);
+        return instrumentRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("未查询到设备详情(id=" + id + ")"));
     }
 
     @Override
     public List<SimpleCheckModule> findModulesByInstrumentId(String instrumentId) {
+        validateInstrumentId(instrumentId);
         List<String> moduleIds = checkModuleInstrumentRelRepository.findModuleIdsByInstrumentId(instrumentId);
+        if (moduleIds.isEmpty()) {
+            return new ArrayList<>();
+        }
         return checkModuleRepository.findSimpleModulesByIds(moduleIds);
     }
 }

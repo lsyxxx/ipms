@@ -1,6 +1,5 @@
 package com.abt.chkmodule.entity;
 
-import com.abt.chkmodule.model.CheckItemSaveDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -92,18 +91,4 @@ public class CheckItem extends AuditedCheckModuleEntity{
     private List<CheckItemStandardRel> stdRels;
 
 
-    public void updateFromDTO(CheckItemSaveDTO dto) {
-        this.name = dto.getName();
-        this.code = dto.getCode();
-        this.description = dto.getDescription();
-        this.aliasName = dto.getAliasName();
-        this.restrict = dto.getRestrict();
-        this.enabled = dto.isEnabled();
-        this.isCma = dto.isCma();
-        this.isCnas = dto.isCnas();
-        this.otherCertificate = dto.getOtherCertificate();
-        if (dto.getCheckModuleId() != null) {
-            this.setCheckModuleId(dto.getCheckModuleId());
-        }
-    }
 }
