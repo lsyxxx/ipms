@@ -75,25 +75,9 @@ public class CheckItemServiceImpl implements CheckItemService {
         checkItemRepository.updateEnabledStatus(id, enabled);
     }
 
-    /**
-     * 严格校验子参数是否存在
-     * @param id 子参数ID
-     */
-    private void validateCheckItemExists(String id) {
-        if (id == null) {
-            throw new BusinessException("操作失败：编辑子参数时必须提供 ID，参数不能为空");
-        }
-        if (!checkItemRepository.existsById(id)) {
-            throw new BusinessException("操作失败：未找到指定的子参数 (ID: [" + id + "])");
-        }
-    }
-
     @Override
     @Transactional
     public void saveItem(CheckItem checkItem) {
-        if (StringUtils.hasText(checkItem.getId())) {
-            validateCheckItemExists(checkItem.getId());
-        }
         CheckItem savedItem = checkItemRepository.save(checkItem);
         checkItemStandardRelRepository.deleteByCheckItemId(savedItem.getId());
         List<CheckItemStandardRel> stdRels = checkItem.getStdRels();
