@@ -146,21 +146,21 @@
             <artifactId>cells</artifactId>
             <version>${aspose.version}</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../lib/aspose-cells-${aspose.version}.jar</systemPath>
+            <systemPath>${project.basedir}/../lib/aspose-cells-25.10.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.aspose</groupId>
             <artifactId>aspose.pdf</artifactId>
             <version>${aspose.version}</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../lib/aspose-pdf-${aspose.version}.jar</systemPath>
+            <systemPath>${project.basedir}/../lib/aspose-pdf-25.9.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.aspose</groupId>
             <artifactId>aspose.word</artifactId>
             <version>${aspose.version}</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../lib/aspose-words-${aspose.version}-jdk17.jar</systemPath>
+            <systemPath>${project.basedir}/../lib/aspose-words-25.10-jdk17.jar</systemPath>
         </dependency>
 
         <!-- 引入 Quartz 依赖-->

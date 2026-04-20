@@ -9,10 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class OpenUserRepositoryTest {
 
-
-    @Autowired
-    private OpenUserRepository openUserRepository;
-
     @Test
     void test() {
 

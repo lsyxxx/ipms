@@ -409,6 +409,7 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         map.put("leaderUpdate", TimeUtil.toYYYY_MM_DDString(form.getLeaderCheckDate()));
         map.put("purchaserUpdate", TimeUtil.toYYYY_MM_DDString(form.getPurchaserCheckDate()));
         map.put("ceoUpdate", TimeUtil.toYYYY_MM_DDString(form.getCeoCheckDate()));
+        map.put("chiefUpdate", TimeUtil.toYYYY_MM_DDString(form.getChiefCheckDate()));
         if (form.getManagerCheckDate() != null) {
             map.put("managerSig", Objects.requireNonNullElse(setExcelSig(form.getManagerUserid()), "/"));
         }
@@ -416,22 +417,30 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
             map.put("leaderSig", Objects.requireNonNullElse(setExcelSig(form.getLeaderUserid()), "/"));
         }
         if (form.getPurchaserCheckDate() != null) {
-            final WriteCellData<Void> writeCellData = setExcelSig(form.getPurchaser());
-            if (writeCellData != null) {
-                //设置合并单元格
-                final ImageData imageData = writeCellData.getImageDataList().get(0);
-                imageData.setRelativeFirstRowIndex(0);
-                imageData.setRelativeFirstColumnIndex(0);
-                imageData.setRelativeLastRowIndex(0);
-                imageData.setRelativeLastColumnIndex(1);
-                map.put("purchaserSig", writeCellData);
-            } else {
-                map.put("purchaserSig", "/");
-            }
-
+            map.put("purchaserSig", Objects.requireNonNullElse(setExcelSig(form.getPurchaser()), "/"));
         }
+
+//        if (form.getPurchaserCheckDate() != null) {
+//            final WriteCellData<Void> writeCellData = setExcelSig(form.getPurchaser());
+//            if (writeCellData != null) {
+//                //设置合并单元格
+//                final ImageData imageData = writeCellData.getImageDataList().get(0);
+//                imageData.setRelativeFirstRowIndex(0);
+//                imageData.setRelativeFirstColumnIndex(0);
+//                imageData.setRelativeLastRowIndex(0);
+//                imageData.setRelativeLastColumnIndex(1);
+//                map.put("purchaserSig", writeCellData);
+//            } else {
+//                map.put("purchaserSig", "/");
+//            }
+//        }
         if (form.getCeoCheckDate() != null) {
+            map.put("ceoLabel", "总经理/日期：");
             map.put("ceoSig", Objects.requireNonNullElse(setExcelSig(form.getCeo()), "/"));
+        }
+        if (form.getChiefCheckDate() != null) {
+            map.put("chiefLabel", "董事长/日期：");
+            map.put("chiefSig", Objects.requireNonNullElse(setExcelSig(form.getChief()), "/"));
         }
         map.put("createUserSig", Objects.requireNonNullElse(setExcelSig(form.getCreateUserid()), "/"));
         map.put("total", form.getCost());

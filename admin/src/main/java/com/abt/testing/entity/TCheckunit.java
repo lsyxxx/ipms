@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -61,11 +61,11 @@ public class TCheckunit {
 
     @NotNull
     @Column(name = "CreateDate", nullable = false)
-    private Instant createDate;
+    private LocalDateTime createDate;
 
     @NotNull
     @Column(name = "Operatedate", nullable = false)
-    private Instant operatedate;
+    private LocalDateTime operatedate;
 
     @Size(max = 2)
     @Column(name = "delFlag", length = 2)

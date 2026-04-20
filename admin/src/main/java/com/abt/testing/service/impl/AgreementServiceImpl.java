@@ -180,7 +180,8 @@ public class AgreementServiceImpl implements AgreementService {
                                 , specifications.hasAgreementNameLike(requestForm.getQuery())
                                 , specifications.hasJCustomerNameLike(requestForm.getQuery())))
                 .and(specifications.yCompanyIdEqual(requestForm.getYCompanyId()))
-                .and(specifications.typeEqual(requestForm, "agreementType"));
+                .and(specifications.typeEqual(requestForm, "agreementType"))
+                ;
         Pageable paged = PageRequest.of(requestForm.jpaPage(), requestForm.getLimit(),
                 Sort.by(Sort.Order.desc("agreementCode")));
         Page<Agreement> all = agreementRepository.findAll(criteria, paged);
@@ -194,6 +195,16 @@ public class AgreementServiceImpl implements AgreementService {
     }
 
     static class AgreementSpecifications extends CommonSpecification<AgreementRequestForm, Agreement> {
+
+        public Specification<Agreement> agreementCodeEquals(String search) {
+            return (root, query, builder) -> {
+                if (search == null || search.isEmpty()) {
+                    return null;
+                }
+                return builder.equal(root.get("agreementCode"), search);
+            };
+        }
+
         public Specification<Agreement> agreementCodeLike(String search) {
             return (root, query, builder) -> {
                 if (search == null || search.isEmpty()) {

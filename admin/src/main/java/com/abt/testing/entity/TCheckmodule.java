@@ -9,8 +9,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.joda.time.DateTime;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -67,11 +68,11 @@ public class TCheckmodule {
 
     @NotNull
     @Column(name = "CreateDate", nullable = false)
-    private Instant createDate;
+    private DateTime createDate;
 
     @NotNull
     @Column(name = "Operatedate", nullable = false)
-    private Instant operatedate;
+    private LocalDateTime operatedate;
 
     @Size(max = 2)
     @Column(name = "delFlag", length = 2)
