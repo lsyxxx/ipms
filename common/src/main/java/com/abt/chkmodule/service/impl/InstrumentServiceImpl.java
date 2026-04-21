@@ -6,6 +6,7 @@ import com.abt.chkmodule.repository.CheckModuleInstrumentRelRepository;
 import com.abt.chkmodule.repository.CheckModuleRepository;
 import com.abt.chkmodule.repository.InstrumentRepository;
 import com.abt.chkmodule.service.InstrumentService;
+import com.abt.common.model.SaveMode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -116,5 +117,14 @@ public class InstrumentServiceImpl implements InstrumentService {
     public List<SimpleCheckModule> findModulesByInstrumentId(String instrumentId) {
         validateInstrumentId(instrumentId);
         return checkModuleRepository.findSimpleModulesByInstrumentId(instrumentId);
+    }
+
+    @Override
+    public void deleteTempInstrument(String id) {
+        Instrument instrument = findInstrumentById(id);
+        if (SaveMode.SAVE.equals(instrument.getSaveMode())) {
+            throw new BusinessException("正式入库的设备无法直接删除！");
+        }
+        instrumentRepository.deleteById(id);
     }
 }
