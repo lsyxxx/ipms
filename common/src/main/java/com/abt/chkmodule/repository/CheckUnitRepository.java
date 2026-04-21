@@ -15,4 +15,6 @@ public interface CheckUnitRepository extends JpaRepository<CheckUnit, String> {
     and (:enabled is null or c.enabled = :enabled)
 """)
     List<CheckUnit> findList(ChannelEnum channel, Boolean enabled);
+
+    List<CheckUnit> findByUseChannel(ChannelEnum useChannel);
 }

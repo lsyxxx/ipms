@@ -6,11 +6,12 @@ import com.abt.chkmodule.entity.CheckUnit;
 import com.abt.chkmodule.model.ChannelEnum;
 import com.abt.chkmodule.service.CheckItemService;
 import com.abt.chkmodule.service.CheckModuleService;
-import com.abt.chkmodule.service.InstrumentService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.sys.exception.BusinessException;
 import com.abt.testing.model.CheckModuleRequestForm;
+import com.abt.testing.model.CheckModuleSyncResult;
+import com.abt.testing.service.CheckSettingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,12 +31,12 @@ public class CheckSettingController {
 
     private final CheckModuleService checkModuleService;
     private final CheckItemService checkItemService;
-    private final InstrumentService instrumentService;
+    private final CheckSettingService checkSettingService;
 
-    public CheckSettingController(CheckModuleService checkModuleService, CheckItemService checkItemService, InstrumentService instrumentService) {
+    public CheckSettingController(CheckModuleService checkModuleService, CheckItemService checkItemService, CheckSettingService checkSettingService) {
         this.checkModuleService = checkModuleService;
         this.checkItemService = checkItemService;
-        this.instrumentService = instrumentService;
+        this.checkSettingService = checkSettingService;
     }
 
 
@@ -178,5 +179,16 @@ public class CheckSettingController {
     public R<Object> saveItem(@RequestBody CheckItem checkItem) {
         checkItemService.saveItem(checkItem);
         return R.success("操作成功");
+    }
+
+
+    /**
+     * 同步检测项目，需先设置好checkUnit
+     * @param channel 同步后的渠道
+     */
+    @GetMapping("/sync")
+    public R<CheckModuleSyncResult> synchronizeCheckModules(ChannelEnum channel) {
+        final CheckModuleSyncResult result = checkSettingService.synchronizeTcheckmoduleDB(channel);
+        return R.success(result);
     }
 }

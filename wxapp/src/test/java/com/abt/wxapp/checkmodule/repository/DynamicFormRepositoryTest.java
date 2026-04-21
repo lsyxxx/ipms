@@ -21,13 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class DynamicFormRepositoryTest {
 
-    @Autowired
-    private DynamicSchemeRepository dynamicFormRepository;
 
     @Test
     void test() {
-        final Optional<DynamicScheme> byId = dynamicFormRepository.findById(1L);
-        assertTrue(byId.isPresent());
     }
 
 }

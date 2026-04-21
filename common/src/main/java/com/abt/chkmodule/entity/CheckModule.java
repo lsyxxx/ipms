@@ -57,6 +57,9 @@ public class CheckModule extends AuditInfo implements UseChannel {
     @Column(name = "cu_id", length = 128, nullable = false)
     private String checkUnitId;
 
+    @Transient
+    private String checkUnitName;
+
     /**
      * 备注
      */
@@ -235,9 +238,6 @@ public class CheckModule extends AuditInfo implements UseChannel {
      */
     @Transient
     private List<CheckItem> checkItems;
-
-
-
 
 
     @Override
