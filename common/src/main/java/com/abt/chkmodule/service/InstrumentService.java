@@ -34,4 +34,6 @@ public interface InstrumentService extends CheckModuleReference {
      * 设备-查询指定设备关联的检测项目
      */
     List<SimpleCheckModule> findModulesByInstrumentId(String instrumentId);
+
+    void deleteTempInstrument(String id);
 }

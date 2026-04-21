@@ -2,6 +2,7 @@ package com.abt.chkmodule.entity;
 
 import com.abt.common.AuditInfo;
 import com.abt.chkmodule.converter.ListStringConverter;
+import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.SaveMode;
 import com.abt.sys.model.entity.SystemFile;
 import com.abt.sys.util.SystemFileListConverter;
@@ -35,6 +36,7 @@ public class Instrument extends AuditInfo {
     /**
      * 设备名称
      */
+    @NotNull(message = "设备名称必填", groups = {ValidateGroup.Save.class, ValidateGroup.Temp.class})
     @Column(name="name_", nullable = false)
     private String name;
 
@@ -68,6 +70,7 @@ public class Instrument extends AuditInfo {
      * 设备编号
      * TODO: 根据其他数据自动生成
      */
+    @NotNull(message = "设备编号不能为空", groups = {ValidateGroup.Save.class})
     @Size(max = 32)
     @Column(name = "code_", length = 32, nullable = false)
     private String code;
@@ -76,6 +79,7 @@ public class Instrument extends AuditInfo {
     /**
      * 设备规格
      */
+    @NotNull(message = "设备规格不能为空", groups = {ValidateGroup.Save.class})
     @Size(max = 32)
     @NotNull
     @Column(name = "spec_", nullable = false, length = 32)
@@ -201,4 +205,16 @@ public class Instrument extends AuditInfo {
     @Column(name = "save_mode")
     private SaveMode saveMode = SaveMode.TEMP;
 
+    @PrePersist
+    @PreUpdate
+    public void preSave() {
+        if (SaveMode.TEMP.equals(this.saveMode)) {
+            if (this.code == null) {
+                this.code = "";
+            }
+            if (this.specification == null) {
+                this.specification = "";
+            }
+        }
+    }
 }
