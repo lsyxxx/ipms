@@ -6,7 +6,7 @@ import com.abt.chkmodule.service.InstrumentService;
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.model.SaveMode;
-import com.abt.testing.model.InstrumentRequestForm;
+import com.abt.instrument.model.InstrumentRequestForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

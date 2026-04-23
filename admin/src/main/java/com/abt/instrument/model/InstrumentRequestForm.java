@@ -1,4 +1,4 @@
-package com.abt.testing.model;
+package com.abt.instrument.model;
 
 import com.abt.common.model.RequestForm;
 import lombok.Data;

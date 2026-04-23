@@ -71,3 +71,5 @@ admin/src/main/resources/application-yuan.yml
 admin/src/main/resources/logback-spring.xml
 bak/logback-spring.xml
 wxapp/src/main/resources/application.yml
+admin/src/main/resources/application-yuan.yml
+admin/src/test/java/com/abt/testing/controller/CheckSettingControllerTest.java
