@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * 动态表单定义结构
- *
+ * 检测项目用户输入表单配置
  */
 @Getter
 @Setter

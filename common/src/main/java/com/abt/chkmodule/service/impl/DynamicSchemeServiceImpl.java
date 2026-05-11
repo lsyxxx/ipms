@@ -1,6 +1,7 @@
 package com.abt.chkmodule.service.impl;
 
 import com.abt.chkmodule.entity.DynamicScheme;
+import com.abt.chkmodule.entity.OptionData;
 import com.abt.chkmodule.repository.DynamicSchemeRepository;
 import com.abt.chkmodule.service.DynamicSchemeService;
 import com.abt.common.model.SaveMode;
@@ -96,4 +97,17 @@ public class DynamicSchemeServiceImpl implements DynamicSchemeService {
     public void publishValidate() {
 
     }
+
+
+    /**
+     * 是否存在当前表单
+     * @param schemeId 表单ID
+     */
+    public boolean support(Long schemeId) {
+        if (schemeId == null) {
+            return false;
+        }
+        return dynamicSchemeRepository.existsById(schemeId);
+    }
+
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -33,4 +34,6 @@ public interface SettlementSummaryRepository extends JpaRepository<SettlementSum
     group by s.entrustId, s.checkModuleId, s.checkModuleName
 """)
     List<SettlementSummary> entrustSummary(String entrustId);
+
+    List<SettlementSummary> findByMidIn(Collection<String> mids);
 }

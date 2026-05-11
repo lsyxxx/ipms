@@ -250,4 +250,58 @@ public class SettlementController {
         final List<SettlementAgreementDTO> list = settlementService.findSettlementsByContractNo(contractNo);
         return R.success(list);
     }
+
+    /**
+     * 查询项目是否存在有效结算单。
+     */
+    @GetMapping("/stats/entrust/status")
+    public R<SettlementStatDTO> findSettlementStatusByEntrust(String entrustId) {
+        final SettlementStatDTO dto = settlementService.findSettlementStatusByEntrustId(entrustId);
+        return R.success(dto);
+    }
+
+    /**
+     * 按项目编号汇总结算情况。
+     */
+    @GetMapping("/stats/entrust")
+    public R<Page<SettlementStatDTO>> findSettlementStatsByEntrust(@ModelAttribute SettlementStatRequestForm requestForm) {
+        final Page<SettlementStatDTO> page = settlementService.findSettlementStatsByEntrust(requestForm);
+        return R.success(page);
+    }
+
+    /**
+     * 按客户分页查询结算情况，支持空条件查全部和客户名称模糊查询。
+     */
+    @GetMapping("/stats/client")
+    public R<Page<SettlementStatDTO>> findSettlementStatsByClient(@ModelAttribute SettlementStatRequestForm requestForm) {
+        final Page<SettlementStatDTO> page = settlementService.findSettlementStatsByClient(requestForm);
+        return R.success(page);
+    }
+
+    /**
+     * 按合同分页查询结算情况，支持空条件查全部和合同编号/名称模糊查询。
+     */
+    @GetMapping("/stats/contract")
+    public R<Page<SettlementStatDTO>> findSettlementStatsByContract(@ModelAttribute SettlementStatRequestForm requestForm) {
+        final Page<SettlementStatDTO> page = settlementService.findSettlementStatsByContract(requestForm);
+        return R.success(page);
+    }
+
+    /**
+     * 按项目编号查询关联结算单分页列表。
+     */
+    @GetMapping("/find/byEntrust")
+    public R<Page<SettlementAgreementDTO>> findSettlementsByEntrust(@ModelAttribute SettlementDetailRequestForm requestForm) {
+        final Page<SettlementAgreementDTO> page = settlementService.findSettlementsByEntrustId(requestForm);
+        return R.success(page);
+    }
+
+    /**
+     * 查询指定客户关联的结算单分页列表。
+     */
+    @GetMapping("/detail/page/client")
+    public R<Page<SettlementDetailDTO>> findSettlementDetailsByClient(@ModelAttribute SettlementDetailRequestForm requestForm) {
+        final Page<SettlementDetailDTO> page = settlementService.findSettlementDetailsByClientId(requestForm);
+        return R.success(page);
+    }
 }

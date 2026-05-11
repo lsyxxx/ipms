@@ -144,4 +144,34 @@ public interface SettlementService {
      * 根据合同编号查询关联结算单
      */
     List<SettlementAgreementDTO> findSettlementsByContractNo(String contractNo);
+
+    /**
+     * 查询项目是否已结算。
+     */
+    SettlementStatDTO findSettlementStatusByEntrustId(String entrustId);
+
+    /**
+     * 按项目分页查询结算情况。
+     */
+    Page<SettlementStatDTO> findSettlementStatsByEntrust(SettlementStatRequestForm requestForm);
+
+    /**
+     * 按客户分页查询结算情况。
+     */
+    Page<SettlementStatDTO> findSettlementStatsByClient(SettlementStatRequestForm requestForm);
+
+    /**
+     * 按合同分页查询结算情况。
+     */
+    Page<SettlementStatDTO> findSettlementStatsByContract(SettlementStatRequestForm requestForm);
+
+    /**
+     * 按项目编号查询关联结算单分页列表。
+     */
+    Page<SettlementAgreementDTO> findSettlementsByEntrustId(SettlementDetailRequestForm requestForm);
+
+    /**
+     * 查询指定客户关联的结算单列表。
+     */
+    Page<SettlementDetailDTO> findSettlementDetailsByClientId(SettlementDetailRequestForm requestForm);
 }

@@ -130,4 +130,358 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
 """)
     List<SettlementAgreementDTO> findSettlementAgreementDTOListByContractNo(String contractNo, List<SaveType> saveTypes);
 
+    /**
+     * 按项目编号汇总结算情况。
+     */
+    @Query("""
+    select new com.abt.market.model.SettlementStatDTO(
+        :entrustId,
+        cast(null as string),
+        cast(null as string),
+        cast(null as string),
+        count(m.id),
+        coalesce(sum(m.totalAmount), 0)
+    )
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType in :saveTypes
+      and exists (
+        select s.id from SettlementSummary s
+        where s.mid = m.id and s.entrustId = :entrustId
+      )
+    """)
+    SettlementStatDTO findSettlementStatsByEntrustId(String entrustId, List<SaveType> saveTypes);
+
+    /**
+     * 按客户id汇总结算情况。
+     */
+    @Query("""
+    select new com.abt.market.model.SettlementStatDTO(
+        cast(null as string),
+        :clientId,
+        max(m.clientName),
+        cast(null as string),
+        count(m.id),
+        coalesce(sum(m.totalAmount), 0)
+    )
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType in :saveTypes
+      and m.clientId = :clientId
+    """)
+    SettlementStatDTO findSettlementStatsByClientId(String clientId, List<SaveType> saveTypes);
+
+    /**
+     * 按客户名称汇总结算情况。
+     */
+    @Query("""
+    select new com.abt.market.model.SettlementStatDTO(
+        cast(null as string),
+        max(m.clientId),
+        :clientName,
+        cast(null as string),
+        count(m.id),
+        coalesce(sum(m.totalAmount), 0)
+    )
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType in :saveTypes
+      and m.clientName = :clientName
+    """)
+    SettlementStatDTO findSettlementStatsByClientName(String clientName, List<SaveType> saveTypes);
+
+    /**
+     * 按合同编号汇总结算情况，仅统计已绑定销售合同的结算单。
+     */
+    @Query("""
+    select new com.abt.market.model.SettlementStatDTO(
+        cast(null as string),
+        cast(null as string),
+        cast(null as string),
+        :contractNo,
+        count(m.id),
+        coalesce(sum(m.totalAmount), 0)
+    )
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType in :saveTypes
+      and exists (
+        select rel.id from SettlementRelation rel, SaleAgreement sale
+        where rel.mid = m.id
+          and rel.bizType = com.abt.market.model.SettlementRelationType.AGREEMENT
+          and sale.id = rel.rid
+          and sale.code = :contractNo
+      )
+    """)
+    SettlementStatDTO findSettlementStatsByContractNo(String contractNo, List<SaveType> saveTypes);
+
+    /**
+     * 按项目分页查询结算情况。
+     */
+    @Query(value = """
+    select new com.abt.market.model.SettlementStatDTO(
+        e.id,
+        cast(null as string),
+        e.jiaFangCompany,
+        cast(null as string),
+        e.projectName,
+        cast(null as string),
+        (select count(m.id)
+         from SettlementMain m
+         where m.isDel = false
+           and m.saveType in :saveTypes
+           and exists (
+             select s.id from SettlementSummary s
+             where s.mid = m.id and s.entrustId = e.id
+           )),
+        (select sum(m.totalAmount)
+         from SettlementMain m
+         where m.isDel = false
+           and m.saveType in :saveTypes
+           and exists (
+             select s.id from SettlementSummary s
+             where s.mid = m.id and s.entrustId = e.id
+           ))
+    )
+    from Entrust e
+    where (:entrustId is null or :entrustId = '' or lower(e.id) like lower(concat('%', :entrustId, '%')))
+      and (
+        :settlementStatus is null
+        or :settlementStatus = ''
+        or (:settlementStatus = 'SETTLED' and
+            (select count(m.id)
+             from SettlementMain m
+             where m.isDel = false
+               and m.saveType in :saveTypes
+               and exists (
+                 select s.id from SettlementSummary s
+                 where s.mid = m.id and s.entrustId = e.id
+               )) > 0)
+        or (:settlementStatus = 'UNSETTLED' and
+            (select count(m.id)
+             from SettlementMain m
+             where m.isDel = false
+               and m.saveType in :saveTypes
+               and exists (
+                 select s.id from SettlementSummary s
+                 where s.mid = m.id and s.entrustId = e.id
+               )) = 0)
+      )
+    """,
+    countQuery = """
+    select count(e.id)
+    from Entrust e
+    where (:entrustId is null or :entrustId = '' or lower(e.id) like lower(concat('%', :entrustId, '%')))
+      and (
+        :settlementStatus is null
+        or :settlementStatus = ''
+        or (:settlementStatus = 'SETTLED' and
+            (select count(m.id)
+             from SettlementMain m
+             where m.isDel = false
+               and m.saveType in :saveTypes
+               and exists (
+                 select s.id from SettlementSummary s
+                 where s.mid = m.id and s.entrustId = e.id
+               )) > 0)
+        or (:settlementStatus = 'UNSETTLED' and
+            (select count(m.id)
+             from SettlementMain m
+             where m.isDel = false
+               and m.saveType in :saveTypes
+               and exists (
+                 select s.id from SettlementSummary s
+                 where s.mid = m.id and s.entrustId = e.id
+               )) = 0)
+      )
+    """)
+    Page<SettlementStatDTO> findEntrustStatsPage(String entrustId, String settlementStatus, List<SaveType> saveTypes, Pageable pageable);
+
+    /**
+     * 按客户分页查询结算情况。
+     */
+    @Query(value = """
+    select new com.abt.market.model.SettlementStatDTO(
+        cast(null as string),
+        m.clientId,
+        m.clientName,
+        cast(null as string),
+        cast(null as string),
+        cast(null as string),
+        count(m.id),
+        sum(m.totalAmount)
+    )
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType in :saveTypes
+      and (:clientName is null or :clientName = '' or lower(m.clientName) like lower(concat('%', :clientName, '%')))
+      and (:settlementStatus is null or :settlementStatus = '' or :settlementStatus = 'SETTLED')
+      and (:settlementStatus is null or :settlementStatus = '' or :settlementStatus <> 'UNSETTLED')
+    group by m.clientId, m.clientName
+    """,
+    countQuery = """
+    select count(distinct concat(coalesce(m.clientId, ''), '|', coalesce(m.clientName, '')))
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType in :saveTypes
+      and (:clientName is null or :clientName = '' or lower(m.clientName) like lower(concat('%', :clientName, '%')))
+      and (:settlementStatus is null or :settlementStatus = '' or :settlementStatus = 'SETTLED')
+      and (:settlementStatus is null or :settlementStatus = '' or :settlementStatus <> 'UNSETTLED')
+    """)
+    Page<SettlementStatDTO> findClientStatsPage(String clientName, String settlementStatus, List<SaveType> saveTypes, Pageable pageable);
+
+    /**
+     * 按合同分页查询结算情况。
+     */
+    @Query(value = """
+    select new com.abt.market.model.SettlementStatDTO(
+        cast(null as string),
+        cast(null as string),
+        a.partyA,
+        a.code,
+        cast(null as string),
+        a.name,
+        (select count(m.id)
+         from SettlementMain m
+         where m.isDel = false
+           and m.saveType in :saveTypes
+           and exists (
+             select rel.id
+             from SettlementRelation rel
+             where rel.mid = m.id
+               and rel.bizType = com.abt.market.model.SettlementRelationType.AGREEMENT
+               and rel.rid = a.id
+           )),
+        (select sum(m.totalAmount)
+         from SettlementMain m
+         where m.isDel = false
+           and m.saveType in :saveTypes
+           and exists (
+             select rel.id
+             from SettlementRelation rel
+             where rel.mid = m.id
+               and rel.bizType = com.abt.market.model.SettlementRelationType.AGREEMENT
+               and rel.rid = a.id
+           ))
+    )
+    from SaleAgreement a
+    where (:contractQuery is null or :contractQuery = ''
+           or lower(a.code) like lower(concat('%', :contractQuery, '%'))
+           or lower(a.name) like lower(concat('%', :contractQuery, '%')))
+      and (
+        :settlementStatus is null
+        or :settlementStatus = ''
+        or (:settlementStatus = 'SETTLED' and
+            (select count(m.id)
+             from SettlementMain m
+             where m.isDel = false
+               and m.saveType in :saveTypes
+               and exists (
+                 select rel.id
+                 from SettlementRelation rel
+                 where rel.mid = m.id
+                   and rel.bizType = com.abt.market.model.SettlementRelationType.AGREEMENT
+                   and rel.rid = a.id
+               )) > 0)
+        or (:settlementStatus = 'UNSETTLED' and
+            (select count(m.id)
+             from SettlementMain m
+             where m.isDel = false
+               and m.saveType in :saveTypes
+               and exists (
+                 select rel.id
+                 from SettlementRelation rel
+                 where rel.mid = m.id
+                   and rel.bizType = com.abt.market.model.SettlementRelationType.AGREEMENT
+                   and rel.rid = a.id
+               )) = 0)
+      )
+    """,
+    countQuery = """
+    select count(a.id)
+    from SaleAgreement a
+    where (:contractQuery is null or :contractQuery = ''
+           or lower(a.code) like lower(concat('%', :contractQuery, '%'))
+           or lower(a.name) like lower(concat('%', :contractQuery, '%')))
+      and (
+        :settlementStatus is null
+        or :settlementStatus = ''
+        or (:settlementStatus = 'SETTLED' and
+            (select count(m.id)
+             from SettlementMain m
+             where m.isDel = false
+               and m.saveType in :saveTypes
+               and exists (
+                 select rel.id
+                 from SettlementRelation rel
+                 where rel.mid = m.id
+                   and rel.bizType = com.abt.market.model.SettlementRelationType.AGREEMENT
+                   and rel.rid = a.id
+               )) > 0)
+        or (:settlementStatus = 'UNSETTLED' and
+            (select count(m.id)
+             from SettlementMain m
+             where m.isDel = false
+               and m.saveType in :saveTypes
+               and exists (
+                 select rel.id
+                 from SettlementRelation rel
+                 where rel.mid = m.id
+                   and rel.bizType = com.abt.market.model.SettlementRelationType.AGREEMENT
+                   and rel.rid = a.id
+               )) = 0)
+      )
+    """)
+    Page<SettlementStatDTO> findContractStatsPage(String contractQuery, String settlementStatus, List<SaveType> saveTypes, Pageable pageable);
+
+    /**
+     * 查询指定项目编号关联的结算单分页列表。
+     */
+    @Query("""
+    select m
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType in :saveTypes
+      and exists (
+        select s.id from SettlementSummary s
+        where s.mid = m.id and s.entrustId = :entrustId
+      )
+    """)
+    Page<SettlementMain> findDetailPageByEntrustId(String entrustId, List<SaveType> saveTypes, Pageable pageable);
+
+    /**
+     * 按项目编号查询关联结算单分页列表。
+     */
+    @Query("""
+    select new com.abt.market.model.SettlementAgreementDTO(
+        main.id,
+        main.totalAmount,
+        main.clientName,
+        main.remark,
+        main.createUsername,
+        main.createDate,
+        main.saveType
+    )
+    from SettlementMain main
+    where main.isDel = false
+      and main.saveType in :saveTypes
+      and exists (
+        select s.id from SettlementSummary s
+        where s.mid = main.id and s.entrustId = :entrustId
+      )
+    """)
+    Page<SettlementAgreementDTO> findSettlementAgreementPageByEntrustId(String entrustId, List<SaveType> saveTypes, Pageable pageable);
+
+    /**
+     * 查询指定客户关联的结算单分页列表。
+     */
+    @Query("""
+    select m
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType in :saveTypes
+      and m.clientId = :clientId
+    """)
+    Page<SettlementMain> findDetailPageByClientId(String clientId, List<SaveType> saveTypes, Pageable pageable);
+
 }

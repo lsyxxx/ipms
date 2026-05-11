@@ -20,12 +20,7 @@ import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +38,13 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class SettlementServiceImpl implements SettlementService {
+    private static final List<SaveType> EFFECTIVE_SETTLEMENT_STATES = List.of(
+            SaveType.SAVE,
+            SaveType.INVOICING,
+            SaveType.INVOICE,
+            SaveType.PAYED
+    );
+
     private final SettlementMainRepository settlementMainRepository;
     private final ExpenseItemRepository expenseItemRepository;
     private final TestItemRepository testItemRepository;
@@ -1062,7 +1064,168 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Override
     public List<SettlementAgreementDTO> findSettlementsByContractNo(String contractNo) {
-        return settlementMainRepository.findSettlementAgreementDTOListByContractNo(contractNo, List.of(SaveType.SAVE, SaveType.INVOICING, SaveType.INVOICE, SaveType.PAYED));
+        return settlementMainRepository.findSettlementAgreementDTOListByContractNo(contractNo, EFFECTIVE_SETTLEMENT_STATES);
+    }
+
+    /**
+     * 按项目编号判断是否存在有效结算单。
+     */
+    @Override
+    public SettlementStatDTO findSettlementStatusByEntrustId(String entrustId) {
+        if (StringUtils.isBlank(entrustId)) {
+            throw new BusinessException("项目编号不能为空!");
+        }
+        SettlementStatDTO dto = settlementMainRepository.findSettlementStatsByEntrustId(entrustId, EFFECTIVE_SETTLEMENT_STATES);
+        return fillSettlementStatus(defaultEntrustStats(entrustId, dto));
+    }
+
+    /**
+     * 按项目分页查询结算情况，支持空条件查全部和项目编号模糊查询。
+     */
+    @Override
+    public Page<SettlementStatDTO> findSettlementStatsByEntrust(SettlementStatRequestForm requestForm) {
+        requestForm.forcePaged();
+        Pageable pageable = requestForm.createPageable(Sort.by(Sort.Order.desc("id")));
+        final Page<SettlementStatDTO> page = settlementMainRepository.findEntrustStatsPage(
+                requestForm.getEntrustId(),
+                requestForm.getSettlementStatus(),
+                EFFECTIVE_SETTLEMENT_STATES,
+                pageable
+        );
+        return page.map(dto -> fillSettlementStatus(defaultEntrustStats(dto.getEntrustId(), dto)));
+    }
+
+    /**
+     * 按客户分页查询结算情况，支持空条件查全部和客户名称模糊查询。
+     */
+    @Override
+    public Page<SettlementStatDTO> findSettlementStatsByClient(SettlementStatRequestForm requestForm) {
+        requestForm.forcePaged();
+        Pageable pageable = requestForm.createPageable(Sort.by(Sort.Order.asc("clientName")));
+        final Page<SettlementStatDTO> page = settlementMainRepository.findClientStatsPage(
+                requestForm.getClientName(),
+                requestForm.getSettlementStatus(),
+                EFFECTIVE_SETTLEMENT_STATES,
+                pageable
+        );
+        return page.map(dto -> fillSettlementStatus(defaultClientStats(dto.getClientId(), dto.getClientName(), dto)));
+    }
+
+    /**
+     * 按合同分页查询结算情况，支持空条件查全部和合同编号/名称模糊查询。
+     */
+    @Override
+    public Page<SettlementStatDTO> findSettlementStatsByContract(SettlementStatRequestForm requestForm) {
+        requestForm.forcePaged();
+        Pageable pageable = requestForm.createPageable(Sort.by(Sort.Order.desc("code")));
+        final Page<SettlementStatDTO> page = settlementMainRepository.findContractStatsPage(
+                requestForm.getContractQuery(),
+                requestForm.getSettlementStatus(),
+                EFFECTIVE_SETTLEMENT_STATES,
+                pageable
+        );
+        return page.map(dto -> fillSettlementStatus(defaultContractStats(dto.getContractNo(), dto)));
+    }
+
+    /**
+     * 按项目编号查询关联结算单分页列表。
+     */
+    @Override
+    public Page<SettlementAgreementDTO> findSettlementsByEntrustId(SettlementDetailRequestForm requestForm) {
+        if (StringUtils.isBlank(requestForm.getEntrustId())) {
+            throw new BusinessException("项目编号不能为空!");
+        }
+        requestForm.forcePaged();
+        return settlementMainRepository.findSettlementAgreementPageByEntrustId(
+                requestForm.getEntrustId(),
+                EFFECTIVE_SETTLEMENT_STATES,
+                requestForm.createPageable(Sort.by(Sort.Order.desc("id")))
+        );
+    }
+
+    /**
+     * 查询指定客户关联的结算单分页列表。
+     */
+    @Override
+    public Page<SettlementDetailDTO> findSettlementDetailsByClientId(SettlementDetailRequestForm requestForm) {
+        if (StringUtils.isBlank(requestForm.getClientId())) {
+            throw new BusinessException("客户ID不能为空!");
+        }
+        requestForm.forcePaged();
+        final Page<SettlementMain> page = settlementMainRepository.findDetailPageByClientId(
+                requestForm.getClientId(),
+                EFFECTIVE_SETTLEMENT_STATES,
+                requestForm.createDefaultPageable()
+        );
+        return buildSettlementDetailPage(page);
+    }
+
+    private SettlementStatDTO defaultEntrustStats(String entrustId, SettlementStatDTO dto) {
+        if (dto == null) {
+            dto = new SettlementStatDTO();
+        }
+        dto.setEntrustId(entrustId);
+        if (dto.getSettlementCount() == null) {
+            dto.setSettlementCount(0L);
+        }
+        if (dto.getSettledAmount() == null) {
+            dto.setSettledAmount(BigDecimal.ZERO);
+        }
+        return dto;
+    }
+
+    private SettlementStatDTO defaultClientStats(String clientId, String clientName, SettlementStatDTO dto) {
+        if (dto == null) {
+            dto = new SettlementStatDTO();
+        }
+        dto.setClientId(clientId);
+        dto.setClientName(clientName);
+        if (dto.getSettlementCount() == null) {
+            dto.setSettlementCount(0L);
+        }
+        if (dto.getSettledAmount() == null) {
+            dto.setSettledAmount(BigDecimal.ZERO);
+        }
+        return dto;
+    }
+
+    private SettlementStatDTO defaultContractStats(String contractNo, SettlementStatDTO dto) {
+        if (dto == null) {
+            dto = new SettlementStatDTO();
+        }
+        dto.setContractNo(contractNo);
+        if (dto.getSettlementCount() == null) {
+            dto.setSettlementCount(0L);
+        }
+        if (dto.getSettledAmount() == null) {
+            dto.setSettledAmount(BigDecimal.ZERO);
+        }
+        return dto;
+    }
+
+    private SettlementStatDTO fillSettlementStatus(SettlementStatDTO dto) {
+        boolean settled = dto.getSettlementCount() != null && dto.getSettlementCount() > 0;
+        dto.setSettled(settled);
+        dto.setSettlementStatus(settled ? SettlementStatStatus.SETTLED : SettlementStatStatus.UNSETTLED);
+        return dto;
+    }
+
+    private Page<SettlementDetailDTO> buildSettlementDetailPage(Page<SettlementMain> page) {
+        final List<SettlementMain> mains = page.getContent();
+        if (mains.isEmpty()) {
+            return page.map(main -> new SettlementDetailDTO(main.getId(), main.getTotalAmount(), main.getClientName()));
+        }
+        final List<String> mids = mains.stream().map(SettlementMain::getId).toList();
+        final Map<String, List<String>> entrustMap = settlementSummaryRepository.findByMidIn(mids).stream()
+                .collect(Collectors.groupingBy(SettlementSummary::getMid,
+                        Collectors.mapping(SettlementSummary::getEntrustId,
+                                Collectors.collectingAndThen(Collectors.toCollection(LinkedHashSet::new), ArrayList::new))));
+
+        return page.map(main -> {
+            SettlementDetailDTO dto = new SettlementDetailDTO(main.getId(), main.getTotalAmount(), main.getClientName());
+            dto.setEntrustIds(entrustMap.getOrDefault(main.getId(), List.of()));
+            return dto;
+        });
     }
 
 
