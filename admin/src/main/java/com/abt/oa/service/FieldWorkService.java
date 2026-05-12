@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -99,6 +100,11 @@ public interface FieldWorkService {
      * 导出excel
      */
     File writeExcel(Table table) throws IOException;
+
+    /**
+     * 导出野外记录明细
+     */
+    void createExportExcel(List<FieldWork> data, OutputStream outputStream);
 
     FieldWork detail(String id);
 

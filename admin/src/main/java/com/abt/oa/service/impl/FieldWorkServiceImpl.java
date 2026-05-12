@@ -31,6 +31,16 @@ import cn.idev.excel.write.metadata.style.WriteCellStyle;
 import cn.idev.excel.write.metadata.style.WriteFont;
 import cn.idev.excel.write.style.HorizontalCellStyleStrategy;
 import cn.idev.excel.write.style.column.SimpleColumnWidthStyleStrategy;
+import com.aspose.cells.BorderType;
+import com.aspose.cells.CellBorderType;
+import com.aspose.cells.Cells;
+import com.aspose.cells.Color;
+import com.aspose.cells.Font;
+import com.aspose.cells.SaveFormat;
+import com.aspose.cells.Style;
+import com.aspose.cells.TextAlignmentType;
+import com.aspose.cells.Workbook;
+import com.aspose.cells.Worksheet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,11 +56,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -89,6 +101,13 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     public String newExcel;
 
     public static final String COL_ATD = "出勤天数";
+    public static final String COL_PROD_BONUS = "生产奖金";
+    private static final String[] FIELD_WORK_EXPORT_HEADERS = {
+            "工号", "姓名", "考勤日期", "补助项目", "补助合计(元)", "井号", "项目", "作业内容",
+            "审核人", "审核日期", "审批状态", "审核结果", "审批时间", "补助单项", "补助单项生产奖金", "补助单项餐补"
+    };
+    private static final int[] FIELD_WORK_EXPORT_MERGE_COLS = IntStream.range(0, 13).toArray();
+    private static final DateTimeFormatter FW_EXPORT_FILE_NAME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
 
     public FieldWorkServiceImpl(FieldAttendanceSettingRepository fieldAttendanceSettingRepository, FieldWorkRepository fieldWorkRepository, EmployeeService employeeService, FieldWorkItemRepository fieldWorkItemRepository, LeaveService leaveService, Company ABT, Company GRD, Company DC) {
@@ -284,6 +303,249 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
         WithQueryUtil.build(page.getContent());
         return page;
+    }
+
+
+    @Override
+    public void createExportExcel(List<FieldWork> data, OutputStream outputStream) {
+        if (data == null || data.isEmpty()) {
+            return;
+        }
+        final List<FieldWork> exportData = data.stream()
+                .filter(Objects::nonNull)
+                .toList();
+        if (exportData.isEmpty()) {
+            return;
+        }
+        try {
+            Workbook workbook = new Workbook();
+            Worksheet worksheet = workbook.getWorksheets().get(0);
+            worksheet.setName("野外记录明细");
+            Cells cells = worksheet.getCells();
+
+            Style headerStyle = createFieldWorkExportHeaderStyle(workbook);
+            Style allowanceHeaderStyle = createFieldWorkExportAllowanceHeaderStyle(workbook);
+            Style textStyle = createFieldWorkExportTextStyle(workbook);
+            Style dateStyle = createFieldWorkExportDateStyle(workbook);
+            Style dateTimeStyle = createFieldWorkExportDateTimeStyle(workbook);
+            Style amountStyle = createFieldWorkExportAmountStyle(workbook);
+
+            writeFieldWorkExportHeader(cells, headerStyle, allowanceHeaderStyle);
+            int rowIndex = 1;
+            for (FieldWork fw : exportData) {
+                final List<FieldWorkItem> items = CollectionUtils.isEmpty(fw.getItems())
+                        ? Collections.singletonList(null)
+                        : fw.getItems();
+                final int startRow = rowIndex;
+                for (FieldWorkItem item : items) {
+                    writeFieldWorkExportRow(cells, rowIndex, fw, item, textStyle, dateStyle, dateTimeStyle, amountStyle);
+                    rowIndex++;
+                }
+                if (items.size() > 1) {
+                    mergeFieldWorkExportMainColumns(cells, startRow, items.size(), textStyle, dateStyle, dateTimeStyle, amountStyle);
+                }
+            }
+            applyFieldWorkExportColumnWidth(cells);
+            workbook.save(outputStream, SaveFormat.XLSX);
+            log.info("field work export excel generated, record size: {}", exportData.size());
+        } catch (Exception e) {
+            log.error("生成野外记录导出excel失败", e);
+            throw new BusinessException("生成野外记录导出excel失败:" + e.getMessage());
+        }
+    }
+
+    private void writeFieldWorkExportHeader(Cells cells, Style headerStyle, Style allowanceHeaderStyle) {
+        for (int i = 0; i < FIELD_WORK_EXPORT_HEADERS.length; i++) {
+            cells.get(0, i).putValue(FIELD_WORK_EXPORT_HEADERS[i]);
+            cells.get(0, i).setStyle(i >= 13 ? allowanceHeaderStyle : headerStyle);
+        }
+        cells.setRowHeightPixel(0, 28);
+    }
+
+    private void writeFieldWorkExportRow(Cells cells, int rowIndex, FieldWork fw, FieldWorkItem item,
+                                         Style textStyle, Style dateStyle, Style dateTimeStyle, Style amountStyle) {
+        final String reviewStatus = convertFieldWorkReviewStatus(fw.getReviewResult());
+        final String reviewResult = StringUtils.defaultIfBlank(fw.getReviewReason(), reviewStatus);
+        final String allowanceNames = resolveFieldWorkAllowanceNames(fw);
+
+        putTextCell(cells, rowIndex, 0, fw.getJobNumber(), textStyle);
+        putTextCell(cells, rowIndex, 1, fw.getUsername(), textStyle);
+        putDateCell(cells, rowIndex, 2, fw.getAttendanceDate(), dateStyle);
+        putTextCell(cells, rowIndex, 3, allowanceNames, textStyle);
+        putAmountCell(cells, rowIndex, 4, fw.getSum(), amountStyle);
+        putTextCell(cells, rowIndex, 5, fw.getWell(), textStyle);
+        putTextCell(cells, rowIndex, 6, fw.getProject(), textStyle);
+        putTextCell(cells, rowIndex, 7, fw.getWorkDescription(), textStyle);
+        putTextCell(cells, rowIndex, 8, fw.getReviewerName(), textStyle);
+        putDateCell(cells, rowIndex, 9, fw.getReviewTime(), dateStyle);
+        putTextCell(cells, rowIndex, 10, reviewStatus, textStyle);
+        putTextCell(cells, rowIndex, 11, reviewResult, textStyle);
+        putDateTimeCell(cells, rowIndex, 12, fw.getReviewTime(), dateTimeStyle);
+        putTextCell(cells, rowIndex, 13, item != null ? item.getAllowanceName() : "", textStyle);
+        putNullableAmountCell(cells, rowIndex, 14, item != null ? item.getAllowanceProdAmount() : null, amountStyle);
+        putNullableAmountCell(cells, rowIndex, 15, item != null ? item.getAllowanceMealAmount() : null, amountStyle);
+        cells.setRowHeightPixel(rowIndex, 24);
+    }
+
+    private void mergeFieldWorkExportMainColumns(Cells cells, int startRow, int rowCount,
+                                                 Style textStyle, Style dateStyle, Style dateTimeStyle, Style amountStyle) {
+        for (int col : FIELD_WORK_EXPORT_MERGE_COLS) {
+            cells.merge(startRow, col, rowCount, 1);
+            Style style = switch (col) {
+                case 2, 9 -> dateStyle;
+                case 4 -> amountStyle;
+                case 12 -> dateTimeStyle;
+                default -> textStyle;
+            };
+            cells.get(startRow, col).setStyle(style);
+        }
+    }
+
+    private void putTextCell(Cells cells, int rowIndex, int colIndex, String value, Style style) {
+        cells.get(rowIndex, colIndex).putValue(StringUtils.defaultString(value));
+        cells.get(rowIndex, colIndex).setStyle(style);
+    }
+
+    private void putDateCell(Cells cells, int rowIndex, int colIndex, LocalDate value, Style style) {
+        if (value != null) {
+            cells.get(rowIndex, colIndex).putValue(java.sql.Date.valueOf(value));
+        } else {
+            cells.get(rowIndex, colIndex).putValue("");
+        }
+        cells.get(rowIndex, colIndex).setStyle(style);
+    }
+
+    private void putDateCell(Cells cells, int rowIndex, int colIndex, LocalDateTime value, Style style) {
+        if (value != null) {
+            cells.get(rowIndex, colIndex).putValue(java.sql.Date.valueOf(value.toLocalDate()));
+        } else {
+            cells.get(rowIndex, colIndex).putValue("");
+        }
+        cells.get(rowIndex, colIndex).setStyle(style);
+    }
+
+    private void putDateTimeCell(Cells cells, int rowIndex, int colIndex, LocalDateTime value, Style style) {
+        if (value != null) {
+            cells.get(rowIndex, colIndex).putValue(java.sql.Timestamp.valueOf(value));
+        } else {
+            cells.get(rowIndex, colIndex).putValue("");
+        }
+        cells.get(rowIndex, colIndex).setStyle(style);
+    }
+
+    private void putAmountCell(Cells cells, int rowIndex, int colIndex, double value, Style style) {
+        cells.get(rowIndex, colIndex).putValue(value);
+        cells.get(rowIndex, colIndex).setStyle(style);
+    }
+
+    private void putNullableAmountCell(Cells cells, int rowIndex, int colIndex, Double value, Style style) {
+        if (value != null) {
+            cells.get(rowIndex, colIndex).putValue(value);
+        } else {
+            cells.get(rowIndex, colIndex).putValue("");
+        }
+        cells.get(rowIndex, colIndex).setStyle(style);
+    }
+
+    private String resolveFieldWorkAllowanceNames(FieldWork fw) {
+        if (!CollectionUtils.isEmpty(fw.getItemNames())) {
+            return fw.getItemNames().stream()
+                    .filter(StringUtils::isNotBlank)
+                    .distinct()
+                    .collect(Collectors.joining("、"));
+        }
+        if (!CollectionUtils.isEmpty(fw.getItems())) {
+            return fw.getItems().stream()
+                    .map(FieldWorkItem::getAllowanceName)
+                    .filter(StringUtils::isNotBlank)
+                    .distinct()
+                    .collect(Collectors.joining("、"));
+        }
+        return "";
+    }
+
+    private String convertFieldWorkReviewStatus(String reviewResult) {
+        if (StringUtils.isBlank(reviewResult)) {
+            return "";
+        }
+        if (OAConstants.FW_PASS.equals(reviewResult)) {
+            return "通过";
+        }
+        if (OAConstants.FW_REJECT.equals(reviewResult)) {
+            return "拒绝";
+        }
+        if (OAConstants.FW_WAITING.equals(reviewResult)) {
+            return "待审批";
+        }
+        if (OAConstants.FW_WITHDRAW.equals(reviewResult)) {
+            return "已撤销";
+        }
+        return reviewResult;
+    }
+
+    private void applyFieldWorkExportColumnWidth(Cells cells) {
+        int[] widths = {12, 12, 14, 22, 14, 18, 24, 30, 12, 14, 12, 24, 20, 20, 16, 16};
+        for (int i = 0; i < widths.length; i++) {
+            cells.setColumnWidth(i, widths[i]);
+        }
+    }
+
+    private Style createFieldWorkExportHeaderStyle(Workbook workbook) {
+        Style style = workbook.createStyle();
+        Font font = style.getFont();
+        font.setBold(true);
+        font.setName("SimSun");
+        font.setSize(11);
+        style.setPattern(com.aspose.cells.BackgroundType.SOLID);
+        style.setForegroundColor(Color.fromArgb(242, 242, 242));
+        style.setHorizontalAlignment(TextAlignmentType.CENTER);
+        style.setVerticalAlignment(TextAlignmentType.CENTER);
+        style.setTextWrapped(true);
+        setFieldWorkExportBorder(style);
+        return style;
+    }
+
+    private Style createFieldWorkExportAllowanceHeaderStyle(Workbook workbook) {
+        Style style = createFieldWorkExportHeaderStyle(workbook);
+        style.setForegroundColor(Color.fromArgb(226, 239, 218));
+        return style;
+    }
+
+    private Style createFieldWorkExportTextStyle(Workbook workbook) {
+        Style style = workbook.createStyle();
+        Font font = style.getFont();
+        font.setName("SimSun");
+        font.setSize(10);
+        style.setHorizontalAlignment(TextAlignmentType.CENTER);
+        style.setVerticalAlignment(TextAlignmentType.CENTER);
+        style.setTextWrapped(true);
+        setFieldWorkExportBorder(style);
+        return style;
+    }
+
+    private Style createFieldWorkExportDateStyle(Workbook workbook) {
+        Style style = createFieldWorkExportTextStyle(workbook);
+        style.setCustom("yyyy-MM-dd");
+        return style;
+    }
+
+    private Style createFieldWorkExportDateTimeStyle(Workbook workbook) {
+        Style style = createFieldWorkExportTextStyle(workbook);
+        style.setCustom("yyyy-MM-dd HH:mm:ss");
+        return style;
+    }
+
+    private Style createFieldWorkExportAmountStyle(Workbook workbook) {
+        Style style = createFieldWorkExportTextStyle(workbook);
+        style.setCustom("0.00");
+        return style;
+    }
+
+    private void setFieldWorkExportBorder(Style style) {
+        style.setBorder(BorderType.TOP_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.BOTTOM_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.LEFT_BORDER, CellBorderType.THIN, Color.getBlack());
+        style.setBorder(BorderType.RIGHT_BORDER, CellBorderType.THIN, Color.getBlack());
     }
 
     @Override
@@ -812,6 +1074,8 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         });
         header1.add(new Header(COL_ATD));
         header1.addAll(headerList(headers.stream().map(CalendarEvent::getShortName).toList()));
+        //生产奖金标题
+        header1.add(new Header(COL_PROD_BONUS));
         excelWriter.fill(new FillWrapper("dateHeader", header1), fillConfig, writeSheet);
         //weekHeader, 星期+补贴金额 横向
         List<Object> header2 = new ArrayList<>();
@@ -859,6 +1123,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                     erow.add(null);
                 }
             }
+
             list.add(erow);
         }
         excelWriter.write(list, writeSheet);
@@ -890,7 +1155,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
         return new File(file);
     }
-
 
     private String convertCompany(String shortCompany) {
         if (StringUtils.isBlank(shortCompany)) {

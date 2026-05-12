@@ -103,7 +103,7 @@ abt:
     export:
       template: E:\\fw_atd\\fieldwork_atd_model2.xlsx
       tempfile:
-        path: E:\\fw_atd\\fw_export.xlsx
+        path: E:\\fw_atd\\
   
   # ------ app
   app:

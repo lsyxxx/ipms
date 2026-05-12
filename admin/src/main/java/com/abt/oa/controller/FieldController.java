@@ -4,6 +4,7 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.model.Table;
 import com.abt.common.model.User;
+import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.common.util.TokenUtil;
 import com.abt.common.util.ValidateUtil;
@@ -24,6 +25,7 @@ import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.PermissionService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -179,6 +181,35 @@ public class FieldController {
         form.setUserid(user.getId());
         final Page<FieldWork> page = fieldWorkService.findAllRecords(form);
         return R.success(page.getContent(), (int)page.getTotalElements());
+    }
+
+
+    /**
+     * 导出记录
+     * @param form 查询条件
+     */
+    @GetMapping("/export/record")
+    public void exportRecords(@ModelAttribute FieldWorkRequestForm form, HttpServletResponse response) throws IOException {
+        try {
+            final UserView user = TokenUtil.getUserFromAuthToken();
+            form.setUserid(user.getId());
+            form.noPaging();
+            final Page<FieldWork> page = fieldWorkService.findAllRecords(form);
+
+            String fileName = "野外记录明细_" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + ".xlsx";
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            fieldWorkService.createExportExcel(page.getContent(), response.getOutputStream());
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("下载野外记录明细失败", e);
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().println(JsonUtil.convertJson(R.fail("下载野外记录明细失败!")));
+        }
     }
 
     @GetMapping("/find/atd")
