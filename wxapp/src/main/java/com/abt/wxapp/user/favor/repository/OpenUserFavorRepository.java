@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * 用户收藏数据访问
+ */
 @Repository
 public interface OpenUserFavorRepository extends JpaRepository<OpenUserFavor, String> {
 
@@ -26,6 +29,6 @@ public interface OpenUserFavorRepository extends JpaRepository<OpenUserFavor, St
             "LEFT JOIN CheckModule m ON f.checkModuleId = m.id " +
             "WHERE f.userId =:userId " +
             "ORDER BY f.createDate DESC")
-    List<UserFavorDTO> findUserFavorList(String userId);
+    List<UserFavorDTO> findListByUserId(String userId);
 
 }

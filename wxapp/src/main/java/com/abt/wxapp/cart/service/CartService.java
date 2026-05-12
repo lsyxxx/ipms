@@ -1,6 +1,6 @@
 package com.abt.wxapp.cart.service;
 
-import com.abt.wxapp.cart.entity.Cart;
+import com.abt.wxapp.cart.model.CartListItemVo;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ public interface CartService {
     /**
      * 根据用户ID获取清单列表
      */
-    List<Cart> findCartList(String userid);
+    List<CartListItemVo> findList();
 
 
 }

@@ -18,7 +18,7 @@ public class WxApiServiceImpl implements WxApiService {
     }
 
     @Override
-    public String getUserOpenid(String code) {
+    public String findUserOpenid(String code) {
         return "TEST_OPENID";
     }
 }

@@ -8,8 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface OpenUserRepository extends JpaRepository<OpenUserInfo, String> {
+
+    Optional<OpenUserInfo> findByOpenIdAndChannel(String openId, ChannelEnum channel);
 
     @Query("SELECT u FROM OpenUserInfo u WHERE " +
             "(:query IS NULL OR :query = '' " +

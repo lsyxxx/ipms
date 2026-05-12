@@ -1,18 +1,19 @@
 package com.abt.wxapp.user.client.service;
 
-import com.abt.wxapp.user.client.entity.OpenUserClient;
+import com.abt.wxapp.user.client.model.ClientRequest;
+import com.abt.wxapp.user.client.model.ClientVo;
 
 import java.util.List;
 
 public interface ClientService {
 
-    OpenUserClient saveClient(OpenUserClient client);
+    ClientVo save(ClientRequest request);
 
-    void deleteClient(String id);
+    void delete(String id);
 
-    List<OpenUserClient> findClientsByUserId(String userId);
+    List<ClientVo> findList(String userId);
 
-    void setDefaultClient(String userId, String id);
+    void updateDefault(String userId, String id);
 
-    OpenUserClient findClientById(String id);
+    ClientVo findById(String id);
 }

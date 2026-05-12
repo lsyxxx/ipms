@@ -77,4 +77,10 @@ public interface CheckModuleRepository extends JpaRepository<CheckModule, String
             "LEFT JOIN CheckUnit cu ON cm.checkUnitId = cu.id " +
             "WHERE rel.instrumentId = :instrumentId")
     List<SimpleCheckModule> findSimpleModulesByInstrumentId(String instrumentId);
+
+    /**
+     * 小程序等项目列表：指定渠道、已启用且已发布的检测项目
+     */
+    List<CheckModule> findByUseChannelAndEnabledTrueAndStatusOrderByNameAsc(
+            ChannelEnum useChannel, int status);
 }

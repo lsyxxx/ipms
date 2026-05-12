@@ -2,6 +2,7 @@ package com.abt.wxapp.exception;
 
 import com.abt.sys.exception.SystemException;
 import com.abt.wxapp.common.model.R;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -69,6 +70,15 @@ public class GlobalExceptionHandler {
         String messages = bindingResult.getAllErrors()
                 .stream()
                 .map(ObjectError::getDefaultMessage)
+                .collect(Collectors.joining("；"));
+        return R.fail("参数校验失败:" + messages);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public R<Void> handleConstraintViolationException(ConstraintViolationException e) {
+        String messages = e.getConstraintViolations().stream()
+                .map(v -> v.getMessage())
                 .collect(Collectors.joining("；"));
         return R.fail("参数校验失败:" + messages);
     }

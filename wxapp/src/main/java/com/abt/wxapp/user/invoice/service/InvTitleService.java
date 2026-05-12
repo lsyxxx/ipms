@@ -1,6 +1,8 @@
 package com.abt.wxapp.user.invoice.service;
 
-import com.abt.wxapp.user.invoice.entity.OpenUserInvTitle;
+import com.abt.wxapp.user.invoice.model.InvTitleRequest;
+import com.abt.wxapp.user.invoice.model.InvTitleVo;
+
 import java.util.List;
 
 /**
@@ -11,25 +13,25 @@ public interface InvTitleService {
     /**
      * 保存或更新发票抬头
      */
-    OpenUserInvTitle saveInvTitle(OpenUserInvTitle invTitle);
+    InvTitleVo save(InvTitleRequest request);
 
     /**
      * 获取用户的发票抬头列表
      */
-    List<OpenUserInvTitle> findListByUserId(String userId);
+    List<InvTitleVo> findList(String userId);
 
     /**
      * 删除发票抬头
      */
-    void deleteInvTitle(String id);
+    void delete(String id);
 
     /**
      * 设置默认发票抬头
      */
-    void setDefaultInvTitle(String userId, String id);
+    void updateDefault(String userId, String id);
 
     /**
      * 根据 ID 获取单个发票抬头详情
      */
-    OpenUserInvTitle findTitleById(String id);
+    InvTitleVo findById(String id);
 }

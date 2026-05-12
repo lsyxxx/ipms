@@ -6,8 +6,12 @@ import com.abt.wxapp.user.favor.repository.OpenUserFavorRepository;
 import com.abt.wxapp.user.favor.service.UserFavorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
+/**
+ * 用户收藏业务实现
+ */
 @Service
 @RequiredArgsConstructor
 public class UserFavorServiceImpl implements UserFavorService {
@@ -15,7 +19,8 @@ public class UserFavorServiceImpl implements UserFavorService {
     private final OpenUserFavorRepository favorRepository;
 
     @Override
-    public void insertUserFavor(String userId, String checkModuleId) {
+    @Transactional
+    public void save(String userId, String checkModuleId) {
         OpenUserFavor favor = new OpenUserFavor();
         favor.setUserId(userId);
         favor.setCheckModuleId(checkModuleId);
@@ -23,12 +28,13 @@ public class UserFavorServiceImpl implements UserFavorService {
     }
 
     @Override
-    public void deleteUserFavor(String favorId) {
+    @Transactional
+    public void delete(String favorId) {
         favorRepository.deleteById(favorId);
     }
 
     @Override
-    public List<UserFavorDTO> findUserFavorList(String userId) {
-        return favorRepository.findUserFavorList(userId);
+    public List<UserFavorDTO> findList(String userId) {
+        return favorRepository.findListByUserId(userId);
     }
 }

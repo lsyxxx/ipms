@@ -12,6 +12,6 @@ public interface WxApiService {
      * 官方api: https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html
      * @param code wx.login中返回的用户code
      */
-    String getUserOpenid(String code);
+    String findUserOpenid(String code);
 
 }

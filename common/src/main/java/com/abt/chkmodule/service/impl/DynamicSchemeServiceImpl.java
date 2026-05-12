@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 检测项目动态表单
@@ -66,6 +67,11 @@ public class DynamicSchemeServiceImpl implements DynamicSchemeService {
     @Override
     public void findOneBy(Long id) {
         dynamicSchemeRepository.findById(id).orElseThrow(() -> new BusinessException("未查询到指定动态表单(id = " + id + ")"));
+    }
+
+    @Override
+    public Optional<DynamicScheme> findById(Long id) {
+        return dynamicSchemeRepository.findById(id);
     }
 
 

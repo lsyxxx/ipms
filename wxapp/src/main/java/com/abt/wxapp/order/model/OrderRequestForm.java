@@ -1,6 +1,8 @@
 package com.abt.wxapp.order.model;
 
 import com.abt.chkmodule.entity.OptionData;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,11 +18,13 @@ public class OrderRequestForm {
     /**
      * 动态表单配置ID，用于表示的是哪个表单
      */
+    @NotNull(message = "动态表单配置ID不能为空")
     private Long schemeId;
 
     /**
      * 检测项目ID
      */
+    @NotBlank(message = "检测项目ID不能为空")
     private String checkModuleId;
 
 
