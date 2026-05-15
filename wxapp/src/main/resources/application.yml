@@ -1,11 +1,14 @@
+server:
+  servlet:
+    context-path: /wxapp
+
+
 
 spring:
   application:
     name: wxapp
   profiles:
     active: dev
-
-
   jpa:
     hibernate:
       naming:

@@ -45,7 +45,7 @@ class MaterialServiceImplTest {
         d1.setDetailId("dtlNo122");
         d1.setName("U盘");
         d1.setSpecification("64G");
-        d1.setQuantity(2);
+        d1.setQuantity(2.0);
         //需要在双方的对象都添加...才能级联保存
         main.addDetail(d1);
         d1.setMain(main);
@@ -91,7 +91,7 @@ class MaterialServiceImplTest {
         d1.setDetailId("dtl888");
         d1.setName("天平");
         d1.setSpecification("精确0.000001");
-        d1.setQuantity(1);
+        d1.setQuantity(1.0);
         main.addDetail(d1);
         //需要setMain
         d1.setMain(main);

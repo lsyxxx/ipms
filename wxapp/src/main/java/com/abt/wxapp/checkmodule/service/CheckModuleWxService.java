@@ -1,5 +1,6 @@
 package com.abt.wxapp.checkmodule.service;
 
+import com.abt.chkmodule.service.CheckModuleService;
 import com.abt.wxapp.checkmodule.model.CheckModuleDetailVo;
 import com.abt.wxapp.checkmodule.model.DynamicSchemeVo;
 import com.abt.wxapp.checkmodule.model.ProjectHomeItemVo;
@@ -12,11 +13,5 @@ import java.util.List;
  */
 public interface CheckModuleWxService {
 
-    List<ProjectListItemVo> findList();
 
-    CheckModuleDetailVo findById(String id);
-
-    List<ProjectHomeItemVo> findHomeList();
-
-    DynamicSchemeVo findFormSchemaById(Long formSchemaId);
 }

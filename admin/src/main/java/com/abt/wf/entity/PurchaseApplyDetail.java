@@ -82,19 +82,19 @@ public class PurchaseApplyDetail {
      * 申请数量
      */
     @Column(name="quantity_")
-    private Integer quantity;
+    private Double quantity;
 
     /**
      * 当前结果
      */
     @Column(name="cur_quantity")
-    private Integer currentQuantity;
+    private Double currentQuantity;
 
     /**
      * 业务主管修改后数量
      */
     @Column(name="mgr_modify")
-    private Integer managerModify = null;
+    private Double managerModify = null;
     /**
      * 业务主管
      */
@@ -111,7 +111,7 @@ public class PurchaseApplyDetail {
      * 业务副总修改后数量
      */
     @Column(name="leader_modify")
-    private Integer leaderModify= null;
+    private Double leaderModify= null;
 
     /**
      * 业务副总
@@ -129,7 +129,7 @@ public class PurchaseApplyDetail {
      * 综合办公室修改
      */
     @Column(name="final_modify")
-    private Integer finalModify = null;
+    private Double finalModify = null;
 
     /**
      * 综合办公室审批人id
