@@ -16,6 +16,11 @@ public class SettlementStatRequestForm extends RequestForm {
     private String entrustId;
 
     /**
+     * 项目名称，支持模糊查询。
+     */
+    private String projectName;
+
+    /**
      * 客户名称，支持模糊查询。
      */
     private String clientName;
@@ -26,7 +31,18 @@ public class SettlementStatRequestForm extends RequestForm {
     private String contractQuery;
 
     /**
-     * 结算状态，可选：SETTLED / UNSETTLED。
+     * 结算状态，可选：SETTLED / PARTIALLY_SETTLED / UNSETTLED。
      */
     private String settlementStatus;
+
+    /**
+     * 年份。
+     */
+    private Integer year;
+
+    /**
+     * 日期快捷范围：
+     * THIS_MONTH / THIS_QUARTER / THIS_YEAR / CUSTOM
+     */
+    private String datePreset;
 }

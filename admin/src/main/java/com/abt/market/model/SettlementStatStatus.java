@@ -6,5 +6,6 @@ package com.abt.market.model;
  */
 public enum SettlementStatStatus {
     SETTLED,
+    PARTIALLY_SETTLED,
     UNSETTLED
 }

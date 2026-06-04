@@ -37,7 +37,7 @@ spring:
         
   # --------- datasource
   datasource:
-    url: jdbc:sqlserver://localhost:1433;database=ZJData;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost:1433;database=ZJData20260525;trustServerCertificate=true
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: sa
     password: "123456"

@@ -4,7 +4,6 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
 import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TokenUtil;
-import com.abt.finance.entity.Invoice;
 import com.abt.finance.invoice.CheckAndSaveInvoice;
 import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
@@ -12,25 +11,19 @@ import com.abt.sys.model.dto.UserView;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.PayVoucher;
-import com.abt.wf.entity.Reimburse;
-import com.abt.wf.entity.TripMain;
 import com.abt.wf.model.PayVoucherRequestForm;
 import com.abt.wf.model.ReimburseExportDTO;
-import com.abt.wf.model.ReimburseRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.CostDetailService;
 import com.abt.wf.service.PayVoucherService;
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.write.metadata.WriteSheet;
-import com.abt.wf.service.ReimburseService;
 import com.abt.wf.util.WorkFlowUtil;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -46,11 +39,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.abt.wf.config.Constants.SERVICE_PAY;
-import static com.abt.wf.config.Constants.SERVICE_RBS;
 
 /**
  * 款项支付单
@@ -58,6 +49,7 @@ import static com.abt.wf.config.Constants.SERVICE_RBS;
 @RestController
 @Slf4j
 @RequestMapping("/wf/pay")
+@RequiredArgsConstructor
 public class PayVoucherController {
     private final PayVoucherService payVoucherService;
     private final CostDetailService costDetailService;
@@ -75,11 +67,6 @@ public class PayVoucherController {
     @Value("${abt.temp.dir}")
     private String tempDir;
 
-    public PayVoucherController(PayVoucherService payVoucherService, CostDetailService costDetailService, InvoiceService invoiceService) {
-        this.payVoucherService = payVoucherService;
-        this.costDetailService = costDetailService;
-        this.invoiceService = invoiceService;
-    }
 
     /**
      * 转交任务

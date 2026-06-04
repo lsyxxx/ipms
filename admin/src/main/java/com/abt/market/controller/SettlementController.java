@@ -10,6 +10,7 @@ import com.abt.market.entity.StlmSmryTemp;
 import com.abt.market.entity.StlmTestTemp;
 import com.abt.market.model.*;
 import com.abt.market.service.SettlementService;
+import com.abt.market.service.SettlementStatService;
 import com.abt.sys.model.dto.UserView;
 import com.abt.testing.entity.SampleRegistCheckModeuleItem;
 import com.abt.testing.service.SampleRegistCheckModeuleItemService;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -40,10 +42,12 @@ import java.util.List;
 @RequestMapping("/stlm")
 public class SettlementController {
     private final SettlementService settlementService;
+    private final SettlementStatService settlementStatService;
     private final SampleRegistCheckModeuleItemService sampleRegistCheckModeuleItemService;
 
-    public SettlementController(SettlementService settlementService, SampleRegistCheckModeuleItemService sampleRegistCheckModeuleItemService) {
+    public SettlementController(SettlementService settlementService, SettlementStatService settlementStatService, SampleRegistCheckModeuleItemService sampleRegistCheckModeuleItemService) {
         this.settlementService = settlementService;
+        this.settlementStatService = settlementStatService;
         this.sampleRegistCheckModeuleItemService = sampleRegistCheckModeuleItemService;
     }
 
@@ -303,5 +307,121 @@ public class SettlementController {
     public R<Page<SettlementDetailDTO>> findSettlementDetailsByClient(@ModelAttribute SettlementDetailRequestForm requestForm) {
         final Page<SettlementDetailDTO> page = settlementService.findSettlementDetailsByClientId(requestForm);
         return R.success(page);
+    }
+
+    /**
+     * 按项目分页查询结算状态。
+     * 参数：
+     * entrustId：项目编号，支持模糊查询
+     * projectName：项目名称，支持模糊查询
+     * clientName：客户名称，支持模糊查询
+     * settlementStatus：SETTLED / PARTIALLY_SETTLED / UNSETTLED
+     * startDate / endDate：自定义日期范围，包含结束日期
+     * datePreset：THIS_MONTH / THIS_QUARTER / THIS_YEAR / CUSTOM
+     * year：兼容旧用法；当未传 startDate/endDate 且未传 CUSTOM 时，可传 year 表示整年范围
+     * page / limit：分页参数
+     */
+    @GetMapping("/stat/entrust/page")
+    public R<Page<EntrustSettlementStatDTO>> findEntrustStatPage(@ModelAttribute SettlementStatRequestForm requestForm) {
+        final Page<EntrustSettlementStatDTO> page = settlementStatService.findEntrustStatsPage(requestForm);
+        return R.success(page);
+    }
+
+    /**
+     * 查询单个项目的结算汇总状态。
+     * 参数：
+     * entrustId：项目编号，必填
+     */
+    @GetMapping("/stat/entrust/summary")
+    public R<EntrustSettlementStatDTO> findEntrustSummary(String entrustId) {
+        final EntrustSettlementStatDTO dto = settlementStatService.findEntrustSummary(entrustId);
+        return R.success(dto);
+    }
+
+    /**
+     * 查询单个项目的结算差异明细。
+     * 参数：
+     * entrustId：项目编号，必填
+     * 返回：
+     * 1. MATCHED：源数据与结算明细都存在
+     * 2. UNSETTLED：源数据存在，但未进入结算
+     * 3. EXTRA_SETTLED：结算明细存在，但源数据中不存在
+     */
+    @GetMapping("/stat/entrust/diff")
+    public R<EntrustSettlementDiffDTO> findEntrustDiff(String entrustId) {
+        final EntrustSettlementDiffDTO dto = settlementStatService.findEntrustDiff(entrustId);
+        return R.success(dto);
+    }
+
+    /**
+     * 查询日期范围结算汇总。
+     * 参数：
+     * startDate / endDate：自定义日期范围，包含结束日期
+     * datePreset：THIS_MONTH / THIS_QUARTER / THIS_YEAR / CUSTOM
+     * year：兼容旧用法；当未传 startDate/endDate 时，可传 year 表示整年范围
+     */
+    @GetMapping("/stat/summary")
+    public R<SettlementYearSummaryDTO> findSummary(@ModelAttribute SettlementStatRequestForm requestForm) {
+        final SettlementYearSummaryDTO dto = settlementStatService.findSummary(requestForm);
+        return R.success(dto);
+    }
+
+    /**
+     * 兼容旧路径，内部仍按日期范围统计。
+     */
+    @GetMapping("/stat/year/summary")
+    public R<SettlementYearSummaryDTO> findSummaryCompat(@ModelAttribute SettlementStatRequestForm requestForm) {
+        final SettlementYearSummaryDTO dto = settlementStatService.findSummary(requestForm);
+        return R.success(dto);
+    }
+
+    /**
+     * 导出指定年份的所有结算单据。
+     * 字段：
+     * 结算单号、结算单位、客户、结算金额、创建人、创建日期、附件名称、开票状态
+     */
+    @GetMapping("/stat/export/settlements")
+    public void exportSettlementsByYear(@RequestParam Integer year, HttpServletResponse response) {
+        exportExcel(response, "结算单据_" + year + ".xlsx", outputStream ->
+                settlementStatService.exportSettlementsByYear(year, outputStream));
+    }
+
+    /**
+     * 导出指定年份的项目及结算情况。
+     * 年份口径：Entrust.htBianHao 包含该年份，例如 AJC2025001Y001 表示 2025 年。
+     */
+    @GetMapping("/stat/export/entrusts")
+    public void exportEntrustStatsByYear(@RequestParam Integer year, HttpServletResponse response) {
+        exportExcel(response, "项目结算情况_" + year + ".xlsx", outputStream ->
+                settlementStatService.exportEntrustStatsByYear(year, outputStream));
+    }
+
+    /**
+     * 导出指定年份所有项目的样品和检测项目结算情况。
+     * 年份口径：Entrust.htBianHao 包含该年份。
+     */
+    @GetMapping("/stat/export/entrust-items")
+    public void exportEntrustItemsByYear(@RequestParam Integer year, HttpServletResponse response) {
+        exportExcel(response, "项目样品检测结算情况_" + year + ".xlsx", outputStream ->
+                settlementStatService.exportEntrustSampleSettlementsByYear(year, outputStream));
+    }
+
+    @FunctionalInterface
+    private interface ExportAction {
+        void write(OutputStream outputStream) throws Exception;
+    }
+
+    private void exportExcel(HttpServletResponse response, String fileName, ExportAction exportAction) {
+        try {
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1) + "\"");
+            exportAction.write(response.getOutputStream());
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("导出Excel失败", e);
+            throw new BusinessException("导出失败: " + e.getMessage());
+        }
     }
 }

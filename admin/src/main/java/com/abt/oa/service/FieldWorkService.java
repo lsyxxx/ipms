@@ -106,6 +106,16 @@ public interface FieldWorkService {
      */
     void createExportExcel(List<FieldWork> data, OutputStream outputStream);
 
+    /**
+     * 分页导出野外记录明细
+     */
+    void createExportExcel(FieldWorkRequestForm form, OutputStream outputStream);
+
+    /**
+     * 分页导出野外记录主表
+     */
+    void createSimpleExportExcel(FieldWorkRequestForm form, OutputStream outputStream);
+
     FieldWork detail(String id);
 
     int confirm(String userid, List<String> ids);

@@ -18,7 +18,6 @@ import com.abt.wf.model.ReimburseExportDTO;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.common.model.ValidationResult;
 import com.abt.wf.repository.PayVoucherRepository;
-import com.abt.wf.service.CommonSpecifications;
 import com.abt.wf.service.FlowOperationLogService;
 import com.abt.wf.service.PayVoucherService;
 import com.abt.wf.service.SignatureService;
@@ -33,7 +32,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -47,7 +45,7 @@ import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_PAY_VOUCHER;
  */
 @Service(DEF_KEY_PAY_VOUCHER)
 @Slf4j
-public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<PayVoucher, PayVoucherRequestForm> implements PayVoucherService {
+public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<PayVoucher, PayVoucherRequestForm> implements PayVoucherService{
 
     private final IdentityService identityService;
     private final UserService userService;
@@ -329,26 +327,4 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         return dto;
     }
 
-
-
-    static class PayVoucherSpecifications extends CommonSpecifications<PayVoucherRequestForm, PayVoucher> {
-        //criteria 申请人 申请日期（起止日期） 流程状态 审批编号 合同名称 合同编号
-        public Specification<PayVoucher> contractNoLike(PayVoucherRequestForm form) {
-            return (root, query, builder) -> {
-                if (StringUtils.isNotBlank(form.getContractNo())) {
-                    return builder.like(root.get("contractNo"), form.getContractNo());
-                }
-                return null;
-            };
-        }
-
-        public Specification<PayVoucher> contractNameLike(PayVoucherRequestForm form) {
-            return (root, query, builder) -> {
-                if (StringUtils.isNotBlank(form.getContractName())) {
-                    return builder.like(root.get("contractName"), form.getContractName());
-                }
-                return null;
-            };
-        }
-    }
 }

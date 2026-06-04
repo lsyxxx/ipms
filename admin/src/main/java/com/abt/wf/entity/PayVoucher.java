@@ -1,30 +1,26 @@
 package com.abt.wf.entity;
 
 import com.abt.common.config.ValidateGroup;
+import com.abt.common.listener.BizRelatedConverter;
+import com.abt.common.model.BizRelatedVO;
 import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.entity.Invoice;
 import com.abt.finance.service.ICreditBook;
-import com.abt.wf.config.Constants;
-import com.abt.wf.listener.JpaWorkflowListener;
 import com.abt.wf.model.WithInvoice;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,6 +187,14 @@ public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice
      */
     @Column(name = "pay_acc_id", columnDefinition = "VARCHAR(128)")
     private String payAccountId;
+
+    /**
+     * 关联的业务单据json，仅保留部分信息快照
+     */
+    @Convert(converter = BizRelatedConverter.class)
+    @Column(name="rel_biz", columnDefinition = "TEXT")
+    private List<BizRelatedVO> relatedBiz;
+
 
     @Transient
     private String comment;

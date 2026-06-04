@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SettlementMainRepository extends JpaRepository<SettlementMain, String>, JpaSpecificationExecutor<SettlementMain> {
@@ -483,5 +484,16 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
       and m.clientId = :clientId
     """)
     Page<SettlementMain> findDetailPageByClientId(String clientId, List<SaveType> saveTypes, Pageable pageable);
+
+    @Query("""
+    select m
+    from SettlementMain m
+    where m.isDel = false
+      and m.saveType <> com.abt.market.model.SaveType.TEMP
+      and m.createDate >= :startTime
+      and m.createDate < :endTime
+    order by m.createDate asc, m.id asc
+    """)
+    List<SettlementMain> findExportSettlements(LocalDateTime startTime, LocalDateTime endTime);
 
 }

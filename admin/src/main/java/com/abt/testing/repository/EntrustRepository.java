@@ -10,4 +10,6 @@ public interface EntrustRepository extends JpaRepository<Entrust, String> {
   List<Entrust> findByhtBianHao(String htBianHao);
 
   List<Entrust> findByIdIn(Collection<String> ids);
+
+  List<Entrust> findByHtBianHaoContainingOrderByIdAsc(String yearText);
 }

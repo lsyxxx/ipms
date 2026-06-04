@@ -2,6 +2,7 @@ package com.abt.oa.controller;
 
 import com.abt.common.config.ValidateGroup;
 import com.abt.common.model.R;
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.Table;
 import com.abt.common.model.User;
 import com.abt.common.util.JsonUtil;
@@ -193,15 +194,12 @@ public class FieldController {
         try {
             final UserView user = TokenUtil.getUserFromAuthToken();
             form.setUserid(user.getId());
-            form.noPaging();
-            final Page<FieldWork> page = fieldWorkService.findAllRecords(form);
-
             String fileName = "野外记录明细_" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + ".xlsx";
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Disposition",
                     "attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
-            fieldWorkService.createExportExcel(page.getContent(), response.getOutputStream());
+            fieldWorkService.createExportExcel(form, response.getOutputStream());
             response.getOutputStream().flush();
         } catch (Exception e) {
             log.error("下载野外记录明细失败", e);
@@ -209,6 +207,31 @@ public class FieldController {
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
             response.getWriter().println(JsonUtil.convertJson(R.fail("下载野外记录明细失败!")));
+        }
+    }
+
+    /**
+     * 简单导出记录，仅导出主表
+     * @param form 查询条件
+     */
+    @GetMapping("/export/record/simple")
+    public void exportSimpleRecords(@ModelAttribute FieldWorkRequestForm form, HttpServletResponse response) throws IOException {
+        try {
+            final UserView user = TokenUtil.getUserFromAuthToken();
+            form.setUserid(user.getId());
+            String fileName = "野外记录主表_" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + ".xlsx";
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            fieldWorkService.createSimpleExportExcel(form, response.getOutputStream());
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("下载野外记录主表失败", e);
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            response.getWriter().println(JsonUtil.convertJson(R.fail("下载野外记录主表失败!")));
         }
     }
 

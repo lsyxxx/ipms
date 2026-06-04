@@ -20,11 +20,11 @@
       <bpmn:incoming>Flow_02ev364</bpmn:incoming>
       <bpmn:outgoing>Flow_0spcv69</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="st_dceo" name="主管生产副总" camunda:assignee="${st_dceo_userid}">
+    <bpmn:userTask id="st_dceo" name="主管生产副总" camunda:assignee="U20230406020">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="approvalType" value="0" />
-          <camunda:property name="selectUserType" value="5" />
+          <camunda:property name="selectUserType" value="1" />
           <camunda:property name="taskType" value="approval" />
         </camunda:properties>
       </bpmn:extensionElements>
@@ -122,21 +122,17 @@
         <dc:Bounds x="1100" y="140" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1suiyw0_di" bpmnElement="st_apply">
-        <dc:Bounds x="230" y="140" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_05edypi" bpmnElement="st_biz_dm">
         <dc:Bounds x="550" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1suiyw0_di" bpmnElement="st_apply">
+        <dc:Bounds x="230" y="140" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_03u6xa8_di" bpmnElement="Flow_03u6xa8">
         <di:waypoint x="188" y="180" />
         <di:waypoint x="230" y="180" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_02ev364_di" bpmnElement="Flow_02ev364">
-        <di:waypoint x="330" y="180" />
-        <di:waypoint x="380" y="180" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1vmrico_di" bpmnElement="Flow_1vmrico">
         <di:waypoint x="770" y="140" />
@@ -166,6 +162,10 @@
       <bpmndi:BPMNEdge id="Flow_1b0pt0c_di" bpmnElement="Flow_1b0pt0c">
         <di:waypoint x="650" y="180" />
         <di:waypoint x="720" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02ev364_di" bpmnElement="Flow_02ev364">
+        <di:waypoint x="330" y="180" />
+        <di:waypoint x="380" y="180" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
