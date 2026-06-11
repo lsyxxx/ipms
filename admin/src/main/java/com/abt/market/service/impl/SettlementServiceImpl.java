@@ -311,6 +311,30 @@ public class SettlementServiceImpl implements SettlementService {
         return main;
     }
 
+    @Override
+    public SettlementMain findSettlementMainWithSummary(String id) {
+        Objects.requireNonNull(id, "结算单ID不能为空");
+        final SettlementMain main = settlementMainRepository.findOneWithSummary(id);
+        if (main == null) {
+            throw new BusinessException("未查询到结算单(id=" + id + ")");
+        }
+        return main;
+    }
+
+    @Override
+    public Page<TestItem> findTestItemsBySettlementId(String id, Pageable pageable) {
+        Objects.requireNonNull(id, "结算单ID不能为空");
+        if (settlementMainRepository.countById(id) == 0) {
+            throw new BusinessException("未查询到结算单(id=" + id + ")");
+        }
+        Pageable sortedPageable = pageable;
+        if (pageable.getSort().isUnsorted()) {
+            sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                    Sort.by(Sort.Order.asc("sampleNo"), Sort.Order.asc("checkModuleId")));
+        }
+        return testItemRepository.findPageByMid(id, sortedPageable);
+    }
+
     @Transactional
     @Override
     public void delete(String id) {

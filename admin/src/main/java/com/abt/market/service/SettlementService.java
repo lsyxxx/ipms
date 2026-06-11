@@ -27,6 +27,19 @@ public interface SettlementService {
      */
     SettlementMain findSettlementMainWithAllItems(String id);
 
+    /**
+     * 获取主表及汇总数据，不包含样品明细。
+     * @param id 结算单id
+     */
+    SettlementMain findSettlementMainWithSummary(String id);
+
+    /**
+     * 按结算单ID分页查询样品明细。
+     * @param id 结算单id
+     * @param pageable 分页参数
+     */
+    Page<TestItem> findTestItemsBySettlementId(String id, Pageable pageable);
+
 
     /**
      * 删除结算单及所有关联的

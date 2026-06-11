@@ -14,6 +14,7 @@ import java.util.List;
 
 public interface SettlementMainRepository extends JpaRepository<SettlementMain, String>, JpaSpecificationExecutor<SettlementMain> {
 
+
     /**
      * 关联检测项目及其他费用
      *
@@ -23,6 +24,14 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
     @Query("select m from SettlementMain m where m.id = :id")
     SettlementMain findOneWithAllItems(String id);
 
+    /**
+     * 仅查询主表及汇总数据，不加载样品明细。
+     *
+     * @param id 主表id
+     */
+    @EntityGraph(attributePaths = {"summaryTab"})
+    @Query("select m from SettlementMain m where m.id = :id")
+    SettlementMain findOneWithSummary(String id);
 
     long countById(String id);
 

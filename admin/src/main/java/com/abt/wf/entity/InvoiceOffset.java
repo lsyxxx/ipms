@@ -144,7 +144,7 @@ public class InvoiceOffset extends WorkflowBase implements WithInvoice{
      * 如果发票列表中没数据，那么不变
      */
     public void generateInvoiceCode() {
-        if (this.invoiceList != null && this.invoiceList.size() > 0) {
+        if (this.invoiceList != null && !this.invoiceList.isEmpty()) {
             this.invoiceCode = this.invoiceList.stream().map(Invoice::getCode).collect(Collectors.joining(","));
         }
     }

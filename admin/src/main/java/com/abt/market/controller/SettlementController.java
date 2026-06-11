@@ -2,12 +2,14 @@ package com.abt.market.controller;
 
 import cn.idev.excel.FastExcel;
 import com.abt.common.config.ValidateGroup;
+import com.abt.common.model.RequestForm;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.market.entity.SettlementMain;
 import com.abt.market.entity.SettlementSummary;
 import com.abt.market.entity.StlmSmryTemp;
 import com.abt.market.entity.StlmTestTemp;
+import com.abt.market.entity.TestItem;
 import com.abt.market.model.*;
 import com.abt.market.service.SettlementService;
 import com.abt.market.service.SettlementStatService;
@@ -77,8 +79,22 @@ public class SettlementController {
         if (StringUtils.isBlank(id)) {
             throw new BusinessException("结算单id未传入");
         }
-        final SettlementMain entity = settlementService.findSettlementMainWithAllItems(id);
+        final SettlementMain entity = settlementService.findSettlementMainWithSummary(id);
         return R.success(entity, "加载成功");
+    }
+
+    /**
+     * 分页查询结算单样品明细。
+     */
+    @GetMapping("/detail/{id}/items")
+    public R<Page<TestItem>> findDetailItemsPage(@PathVariable String id, @ModelAttribute RequestForm requestForm) {
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("结算单id未传入");
+        }
+        requestForm.forcePaged();
+        Pageable pageable = requestForm.createPageable(Sort.by(Sort.Order.asc("sampleNo"), Sort.Order.asc("checkModuleId")));
+        final Page<TestItem> page = settlementService.findTestItemsBySettlementId(id, pageable);
+        return R.success(page, "查询成功");
     }
 
     /**
