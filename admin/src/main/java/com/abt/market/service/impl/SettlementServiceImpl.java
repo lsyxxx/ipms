@@ -318,6 +318,18 @@ public class SettlementServiceImpl implements SettlementService {
         if (main == null) {
             throw new BusinessException("未查询到结算单(id=" + id + ")");
         }
+
+        final List<String> agreementIds = main.getAgreementIds();
+        if (!CollectionUtils.isEmpty(agreementIds)) {
+            final List<SaleAgreement> agreements = saleAgreementRepository.findByIdIsIn(agreementIds);
+            agreements.forEach(SaleAgreement::format);
+            main.setSaleAgreements(agreements);
+        } else {
+            main.setSaleAgreements(List.of());
+        }
+
+        final List<InvoiceApply> invoices = invoiceApplyRepository.findRefSettlement(id);
+        main.setInvoiceApply(invoices);
         return main;
     }
 
@@ -1089,6 +1101,25 @@ public class SettlementServiceImpl implements SettlementService {
     @Override
     public List<SettlementAgreementDTO> findSettlementsByContractNo(String contractNo) {
         return settlementMainRepository.findSettlementAgreementDTOListByContractNo(contractNo, EFFECTIVE_SETTLEMENT_STATES);
+    }
+
+    @Override
+    public List<SaleAgreement> findSaleAgreementsBySettlementId(String settlementId) {
+        if (StringUtils.isBlank(settlementId)) {
+            throw new BusinessException("结算单id不能为空!");
+        }
+        final List<String> agreementIds = settlementRelationRepository.findByMidAndBizType(settlementId, SettlementRelationType.AGREEMENT)
+                .stream()
+                .map(SettlementRelation::getRid)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        if (CollectionUtils.isEmpty(agreementIds)) {
+            return List.of();
+        }
+        final List<SaleAgreement> agreements = saleAgreementRepository.findByIdIsIn(agreementIds);
+        agreements.forEach(SaleAgreement::format);
+        return agreements;
     }
 
     /**

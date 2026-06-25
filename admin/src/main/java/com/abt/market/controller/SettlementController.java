@@ -6,6 +6,7 @@ import com.abt.common.model.RequestForm;
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
 import com.abt.market.entity.SettlementMain;
+import com.abt.market.entity.SaleAgreement;
 import com.abt.market.entity.SettlementSummary;
 import com.abt.market.entity.StlmSmryTemp;
 import com.abt.market.entity.StlmTestTemp;
@@ -268,6 +269,15 @@ public class SettlementController {
     @GetMapping("/find/stlmAgr")
     public R<List<SettlementAgreementDTO>> findSettlementAgreementDTOList(String contractNo) {
         final List<SettlementAgreementDTO> list = settlementService.findSettlementsByContractNo(contractNo);
+        return R.success(list);
+    }
+
+    /**
+     * 查询指定结算单关联的合同列表。
+     */
+    @GetMapping("/find/contracts")
+    public R<List<SaleAgreement>> findSaleAgreementsBySettlementId(String settlementId) {
+        final List<SaleAgreement> list = settlementService.findSaleAgreementsBySettlementId(settlementId);
         return R.success(list);
     }
 

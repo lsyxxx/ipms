@@ -29,7 +29,7 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
      *
      * @param id 主表id
      */
-    @EntityGraph(attributePaths = {"summaryTab"})
+    @EntityGraph(attributePaths = {"summaryTab", "expenseItems", "relations"})
     @Query("select m from SettlementMain m where m.id = :id")
     SettlementMain findOneWithSummary(String id);
 

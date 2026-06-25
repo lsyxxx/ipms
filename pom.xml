@@ -32,7 +32,7 @@
         <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
         <!-- 仅个别模块使用，版本仍由父 POM 统一 -->
         <jjwt.version>0.12.6</jjwt.version>
-        <camunda.version>7.21.0-alpha1</camunda.version>
+        <camunda.version>7.21.0</camunda.version>
         <getui.version>1.0.6.0</getui.version>
         <aspose.version>25.9</aspose.version>
         <!-- 与 admin/wxapp 构建脚本对齐 -->

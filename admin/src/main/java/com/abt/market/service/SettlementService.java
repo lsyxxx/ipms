@@ -159,6 +159,11 @@ public interface SettlementService {
     List<SettlementAgreementDTO> findSettlementsByContractNo(String contractNo);
 
     /**
+     * 查询指定结算单关联的合同列表。
+     */
+    List<SaleAgreement> findSaleAgreementsBySettlementId(String settlementId);
+
+    /**
      * 查询项目是否已结算。
      */
     SettlementStatDTO findSettlementStatusByEntrustId(String entrustId);
