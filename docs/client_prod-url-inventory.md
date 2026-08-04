@@ -4,7 +4,7 @@
 
 - 核心前端：`E:\github\client_prod`
 - C# 后端控制器目录：`E:\svn-proj\OpenAuth.WebApi\Controllers`
-- Java 后端控制器目录：`E:\github\ipms\admin\src\main\java`、`E:\github\ipms\wxapp\src\main\java`
+- Java 后端控制器目录：`E:\github\ipms\admin\src\main\java`
 - 扫描范围：前端 `src` 中实际引用到的 `@/api/*.js` 模块，以及页面内基于 `VUE_APP_BASE_API` / `VUE_APP_BASE_JAVA_API` 的直连请求
 - API 模块数：`75`
 - URL 明细条数：`985`

@@ -30,12 +30,10 @@
         <fastexcel.version>1.1.0</fastexcel.version>
         <poi.version>5.3.0</poi.version>
         <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
-        <!-- 仅个别模块使用，版本仍由父 POM 统一 -->
-        <jjwt.version>0.12.6</jjwt.version>
         <camunda.version>7.21.0</camunda.version>
         <getui.version>1.0.6.0</getui.version>
         <aspose.version>25.9</aspose.version>
-        <!-- 与 admin/wxapp 构建脚本对齐 -->
+        <!-- 与 admin 构建脚本对齐 -->
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
         <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
@@ -43,7 +41,6 @@
 
     <modules>
         <module>admin</module>
-        <module>wxapp</module>
         <module>common</module>
     </modules>
 
@@ -104,23 +101,6 @@
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
                 <version>${jetbrains-annotations.version}</version>
-            </dependency>
-
-            <!-- JWT（wxapp） -->
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-api</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-impl</artifactId>
-                <version>${jjwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-jackson</artifactId>
-                <version>${jjwt.version}</version>
             </dependency>
 
             <!-- Camunda（admin） -->

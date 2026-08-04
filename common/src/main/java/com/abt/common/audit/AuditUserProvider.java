@@ -3,7 +3,7 @@ package com.abt.common.audit;
 import java.util.Optional;
 
 /**
- * admin和wxapp提供当前用户的方式不同
+ * 由应用模块提供当前用户
  */
 public interface AuditUserProvider {
 
