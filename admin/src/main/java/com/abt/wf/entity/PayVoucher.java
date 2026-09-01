@@ -6,9 +6,12 @@ import com.abt.common.model.BizRelatedVO;
 import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.entity.Invoice;
+import com.abt.finance.model.ExpenseCategoryRef;
+import com.abt.finance.model.WithExpenseCategory;
 import com.abt.finance.service.ICreditBook;
 import com.abt.wf.model.WithInvoice;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Table;
@@ -39,7 +42,7 @@ import static com.abt.wf.config.Constants.*;
 @DynamicInsert
 @DynamicUpdate
 @AllArgsConstructor
-public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice{
+public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice, WithExpenseCategory{
     @Id
     @GeneratedValue(generator = "timestampIdGenerator")
     @GenericGenerator(name = "timestampIdGenerator", type = com.abt.common.config.TimestampIdGenerator.class)
@@ -176,6 +179,19 @@ public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice
      */
     @Column(name = "acc_item_id", columnDefinition = "VARCHAR(128)")
     private String accountItemId;
+
+    /**
+     * 费用分类快照
+     */
+    @Embedded
+    @JsonUnwrapped
+    private ExpenseCategoryRef expenseCategoryRef = new ExpenseCategoryRef();
+
+    /**
+     * 费用分类主数据 id，仅保存/提交入参，不落库
+     */
+    @Transient
+    private String expenseCategoryId;
 
     @OneToOne
     @JoinColumn(name = "acc_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable = false, updatable = false)

@@ -5,6 +5,7 @@ import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.service.CreditBookService;
+import com.abt.finance.service.ExpenseCategorySupport;
 import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.entity.SystemFile;
@@ -62,10 +63,11 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     private final HistoryService historyService;
     private final CreditBookService creditBookService;
     private final InvoiceService invoiceService;
+    private final ExpenseCategorySupport expenseCategorySupport;
 
     public PayVoucherServiceImpl(IdentityService identityService, FlowOperationLogService flowOperationLogService, TaskService taskService,
                                  @Qualifier("sqlServerUserService") UserService userService, RepositoryService repositoryService, RuntimeService runtimeService, PayVoucherRepository payVoucherRepository, SignatureService signatureService,
-                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, CreditAndDebitBook<PayVoucher> creditAndDebitBook, IFileService fileService, HistoryService historyService, CreditBookService creditBookService, InvoiceService invoiceService) {
+                                 @Qualifier("payVoucherBpmnModelInstance") BpmnModelInstance payVoucherModelInstance, CreditAndDebitBook<PayVoucher> creditAndDebitBook, IFileService fileService, HistoryService historyService, CreditBookService creditBookService, InvoiceService invoiceService, ExpenseCategorySupport expenseCategorySupport) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
         this.flowOperationLogService = flowOperationLogService;
@@ -81,6 +83,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
         this.historyService = historyService;
         this.creditBookService = creditBookService;
         this.invoiceService = invoiceService;
+        this.expenseCategorySupport = expenseCategorySupport;
     }
 
     @Override
@@ -140,6 +143,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
 
     @Override
     public PayVoucher saveEntity(PayVoucher entity) {
+        expenseCategorySupport.fillAndValidate(entity, entity.getExpenseCategoryId());
         return payVoucherRepository.save(entity);
     }
 

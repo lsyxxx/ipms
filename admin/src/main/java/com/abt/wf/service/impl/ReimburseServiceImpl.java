@@ -7,6 +7,7 @@ import com.abt.common.util.JsonUtil;
 import com.abt.common.util.TimeUtil;
 import com.abt.finance.entity.CreditBook;
 import com.abt.finance.service.CreditBookService;
+import com.abt.finance.service.ExpenseCategorySupport;
 import com.abt.finance.service.InvoiceService;
 import com.abt.market.service.impl.SaleAgreementServiceImpl;
 import com.abt.sys.exception.BusinessException;
@@ -69,6 +70,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
     private final CreditAndDebitBook<Reimburse> creditAndDebitBook;
     private final CreditBookService creditBookService;
     private final InvoiceService invoiceService;
+    private final ExpenseCategorySupport expenseCategorySupport;
 
     private List<User> copyList;
 
@@ -79,7 +81,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     public ReimburseServiceImpl(IdentityService identityService, RepositoryService repositoryService, RuntimeService runtimeService, TaskService taskService,
                                 FlowOperationLogService flowOperationLogService, @Qualifier("sqlServerUserService") UserService userService, ReimburseRepository reimburseRepository,
-                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService, CreditAndDebitBook<Reimburse> creditAndDebitBook, CreditBookService creditBookService, InvoiceService invoiceService) {
+                                @Qualifier("rbsBpmnModelInstance") BpmnModelInstance rbsBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService, CreditAndDebitBook<Reimburse> creditAndDebitBook, CreditBookService creditBookService, InvoiceService invoiceService, ExpenseCategorySupport expenseCategorySupport) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService,signatureService);
         this.identityService = identityService;
         this.repositoryService = repositoryService;
@@ -95,6 +97,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
         this.creditAndDebitBook = creditAndDebitBook;
         this.creditBookService = creditBookService;
         this.invoiceService = invoiceService;
+        this.expenseCategorySupport = expenseCategorySupport;
     }
 
 
@@ -240,6 +243,7 @@ public class ReimburseServiceImpl extends AbstractWorkflowCommonServiceImpl<Reim
 
     @Override
     public Reimburse saveEntity(Reimburse entity) {
+        expenseCategorySupport.fillAndValidate(entity, entity.getExpenseCategoryId());
         return reimburseRepository.save(entity);
     }
 

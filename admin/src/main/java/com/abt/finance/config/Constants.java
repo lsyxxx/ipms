@@ -22,4 +22,9 @@ public class Constants {
     public static final String ROLE_FI_MGR = "JS019";
 
     public static final String REC_PAY_CONFIG_TYPE_NOTIFY = "notifyUsers";
+
+    /**
+     * 费用分类物理删除权限（管理员）
+     */
+    public static final String ROLE_FI_EXPENSE_CATEGORY_DEL = "JS_FI_EXPENSE_CATEGORY_DEL";
 }

@@ -4,11 +4,14 @@ import com.abt.common.config.ValidateGroup;
 import com.abt.finance.entity.AccountItem;
 import com.abt.finance.entity.BankAccount;
 import com.abt.finance.entity.Invoice;
+import com.abt.finance.model.ExpenseCategoryRef;
+import com.abt.finance.model.WithExpenseCategory;
 import com.abt.finance.service.ICreditBook;
 import com.abt.wf.model.WithInvoice;
 import com.abt.wf.model.WorkflowCompany;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Table;
@@ -38,7 +41,7 @@ import static com.abt.wf.config.Constants.*;
 @DynamicUpdate
 @Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice, WorkflowCompany {
+public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice, WorkflowCompany, WithExpenseCategory {
 
     @Id
     @GeneratedValue(generator  = "timestampIdGenerator")
@@ -179,6 +182,19 @@ public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice,
      */
     @Column(name="acc_item_id", columnDefinition="VARCHAR(128)")
     private String accountItemId;
+
+    /**
+     * 费用分类快照
+     */
+    @Embedded
+    @JsonUnwrapped
+    private ExpenseCategoryRef expenseCategoryRef = new ExpenseCategoryRef();
+
+    /**
+     * 费用分类主数据 id，仅保存/提交入参，不落库
+     */
+    @Transient
+    private String expenseCategoryId;
 
     @OneToOne
     @JoinColumn(name = "acc_item_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
