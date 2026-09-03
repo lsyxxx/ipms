@@ -15,8 +15,8 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 /**
- * 野外考勤设置
- * 每次修改都是添加一条，同时新增版本号
+ * 野外考勤补助预设。一行一项，原地更新；历史金额与展示以 fw_item 快照为准。
+ * vid/version 列保留兼容旧数据，新保存不再插版本行。
  */
 @Table(name = "fw_atd_setting")
 @Entity
@@ -128,20 +128,5 @@ public class FieldWorkAttendanceSetting extends AuditInfo implements CommonJpaAu
 
     public static final int COMPONENT_TYPE_RADIO = 1;
     public static final int COMPONENT_TYPE_CHECKBOX = 2;
-
-
-
-    public FieldWorkAttendanceSetting newVersion(FieldWorkAttendanceSetting setting) {
-        setting.setId(null);
-        setting.setVersion(setting.increaseVersion());
-        return setting;
-    }
-
-
-    private int increaseVersion() {
-        return ++version;
-    }
-
-
 
 }

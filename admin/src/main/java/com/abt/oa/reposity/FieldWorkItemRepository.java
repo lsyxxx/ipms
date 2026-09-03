@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FieldWorkItemRepository extends JpaRepository<FieldWorkItem, String> {
 
+    boolean existsByAllowanceId(String allowanceId);
 }

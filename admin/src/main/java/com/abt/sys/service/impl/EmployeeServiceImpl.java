@@ -19,7 +19,10 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -43,6 +46,43 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new MissingRequiredParameterException("员工工号");
         }
         return WithQueryUtil.build(employeeRepository.findByJobNumber(jobNumber));
+    }
+
+    @Override
+    public Map<String, EmployeeInfo> findMapWithDeptByJobNumbers(Collection<String> jobNumbers) {
+        if (jobNumbers == null || jobNumbers.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<String> ids = jobNumbers.stream()
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        if (ids.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        // 标量投影，不hydrate实体，否则 OneToOne(tUser/userSignature) 会每人多查 [User]、u_sig
+        List<Object[]> rows = employeeRepository.findJobCompanyDeptNameByJobNumbers(ids);
+        Map<String, EmployeeInfo> map = new java.util.HashMap<>(rows.size() * 2);
+        for (Object[] row : rows) {
+            if (row == null || row[0] == null) {
+                continue;
+            }
+            String jobNumber = String.valueOf(row[0]);
+            EmployeeInfo emp = new EmployeeInfo();
+            emp.setJobNumber(jobNumber);
+            emp.setCompany(row[1] == null ? null : String.valueOf(row[1]));
+            emp.setDeptName(row[2] == null ? null : String.valueOf(row[2]));
+            map.putIfAbsent(jobNumber, emp);
+        }
+        return map;
+    }
+
+    @Override
+    public String findDeptIdByJobNumber(String jobNumber) {
+        if (StringUtils.isBlank(jobNumber)) {
+            throw new MissingRequiredParameterException("员工工号");
+        }
+        return employeeRepository.findDeptIdByJobNumber(jobNumber);
     }
 
 

@@ -2,6 +2,7 @@ package com.abt.oa.service;
 
 import com.abt.common.model.Table;
 import com.abt.common.model.User;
+import com.abt.common.model.RequestForm;
 import com.abt.oa.entity.FieldWork;
 import com.abt.oa.entity.FieldWorkAttendanceSetting;
 import com.abt.oa.model.FieldConfirmResult;
@@ -20,15 +21,20 @@ public interface FieldWorkService {
     List<FieldWorkAttendanceSetting> findAllSettings();
 
     /**
-     * 所有最新的配置，不显示历史记录
+     * 当前补助预设（enabled=true，按 sort）。迁移合并版本后一行一项。
      */
     List<FieldWorkAttendanceSetting> findLatestSettings();
 
     void saveSetting(FieldWorkAttendanceSetting fieldAttendanceSetting);
 
+    Page<FieldWorkAttendanceSetting> findSettingsPage(RequestForm form, Boolean enabled);
+
+    void deleteSetting(String id);
+
     /**
      * 查询修改历史记录
      * @param vid 项目公共Id
+     * @deprecated 配置不再版本化，仅兼容旧调用
      */
     List<FieldWorkAttendanceSetting> findHistorySettings(String vid);
 

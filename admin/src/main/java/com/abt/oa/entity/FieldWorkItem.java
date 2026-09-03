@@ -10,8 +10,6 @@ import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import lombok.NoArgsConstructor;
-import org.springframework.util.Assert;
-
 import java.math.BigDecimal;
 
 @Getter
@@ -50,6 +48,36 @@ public class FieldWorkItem {
   @Column(name="sort_", columnDefinition = "TINYINT")
   private int sort;
 
+  /**
+   * 提交时快照：简称
+   */
+  @Column(name="short_name", columnDefinition = "VARCHAR(16)")
+  private String shortName;
+
+  /**
+   * 提交时快照：css
+   */
+  @Column(name="style_", columnDefinition = "VARCHAR(1000)")
+  private String style;
+
+  /**
+   * 提交时快照：背景色
+   */
+  @Column(name="bg_color")
+  private String backgroundColor;
+
+  /**
+   * 提交时快照：是否计入出勤。JSON 字段名 work，与配置表一致
+   */
+  @Column(name="is_work", columnDefinition = "BIT")
+  private Boolean work;
+
+  /**
+   * 提交时快照：分组
+   */
+  @Column(name="group_", columnDefinition = "VARCHAR(128)")
+  private String group;
+
   @JsonIgnore
   @ManyToOne
   @JoinColumn(name = "f_id", referencedColumnName = "id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable=false, updatable=false)
@@ -74,6 +102,11 @@ public class FieldWorkItem {
     item.setAllowanceMealAmount(setting.getMealAllowance());
     item.setSum(setting.getSumAllowance());
     item.setSort(setting.getSort());
+    item.setShortName(setting.getShortName());
+    item.setStyle(setting.getStyle());
+    item.setBackgroundColor(setting.getBackgroundColor());
+    item.setWork(setting.isWork());
+    item.setGroup(setting.getGroup());
     return item;
   }
 

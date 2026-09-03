@@ -22,7 +22,6 @@ import com.abt.oa.service.SettingService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.DataPrivilegeRule;
-import com.abt.sys.model.entity.EmployeeInfo;
 import com.abt.sys.service.EmployeeService;
 import com.abt.sys.service.PermissionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -76,6 +75,7 @@ public class FieldController {
 
 
     @GetMapping("/setting/his")
+    @Deprecated
     public R<Object> findHistorySettingsByVid(String vid) {
         final List<FieldWorkAttendanceSetting> list = fieldWorkService.findHistorySettings(vid);
         return R.success(list);
@@ -85,6 +85,19 @@ public class FieldController {
     public R<Object> update(@Validated(ValidateGroup.Save.class) @RequestBody FieldWorkAttendanceSetting setting) {
         fieldWorkService.saveSetting(setting);
         return R.success("更新成功!");
+    }
+
+    @GetMapping("/setting/page")
+    public R<List<FieldWorkAttendanceSetting>> findSettingsPage(@ModelAttribute RequestForm form,
+                                                               @RequestParam(required = false) Boolean enabled) {
+        final Page<FieldWorkAttendanceSetting> page = fieldWorkService.findSettingsPage(form, enabled);
+        return R.success(page.getContent(), (int) page.getTotalElements());
+    }
+
+    @GetMapping("/setting/del")
+    public R<Object> deleteSetting(String id) {
+        fieldWorkService.deleteSetting(id);
+        return R.success("删除成功!");
     }
 
     /**
@@ -98,9 +111,9 @@ public class FieldController {
     }
 
     /**
-     * 查询审批记录
-     * @param query 查询条件
+     * @deprecated 实现返回 null，勿再用
      */
+    @Deprecated
     @PostMapping("/find/record")
     public R<List<FieldWork>> findUserRecord(@RequestBody FieldWork query) {
         final List<FieldWork> userRecord = fieldWorkService.findUserRecord(query);
@@ -136,8 +149,9 @@ public class FieldController {
     }
 
     /**
-     * 审批
+     * @deprecated 会把记录重置为待审批，请用 /rvw/pass、/rvw/reject
      */
+    @Deprecated
     @GetMapping("/rvw")
     public R<Object> review(String result, @RequestParam(required = false) String reason, String id) {
         final UserView user = TokenUtil.getUserFromAuthToken();
@@ -341,7 +355,6 @@ public class FieldController {
         final LocalDate end = LocalDate.of(year, monthValue, Integer.parseInt(endDay));
 
         UserView user = TokenUtil.getUserFromAuthToken();
-        final EmployeeInfo emp = employeeService.findByJobNumber(user.getEmpnum());
 
         //判断用户数据权限
         //1. 如果系统中权限配置了，那么可以看到所有
@@ -349,9 +362,9 @@ public class FieldController {
         final DataPrivilegeRule rules = permissionService.getDataPrivilegeRuleBySourceCode(MGR_BOARD_SOURCE_CODE);
         final boolean hasAuth = rules.checkRule(user);
         if (!hasAuth) {
-            //查看本部门
+            // 只查 dept 列，避免 findByJobNumber 加载实体时触发 [User]/u_sig
             if (StringUtils.isBlank(dept)) {
-                dept = emp.getDept();
+                dept = employeeService.findDeptIdByJobNumber(user.getEmpnum());
             }
         }
         List<FieldWork> records = fieldWorkService.findAtdByUserInfo(null, dept, company, start, end);

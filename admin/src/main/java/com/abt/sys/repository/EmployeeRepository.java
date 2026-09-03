@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> {
@@ -84,6 +85,15 @@ public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> 
      */
     @Query("select e from EmployeeInfo e left join fetch e.department where e.position = '部门经理' and e.isExit = false order by e.jobNumber")
     List<EmployeeInfo> findDms();
+
+    /**
+     * 仅投影工号/归属/部门名，不加载 EmployeeInfo 实体，避免触发 tUser([User])、userSignature(u_sig) 的 OneToOne 查询
+     */
+    @Query("select e.jobNumber, e.company, o.name from EmployeeInfo e left join Org o on e.dept = o.id where e.jobNumber in :jobNumbers")
+    List<Object[]> findJobCompanyDeptNameByJobNumbers(Collection<String> jobNumbers);
+
+    @Query("select e.dept from EmployeeInfo e where e.jobNumber = :jobNumber")
+    String findDeptIdByJobNumber(String jobNumber);
 
     long countByJobNumber(@Size(max = 255) @NotNull String jobNumber);
 

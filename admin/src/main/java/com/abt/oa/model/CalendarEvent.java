@@ -84,6 +84,8 @@ public class CalendarEvent {
      */
     private String durationUnit = DUR_UNIT_DAY;
 
+    private Boolean work;
+
     public static final String DUR_UNIT_HOUR = "hour";
     public static final String DUR_UNIT_DAY = "day";
 

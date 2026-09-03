@@ -5,6 +5,7 @@ import com.abt.common.model.Cell;
 import com.abt.common.model.Row;
 import com.abt.common.model.Table;
 import com.abt.common.model.User;
+import com.abt.common.model.RequestForm;
 import com.abt.common.util.TimeUtil;
 import com.abt.oa.OAConstants;
 import com.abt.oa.entity.*;
@@ -50,11 +51,13 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import jakarta.persistence.criteria.Predicate;
 import java.io.File;
 import java.io.OutputStream;
 import java.math.BigDecimal;
@@ -132,40 +135,96 @@ public class FieldWorkServiceImpl implements FieldWorkService {
 
     @Override
     public List<FieldWorkAttendanceSetting> findLatestSettings() {
+        // 迁移后一行一项；仍按 vid 去重，避免脚本未执行时提交页出现重复启用项
         final List<FieldWorkAttendanceSetting> all = findAllEnabledAllowance();
         final Map<String, FieldWorkAttendanceSetting> map = all.stream().collect(
                 Collectors.toMap(
-                        FieldWorkAttendanceSetting::getVid,
+                        s -> StringUtils.isNotBlank(s.getVid()) ? s.getVid() : s.getId(),
                         setting -> setting,
                         (existing, replacement) -> existing.getVersion() > replacement.getVersion() ? existing : replacement
                 )
         );
-        //版本数量
-        final Map<String, Long> countMap = all.stream().collect(Collectors.groupingBy(FieldWorkAttendanceSetting::getVid, Collectors.counting()));
-        map.values().forEach(i -> i.setVersionCount(countMap.get(i.getVid())));
-        final List<FieldWorkAttendanceSetting> list = map.values().stream().sorted(Comparator.comparingInt(FieldWorkAttendanceSetting::getSort)).toList();
-        return new ArrayList<>(list);
+        final Map<String, Long> countMap = all.stream().collect(Collectors.groupingBy(
+                s -> StringUtils.isNotBlank(s.getVid()) ? s.getVid() : s.getId(),
+                Collectors.counting()));
+        map.values().forEach(i -> i.setVersionCount(countMap.get(StringUtils.isNotBlank(i.getVid()) ? i.getVid() : i.getId())));
+        return map.values().stream()
+                .sorted(Comparator.comparingInt(FieldWorkAttendanceSetting::getSort))
+                .collect(Collectors.toList());
     }
 
-    private void validateFieldSetting(FieldWorkAttendanceSetting fieldAttendanceSetting) {
-        //校验重名
-        if (StringUtils.isBlank(fieldAttendanceSetting.getId())) {
-            //insert
-            final List<FieldWorkAttendanceSetting> list = fieldAttendanceSettingRepository.findByName(fieldAttendanceSetting.getName());
-            if (list != null && !list.isEmpty()) {
-                throw new BusinessException("补贴名称:" + fieldAttendanceSetting.getName() + " 已存在。补贴名称不能重复");
-            }
+    private void validateFieldSetting(FieldWorkAttendanceSetting setting) {
+        if (StringUtils.isBlank(setting.getName())) {
+            throw new BusinessException("补贴名称不能为空");
+        }
+        final List<FieldWorkAttendanceSetting> list = fieldAttendanceSettingRepository.findByName(setting.getName());
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        boolean duplicated = list.stream().anyMatch(i -> !Objects.equals(i.getId(), setting.getId()));
+        if (duplicated) {
+            throw new BusinessException("补贴名称:" + setting.getName() + " 已存在。补贴名称不能重复");
         }
     }
 
     @Override
-    public void saveSetting(FieldWorkAttendanceSetting fieldAttendanceSetting) {
-        validateFieldSetting(fieldAttendanceSetting);
-        if (StringUtils.isEmpty(fieldAttendanceSetting.getVid())) {
-            fieldAttendanceSetting.setVid(UUID.randomUUID().toString());
+    public void saveSetting(FieldWorkAttendanceSetting setting) {
+        validateFieldSetting(setting);
+        if (StringUtils.isNotBlank(setting.getId())) {
+            final FieldWorkAttendanceSetting existing = fieldAttendanceSettingRepository.findById(setting.getId())
+                    .orElseThrow(() -> new BusinessException("未查询到补助配置(id=" + setting.getId() + ")"));
+            if (StringUtils.isBlank(setting.getVid())) {
+                setting.setVid(existing.getVid());
+            }
+            setting.setVersion(existing.getVersion());
+        } else {
+            setting.setId(null);
+            setting.setVid(UUID.randomUUID().toString());
+            setting.setVersion(0);
         }
-        fieldAttendanceSetting = fieldAttendanceSetting.newVersion(fieldAttendanceSetting);
-        fieldAttendanceSettingRepository.save(fieldAttendanceSetting);
+        fieldAttendanceSettingRepository.save(setting);
+    }
+
+    @Override
+    public Page<FieldWorkAttendanceSetting> findSettingsPage(RequestForm form, Boolean enabled) {
+        form.forcePaged();
+        Specification<FieldWorkAttendanceSetting> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (StringUtils.isNotBlank(form.getQuery())) {
+                String like = "%" + form.getQuery().trim() + "%";
+                predicates.add(cb.or(
+                        cb.like(root.get("name"), like),
+                        cb.like(root.get("shortName"), like),
+                        cb.like(root.get("symbol"), like),
+                        cb.like(root.get("group"), like),
+                        cb.like(root.get("description"), like)
+                ));
+            }
+            if (enabled != null) {
+                predicates.add(cb.equal(root.get("enabled"), enabled));
+            }
+            if (predicates.isEmpty()) {
+                return cb.conjunction();
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        Pageable pageable = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("sort"), Sort.Order.asc("name")));
+        return fieldAttendanceSettingRepository.findAll(spec, pageable);
+    }
+
+    @Transactional
+    @Override
+    public void deleteSetting(String id) {
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("补助配置id不能为空");
+        }
+        if (!fieldAttendanceSettingRepository.existsById(id)) {
+            throw new BusinessException("未查询到补助配置(id=" + id + ")");
+        }
+        if (fieldWorkItemRepository.existsByAllowanceId(id)) {
+            throw new BusinessException("该补助已被考勤明细引用，不能删除。请改为禁用");
+        }
+        fieldAttendanceSettingRepository.deleteById(id);
     }
 
     @Override
@@ -221,6 +280,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         String id = fw.getId();
         fw.getItemIds().forEach(i -> {
             final FieldWorkAttendanceSetting fwa = findSettingById(i);
+            if (!fwa.isEnabled()) {
+                throw new BusinessException("补助项目已禁用，不能提交: " + fwa.getName());
+            }
             final FieldWorkItem fi = FieldWorkItem.create(fwa, id);
             fieldWorkItemRepository.save(fi);
         });
@@ -247,6 +309,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
                     String aid = v.getSingleId();
                     try {
                         final FieldWorkAttendanceSetting setting = findSettingById(aid);
+                        if (!setting.isEnabled()) {
+                            throw new BusinessException("补助项目已禁用，不能提交: " + setting.getName());
+                        }
                         final FieldWorkItem fi = FieldWorkItem.create(setting, null);
                         fwiBatch.add(fi);
                         fw.addItem(fi);
@@ -760,7 +825,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         assert startDate != null;
         board.setDayCount((int) ChronoUnit.DAYS.between(startDate, endDate) + 1);
         List<CalendarEvent> events = new ArrayList<>();
-        List<FieldWorkAttendanceSetting> settings = this.findLatestSettings();
 
         //查询所有记录
         final List<FieldWork> allRecords = fieldWorkRepository.findByJobNumberAndAttendanceDateBetween(jobNumber, startDate, endDate);
@@ -778,9 +842,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         //出勤天数: 不包含《不计算考勤》项目
         passRecords.forEach(fw -> {
             fw.getItems().forEach(i -> {
-                if (isWorkDay(settings, i)) {
+                if (isWorkDay(i)) {
                     workDaySet.add(fw.getAttendanceDate());
-                } else if (isRestDay(settings, i)) {
+                } else if (isRestDay(i)) {
                     resetDaySet.add(fw.getAttendanceDate());
                 }
             });
@@ -810,26 +874,18 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     private List<CalendarEvent> createFieldWorkCalendarEvents(List<FieldWork> record) {
         List<CalendarEvent> events = new ArrayList<>();
         final Map<LocalDate, Set<FieldWork>> groupByDate = record.stream().collect(Collectors.groupingBy(FieldWork::getAttendanceDate, Collectors.toSet()));
-        final List<FieldWorkAttendanceSetting> all = fieldAttendanceSettingRepository.findAll();
         for (Map.Entry<LocalDate, Set<FieldWork>> entry : groupByDate.entrySet()) {
-            Boolean pass = null, reject = null;
             for (FieldWork fw : entry.getValue()) {
-                //有一个pass就算pass
-                pass = pass == null ? fw.isPass() : (pass || fw.isPass());
-                reject = reject == null ? fw.isReject() : (reject && fw.isReject());
                 if (fw.isPass() || fw.isWaiting()) {
-                    //审批通过的event
                     fw.getItems().forEach(i -> {
                         final CalendarEvent ae = create(i, TimeUtil.yyyy_MM_ddString(fw.getAttendanceDate()), CAL_EVENT_TYPE_ALLOWANCE);
-                        findSettingById(all, i.getAllowanceId())
-                                .ifPresent(a -> {
-                                    ae.setBackgroundColor(a.getBackgroundColor());
-                                    ae.setShortName(a.getShortName());
-                                    ae.setType(fw.getReviewResult());
-                                    ae.setDay(fw.getAttendanceDate().getDayOfMonth());
-                                    ae.setSid(a.getId());
-                                    ae.setDuration(1);
-                                });
+                        ae.setBackgroundColor(i.getBackgroundColor());
+                        ae.setShortName(StringUtils.isNotBlank(i.getShortName()) ? i.getShortName() : i.getAllowanceName());
+                        ae.setType(fw.getReviewResult());
+                        ae.setDay(fw.getAttendanceDate().getDayOfMonth());
+                        ae.setSid(i.getAllowanceId());
+                        ae.setDuration(1);
+                        ae.setWork(resolveWork(i));
                         events.add(ae);
                     });
                 }
@@ -837,10 +893,6 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         }
 
         return events;
-    }
-
-    private Optional<FieldWorkAttendanceSetting> findSettingById(List<FieldWorkAttendanceSetting> list, String id) {
-        return list.stream().filter(i -> i.getId().equals(id)).findFirst();
     }
 
     public static final String CAL_EVENT_TYPE_PASS = "pass";
@@ -918,25 +970,28 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     }
 
 
-    private boolean isWorkDay(List<FieldWorkAttendanceSetting> settings, FieldWorkItem item) {
-        final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> item.getAllowanceId().equals(s.getId()) && s.isWork()).findFirst();
-        return setting.isPresent();
+    private boolean resolveWork(FieldWorkItem item) {
+        if (item.getWork() != null) {
+            return item.getWork();
+        }
+        if (StringUtils.isBlank(item.getAllowanceId())) {
+            return false;
+        }
+        return fieldAttendanceSettingRepository.findById(item.getAllowanceId())
+                .map(FieldWorkAttendanceSetting::isWork)
+                .orElse(false);
     }
 
-    private boolean isRestDay(List<FieldWorkAttendanceSetting> settings, FieldWorkItem item) {
-        final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> item.getAllowanceId().equals(s.getId()) && !s.isWork()).findFirst();
-        return setting.isPresent();
+    private boolean isWorkDay(FieldWorkItem item) {
+        return resolveWork(item);
     }
 
-
-    private boolean isWorkDay(List<FieldWorkAttendanceSetting> settings, CalendarEvent event) {
-        final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> event.getSid().equals(s.getId()) && s.isWork()).findFirst();
-        return setting.isPresent();
+    private boolean isRestDay(FieldWorkItem item) {
+        return !resolveWork(item);
     }
 
-    private boolean isRestDay(List<FieldWorkAttendanceSetting> settings, CalendarEvent item) {
-        final Optional<FieldWorkAttendanceSetting> setting = settings.stream().filter(s -> item.getSid().equals(s.getId()) && !s.isWork()).findFirst();
-        return setting.isPresent();
+    private boolean isWorkDay(CalendarEvent event) {
+        return Boolean.TRUE.equals(event.getWork());
     }
 
     @Transactional
@@ -978,11 +1033,11 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         final List<FieldWork> records = all.stream().filter(i -> i.isConfirm() && i.isPass() && !i.isDeleted()).toList();
         final List<FieldWorkItem> items = records.stream().flatMap(fieldWork -> fieldWork.getItems().stream()).toList();
         List<CalendarEvent> allEvents = new ArrayList<>();
-//        final List<FieldWorkAttendanceSetting> settings = findLatestSettings();
-        final List<FieldWorkAttendanceSetting> allSettings = findAllSettings();
         //生成表
         //根据用户
         final Map<String, List<FieldWork>> groupByUser = records.stream().collect(Collectors.groupingBy(FieldWork::getJobNumber, Collectors.toList()));
+        // 标量投影批量取归属/部门名（不加载 EmployeeInfo 关联，避免每人查 [User]/u_sig）
+        final Map<String, EmployeeInfo> empByJobNumber = employeeService.findMapWithDeptByJobNumbers(groupByUser.keySet());
         Table table = new Table();
         for (Map.Entry<String, List<FieldWork>> entry : groupByUser.entrySet()) {
             //用户信息
@@ -994,13 +1049,13 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             userid = userFws.get(0).getUserid();
             username = userFws.get(0).getUsername();
             jobNumber = userFws.get(0).getJobNumber();
-            EmployeeInfo emp = employeeService.findByJobNumber(jobNumber).afterQuery();
-            emp = WithQueryUtil.build(emp);
-            String company = emp.getCompany();
+            EmployeeInfo emp = empByJobNumber.get(jobNumber);
+            String company = emp != null ? emp.getCompany() : null;
+            String deptName = emp != null ? emp.getDeptName() : null;
             Row row = Row.create(username, jobNumber, company);
-            row.setDept(emp.getDeptName());
+            row.setDept(deptName);
             User user = new User(userid, username, jobNumber);
-            user.setDeptName(emp.getDeptName());
+            user.setDeptName(deptName);
             user.setCompany(company);
             //0. 基础信息
             row.addCell(new Cell(user.getDeptName(), "部门", user.getDeptName()));
@@ -1029,7 +1084,7 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             //1. 出勤
             Set<String> workDaySet = new HashSet<>();
             for (CalendarEvent event : userEvents) {
-                if (isWorkDay(allSettings, event)) {
+                if (isWorkDay(event)) {
                     workDaySet.add(event.getStart());
                 }
             }
@@ -1041,12 +1096,15 @@ public class FieldWorkServiceImpl implements FieldWorkService {
             //2. 作业项目统计(包含基地调休/家调休)
             final Map<String, Double> sumByAllowance = userEvents.stream().collect(Collectors.groupingBy(CalendarEvent::getSid, Collectors.summingDouble(CalendarEvent::getDuration)));
             sumByAllowance.forEach((k, v) -> {
-                final FieldWorkAttendanceSetting setting = findSettingById(k);
-                Cell cell = new Cell(v, setting.getName());
+                final CalendarEvent sample = userEvents.stream().filter(e -> k.equals(e.getSid())).findFirst().orElse(null);
+                final String columnName = sample != null
+                        ? (StringUtils.isNotBlank(sample.getTitle()) ? sample.getTitle() : k)
+                        : k;
+                Cell cell = new Cell(v, columnName);
                 cell.setSummaryColumn(true);
                 CalendarEvent event = new CalendarEvent();
-                event.setOrder(1000 + setting.getSort());
-                event.setTitle(setting.getName());
+                event.setOrder(1000 + (sample != null ? sample.getOrder() : 0));
+                event.setTitle(columnName);
                 cell.setValue(event);
                 row.addCell(cell);
             });
