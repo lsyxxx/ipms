@@ -371,9 +371,15 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         if (form.noPaging()) {
             pageable = Pageable.unpaged();
         } else {
-            pageable = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
+            // 排序在 JPQL 中按考勤日期、创建时间倒序；此处不再附加 Sort，避免冲突
+            pageable = PageRequest.of(form.jpaPage(), form.getLimit());
         }
-        final Page<FieldWork> page = fieldWorkRepository.findAllFetchedByQuery(form.getUsername(), form.getQuery(), form.getState(),
+        final List<String> states = form.effectiveStates();
+        final boolean ignoreState = states.isEmpty();
+        // ignoreState=true 时 IN 子句不会生效；传占位避免空集合绑定问题
+        final List<String> stateParam = ignoreState ? List.of("__none__") : states;
+        final Page<FieldWork> page = fieldWorkRepository.findAllFetchedByQuery(
+                form.getUsername(), form.getQuery(), ignoreState, stateParam,
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageable);
         WithQueryUtil.build(page.getContent());
         return page;
