@@ -340,28 +340,25 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Override
     public Page<FieldWork> findTodoRecords(FieldWorkRequestForm form) {
         final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
-        final Page<FieldWork> page = fieldWorkRepository.findTodoFetchedByQuery(form.getQuery(), form.getUserid(), FW_WAITING,
+        final Page<FieldWork> page = fieldWorkRepository.findTodoByQuery(form.getQuery(), form.getUserid(), FW_WAITING,
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
-        WithQueryUtil.build(page.getContent());
-        return page;
+        return loadFieldWorkItems(page);
     }
 
     @Override
     public Page<FieldWork> findDoneRecords(FieldWorkRequestForm form) {
         final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
-        final Page<FieldWork> page = fieldWorkRepository.findDoneFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
+        final Page<FieldWork> page = fieldWorkRepository.findDoneByQuery(form.getQuery(), form.getUserid(), form.getState(),
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
-        WithQueryUtil.build(page.getContent());
-        return page;
+        return loadFieldWorkItems(page);
     }
 
     @Override
     public Page<FieldWork> findApplyRecords(FieldWorkRequestForm form) {
         final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
-        final Page<FieldWork> page = fieldWorkRepository.findApplyFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
+        final Page<FieldWork> page = fieldWorkRepository.findApplyByQuery(form.getQuery(), form.getUserid(), form.getState(),
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
-        WithQueryUtil.build(page.getContent());
-        return page;
+        return loadFieldWorkItems(page);
     }
 
 
@@ -378,11 +375,33 @@ public class FieldWorkServiceImpl implements FieldWorkService {
         final boolean ignoreState = states.isEmpty();
         // ignoreState=true 时 IN 子句不会生效；传占位避免空集合绑定问题
         final List<String> stateParam = ignoreState ? List.of("__none__") : states;
-        final Page<FieldWork> page = fieldWorkRepository.findAllFetchedByQuery(
+        final Page<FieldWork> page = fieldWorkRepository.findAllByQuery(
                 form.getUsername(), form.getQuery(), ignoreState, stateParam,
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageable);
-        WithQueryUtil.build(page.getContent());
-        return page;
+        return loadFieldWorkItems(page);
+    }
+
+    /**
+     * 按主表分页结果批量加载补助明细，并保持主查询的分页顺序。
+     */
+    private Page<FieldWork> loadFieldWorkItems(Page<FieldWork> page) {
+        if (page.isEmpty()) {
+            return page;
+        }
+        final List<String> ids = page.getContent().stream().map(FieldWork::getId).toList();
+        final Map<String, FieldWork> fetchedMap = new HashMap<>();
+        // SQL Server 单条语句最多 2100 个参数；分批也兼容无分页调用。
+        for (int from = 0; from < ids.size(); from += 1000) {
+            final List<String> batchIds = ids.subList(from, Math.min(from + 1000, ids.size()));
+            fieldWorkRepository.findAllWithItemsByIdIn(batchIds)
+                    .forEach(fieldWork -> fetchedMap.put(fieldWork.getId(), fieldWork));
+        }
+        final List<FieldWork> content = ids.stream()
+                .map(fetchedMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+        WithQueryUtil.build(content);
+        return new PageImpl<>(content, page.getPageable(), page.getTotalElements());
     }
 
 
@@ -777,10 +796,9 @@ public class FieldWorkServiceImpl implements FieldWorkService {
     @Override
     public Page<FieldWork> findAtdRecord(FieldWorkRequestForm form) {
         final PageRequest pageRequest = PageRequest.of(form.jpaPage(), form.getLimit(), Sort.by(Sort.Order.asc("createDate")));
-        final Page<FieldWork> page = fieldWorkRepository.findAtdFetchedByQuery(form.getQuery(), form.getUserid(), form.getState(),
+        final Page<FieldWork> page = fieldWorkRepository.findAtdByQuery(form.getQuery(), form.getUserid(), form.getState(),
                 TimeUtil.toLocalDate(form.getStartDate()), TimeUtil.toLocalDate(form.getEndDate()), pageRequest);
-        WithQueryUtil.build(page.getContent());
-        return page;
+        return loadFieldWorkItems(page);
     }
 
     @Override

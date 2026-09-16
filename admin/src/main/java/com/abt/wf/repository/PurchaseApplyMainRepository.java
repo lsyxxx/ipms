@@ -22,13 +22,13 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
     @Query("select distinct e from PurchaseApplyMain e " +
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu " +
-            "left join PurchaseApplyDetail dtl on e.id = dtl.main.id " +
             "where (e.createUserid = :userid) " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or e.createUsername like %:query%" +
-            "   or dtl.name like %:query%" +
+            "   or exists (select dtl.id from PurchaseApplyDetail dtl " +
+            "              where dtl.main.id = e.id and dtl.name like %:query%)" +
             "   ) " +
             "AND (:startDate IS NULL  OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL  OR e.createDate <= :endDate) "
@@ -38,13 +38,13 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
     @Query("select distinct e from PurchaseApplyMain e " +
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu " +
-            "left join PurchaseApplyDetail dtl on e.id = dtl.main.id " +
             "where 1=1 " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or e.createUsername like %:query%" +
-            "   or dtl.name like %:query%" +
+            "   or exists (select dtl.id from PurchaseApplyDetail dtl " +
+            "              where dtl.main.id = e.id and dtl.name like %:query%)" +
             "   ) " +
             "and (:userid is null or :userid = '' or e.createUserid = :userid) " +
             "and (:deptIgnore = true or e.createDeptId in :deptList) " +
@@ -57,13 +57,13 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
     @Query("select distinct e from PurchaseApplyMain e " +
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu " +
-            "left join PurchaseApplyDetail dtl on e.id = dtl.main.id " +
             "where (rt.assignee = :userid) " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or e.createUsername like %:query%" +
-            "   or dtl.name like %:query%" +
+            "   or exists (select dtl.id from PurchaseApplyDetail dtl " +
+            "              where dtl.main.id = e.id and dtl.name like %:query%)" +
             "   ) " +
             "AND (:startDate IS NULL  OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL  OR e.createDate <= :endDate) "
@@ -72,13 +72,13 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
 
     @Query("select count(distinct e) from PurchaseApplyMain e " +
             "left join e.currentTask rt " +
-            "left join PurchaseApplyDetail dtl on e.id = dtl.main.id " +
             "where (rt.assignee = :userid) " +
             "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey) " +
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or e.createUsername like %:query%" +
-            "   or dtl.name like %:query%" +
+            "   or exists (select dtl.id from PurchaseApplyDetail dtl " +
+            "              where dtl.main.id = e.id and dtl.name like %:query%)" +
             "   ) "
     )
     int countTodoByQuery(String userid, String query, String taskDefKey);
@@ -86,14 +86,14 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
     @Query("select distinct e from PurchaseApplyMain e " +
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu " +
-            "left join PurchaseApplyDetail dtl on e.id = dtl.main.id " +
             "where (rt.assignee = :userid) " +
             "and (:state is null or :state = '' or e.businessState = :state) " +
             "and (:taskDefKey is null or :taskDefKey = '' or rt.taskDefKey = :taskDefKey)" +
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or e.createUsername like %:query%" +
-            "   or dtl.name like %:query%" +
+            "   or exists (select dtl.id from PurchaseApplyDetail dtl " +
+            "              where dtl.main.id = e.id and dtl.name like %:query%)" +
             "   ) " +
             "AND (:startDate IS NULL  OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL  OR e.createDate <= :endDate) " +
@@ -106,7 +106,6 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
             "left join fetch e.currentTask rt " +
             "left join fetch rt.tuser tu " +
             "left join ActHiTaskInst ht on ht.procInstId = e.processInstanceId " +
-            "left join PurchaseApplyDetail dtl on e.id = dtl.main.id " +
             "where lower(ht.taskDefKey) not like '%apply%' " +
             "and (:userid is null or :userid = '' or ht.assignee = :userid) " +
             "and (ht.endTime is not null) " +
@@ -114,7 +113,8 @@ public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApply
             "and (:query IS NULL OR :query = '' " +
             "   or e.id like %:query% " +
             "   or e.createUsername like %:query%" +
-            "   or dtl.name like %:query%" +
+            "   or exists (select dtl.id from PurchaseApplyDetail dtl " +
+            "              where dtl.main.id = e.id and dtl.name like %:query%)" +
             "   ) " +
             "AND (:startDate IS NULL  OR e.createDate >= :startDate) " +
             "AND (:endDate IS NULL  OR e.createDate <= :endDate) "
