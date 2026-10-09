@@ -15,6 +15,12 @@ import java.util.List;
 
 public interface EmployeeRepository extends JpaRepository<EmployeeInfo, String> {
 
+    /** 只筛选在职和账号启用状态，不额外限制部门状态。 */
+    @Query("select new com.abt.sys.model.entity.EmployeeInfo(u.id, e.id, e.name, e.dept) " +
+            "from EmployeeInfo e join TUser u on u.empnum = e.jobNumber " +
+            "where e.isExit = false and u.status = 0")
+    List<EmployeeInfo> findApprovalReminderRecipients();
+
     /**
      * 根据工号查询用户
      * @param jobNumber 用户工号

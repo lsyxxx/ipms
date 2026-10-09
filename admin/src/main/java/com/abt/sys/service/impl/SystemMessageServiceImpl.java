@@ -1,6 +1,13 @@
 package com.abt.sys.service.impl;
 
 import com.abt.common.util.TimeUtil;
+import com.abt.common.util.TokenUtil;
+import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.repository.EmployeeRepository;
+import com.abt.sys.repository.TUserRepository;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 import com.abt.sys.config.SystemConstants;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.SystemMessageRequestForm;
@@ -18,6 +25,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.abt.sys.config.SystemConstants.*;
 
@@ -29,9 +39,48 @@ import static com.abt.sys.config.SystemConstants.*;
 public class SystemMessageServiceImpl implements SystemMessageService {
 
     private final SystemMessageRepository systemMessageRepository;
+    private final EmployeeRepository employeeRepository;
+    private final TUserRepository tUserRepository;
 
-    public SystemMessageServiceImpl(SystemMessageRepository systemMessageRepository) {
+    public SystemMessageServiceImpl(SystemMessageRepository systemMessageRepository,
+                                    EmployeeRepository employeeRepository, TUserRepository tUserRepository) {
         this.systemMessageRepository = systemMessageRepository;
+        this.employeeRepository = employeeRepository;
+        this.tUserRepository = tUserRepository;
+    }
+
+    /** 批量发送在同一事务中完成，接收人按用户 ID 去重。 */
+    @Override
+    @Transactional
+    public int sendApprovalReminder(String content) {
+        UserView sender = TokenUtil.getUserFromAuthToken();
+        if (tUserRepository.countApprovalReminderPermission(sender.getId()) == 0) {
+            throw new AccessDeniedException("无权发送审批提醒");
+        }
+        if (StringUtils.isBlank(content)) {
+            throw new BusinessException("请输入提醒内容");
+        }
+        if (content.length() > 200) {
+            throw new BusinessException("提醒内容不能超过200字");
+        }
+        Set<String> userIds = new HashSet<>();
+        List<SystemMessage> messages = new ArrayList<>();
+        for (EmployeeInfo employee : employeeRepository.findApprovalReminderRecipients()) {
+            if (StringUtils.isBlank(employee.getUserid()) || !userIds.add(employee.getUserid())) {
+                continue;
+            }
+            SystemMessage message = createImportantSystemMsg(employee.getUserid(), employee.getName(),
+                    content.trim(), "approvalReminder", null);
+            message.setTitle("审批提醒");
+            message.setFromId(sender.getId());
+            message.setFromName(sender.getName());
+            message.setHref("/flowinstances/wait");
+            message.setImportantPriority();
+            messages.add(message);
+        }
+        sendAll(messages);
+        log.info("审批提醒发送完成，发送人={}，接收人数={}", sender.getId(), messages.size());
+        return messages.size();
     }
 
 

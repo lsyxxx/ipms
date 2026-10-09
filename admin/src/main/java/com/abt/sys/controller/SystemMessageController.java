@@ -2,6 +2,8 @@ package com.abt.sys.controller;
 
 import com.abt.common.model.R;
 import com.abt.common.util.TokenUtil;
+import com.abt.sys.model.dto.ApprovalReminderRequest;
+import jakarta.validation.Valid;
 import com.abt.sys.model.dto.SystemMessageRequestForm;
 import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.service.SystemMessageService;
@@ -20,6 +22,13 @@ import java.util.List;
 public class SystemMessageController {
 
     private final SystemMessageService systemMessageService;
+
+    /** 向全部在职且未停用员工发送个人重要消息。 */
+    @PostMapping("/approval-reminder")
+    public R<Integer> sendApprovalReminder(@Valid @RequestBody ApprovalReminderRequest request) {
+        int count = systemMessageService.sendApprovalReminder(request.getContent());
+        return R.success(count, "已向" + count + "位员工发送审批提醒");
+    }
 
     public SystemMessageController(SystemMessageService systemMessageService) {
         this.systemMessageService = systemMessageService;

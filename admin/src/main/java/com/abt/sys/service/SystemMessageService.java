@@ -9,6 +9,9 @@ import java.util.List;
 
 public interface SystemMessageService {
 
+    /** 独立发送审批提醒，返回接收用户人数。 */
+    int sendApprovalReminder(String content);
+
     /**
      * 发送消息
      */
