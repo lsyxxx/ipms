@@ -6,6 +6,16 @@ server:
 
 encoding: utf-8
 
+# 文件中心：启用前配置服务地址、密钥及已存在的私有桶。
+file-center:
+  minio:
+    enabled: ${FILE_CENTER_MINIO_ENABLED:false}
+    endpoint: ${FILE_CENTER_MINIO_ENDPOINT:}
+    access-key: ${FILE_CENTER_MINIO_ACCESS_KEY:}
+    secret-key: ${FILE_CENTER_MINIO_SECRET_KEY:}
+    bucket: ${FILE_CENTER_MINIO_BUCKET:ipms}
+    max-size-bytes: ${FILE_CENTER_MINIO_MAX_SIZE_BYTES:209715200}
+
 # --------- environment
 spring:
   application:

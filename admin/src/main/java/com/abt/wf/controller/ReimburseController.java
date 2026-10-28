@@ -9,6 +9,8 @@ import com.abt.finance.invoice.CheckAndSaveInvoice;
 import com.abt.finance.service.InvoiceService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.model.entity.EmployeeInfo;
+import com.abt.sys.service.EmployeeService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.Reimburse;
@@ -58,6 +60,7 @@ public class ReimburseController {
     private final ReimburseService reimburseService;
     private final InvoiceService invoiceService;
     private final CostDetailService costDetailService;
+    private final EmployeeService employeeService;
 
     @Value("${abt.rbs.excel.template}")
     private String excelTemplate;
@@ -71,10 +74,12 @@ public class ReimburseController {
     @Value("${abt.temp.dir}")
     private String tempDir;
 
-    public ReimburseController(ReimburseService reimburseService, InvoiceService invoiceService, CostDetailService costDetailService) {
+    public ReimburseController(ReimburseService reimburseService, InvoiceService invoiceService, CostDetailService costDetailService,
+                               EmployeeService employeeService) {
         this.reimburseService = reimburseService;
         this.invoiceService = invoiceService;
         this.costDetailService = costDetailService;
+        this.employeeService = employeeService;
     }
 
     /**
@@ -152,6 +157,12 @@ public class ReimburseController {
             throw new BusinessException("审批编号不能为空!");
         }
         Reimburse rbs = reimburseService.load(id);
+        if (StringUtils.isNotBlank(rbs.getCreateUserid())) {
+            EmployeeInfo applicant = employeeService.findUserByUserid(rbs.getCreateUserid());
+            if (applicant != null) {
+                rbs.setCreateUserCompany(applicant.getCompany());
+            }
+        }
         return R.success(rbs);
     }
 

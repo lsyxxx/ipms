@@ -33,6 +33,7 @@
         <camunda.version>7.21.0</camunda.version>
         <getui.version>1.0.6.0</getui.version>
         <aspose.version>25.9</aspose.version>
+        <minio.version>8.5.12</minio.version>
         <!-- 与 admin 构建脚本对齐 -->
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
@@ -42,6 +43,7 @@
     <modules>
         <module>admin</module>
         <module>common</module>
+        <module>file-center</module>
     </modules>
 
     <dependencyManagement>
@@ -54,6 +56,16 @@
             </dependency>
 
             <!-- 文件工具 -->
+            <dependency>
+                <groupId>com.abt</groupId>
+                <artifactId>file-center</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+            </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>

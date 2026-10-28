@@ -216,6 +216,12 @@ public class Reimburse extends WorkflowBase implements ICreditBook, WithInvoice,
     @Transient
     private List<CostDetail> costDetailList;
 
+    /**
+     * 申请人员工信息中的归属（T_EmployeeInfo.Company 原始值，如 A/G/D），仅详情接口返回
+     */
+    @Transient
+    private String createUserCompany;
+
     //-- 流程参数key
     public static final String KEY_COST = "cost";
     public static final String KEY_IS_LEADER = "isLeader";

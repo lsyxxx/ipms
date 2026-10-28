@@ -16,6 +16,10 @@
     <dependencies>
         <dependency>
             <groupId>com.abt</groupId>
+            <artifactId>file-center</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.abt</groupId>
             <artifactId>common</artifactId>
         </dependency>
         <!-- 与 common 中版本一致，并保证 admin 自身 classpath 优先解析到 2.12+（含 BoundedInputStream.builder） -->
