@@ -239,7 +239,7 @@ public class AgreementServiceImpl implements AgreementService {
                 if (search == null || search.isEmpty()) {
                     return null;
                 }
-                return builder.equal(root.get("yCompanyId"), search);
+                return builder.equal(root.get("YCompanyId"), search);
             };
         }
     }
