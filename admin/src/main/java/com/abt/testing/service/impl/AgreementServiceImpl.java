@@ -23,6 +23,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,18 +41,20 @@ public class AgreementServiceImpl implements AgreementService {
     private final AgreementRepository agreementRepository;
     private final CustomerInfo abtCompany;
     private final CustomerInfo grdCompany;
+    private final CustomerInfo dcCompany;
     private final EntrustRepository entrustRepository;
 
     private final Map<String, CustomerInfo> companyMap;
     private final Map<String, EnumLib> agreementTypeEnumMap;
     private final List<EnumLib> agreementTypeEnumList;
 
-    public AgreementServiceImpl(AgreementRepository agreementRepository, CustomerInfo abtCompany, CustomerInfo grdCompany, EntrustRepository entrustRepository,
+    public AgreementServiceImpl(AgreementRepository agreementRepository, CustomerInfo abtCompany, CustomerInfo grdCompany, CustomerInfo dcCompany, EntrustRepository entrustRepository,
                                 Map<String, CustomerInfo> companyMap, @Qualifier("agreementTypeEnumMap") Map<String, EnumLib> agreementTypeEnumMap,
                                 @Qualifier("agreementTypeEnumList") List<EnumLib> agreementTypeEnumList) {
         this.agreementRepository = agreementRepository;
         this.abtCompany = abtCompany;
         this.grdCompany = grdCompany;
+        this.dcCompany = dcCompany;
         this.entrustRepository = entrustRepository;
         this.companyMap = companyMap;
         this.agreementTypeEnumMap = agreementTypeEnumMap;
@@ -64,18 +67,32 @@ public class AgreementServiceImpl implements AgreementService {
             throw new BusinessException("合同编号已存在(" + agreement.getAgreementCode() + ")!");
         }
 
-        String companyId = agreement.getYCompanyId();
-        if (abtCompany.getId().equals(companyId)) {
-            final boolean abtCode = doValidateABTAgreementCodeRule(agreement.getAgreementCode());
+        validatePreAgreementCode(agreement.getAgreementCode(), agreement.getYCompanyId());
+    }
+
+    @Override
+    public void validatePreAgreementCode(String agreementCode, String companyId) {
+        if (StringUtils.isBlank(agreementCode)) {
+            throw new BusinessException("合同编号不能为空");
+        }
+        Charset charset = Charset.forName("GBK");
+        if (!charset.newEncoder().canEncode(agreementCode) || agreementCode.getBytes(charset).length > 20) {
+            throw new BusinessException("合同编号含数据库不支持的字符或超过 varchar(20) 字节长度限制");
+        }
+        if (StringUtils.isBlank(companyId)) {
+            throw new BusinessException("缺少合同乙方信息");
+        }
+        if (companyId.equals(abtCompany.getId())) {
+            final boolean abtCode = doValidateABTAgreementCodeRule(agreementCode);
             if (!abtCode) {
                 throw new BusinessException("合同编号不符合阿伯塔编号规则(AJC+年份+3位编号)");
             }
-        } else if (grdCompany.getId().equals(companyId)) {
-            final boolean grdCode = doValidateGRDAgreementCodeRule(agreement.getAgreementCode());
+        } else if (companyId.equals(grdCompany.getId())) {
+            final boolean grdCode = doValidateGRDAgreementCodeRule(agreementCode);
             if (!grdCode) {
                 throw new BusinessException("合同编号不符合吉瑞达编号规则(JC+年份+3位编号)");
             }
-        } else {
+        } else if (!companyId.equals(dcCompany.getId())) {
             throw new BusinessException("缺少合同乙方信息");
         }
     }

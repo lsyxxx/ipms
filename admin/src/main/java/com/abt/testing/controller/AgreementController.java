@@ -7,6 +7,13 @@ import com.abt.testing.entity.Agreement;
 import com.abt.testing.entity.EnumLib;
 import com.abt.testing.model.AgreementRequestForm;
 import com.abt.testing.service.AgreementService;
+import com.abt.testing.service.PreAgreementImportService;
+import com.abt.testing.model.PreAgreementImportResult;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,9 +32,27 @@ import java.util.List;
 public class AgreementController {
 
     private final AgreementService agreementService;
+    private final PreAgreementImportService importService;
 
-    public AgreementController(AgreementService agreementService) {
+    public AgreementController(AgreementService agreementService, PreAgreementImportService importService) {
         this.agreementService = agreementService;
+        this.importService = importService;
+    }
+
+    /** 整表校验通过后批量创建；失败时返回逐行逐字段错误明细。 */
+    @PostMapping("/pre/import")
+    public R<PreAgreementImportResult> save(@RequestParam("file") MultipartFile file) {
+        PreAgreementImportResult result = importService.save(file);
+        return R.success(result, result.getErrors().isEmpty() ? "导入成功" : "校验失败，未导入任何合同");
+    }
+
+    /** 下载包含乙方下拉选项的导入模板。 */
+    @GetMapping("/pre/find-template")
+    public void findTemplate(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''"
+                + URLEncoder.encode("预创建合同导入模板.xlsx", StandardCharsets.UTF_8));
+        importService.findTemplate(response.getOutputStream());
     }
 
     /**

@@ -60,7 +60,7 @@ public class CompanyConfig {
     @Order(2)
     public CustomerInfo dcCompany() {
         final CustomerInfo grd = customerInfoRepository.findById(dcCompanyId).orElse(new CustomerInfo().setCustomerName("陕西道常能源技术有限公司"));
-        companyMap.put(grdCompanyId, grd);
+        companyMap.put(dcCompanyId, grd);
         return grd;
     }
 

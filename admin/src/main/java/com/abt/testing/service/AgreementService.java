@@ -15,6 +15,9 @@ public interface AgreementService {
      */
     void savePreAgreement(Agreement agreement);
 
+    /** 校验乙方范围与对应合同编号规则。 */
+    void validatePreAgreementCode(String agreementCode, String yCompanyId);
+
     void deletePreAgreement(String entityId);
 
     Agreement load(String id);
