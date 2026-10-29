@@ -154,17 +154,39 @@ public class SettlementServiceImpl implements SettlementService {
         if (CollectionUtils.isEmpty(summaryTab)) {
             return;
         }
-        // 根据SettlementSummary的amount计算合计金额
         BigDecimal grossAmount = BigDecimal.ZERO;
         for (SettlementSummary summary : summaryTab) {
-            grossAmount = grossAmount.add(BigDecimal.valueOf(summary.getAmount()));
+            if (summary.getAmount() != null) {
+                grossAmount = grossAmount.add(BigDecimal.valueOf(summary.getAmount()));
+            }
         }
         grossAmount = grossAmount.setScale(2, RoundingMode.HALF_UP);
+        Double discountPercentage = main.getDiscountPercentage();
+        if (discountPercentage == null) {
+            discountPercentage = 0.00;
+        }
+        if (!Double.isFinite(discountPercentage) || discountPercentage < 0 || discountPercentage > 1) {
+            throw new BusinessException("优惠比例必须在0到1之间");
+        }
+        BigDecimal discountAmount = grossAmount.multiply(BigDecimal.valueOf(discountPercentage))
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal expenseAmount = BigDecimal.ZERO;
+        if (!CollectionUtils.isEmpty(main.getExpenseItems())) {
+            for (ExpenseItem item : main.getExpenseItems()) {
+                if (item.getAmount() != null) {
+                    expenseAmount = expenseAmount.add(item.getAmount());
+                }
+            }
+        } else if (main.getExpenseAmount() != null) {
+            expenseAmount = main.getExpenseAmount();
+        }
+        expenseAmount = expenseAmount.setScale(2, RoundingMode.HALF_UP);
         main.setGrossTestAmount(grossAmount);
-        main.setDiscountAmount(0.00);
-        main.setDiscountPercentage(0.00);
-        main.setNetTestAmount(grossAmount);
-        main.setTotalAmount(main.getNetTestAmount().add(main.getExpenseAmount()).setScale(2,  RoundingMode.HALF_UP));
+        main.setDiscountPercentage(discountPercentage);
+        main.setDiscountAmount(discountAmount.doubleValue());
+        main.setExpenseAmount(expenseAmount);
+        main.setNetTestAmount(grossAmount.subtract(discountAmount).setScale(2, RoundingMode.HALF_UP));
+        main.setTotalAmount(main.getNetTestAmount().add(expenseAmount).setScale(2, RoundingMode.HALF_UP));
     }
 
 
@@ -450,6 +472,7 @@ public class SettlementServiceImpl implements SettlementService {
 
         //数据样式
         Style dataStyle = createDataStyle(workbook);
+        Style amountStyle = createAmountStyle(workbook);
 
         //数据
         int dataRow = 1;
@@ -465,9 +488,9 @@ public class SettlementServiceImpl implements SettlementService {
             cells.get(dataRow, 4).putValue(summary.getSampleNum());
             cells.get(dataRow, 4).setStyle(dataStyle);
             cells.get(dataRow, 5).putValue(summary.getPrice());
-            cells.get(dataRow, 5).setStyle(dataStyle);
+            cells.get(dataRow, 5).setStyle(amountStyle);
             cells.get(dataRow, 6).putValue(summary.getAmount());
-            cells.get(dataRow, 6).setStyle(dataStyle);
+            cells.get(dataRow, 6).setStyle(amountStyle);
             cells.get(dataRow, 7).putValue(summary.getRemark());
             cells.get(dataRow, 7).setStyle(dataStyle);
             dataRow++;
@@ -492,6 +515,7 @@ public class SettlementServiceImpl implements SettlementService {
 
         // 创建样式
         Style dataStyle = createDataStyle(workbook);
+        Style amountStyle = createAmountStyle(workbook);
         Style dateStyle = createDateStyle(workbook);
 
         int headerRow = 3;
@@ -522,11 +546,11 @@ public class SettlementServiceImpl implements SettlementService {
 
                 // 单价
                 cells.get(currentRow, 3).putValue(summaryRow.getPrice());
-                cells.get(currentRow, 3).setStyle(dataStyle);
+                cells.get(currentRow, 3).setStyle(amountStyle);
 
                 // 合计
                 cells.get(currentRow, 4).putValue(summaryRow.getAmount());
-                cells.get(currentRow, 4).setStyle(dataStyle);
+                cells.get(currentRow, 4).setStyle(amountStyle);
 
                 // 备注： 项目编号+送样单位
                 String entrustId = summaryRow.getEntrustId();
@@ -545,7 +569,7 @@ public class SettlementServiceImpl implements SettlementService {
             cells.get(currentRow, 0).putValue(String.format("优惠(%s): %s", percentage, money));
             cells.get(currentRow, 0).setStyle(dataStyle);
             cells.get(currentRow, sumAmountCol).putValue(settlementMain.getDiscountAmount());
-            cells.get(currentRow, sumAmountCol).setStyle(dataStyle);
+            cells.get(currentRow, sumAmountCol).setStyle(amountStyle);
             worksheet.getCells().merge(currentRow, 0, 1, sumAmountCol);
             currentRow++;
         }
@@ -557,7 +581,7 @@ public class SettlementServiceImpl implements SettlementService {
                 cells.get(currentRow, 0).putValue(expenseItem.getName());
                 cells.get(currentRow, 0).setStyle(dataStyle);
                 cells.get(currentRow, sumAmountCol).putValue(expenseItem.getAmount());
-                cells.get(currentRow, sumAmountCol).setStyle(dataStyle);
+                cells.get(currentRow, sumAmountCol).setStyle(amountStyle);
                 worksheet.getCells().merge(currentRow, 0, 1, sumAmountCol);
                 currentRow++;
             }
@@ -574,7 +598,7 @@ public class SettlementServiceImpl implements SettlementService {
         cells.get(currentRow, 0).putValue(smryLabel);
         cells.get(currentRow, 0).setStyle(dataStyle);
         cells.get(currentRow, sumAmountCol).putValue(settlementMain.getFinalAmount());
-        cells.get(currentRow, sumAmountCol).setStyle(dataStyle);
+        cells.get(currentRow, sumAmountCol).setStyle(amountStyle);
         worksheet.getCells().merge(currentRow, 0, 1, sumAmountCol);
 //        // 日期和签名
 //        LocalDate now = LocalDate.now();
@@ -596,6 +620,15 @@ public class SettlementServiceImpl implements SettlementService {
         style.setBorder(BorderType.BOTTOM_BORDER, CellBorderType.THIN, Color.getBlack());
         style.setBorder(BorderType.LEFT_BORDER, CellBorderType.THIN, Color.getBlack());
         style.setBorder(BorderType.RIGHT_BORDER, CellBorderType.THIN, Color.getBlack());
+        return style;
+    }
+
+    /**
+     * 金额居中对齐，使用千分位并固定显示两位小数。
+     */
+    private Style createAmountStyle(Workbook workbook) {
+        Style style = createDataStyle(workbook);
+        style.setNumber(4);
         return style;
     }
 
@@ -651,6 +684,21 @@ public class SettlementServiceImpl implements SettlementService {
         designer.setWorkbook(workbook);
         designer.setDataSource("list", stlmMain.getTestItems());
         designer.process(true);
+
+        // 保留模板字体、边框及日期格式，仅统一表格对齐和单价格式。
+        StyleFlag alignmentFlag = new StyleFlag();
+        alignmentFlag.setHorizontalAlignment(true);
+        Style centeredStyle = workbook.createStyle();
+        centeredStyle.setHorizontalAlignment(TextAlignmentType.CENTER);
+        cells.createRange(1, 0, cells.getMaxDataRow(), cells.getMaxDataColumn() + 1)
+                .applyStyle(centeredStyle, alignmentFlag);
+        if (cells.getMaxDataRow() >= 2) {
+            StyleFlag amountFlag = new StyleFlag();
+            amountFlag.setHorizontalAlignment(true);
+            amountFlag.setNumberFormat(true);
+            cells.createRange(2, 4, cells.getMaxDataRow() - 1, 1)
+                    .applyStyle(createAmountStyle(workbook), amountFlag);
+        }
     }
 
 
