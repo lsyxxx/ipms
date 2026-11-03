@@ -102,6 +102,10 @@ webapi:
 
 # ----- fieldwork excel model
 abt:
+  agreement:
+    pre:
+      import:
+        template: E:/temp/export/pre_agreement_import.xlsx
   fw:
     excel:
       output: E:\\temp\\fw\\
@@ -200,4 +204,4 @@ abt:
   #-- saleagreement
   saleAgreement:
     export:
-      template: E:\\temp\\export\\saleagreement_export_template.xlsx
+      template: E:\\temp\\import\\saleagreement_export_template.xlsx

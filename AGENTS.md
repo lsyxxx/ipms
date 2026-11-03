@@ -408,6 +408,12 @@ repository 方法：
 
 - 超长 SQL
 
+## 文件模板规范
+
+- dev 环境的文件模板默认存放在项目下的 `templates/` 文件夹
+- 模板路径在 `application-dev.yml`、`application-prod.yml` 中分别配置，dev 默认使用 `templates/文件名` 相对路径
+- serviceImpl 中使用 `@Value` 注入模板路径并读取文件；文件不存在时抛出 `BusinessException`
+
 ## 文件修改原则
 
 - 优先最小修改

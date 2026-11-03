@@ -1,0 +1,8 @@
+{"kind":"workbook","id":"wb/wxm2q5","sheets":1,"tables":1}
+{"kind":"sheet","id":"ws/vbzmpa","name":"预创建合同","index":0,"range":"A1:D1","address":"A1:D1","tables":1}
+{"kind":"table","sheet":"预创建合同","address":"A1:D1","rows":1,"cols":4,"values":[["合同编号","合同名称","甲方单位","乙方单位"]]}
+{"kind":"region","sheet":"预创建合同","address":"A1:D1","rows":1,"cols":4,"nonEmpty":4,"text":4,"maxTextLength":4,"preview":[["合同编号","合同名称","甲方单位","乙方单位"]],"previewAddress":"A1:D1","previewRows":1,"previewCols":4}
+{"kind":"computedStyle","sheet":"预创建合同","for":"A1","style":{"fill":{"type":1,"color":{"type":1,"value":"24476A"},"gradientStops":[],"pictureEffects":[]},"font":{"bold":true,"size":11,"name":"Arial","color":"#FFFFFF"},"border":{},"numberFormat":"@","wrapText":false,"horizontalAlignment":"center","styleId":6}}
+{"kind":"computedStyle","sheet":"预创建合同","for":"B1","style":{"fill":{"type":1,"color":{"type":1,"value":"24476A"},"gradientStops":[],"pictureEffects":[]},"font":{"bold":true,"size":11,"name":"Arial","color":"#FFFFFF"},"border":{},"numberFormat":"@","wrapText":false,"horizontalAlignment":"center","styleId":6}}
+{"kind":"computedStyle","sheet":"预创建合同","for":"C1","style":{"fill":{"type":1,"color":{"type":1,"value":"24476A"},"gradientStops":[],"pictureEffects":[]},"font":{"bold":true,"size":11,"name":"Arial","color":"#FFFFFF"},"border":{},"numberFormat":"@","wrapText":false,"horizontalAlignment":"center","styleId":6}}
+{"kind":"computedStyle","sheet":"预创建合同","for":"D1","style":{"fill":{"type":1,"color":{"type":1,"value":"24476A"},"gradientStops":[],"pictureEffects":[]},"font":{"bold":true,"size":11,"name":"Arial","color":"#FFFFFF"},"border":{},"numberFormat":"@","wrapText":false,"horizontalAlignment":"center","styleId":6}}

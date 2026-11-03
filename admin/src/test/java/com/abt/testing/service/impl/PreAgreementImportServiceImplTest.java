@@ -15,11 +15,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -136,15 +140,34 @@ class PreAgreementImportServiceImplTest {
     }
 
     @Test
-    void templateContainsTextColumnsAndThreeCompanyDropdown() throws Exception {
+    void templateDownloadsConfiguredFileWithTextColumnsAndThreeCompanyDropdown(@TempDir Path directory) throws Exception {
+        Path template = directory.resolve("configured-template.xlsx");
+        Files.copy(Path.of("templates/pre_agreement_import.xlsx"), template);
+        ReflectionTestUtils.setField(service, "templatePath", template.toString());
         var output = new ByteArrayOutputStream();
         service.findTemplate(output);
+        assertArrayEquals(Files.readAllBytes(template), output.toByteArray());
         try (var workbook = new XSSFWorkbook(new ByteArrayInputStream(output.toByteArray()))) {
             var sheet = workbook.getSheetAt(0);
+            assertEquals(1, workbook.getNumberOfSheets());
             assertEquals("乙方单位", sheet.getRow(0).getCell(3).getStringCellValue());
-            assertEquals("@", sheet.getColumnStyle(0).getDataFormatString());
-            assertEquals(3, sheet.getDataValidations().get(0).getValidationConstraint().getExplicitListValues().length);
+            assertEquals("@", sheet.getRow(1).getCell(0).getCellStyle().getDataFormatString());
+            assertArrayEquals(new String[]{abt.getCustomerName(), grd.getCustomerName(), dc.getCustomerName()},
+                    sheet.getDataValidations().get(0).getValidationConstraint().getExplicitListValues());
+            assertEquals("D2:D1001", sheet.getDataValidations().get(0).getRegions().getCellRangeAddresses()[0].formatAsString());
+            assertTrue(sheet.getPaneInformation().isFreezePane());
         }
+        verifyNoInteractions(repository, customers);
+    }
+
+    @Test
+    void templateMissingThrowsBusinessException(@TempDir Path directory) {
+        ReflectionTestUtils.setField(service, "templatePath", directory.resolve("missing.xlsx").toString());
+        var output = new ByteArrayOutputStream();
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.findTemplate(output));
+        assertEquals("未添加预登记合同导入模板，请联系管理员", exception.getMessage());
+        assertEquals(0, output.size());
+        verifyNoInteractions(repository, customers);
     }
 
     @Test

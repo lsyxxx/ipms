@@ -95,6 +95,10 @@ webapi:
 
 # ----- fieldwork excel model
 abt:
+  agreement:
+    pre:
+      import:
+        template: templates/pre_agreement_import.xlsx
   fw:
     excel:
       output: E:\\fw_atd\\

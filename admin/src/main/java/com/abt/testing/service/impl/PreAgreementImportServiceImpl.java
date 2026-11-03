@@ -15,9 +15,9 @@ import com.abt.testing.service.PreAgreementImportService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,6 +41,9 @@ public class PreAgreementImportServiceImpl implements PreAgreementImportService 
     private static final int QUERY_BATCH_SIZE = 500;
     // T_Agreement 为 Chinese_PRC_CI_AS 的 varchar，长度按代码页 936 字节计算。
     private static final Charset DATABASE_CHARSET = Charset.forName("GBK");
+
+    @Value("${abt.agreement.pre.import.template}")
+    private String templatePath;
 
     private final AgreementRepository agreementRepository;
     private final CustomerInfoRepository customerRepository;
@@ -228,27 +233,12 @@ public class PreAgreementImportServiceImpl implements PreAgreementImportService 
 
     @Override
     public void findTemplate(OutputStream output) throws IOException {
-        try (var workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("预创建合同");
-            Row header = sheet.createRow(0);
-            CellStyle text = workbook.createCellStyle();
-            text.setDataFormat(workbook.createDataFormat().getFormat("@"));
-            for (int c = 0; c < HEADERS.length; c++) {
-                header.createCell(c).setCellValue(HEADERS[c]);
-                sheet.setDefaultColumnStyle(c, text);
-                sheet.setColumnWidth(c, (c < 2 ? 30 : 48) * 256);
-            }
-            String[] companies = companyService.findYCompanyList().stream().map(CustomerInfo::getCustomerName).toArray(String[]::new);
-            DataValidationHelper helper = sheet.getDataValidationHelper();
-            DataValidation validation = helper.createValidation(helper.createExplicitListConstraint(companies),
-                    new CellRangeAddressList(1, MAX_ROWS, 3, 3));
-            validation.setShowErrorBox(true);
-            validation.setErrorStyle(DataValidation.ErrorStyle.STOP);
-            validation.createErrorBox("乙方单位错误", "请选择下拉列表中的完整公司名称");
-            sheet.addValidationData(validation);
-            sheet.createFreezePane(0, 1);
-            workbook.write(output);
+        Path path = Path.of(templatePath);
+        if (!Files.isRegularFile(path)) {
+            log.error("预登记合同导入模板不存在：{}", path);
+            throw new BusinessException("未添加预登记合同导入模板，请联系管理员");
         }
+        Files.copy(path, output);
     }
 
     private record ImportRow(int number, String[] values) { }

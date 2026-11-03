@@ -46,7 +46,7 @@ public class AgreementController {
         return R.success(result, result.getErrors().isEmpty() ? "导入成功" : "校验失败，未导入任何合同");
     }
 
-    /** 下载包含乙方下拉选项的导入模板。 */
+    /** 下载固定的 Excel 导入模板，模板文件包含乙方下拉选项。 */
     @GetMapping("/pre/find-template")
     public void findTemplate(HttpServletResponse response) throws IOException {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
