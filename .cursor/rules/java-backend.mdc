@@ -95,12 +95,14 @@ entity 包中的类表示数据库实体。
 - entity 不用于复杂业务聚合
 - 允许返回entity对象
 - entity 类上必须添加@JsonInclude(JsonInclude.Include.NON_EMPTY)
+- JPA 实体类的每个字段必须添加简短中文注释，说明字段的业务含义；涉及单位或状态取值时，应一并注明单位或取值含义
 
 命名规范：
 
 - 类名使用 PascalCase
 - 表名使用 snake_case
 - 字段名使用 camelCase
+- 新增主从表结构时，从表关联主表的标识字段一般使用 Java `mainId`、数据库列 `m_id`，通过 `@Column(name = "m_id")` 显式映射；DTO、查询参数及接口说明保持一致，存量字段不为统一命名而无关改造
 
 示例：
 

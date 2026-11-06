@@ -5,17 +5,21 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Immutable;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 
+/**
+ * 车辆档案；野外用车仅更新占用状态及操作审计。
+ */
 @Getter
 @Setter
 @Entity
 @Table(name = "T_car_Info")
-@Immutable
+@DynamicUpdate
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class CarInfo {
     @Id
     @Size(max = 50)
