@@ -31,6 +31,12 @@ public class FieldVehicleController {
         return R.success(service.findPage(form));
     }
 
+    @GetMapping("/my/findPage")
+    @Operation(summary = "本人创建（派车）或办理还车的记录分页，含草稿")
+    public R<Page<FieldVehicleListVO>> findMyPage(@Valid @ModelAttribute FieldVehicleRequestForm form) {
+        return R.success(service.findMyPage(form));
+    }
+
     @GetMapping("/findById")
     @Operation(summary = "详情与还车预览，返回主表实时维护的加油合计")
     public R<FieldVehicleDetailVO> findById(

@@ -65,6 +65,17 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
     @Transactional(readOnly = true)
     public Page<FieldVehicleListVO> findPage(FieldVehicleRequestForm form) {
         currentUser();
+        return findPage(form, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FieldVehicleListVO> findMyPage(FieldVehicleRequestForm form) {
+        return findPage(form, currentUser().getId());
+    }
+
+    /** 复用分页条件，指定用户时仅查询本人创建或办理还车的记录。 */
+    private Page<FieldVehicleListVO> findPage(FieldVehicleRequestForm form, String userId) {
         validate(form);
         if (form.getPage() < 1 || form.getLimit() < 0 || form.getLimit() > 100) {
             throw new BusinessException("分页页码必须大于0，单页数量必须在1到100之间");
@@ -74,7 +85,7 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
         LocalDate start = parseDate(form.getStartDate());
         LocalDate end = parseDate(form.getEndDate());
         checkDateOrder(start, end, "查询开始日期不能晚于结束日期");
-        Page<FieldVehicleUse> page = records.findAll(specification(form, start, end),
+        Page<FieldVehicleUse> page = records.findAll(specification(form, start, end, userId),
                 PageRequest.of(form.getPage() - 1, size, Sort.by(Sort.Direction.DESC, "useDate", "createDate", "id")));
         return page.map(this::listVO);
     }
@@ -406,12 +417,16 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
         return vo;
     }
 
-    private Specification<FieldVehicleUse> specification(FieldVehicleRequestForm form, LocalDate start, LocalDate end) {
+    private Specification<FieldVehicleUse> specification(FieldVehicleRequestForm form, LocalDate start, LocalDate end, String userId) {
         String query = trim(form.getQuery());
         String driver = trim(form.getDriverName());
         String peer = trim(form.getPeerName());
         return (root, criteria, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+            if (userId != null) {
+                predicates.add(cb.or(cb.equal(root.get("createUserid"), userId),
+                        cb.equal(root.get("returnUserId"), userId)));
+            }
             if (trim(form.getCarId()) != null) predicates.add(cb.equal(root.get("carId"), form.getCarId().trim()));
             if (form.getStatus() != null) predicates.add(cb.equal(root.get("status"), form.getStatus()));
             if (start != null) predicates.add(cb.greaterThanOrEqualTo(root.get("useDate"), start));
