@@ -9,6 +9,10 @@ import java.util.Optional;
 
 /** 加油明细及完整有效记录的聚合，空日期行同样参与汇总。 */
 public interface FieldVehicleFuelRepository extends JpaRepository<FieldVehicleFuel, String> {
+    @Query("SELECT f FROM FieldVehicleFuel f WHERE f.mainId IN :mainIds " +
+            "ORDER BY CASE WHEN f.fuelDate IS NULL THEN 1 ELSE 0 END, f.fuelDate, f.id")
+    List<FieldVehicleFuel> findReportItems(@Param("mainIds") java.util.Collection<String> mainIds);
+
     boolean existsByMainId(String mainId);
 
     Optional<FieldVehicleFuel> findByIdAndMainId(String id, String mainId);

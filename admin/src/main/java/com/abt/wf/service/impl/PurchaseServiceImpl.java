@@ -48,10 +48,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -381,6 +386,37 @@ public class PurchaseServiceImpl extends AbstractWorkflowCommonServiceImpl<Purch
         }
         final File excel = doCreateExcel(main, pdfPath);
         return ExcelUtil.excel2Pdf(excel.getAbsolutePath(), pdfPath);
+    }
+
+    @Override
+    public File createDocumentPdf(PurchaseApplyMain main, String directory) throws Exception {
+        if (!Files.isRegularFile(Path.of(excelTemplate))) {
+            throw new BusinessException("采购单模板不存在，请联系管理员");
+        }
+        if (main.isAccepted() && main.isFinished() && !Files.isRegularFile(Path.of(acceptExcelTemplate))) {
+            throw new BusinessException("采购验收单模板不存在，请联系管理员");
+        }
+        Path work = Path.of(directory);
+        Files.createDirectories(work);
+        if (main.getDetails() != null) {
+            main.getDetails().sort(Comparator.comparing(PurchaseApplyDetail::getSortNo,
+                    Comparator.nullsLast(Comparator.naturalOrder())));
+        }
+        doCreateExcel(main, work.resolve("purchase.xlsx").toString());
+        ExcelUtil.excel2Pdf(work.resolve("purchase.xlsx").toString(), work.resolve("purchase.pdf").toString());
+        Path combined = work.resolve("document.pdf");
+        if (main.isAccepted() && main.isFinished()) {
+            createAcceptExcel(main, work.resolve("accept.xlsx").toString());
+            ExcelUtil.excel2Pdf(work.resolve("accept.xlsx").toString(), work.resolve("accept.pdf").toString());
+            PDFMergerUtility merger = new PDFMergerUtility();
+            merger.addSource(work.resolve("purchase.pdf").toFile());
+            merger.addSource(work.resolve("accept.pdf").toFile());
+            merger.setDestinationFileName(combined.toString());
+            merger.mergeDocuments(MemoryUsageSetting.setupTempFileOnly().setTempDir(work.toFile()));
+        } else {
+            Files.copy(work.resolve("purchase.pdf"), combined, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return combined.toFile();
     }
 
     @Override

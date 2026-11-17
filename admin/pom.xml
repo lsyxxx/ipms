@@ -14,6 +14,12 @@
     <description>admin</description>
 
     <dependencies>
+        <!-- 合并采购与验收 PDF，使用临时文件控制批量导出的内存占用 -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.37</version>
+        </dependency>
         <dependency>
             <groupId>com.abt</groupId>
             <artifactId>common</artifactId>

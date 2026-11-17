@@ -6,6 +6,7 @@ import java.util.List;
 
 /** 野外用车业务接口。 */
 public interface FieldVehicleService {
+    FieldVehicleWeekReportVO findWeekReport(FieldVehicleWeekReportRequest form);
     Page<FieldVehicleListVO> findPage(FieldVehicleRequestForm form);
     Page<FieldVehicleListVO> findMyPage(FieldVehicleRequestForm form);
     FieldVehicleDetailVO findById(String id);

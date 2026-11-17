@@ -25,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -59,6 +60,42 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
         this.validator = validator;
         this.transactions = new TransactionTemplate(manager);
         this.transactions.setTimeout(30);
+    }
+
+    /** 分批读取完整明细；可串行化只读事务保证主从表在一次查询内保持一致。 */
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.SERIALIZABLE, timeout = 30)
+    public FieldVehicleWeekReportVO findWeekReport(FieldVehicleWeekReportRequest form) {
+        currentUser();
+        validate(form);
+        LocalDate start = parseDate(form.getWeekStart());
+        LocalDate end = parseDate(form.getWeekEnd());
+        if (start.getDayOfWeek() != java.time.DayOfWeek.MONDAY || !start.plusDays(6).equals(end)) {
+            throw new BusinessException("查询周必须为周一至周日的完整自然周");
+        }
+        LocalDateTime queriedAt = LocalDateTime.now(java.time.ZoneId.of("Asia/Shanghai"));
+        Specification<FieldVehicleUse> scope = (root, query, cb) -> {
+            List<Predicate> conditions = new ArrayList<>();
+            conditions.add(root.get("status").in(FieldVehicleStatus.USING.getCode(), FieldVehicleStatus.FINISHED.getCode()));
+            conditions.add(cb.or(cb.isNull(root.get("useDate")), cb.lessThanOrEqualTo(root.get("useDate"), end)));
+            if (trim(form.getCarId()) != null) conditions.add(cb.equal(root.get("carId"), form.getCarId().trim()));
+            if (form.getStatus() != null) conditions.add(cb.equal(root.get("status"), form.getStatus()));
+            return cb.and(conditions.toArray(Predicate[]::new));
+        };
+        List<FieldVehicleUse> history = records.findAll(scope,
+                Sort.by(Sort.Direction.DESC, "useDate", "createDate", "id"));
+        // 累计金额需要历史加油；只为本周命中车辆加载，避免逐条详情查询。
+        Set<String> reportCars = history.stream().filter(r -> FieldVehicleWeekReportBuilder.inReport(r, start))
+                .map(FieldVehicleUse::getCarId).collect(Collectors.toSet());
+        List<String> ids = history.stream().filter(r -> reportCars.contains(r.getCarId()))
+                .map(FieldVehicleUse::getId).toList();
+        List<FieldVehicleFuel> items = new ArrayList<>();
+        for (int from = 0; from < ids.size(); from += IN_BATCH_SIZE) {
+            items.addAll(fuels.findReportItems(ids.subList(from, Math.min(from + IN_BATCH_SIZE, ids.size()))));
+        }
+        FieldVehicleWeekReportVO report = FieldVehicleWeekReportBuilder.build(history, items, start, end, queriedAt);
+        log.info("查询野外用车周报 weekStart={}, weekEnd={}, trips={}", start, end, report.getSummary().getDispatchCount());
+        return report;
     }
 
     @Override
@@ -428,6 +465,9 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
                         cb.equal(root.get("returnUserId"), userId)));
             }
             if (trim(form.getCarId()) != null) predicates.add(cb.equal(root.get("carId"), form.getCarId().trim()));
+            if (form.getCarIds() != null && !form.getCarIds().isEmpty()) {
+                predicates.add(root.get("carId").in(form.getCarIds().stream().map(String::trim).distinct().toList()));
+            }
             if (form.getStatus() != null) predicates.add(cb.equal(root.get("status"), form.getStatus()));
             if (start != null) predicates.add(cb.greaterThanOrEqualTo(root.get("useDate"), start));
             if (end != null) predicates.add(cb.lessThanOrEqualTo(root.get("useDate"), end));

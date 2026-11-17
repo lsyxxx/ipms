@@ -28,6 +28,9 @@ public interface PurchaseService extends WorkFlowService<PurchaseApplyMain>, Bus
 
     File createPdf(String id, String pdfPath) throws Exception;
 
+    /** 基于同一份已加载数据生成采购单；已完成且已验收时追加验收记录。 */
+    File createDocumentPdf(PurchaseApplyMain main, String directory) throws Exception;
+
     File createExcel(String id, String path) throws Exception;
 
     void setBusinessId(String procId, String entityId);

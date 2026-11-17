@@ -25,6 +25,12 @@ import java.util.List;
 public class FieldVehicleController {
     private final FieldVehicleService service;
 
+    @GetMapping("/weekReport")
+    @Operation(summary = "野外用车自然周聚合报表，包含跨周行程及按日期统计的加油明细")
+    public R<FieldVehicleWeekReportVO> findWeekReport(@Valid @ModelAttribute FieldVehicleWeekReportRequest form) {
+        return R.success(service.findWeekReport(form));
+    }
+
     @GetMapping("/findPage")
     @Operation(summary = "野外用车分页，含草稿")
     public R<Page<FieldVehicleListVO>> findPage(@Valid @ModelAttribute FieldVehicleRequestForm form) {

@@ -6,6 +6,7 @@ import com.abt.wf.model.PurchaseSummaryAmount;
 import org.apache.poi.ss.usermodel.PageMargin;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,6 +15,33 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PurchaseApplyMainRepository extends JpaRepository<PurchaseApplyMain, String> {
+
+    /** 只扫描主表编号；从表关键字与已办记录使用 EXISTS，游标分页避免展开明细。 */
+    @Query("""
+            SELECT DISTINCT e.id FROM PurchaseApplyMain e LEFT JOIN e.currentTask rt
+            WHERE e.id > :afterId AND e.createDate <= :snapshotTime
+              AND (:state IS NULL OR :state = '' OR e.businessState = :state)
+              AND (:query IS NULL OR :query = '' OR e.id LIKE CONCAT('%', :query, '%')
+                   OR e.createUsername LIKE CONCAT('%', :query, '%')
+                   OR EXISTS (SELECT d.id FROM PurchaseApplyDetail d WHERE d.main.id = e.id AND d.name LIKE CONCAT('%', :query, '%')))
+              AND (:startDate IS NULL OR e.createDate >= :startDate)
+              AND (:endDate IS NULL OR e.createDate <= :endDate)
+              AND ((:scope = 'MY' AND e.createUserid = :userid)
+                OR (:scope = 'TODO' AND rt.assignee = :userid)
+                OR (:scope = 'DONE' AND EXISTS (SELECT h.id FROM ActHiTaskInst h
+                    WHERE h.procInstId = e.processInstanceId AND h.assignee = :userid
+                      AND h.endTime IS NOT NULL AND LOWER(h.taskDefKey) NOT LIKE '%apply%'))
+                OR (:scope = 'ALL' AND (:deptIgnore = TRUE OR e.createDeptId IN :deptList)))
+            ORDER BY e.id
+            """)
+    Slice<String> findDocumentExportIds(String scope, String userid, String query, String state,
+                                       boolean deptIgnore, List<String> deptList,
+                                       LocalDateTime startDate, LocalDateTime endDate,
+                                       LocalDateTime snapshotTime, String afterId, Pageable pageable);
+
+    /** 按当前批次编号加载完整明细，调用方将 IN 参数限制在 100 个以内。 */
+    @Query("SELECT DISTINCT e FROM PurchaseApplyMain e LEFT JOIN FETCH e.details WHERE e.id IN :ids")
+    List<PurchaseApplyMain> findDocumentExportBatch(List<String> ids);
 
     @Query("SELECT p FROM PurchaseApplyMain p LEFT JOIN FETCH p.details WHERE p.id = :id ")
     PurchaseApplyMain findByIdWithDetails(String id);

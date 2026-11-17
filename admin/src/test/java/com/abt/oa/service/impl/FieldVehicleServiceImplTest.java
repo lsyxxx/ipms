@@ -63,6 +63,78 @@ class FieldVehicleServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void pageUsesExactCarMembershipAndCombinesWithOtherFilters() {
+        var root = mock(jakarta.persistence.criteria.Root.class);
+        var criteria = mock(jakarta.persistence.criteria.CriteriaQuery.class);
+        var cb = mock(jakarta.persistence.criteria.CriteriaBuilder.class);
+        var carPath = mock(jakarta.persistence.criteria.Path.class);
+        var statusPath = mock(jakarta.persistence.criteria.Path.class);
+        var carsMatch = mock(jakarta.persistence.criteria.Predicate.class);
+        var statusMatch = mock(jakarta.persistence.criteria.Predicate.class);
+        when(root.get("carId")).thenReturn(carPath);
+        when(root.get("status")).thenReturn(statusPath);
+        when(carPath.in(List.of("CAR1", "CAR2"))).thenReturn(carsMatch);
+        when(cb.equal(statusPath, 1)).thenReturn(statusMatch);
+        when(records.findAll(any(org.springframework.data.jpa.domain.Specification.class),
+                any(org.springframework.data.domain.Pageable.class))).thenAnswer(call -> {
+            org.springframework.data.jpa.domain.Specification<FieldVehicleUse> spec = call.getArgument(0);
+            spec.toPredicate(root, criteria, cb);
+            return org.springframework.data.domain.Page.empty();
+        });
+        FieldVehicleRequestForm form = new FieldVehicleRequestForm();
+        form.setCarIds(List.of(" CAR1 ", "CAR2", "CAR1"));
+        form.setStatus(1);
+        service.findPage(form);
+        verify(carPath).in(List.of("CAR1", "CAR2"));
+        var combined = org.mockito.ArgumentCaptor.forClass(jakarta.persistence.criteria.Predicate[].class);
+        verify(cb).and(combined.capture());
+        assertArrayEquals(new jakarta.persistence.criteria.Predicate[]{carsMatch, statusMatch}, combined.getValue());
+
+        clearInvocations(carPath);
+        form.setCarIds(List.of());
+        service.findMyPage(form);
+        verify(carPath, never()).in(anyCollection());
+        verify(root).get("createUserid");
+        verify(root).get("returnUserId");
+    }
+
+    @Test
+    void weekReportValidatesNaturalWeekAndRequiresLogin() {
+        FieldVehicleWeekReportRequest form = new FieldVehicleWeekReportRequest();
+        form.setWeekStart("2026-11-03"); form.setWeekEnd("2026-11-09");
+        assertThrows(BusinessException.class, () -> service.findWeekReport(form));
+        form.setWeekStart("2026-11-02"); form.setWeekEnd("2026-11-07");
+        assertThrows(BusinessException.class, () -> service.findWeekReport(form));
+        form.setWeekStart("2026-02-30");
+        assertThrows(BusinessException.class, () -> service.findWeekReport(form));
+        verify(records, never()).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class));
+        SecurityContextHolder.clearContext();
+        assertThrows(org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class,
+                () -> service.findWeekReport(form));
+    }
+
+    @Test
+    void weekReportReadsCompleteFuelInBatchesAndDoesNotLoadDetailsOneByOne() {
+        FieldVehicleWeekReportRequest form = new FieldVehicleWeekReportRequest();
+        form.setWeekStart("2026-11-02"); form.setWeekEnd("2026-11-08");
+        List<FieldVehicleUse> history = new ArrayList<>();
+        for (int i = 0; i < 501; i++) {
+            FieldVehicleUse record = new FieldVehicleUse();
+            record.setId("R" + i); record.setCarId("C" + i); record.setCarNo("C" + i);
+            record.setStatus(FieldVehicleStatus.USING.getCode()); record.setUseDate(LocalDate.of(2026, 11, 2));
+            history.add(record);
+        }
+        when(records.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Sort.class)))
+                .thenReturn(history);
+        assertEquals(501, service.findWeekReport(form).getSummary().getDispatchCount());
+        verify(fuels).findReportItems(argThat(ids -> ids.size() == 500));
+        verify(fuels).findReportItems(List.of("R500"));
+        verify(fuels, never()).findItems(anyString());
+        verify(fuels, never()).findSummary(anyString());
+    }
+
+    @Test
     void vehicleListIncludesLegacyAndFieldOccupationAndKeepsMileageHints() {
         CarInfo idle = new CarInfo(); idle.setId("IDLE"); idle.setIsUse(" 0 ");
         CarInfo legacyBusy = new CarInfo(); legacyBusy.setId("LEGACY"); legacyBusy.setIsUse(" 1 ");

@@ -29,6 +29,39 @@ class FieldVehicleControllerTest {
     void close() { validator.close(); }
 
     @Test
+    void pageBindsMultipleCarsForAllAndMineAndRejectsInvalidIds() throws Exception {
+        mvc.perform(get("/field-vehicle/findPage").param("carIds", "CAR1,CAR2"))
+                .andExpect(status().isOk());
+        verify(service).findPage(argThat(f -> java.util.List.of("CAR1", "CAR2").equals(f.getCarIds())));
+        mvc.perform(get("/field-vehicle/my/findPage").param("carIds", "CAR1,CAR2"))
+                .andExpect(status().isOk());
+        verify(service).findMyPage(argThat(f -> java.util.List.of("CAR1", "CAR2").equals(f.getCarIds())));
+        mvc.perform(get("/field-vehicle/findPage").param("carIds", "C".repeat(51)))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/field-vehicle/findPage").param("carIds", "CAR1, "))
+                .andExpect(status().isBadRequest());
+        verify(service, times(1)).findPage(any());
+    }
+
+    @Test
+    void weekReportBindsPageContractAndRejectsMissingDatesAndDraft() throws Exception {
+        FieldVehicleWeekReportVO report = new FieldVehicleWeekReportVO();
+        when(service.findWeekReport(any())).thenReturn(report);
+        mvc.perform(get("/field-vehicle/weekReport").param("weekStart", "2026-11-02")
+                        .param("weekEnd", "2026-11-08").param("carId", "C").param("status", "2"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.summary.dispatchCount").value(0))
+                .andExpect(jsonPath("$.data.trips").isArray()).andExpect(jsonPath("$.data.driveRows").isArray());
+        verify(service).findWeekReport(argThat(f -> "2026-11-02".equals(f.getWeekStart())
+                && "2026-11-08".equals(f.getWeekEnd()) && "C".equals(f.getCarId()) && f.getStatus() == 2));
+        mvc.perform(get("/field-vehicle/weekReport").param("weekStart", "2026-11-02"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(get("/field-vehicle/weekReport").param("weekStart", "2026-11-02")
+                        .param("weekEnd", "2026-11-08").param("status", "0"))
+                .andExpect(status().isBadRequest());
+        verify(service, times(1)).findWeekReport(any());
+    }
+
+    @Test
     void vehicleQueryBindsEnabledFilterAndReturnsOccupation() throws Exception {
         when(service.findList(any())).thenReturn(java.util.List.of(
                 new FieldVehicleCarOptionVO("CAR", "陕A001", null, true, "1")));

@@ -38,10 +38,13 @@ public class ExcelUtil {
         Workbook wb = new Workbook(excelPath);
         wb.getWorksheets().get(0).autoFitRows(options);
         File pdfFile = new File(pdfPath);
-        FileOutputStream fos = new FileOutputStream(pdfFile);
         PdfSaveOptions saveOptions = new PdfSaveOptions();
         saveOptions.setAllColumnsInOnePagePerSheet(true);
-        wb.save(fos, saveOptions);
+        try (FileOutputStream fos = new FileOutputStream(pdfFile)) {
+            wb.save(fos, saveOptions);
+        } finally {
+            wb.dispose();
+        }
         return pdfFile;
     }
 
