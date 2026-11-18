@@ -3,6 +3,7 @@ package com.abt.wf.service.impl;
 import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
+import com.abt.market.repository.SaleAgreementRepository;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
@@ -19,6 +20,7 @@ import org.camunda.bpm.engine.*;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +47,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     private final RepositoryService repositoryService;
     private final RuntimeService runtimeService;
     private final InvoiceApplyRepository invoiceApplyRepository;
+    private final SaleAgreementRepository saleAgreementRepository;
     private final BpmnModelInstance invoiceApplyBpmnModelInstance;
 
     private final IFileService fileService;
@@ -58,7 +61,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     public InvoiceApplyServiceImpl(IdentityService identityService, @Qualifier("sqlServerUserService")  UserService userService,
                                    TaskService taskService, FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
                                    RuntimeService runtimeService,
-                                   InvoiceApplyRepository invoiceApplyRepository,
+                                   InvoiceApplyRepository invoiceApplyRepository, SaleAgreementRepository saleAgreementRepository,
                                    BpmnModelInstance invoiceApplyBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
@@ -68,6 +71,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.invoiceApplyRepository = invoiceApplyRepository;
+        this.saleAgreementRepository = saleAgreementRepository;
         this.invoiceApplyBpmnModelInstance = invoiceApplyBpmnModelInstance;
         this.fileService = fileService;
         this.historyService = historyService;
@@ -314,6 +318,21 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     @Override
     public List<InvoiceApply> findSaleAgreementInvoices(String contractNo) {
         return invoiceApplyRepository.findRunningOrPassByContractNo(contractNo);
+    }
+
+    @Override
+    public List<ContractInvoiceVO> findInvoicesByContractNo(String contractNo) {
+        List<InvoiceApply> invoices = findSaleAgreementInvoices(contractNo);
+        if (invoices.isEmpty()) {
+            return List.of();
+        }
+        Boolean includeTax = saleAgreementRepository.findIncludeTaxByContractNo(contractNo);
+        return invoices.stream().map(invoice -> {
+            ContractInvoiceVO vo = new ContractInvoiceVO();
+            BeanUtils.copyProperties(invoice, vo);
+            vo.setIncludeTax(includeTax);
+            return vo;
+        }).toList();
     }
 
 

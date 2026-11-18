@@ -49,6 +49,68 @@ class PurchaseDocumentExportServiceImplTest {
     }
 
     @Test
+    void cancelsQueuedTaskBeforeAnyDatabaseWorkAndChecksOwner() {
+        try (MockedStatic<TokenUtil> token = mockStatic(TokenUtil.class)) {
+            token.when(TokenUtil::getUseridFromAuthToken).thenReturn("owner");
+            var task = service.save(request("MY"));
+            token.when(TokenUtil::getUseridFromAuthToken).thenReturn("other");
+            assertThrows(AccessDeniedException.class, () -> service.cancel(task.getId()));
+            token.when(TokenUtil::getUseridFromAuthToken).thenReturn("owner");
+            assertEquals(CANCELLED, service.cancel(task.getId()).getStatus());
+            assertEquals(CANCELLED, service.cancel(task.getId()).getStatus());
+            queue.remove(0).run();
+            assertEquals(CANCELLED, service.findById(task.getId()).getStatus());
+            assertThrows(BusinessException.class, () -> service.findZip(task.getId()));
+            verifyNoInteractions(repository, purchaseService);
+            assertDoesNotThrow(() -> service.save(request("MY")));
+        }
+    }
+
+    @Test
+    void runningCancellationFinishesCurrentPdfThenStopsAndRemovesPartialFiles() throws Exception {
+        ids(List.of("1001", "1002"), false, "");
+        when(repository.findDocumentExportBatch(anyList())).thenReturn(List.of(main("1001", true), main("1002", false)));
+        try (MockedStatic<TokenUtil> token = mockStatic(TokenUtil.class)) {
+            token.when(TokenUtil::getUseridFromAuthToken).thenReturn("owner");
+            var task = service.save(request("MY"));
+            when(purchaseService.createDocumentPdf(any(), anyString())).thenAnswer(invocation -> {
+                Path work = Path.of(invocation.getArgument(1, String.class));
+                Files.createDirectories(work);
+                assertEquals(CANCELLING, service.cancel(task.getId()).getStatus());
+                assertThrows(BusinessException.class, () -> service.save(request("MY")));
+                assertEquals(CANCELLING, service.cancel(task.getId()).getStatus());
+                return Files.writeString(work.resolve("document.pdf"), "current pdf").toFile();
+            });
+            queue.remove(0).run();
+            assertEquals(CANCELLED, service.findById(task.getId()).getStatus());
+            verify(purchaseService, times(1)).createDocumentPdf(any(), anyString());
+            Path directory = temporary.resolve("purchase-document-exports").resolve(task.getId());
+            assertFalse(Files.exists(directory.resolve("documents.zip.part")));
+            assertFalse(Files.exists(directory.resolve("documents.zip")));
+            assertFalse(Files.exists(directory.resolve("current")));
+            assertFalse(Files.exists(directory.resolve("ids.txt")));
+            assertThrows(BusinessException.class, () -> service.findZip(task.getId()));
+            var restarted = new PurchaseDocumentExportServiceImpl(repository, purchaseService, queue::add, mapper,
+                    temporary.toString(), "");
+            restarted.initialize();
+            assertEquals(CANCELLED, restarted.findById(task.getId()).getStatus());
+        }
+    }
+
+    @Test
+    void completedTaskCannotBeCancelledOrLoseItsZip() throws Exception {
+        ids(List.of("1001"), false, "");
+        when(repository.findDocumentExportBatch(anyList())).thenReturn(List.of());
+        try (MockedStatic<TokenUtil> token = mockStatic(TokenUtil.class)) {
+            token.when(TokenUtil::getUseridFromAuthToken).thenReturn("owner");
+            var task = service.save(request("MY"));
+            queue.remove(0).run();
+            assertEquals(COMPLETED, service.cancel(task.getId()).getStatus());
+            assertTrue(Files.isRegularFile(service.findZip(task.getId())));
+        }
+    }
+
+    @Test
     void exportsMixedResultsAndKeepsUnacceptedPurchaseInZip() throws Exception {
         PurchaseApplyMain accepted = main("1001", true);
         PurchaseApplyMain unaccepted = main("1002", false);

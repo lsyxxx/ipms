@@ -15,5 +15,8 @@ public interface PurchaseDocumentExportService {
 
     PurchaseDocumentExportVO findById(String id);
 
+    /** 仅创建者可取消任务；生成中的任务在当前文件结束后停止。 */
+    PurchaseDocumentExportVO cancel(String id);
+
     Path findZip(String id) throws IOException;
 }

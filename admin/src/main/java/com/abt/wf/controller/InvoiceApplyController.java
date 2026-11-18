@@ -6,10 +6,12 @@ import com.abt.common.util.TokenUtil;
 import com.abt.market.model.SaveType;
 import com.abt.market.service.SettlementService;
 import com.abt.sys.model.dto.UserView;
+import com.abt.sys.exception.BusinessException;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
 import com.abt.wf.entity.InvoiceApply;
 import com.abt.wf.model.InvoiceApplyRequestForm;
+import com.abt.wf.model.ContractInvoiceVO;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.InvoiceApplyService;
 import lombok.AllArgsConstructor;
@@ -145,9 +147,15 @@ public class InvoiceApplyController {
     }
 
 
+    /**
+     * 按合同编号查询开票记录，包含合同是否含税。
+     */
     @GetMapping("/find/byContractNo")
-    public R<List<InvoiceApply>> findInvoicesByContractNo(String contractNo) {
-        final List<InvoiceApply> list = invoiceApplyService.findSaleAgreementInvoices(contractNo);
+    public R<List<ContractInvoiceVO>> findInvoicesByContractNo(String contractNo) {
+        if (StringUtils.isBlank(contractNo)) {
+            throw new BusinessException("合同编号不能为空");
+        }
+        final List<ContractInvoiceVO> list = invoiceApplyService.findInvoicesByContractNo(contractNo);
         return R.success(list);
     }
 

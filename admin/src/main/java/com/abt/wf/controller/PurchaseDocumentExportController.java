@@ -44,6 +44,11 @@ public class PurchaseDocumentExportController {
         return R.success(purchaseDocumentExportService.findById(id));
     }
 
+    @PostMapping("/cancel")
+    public R<PurchaseDocumentExportVO> cancel(@RequestParam @NotBlank(message = "导出任务编号不能为空") String id) {
+        return R.success(purchaseDocumentExportService.cancel(id));
+    }
+
     @GetMapping("/download")
     public ResponseEntity<Resource> download(@RequestParam @NotBlank(message = "导出任务编号不能为空") String id) throws IOException {
         Path zip = purchaseDocumentExportService.findZip(id);

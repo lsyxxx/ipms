@@ -4,6 +4,7 @@ import com.abt.oa.entity.*;
 import com.abt.oa.enums.FieldVehicleStatus;
 import com.abt.oa.model.*;
 import com.abt.oa.reposity.*;
+import com.abt.oa.service.ConcurrentPkService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import jakarta.validation.*;
@@ -28,6 +29,7 @@ class FieldVehicleServiceImplTest {
     private final FieldVehicleFuelRepository fuels = mock(FieldVehicleFuelRepository.class);
     private final CarInfoRepository cars = mock(CarInfoRepository.class);
     private final PlatformTransactionManager transactions = mock(PlatformTransactionManager.class);
+    private final ConcurrentPkService numbers = mock(ConcurrentPkService.class);
     private ValidatorFactory validators;
     private FieldVehicleServiceImpl service;
 
@@ -35,7 +37,8 @@ class FieldVehicleServiceImplTest {
     void setup() {
         validators = Validation.buildDefaultValidatorFactory();
         when(transactions.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
-        service = new FieldVehicleServiceImpl(records, fuels, cars, validators.getValidator(), transactions);
+        service = new FieldVehicleServiceImpl(records, fuels, cars, validators.getValidator(), transactions, numbers);
+        when(numbers.nextNumber("YWYC_ORDERNO")).thenReturn("YWYC20260001");
         authenticate(true);
         AtomicInteger sequence = new AtomicInteger();
         when(records.saveAndFlush(any())).thenAnswer(call -> {
@@ -443,6 +446,42 @@ class FieldVehicleServiceImplTest {
     private CarInfo availableCar() {
         CarInfo car = new CarInfo(); car.setId("CAR"); car.setCarNo("CAR-001"); car.setIsAvtive("1"); car.setIsUse("0");
         when(cars.findLockedById("CAR")).thenReturn(Optional.of(car)); return car;
+    }
+
+    @Test
+    void orderNumberIsReturnedAndPreservedAcrossDraftEditsAndDispatch() {
+        FieldVehicleDetailVO draft = service.saveDraft(new FieldVehicleSaveRequest());
+        assertEquals("YWYC20260001", draft.getOrderNo());
+        FieldVehicleUse stored = record(FieldVehicleStatus.DRAFT);
+        stored.setId(draft.getId()); stored.setOrderNo(draft.getOrderNo());
+        when(records.findLockedById(draft.getId())).thenReturn(Optional.of(stored));
+        FieldVehicleSaveRequest edit = new FieldVehicleSaveRequest(); edit.setId(draft.getId());
+        assertEquals(draft.getOrderNo(), service.saveDraft(edit).getOrderNo());
+        availableCar();
+        FieldVehicleSaveRequest dispatch = official(); dispatch.setId(draft.getId());
+        assertEquals(draft.getOrderNo(), service.save(dispatch).getOrderNo());
+        verify(numbers, times(1)).nextNumber("YWYC_ORDERNO");
+    }
+
+    @Test
+    void numberFailureStopsDraftAndDirectDispatchWithoutSavingBusinessData() {
+        when(numbers.nextNumber("YWYC_ORDERNO")).thenThrow(new BusinessException("流水写入失败"));
+        assertThrows(BusinessException.class, () -> service.saveDraft(new FieldVehicleSaveRequest()));
+        availableCar();
+        assertThrows(BusinessException.class, () -> service.save(official()));
+        verify(records, never()).saveAndFlush(any());
+        verify(cars, never()).save(any());
+        verify(transactions, times(2)).rollback(any());
+    }
+
+    @Test
+    void emptyNumberCannotBeSavedAndDirectDispatchReturnsNumber() {
+        availableCar();
+        when(numbers.nextNumber("YWYC_ORDERNO")).thenReturn(null);
+        assertThrows(BusinessException.class, () -> service.save(official()));
+        verify(records, never()).saveAndFlush(any());
+        when(numbers.nextNumber("YWYC_ORDERNO")).thenReturn("YWYC20260002");
+        assertEquals("YWYC20260002", service.save(official()).getOrderNo());
     }
 
     private static FieldVehicleSaveRequest official() {

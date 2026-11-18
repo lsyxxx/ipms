@@ -10,6 +10,7 @@ import com.abt.wf.repository.PurchaseApplyMainRepository;
 import com.abt.wf.service.PurchaseDocumentExportService;
 import com.abt.wf.service.PurchaseService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
@@ -85,7 +88,9 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
                     if (!directory.getFileName().toString().equals(task.getResult().getId())) {
                         throw new IOException("任务编号与目录不一致");
                     }
-                    if (!task.getResult().getStatus().isTerminal()) {
+                    if (task.getResult().getStatus() == CANCELLING) {
+                        finishCancellation(task);
+                    } else if (!task.getResult().getStatus().isTerminal()) {
                         task.getResult().setStatus(FAILED);
                         task.getResult().setMessage("服务已重启，本次导出中断，请重新导出");
                         task.getResult().setExpiresAt(System.currentTimeMillis() + RETENTION_MILLIS);
@@ -130,7 +135,8 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
             Files.createDirectory(directory(task));
             persist(task);
             tasks.put(result.getId(), task);
-            executor.execute(() -> run(task));
+            task.setQueuedWork(() -> run(task));
+            executor.execute(task.getQueuedWork());
             log.info("创建采购单据导出任务，任务={}，范围={}", result.getId(), result.getScope());
         } catch (RejectedExecutionException e) {
             fail(task, "导出任务较多，请稍后重新导出", e);
@@ -172,6 +178,37 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
     }
 
     @Override
+    public PurchaseDocumentExportVO cancel(String id) {
+        TaskData task = ownedTask(id);
+        synchronized (task) {
+            if (task.getResult().getStatus().isTerminal()
+                    || (task.getResult().getStatus() == CANCELLING && task.isRunning())) {
+                return snapshot(task);
+            }
+            try {
+                if (task.getResult().getStatus() != CANCELLING) {
+                    update(task, result -> {
+                        result.setStatus(CANCELLING);
+                        result.setMessage("正在取消，当前文件处理结束后停止，请稍候");
+                    });
+                }
+                if (!task.isRunning()) {
+                    if (executor instanceof ThreadPoolTaskExecutor pool && task.getQueuedWork() != null) {
+                        pool.getThreadPoolExecutor().remove(task.getQueuedWork());
+                    }
+                    removeIntermediates(task);
+                    finishCancellation(task);
+                }
+            } catch (IOException e) {
+                log.error("保存采购导出取消状态失败，任务={}", id, e);
+                throw new BusinessException("保存取消状态失败，请刷新任务状态后重试");
+            }
+            log.info("取消采购单据导出任务，任务={}", id);
+            return snapshot(task);
+        }
+    }
+
+    @Override
     public Path findZip(String id) throws IOException {
         TaskData task = ownedTask(id);
         if (snapshot(task).getStatus() != COMPLETED || !Files.isRegularFile(directory(task).resolve("documents.zip"))) {
@@ -196,6 +233,10 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
     }
 
     private void run(TaskData task) {
+        synchronized (task) {
+            if (task.getResult().getStatus() == CANCELLED) return;
+            task.setRunning(true);
+        }
         try {
             update(task, result -> { result.setStatus(QUERYING); result.setMessage("正在查询符合搜索条件的采购单"); });
             collectIds(task);
@@ -214,10 +255,22 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
             });
             log.info("采购单据导出完成，任务={}，成功={}，失败={}", task.getResult().getId(),
                     task.getResult().getSuccess(), task.getResult().getFailed());
+        } catch (CancellationException e) {
+            log.info("采购单据导出任务停止生成，任务={}", task.getResult().getId());
         } catch (Exception e) {
             fail(task, e instanceof BusinessException ? e.getMessage() : "导出失败，请重新导出或联系管理员", e);
         } finally {
             removeIntermediates(task);
+            synchronized (task) {
+                if (task.getResult().getStatus() == CANCELLING) {
+                    try {
+                        finishCancellation(task);
+                    } catch (IOException e) {
+                        log.error("保存采购导出已取消状态失败，任务={}", task.getResult().getId(), e);
+                    }
+                }
+                task.setRunning(false);
+            }
         }
     }
 
@@ -230,7 +283,7 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
         try (BufferedWriter writer = Files.newBufferedWriter(directory(task).resolve("ids.txt"), StandardCharsets.UTF_8)) {
             Slice<String> page;
             do {
-                checkInterrupted();
+                checkActive(task);
                 page = repository.findDocumentExportIds(form.getScope(), task.getOwnerId(), form.getQuery(), form.getState(),
                         form.isDeptIgnore(), departments, TimeUtil.toLocalDateTime(form.getStartDate()),
                         TimeUtil.toLocalDateTime(form.getEndDate()), task.getSnapshotTime(), afterId, PageRequest.of(0, BATCH_SIZE));
@@ -282,11 +335,11 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
     }
 
     private void writeBatch(TaskData task, List<String> ids, ZipOutputStream zip, BufferedWriter report) throws Exception {
-        checkInterrupted();
+        checkActive(task);
         Map<String, PurchaseApplyMain> mains = repository.findDocumentExportBatch(ids).stream()
                 .collect(Collectors.toMap(PurchaseApplyMain::getId, main -> main));
         for (String id : ids) {
-            checkInterrupted();
+            checkActive(task);
             PurchaseApplyMain main = mains.get(id);
             Path work = directory(task).resolve("current");
             String filename = main == null ? "" : documentFileName(main);
@@ -304,6 +357,7 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
                         : "单据生成失败，请联系管理员检查模板、签名或数据";
             }
             try {
+                checkActive(task);
                 boolean missing = main != null && (!main.isAccepted() || !main.isFinished());
                 String reason = main == null ? "" : !main.isAccepted() ? "未验收，仅导出采购单"
                         : !main.isFinished() ? "流程未完成，仅导出采购单" : "";
@@ -362,7 +416,12 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
         zip.closeEntry();
     }
 
-    private void checkInterrupted() throws InterruptedIOException {
+    private void checkActive(TaskData task) throws InterruptedIOException {
+        synchronized (task) {
+            if (task.getResult().getStatus() == CANCELLING || task.getResult().getStatus() == CANCELLED) {
+                throw new CancellationException("采购单据导出已取消");
+            }
+        }
         if (Thread.currentThread().isInterrupted()) throw new InterruptedIOException("导出任务已中断");
     }
 
@@ -376,21 +435,27 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
 
     private void update(TaskData task, Consumer<PurchaseDocumentExportVO> change) throws IOException {
         synchronized (task) {
+            if (task.getResult().getStatus() == CANCELLING || task.getResult().getStatus() == CANCELLED) {
+                throw new CancellationException("采购单据导出已取消");
+            }
             change.accept(task.getResult());
             persist(task);
         }
     }
 
     private void fail(TaskData task, String message, Exception exception) {
-        log.error("采购单据导出任务失败，任务={}", task.getResult().getId(), exception);
-        try {
-            update(task, result -> {
-                result.setStatus(FAILED);
-                result.setMessage(message);
-                result.setExpiresAt(System.currentTimeMillis() + RETENTION_MILLIS);
-            });
-        } catch (IOException e) {
-            log.error("保存采购导出失败状态失败，任务={}", task.getResult().getId(), e);
+        synchronized (task) {
+            if (task.getResult().getStatus() == CANCELLING || task.getResult().getStatus() == CANCELLED) return;
+            log.error("采购单据导出任务失败，任务={}", task.getResult().getId(), exception);
+            try {
+                update(task, result -> {
+                    result.setStatus(FAILED);
+                    result.setMessage(message);
+                    result.setExpiresAt(System.currentTimeMillis() + RETENTION_MILLIS);
+                });
+            } catch (IOException e) {
+                log.error("保存采购导出失败状态失败，任务={}", task.getResult().getId(), e);
+            }
         }
     }
 
@@ -402,6 +467,16 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
         } catch (AtomicMoveNotSupportedException e) {
             Files.move(temporary, directory(task).resolve("task.json"), StandardCopyOption.REPLACE_EXISTING);
         }
+    }
+
+    /** 由排队取消或工作线程清理结束后调用，持锁与完成状态竞争，禁止下载部分结果。 */
+    private void finishCancellation(TaskData task) throws IOException {
+        Files.deleteIfExists(directory(task).resolve("documents.zip"));
+        task.getResult().setStatus(CANCELLED);
+        task.getResult().setMessage("任务已取消，不提供下载文件");
+        task.getResult().setFileSize(0);
+        task.getResult().setExpiresAt(System.currentTimeMillis() + RETENTION_MILLIS);
+        persist(task);
     }
 
     private Path directory(TaskData task) {
@@ -464,5 +539,10 @@ public class PurchaseDocumentExportServiceImpl implements PurchaseDocumentExport
         private PurchaseDocumentExportRequest criteria;
         private LocalDateTime snapshotTime;
         private PurchaseDocumentExportVO result;
+        /** 仅用于本进程内调度，不写入任务元数据。 */
+        @JsonIgnore
+        private transient Runnable queuedWork;
+        @JsonIgnore
+        private transient boolean running;
     }
 }

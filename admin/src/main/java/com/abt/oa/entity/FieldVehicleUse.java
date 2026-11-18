@@ -24,6 +24,9 @@ public class FieldVehicleUse extends AuditInfo {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", length = 50, nullable = false)
     private String id;
+    /** 首次保存时分配的用车单号，后续编辑及派车沿用。 */
+    @Column(name = "order_no", length = 32, nullable = false)
+    private String orderNo;
     /** 本次使用的车辆 ID。 */
     @Column(name = "car_id", length = 50)
     private String carId;

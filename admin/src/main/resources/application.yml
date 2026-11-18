@@ -11,7 +11,7 @@ spring:
   application:
     name: admin
   profiles:
-    active: dev
+    active: prod
   lifecycle:
     timeout-per-shutdown-phase: 30s
 

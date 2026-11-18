@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 /** 采购单据导出任务状态。 */
 public enum PurchaseDocumentExportStatus {
-    QUEUED(0), QUERYING(1), GENERATING(2), PACKAGING(3), COMPLETED(4), FAILED(5);
+    QUEUED(0), QUERYING(1), GENERATING(2), PACKAGING(3), COMPLETED(4), FAILED(5), CANCELLING(6), CANCELLED(7);
 
     private final int code;
 
@@ -27,6 +27,6 @@ public enum PurchaseDocumentExportStatus {
     }
 
     public boolean isTerminal() {
-        return this == COMPLETED || this == FAILED;
+        return this == COMPLETED || this == FAILED || this == CANCELLED;
     }
 }

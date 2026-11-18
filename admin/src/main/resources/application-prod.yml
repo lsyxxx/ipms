@@ -142,6 +142,8 @@ abt:
       template: E:\\temp\\export\\pay_template.xlsx
       
   pur:
+    export:
+      dir: E:/upload/purchase-document-exports
     excel:
       template: E:\\temp\\export\\purchase_apply_template.xlsx
     accept:

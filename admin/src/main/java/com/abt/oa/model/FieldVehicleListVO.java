@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Setter
 public class FieldVehicleListVO extends FieldVehicleAuditVO {
     private String id;
+    /** 用车单号，详情继承此字段。 */
+    private String orderNo;
     private String carId;
     private String carNo;
     private String drivers;

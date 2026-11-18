@@ -6,6 +6,7 @@ import com.abt.oa.enums.FieldVehicleStatus;
 import com.abt.oa.model.*;
 import com.abt.oa.reposity.*;
 import com.abt.oa.service.FieldVehicleService;
+import com.abt.oa.service.ConcurrentPkService;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import jakarta.persistence.criteria.Predicate;
@@ -51,13 +52,16 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
     private final CarInfoRepository cars;
     private final Validator validator;
     private final TransactionTemplate transactions;
+    private final ConcurrentPkService numbers;
 
     public FieldVehicleServiceImpl(FieldVehicleUseRepository records, FieldVehicleFuelRepository fuels,
-                                   CarInfoRepository cars, Validator validator, PlatformTransactionManager manager) {
+                                   CarInfoRepository cars, Validator validator, PlatformTransactionManager manager,
+                                   ConcurrentPkService numbers) {
         this.records = records;
         this.fuels = fuels;
         this.cars = cars;
         this.validator = validator;
+        this.numbers = numbers;
         this.transactions = new TransactionTemplate(manager);
         this.transactions.setTimeout(30);
     }
@@ -165,6 +169,7 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
             applyForm(record, form, car);
             record.setStatus(FieldVehicleStatus.DRAFT.getCode());
             record.update(user.getId(), user.getUsername());
+            assignOrderNo(record);
             records.saveAndFlush(record);
             log.info("保存野外用车草稿 id={}, userId={}", record.getId(), user.getId());
             return detail(record);
@@ -207,6 +212,7 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
             record.setStartMileage(startMileage);
             record.setStatus(FieldVehicleStatus.USING.getCode());
             record.update(user.getId(), user.getUsername());
+            assignOrderNo(record);
             changeCarUse(car, CAR_BUSY, user);
             records.saveAndFlush(record);
             log.info("野外用车派出 id={}, carId={}, userId={}", record.getId(), car.getId(), user.getId());
@@ -315,6 +321,16 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
         } catch (DataIntegrityViolationException | ConcurrencyFailureException e) {
             log.error("野外用车事务发生数据或锁冲突", e);
             throw new BusinessException("车辆状态或记录数据已变化，请刷新后重试");
+        }
+    }
+
+    /** 新记录首次保存时分配；失败向上传递，禁止继续保存或退回旧取号方式。 */
+    private void assignOrderNo(FieldVehicleUse record) {
+        if (trim(record.getOrderNo()) == null) {
+            String orderNo = numbers.nextNumber("YWYC_ORDERNO");
+            if (orderNo == null || !orderNo.matches("YWYC[0-9]{8,28}"))
+                throw new BusinessException("用车单号生成失败，请核实编号规则");
+            record.setOrderNo(orderNo);
         }
     }
 
@@ -475,7 +491,7 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
             if (peer != null) predicates.add(cb.like(root.get("peers"), containsPattern(peer), '!'));
             if (query != null) {
                 String pattern = containsPattern(query);
-                predicates.add(cb.or(cb.like(root.get("carNo"), pattern, '!'), cb.like(root.get("purpose"), pattern, '!'),
+                predicates.add(cb.or(cb.like(root.get("orderNo"), pattern, '!'), cb.like(root.get("carNo"), pattern, '!'), cb.like(root.get("purpose"), pattern, '!'),
                         cb.like(root.get("departurePlace"), pattern, '!'), cb.like(root.get("destination"), pattern, '!')));
             }
             return cb.and(predicates.toArray(Predicate[]::new));

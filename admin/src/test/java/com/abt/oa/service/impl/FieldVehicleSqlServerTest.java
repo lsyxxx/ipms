@@ -77,7 +77,16 @@ class FieldVehicleSqlServerTest {
         JpaTransactionManager manager = new JpaTransactionManager(sessions);
         transactions = new TransactionTemplate(manager);
         validators = Validation.buildDefaultValidatorFactory();
-        service = new FieldVehicleServiceImpl(records, fuels, cars, validators.getValidator(), manager);
+        org.springframework.jdbc.datasource.DriverManagerDataSource dataSource =
+                new org.springframework.jdbc.datasource.DriverManagerDataSource(url, user, password);
+        execute("CREATE TABLE T_PK_CONFIG (Id NVARCHAR(50), Fid NVARCHAR(3), Tablename NVARCHAR(100), Prefix NVARCHAR(50), Isprefix NCHAR(1), Isdate NCHAR(1), Isserverid NCHAR(1), Isguid NCHAR(1), Flen DECIMAL(18,0), isMonthDay VARCHAR(2)); " +
+                "CREATE TABLE T_PK (FID VARCHAR(32) PRIMARY KEY, TABLENAME VARCHAR(100), PREFIX VARCHAR(50), CURDATE VARCHAR(8), SERVERID VARCHAR(50), SN DECIMAL(18,0), MYROWID VARCHAR(32), OPERATEDATE DATETIME, UPFLAG VARCHAR(1));");
+        Path migration = schemaScript().getParent().resolve("20261118_field_vehicle_order_no.sql");
+        execute(Files.readString(migration)); execute(Files.readString(migration));
+        var numberManager = new org.springframework.jdbc.datasource.DataSourceTransactionManager(dataSource);
+        var numbers = new ConcurrentPkServiceImpl(new com.abt.oa.reposity.PkNumberRepository(
+                new org.springframework.jdbc.core.JdbcTemplate(dataSource)), numberManager);
+        service = new FieldVehicleServiceImpl(records, fuels, cars, validators.getValidator(), manager, numbers);
     }
 
     @BeforeEach
