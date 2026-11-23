@@ -72,6 +72,25 @@ public class PurchasePdfServiceImpl implements PurchasePdfService {
     }
 
     @Override
+    public Path createPdf(String id, Path directory) throws IOException {
+        byte[] pdf = createPdf(id);
+        Files.createDirectories(directory);
+        Path target = Files.createTempFile(directory, "purchase-", ".pdf");
+        try {
+            Files.write(target, pdf);
+        } catch (IOException e) {
+            try {
+                Files.deleteIfExists(target);
+            } catch (IOException cleanup) {
+                e.addSuppressed(cleanup);
+            }
+            throw e;
+        }
+        log.info("生成采购申请附件 PDF，单据={}", id);
+        return target.toAbsolutePath();
+    }
+
+    @Override
     public byte[] createAcceptPdf(String id) throws IOException {
         PurchaseApplyMain main = load(id);
         if (!main.isFinished()) {

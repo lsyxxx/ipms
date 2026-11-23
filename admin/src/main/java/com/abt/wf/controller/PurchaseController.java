@@ -12,6 +12,7 @@ import com.abt.wf.entity.PurchaseApplyMain;
 import com.abt.wf.model.PurchaseApplyRequestForm;
 import com.abt.wf.model.UserTaskDTO;
 import com.abt.wf.service.PurchaseService;
+import com.abt.wf.service.PurchasePdfService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 
 import static com.abt.wf.config.Constants.*;
@@ -43,6 +45,7 @@ import static com.abt.wf.config.Constants.*;
 public class PurchaseController {
 
     private final PurchaseService purchaseService;
+    private final PurchasePdfService purchasePdfService;
 
 
     /**
@@ -60,8 +63,9 @@ public class PurchaseController {
     @Value("${abt.rbs.pur.dir}")
     private String rbsPurDir;
 
-    public PurchaseController(PurchaseService purchaseService) {
+    public PurchaseController(PurchaseService purchaseService, PurchasePdfService purchasePdfService) {
         this.purchaseService = purchaseService;
+        this.purchasePdfService = purchasePdfService;
     }
 
 
@@ -232,8 +236,11 @@ public class PurchaseController {
 
     @GetMapping("/create/pdf")
     public R<String> createPdf(String id) throws Exception {
-        File pdf = purchaseService.createPdf(id, rbsPurDir + System.currentTimeMillis() + ".pdf");
-        return R.success(pdf.getAbsolutePath(), "生成pdf成功!");
+        if (StringUtils.isBlank(id)) {
+            throw new BusinessException("采购申请编号不能为空");
+        }
+        Path pdf = purchasePdfService.createPdf(id, Path.of(rbsPurDir));
+        return R.success(pdf.toAbsolutePath().toString(), "生成pdf成功!");
     }
 
     @Secured("JS_PUR_DEL")

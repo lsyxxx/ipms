@@ -16,6 +16,7 @@ import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.*;
@@ -143,6 +144,8 @@ public class PayVoucher extends WorkflowBase implements ICreditBook, WithInvoice
     @Column(name = "managers", columnDefinition = "VARCHAR(1600)")
     private String managers;
 
+    /** 业务归属，用于确定审批流程分支。 */
+    @NotBlank(message = "请选择业务归属", groups = {ValidateGroup.Apply.class, ValidateGroup.Preview.class})
     @Column(name = "company_", columnDefinition = "VARCHAR(16)")
     private String company;
 

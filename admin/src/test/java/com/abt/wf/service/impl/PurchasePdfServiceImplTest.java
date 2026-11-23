@@ -283,6 +283,42 @@ class PurchasePdfServiceImplTest {
                 .getMessage().contains("模板"));
     }
 
+    @Test
+    void savesApplicationOnlyAsUniquePaymentAndReimbursementAttachments() throws Exception {
+        PurchaseApplyMain main = sample();
+        when(repository.findByIdWithDetails(main.getId())).thenReturn(main);
+        Path directory = temporary.resolve("attachments");
+        try (var token = mockStatic(TokenUtil.class)) {
+            token.when(TokenUtil::getUseridFromAuthToken).thenReturn("owner");
+            Path payment = renderer().createPdf(main.getId(), directory);
+            Path reimbursement = renderer().createPdf(main.getId(), directory);
+            assertTrue(payment.isAbsolute());
+            assertEquals(directory.toAbsolutePath(), payment.getParent());
+            assertNotEquals(payment, reimbursement, "两次附件生成不得覆盖同一文件");
+            for (Path file : List.of(payment, reimbursement)) {
+                assertTrue(file.getFileName().toString().endsWith(".pdf"));
+                try (PDDocument pdf = PDDocument.load(file.toFile())) {
+                    assertEquals(1, pdf.getNumberOfPages(), "已验收单据的附件仍只含采购申请单");
+                    String text = new PDFTextStripper().getText(pdf);
+                    assertTrue(text.contains("采购申请单"));
+                    assertFalse(text.contains("供应品验收记录"));
+                    assertFalse(text.contains("Evaluation"));
+                }
+            }
+            try (var files = Files.list(directory)) { assertEquals(2, files.count()); }
+        }
+    }
+
+    @Test
+    void attachmentGenerationFailureDoesNotLeaveAnEmptyFile() {
+        Path directory = temporary.resolve("attachments");
+        try (var token = mockStatic(TokenUtil.class)) {
+            token.when(TokenUtil::getUseridFromAuthToken).thenReturn("owner");
+            assertThrows(BusinessException.class, () -> renderer().createPdf("missing", directory));
+            assertFalse(Files.exists(directory));
+        }
+    }
+
     private String pageText(PDDocument pdf, int page) throws Exception {
         PDFTextStripper stripper = new PDFTextStripper();
         stripper.setStartPage(page); stripper.setEndPage(page);

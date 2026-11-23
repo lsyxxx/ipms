@@ -11,6 +11,9 @@ import java.util.List;
 public interface PurchasePdfService {
     byte[] createPdf(String id) throws IOException;
 
+    /** 将新版采购申请 PDF 保存到附件目录，供“去支付”和“去报销”使用，不追加验收记录。 */
+    Path createPdf(String id, Path directory) throws IOException;
+
     byte[] createAcceptPdf(String id) throws IOException;
 
     /** 同一文档内先写申请单，再从新页写验收记录，仅保存一次 PDF。 */
