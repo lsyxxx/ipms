@@ -18,12 +18,6 @@ import java.util.List;
 @Repository
 public interface SaleAgreementRepository extends JpaRepository<SaleAgreement, String>, JpaSpecificationExecutor<SaleAgreement> {
 
-    /**
-     * 按合同编号查询含税标记，未找到合同时返回 null。
-     */
-    @Query("SELECT s.includeTax FROM SaleAgreement s WHERE s.code = :contractNo")
-    Boolean findIncludeTaxByContractNo(String contractNo);
-
     List<SaleAgreement> findByCreateDateBetweenOrderByCreateDateDesc(LocalDateTime startDate, LocalDateTime endDate);
     int countByCreateDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 

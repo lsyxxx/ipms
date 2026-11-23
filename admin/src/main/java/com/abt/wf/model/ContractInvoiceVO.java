@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 合同开票记录，保留原开票记录返回字段并补充合同含税信息。
+ * 合同开票记录，保留原开票记录返回字段，并补充对应结算单的含税标记。
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -99,7 +99,7 @@ public class ContractInvoiceVO {
     private Map<String, Object> variableMap;
 
     /**
-     * 合同是否含税：true 含税，false 不含税，null 未找到对应合同。
+     * 对应结算单是否含税：true 含税，false 不含税。没有结算单或结算单不存在时为 null。
      */
     @JsonInclude(JsonInclude.Include.ALWAYS)
     private Boolean includeTax;

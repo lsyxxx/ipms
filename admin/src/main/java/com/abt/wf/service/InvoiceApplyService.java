@@ -18,7 +18,7 @@ public interface InvoiceApplyService extends WorkFlowService<InvoiceApply>, Busi
     List<InvoiceApply> findSaleAgreementInvoices(String contractNo);
 
     /**
-     * 根据合同编号查询开票记录及合同是否含税。
+     * 根据合同编号查询开票记录。是否含税取对应结算单。
      */
     List<ContractInvoiceVO> findInvoicesByContractNo(String contractNo);
 }

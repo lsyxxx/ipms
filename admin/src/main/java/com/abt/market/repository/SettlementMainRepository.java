@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface SettlementMainRepository extends JpaRepository<SettlementMain, String>, JpaSpecificationExecutor<SettlementMain> {
@@ -34,6 +35,12 @@ public interface SettlementMainRepository extends JpaRepository<SettlementMain, 
     SettlementMain findOneWithSummary(String id);
 
     long countById(String id);
+
+    /**
+     * 按结算单号查询是否含税。每行是结算单号和 isTax。
+     */
+    @Query("select m.id, m.isTax from SettlementMain m where m.id in :ids")
+    List<Object[]> findTaxFlagByIdIn(@Param("ids") Collection<String> ids);
 
     /**
      * 根据查询条件查询结算单

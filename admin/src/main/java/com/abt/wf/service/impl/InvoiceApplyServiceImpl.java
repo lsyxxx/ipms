@@ -3,7 +3,7 @@ package com.abt.wf.service.impl;
 import com.abt.common.model.RequestForm;
 import com.abt.common.model.ValidationResult;
 import com.abt.common.util.TimeUtil;
-import com.abt.market.repository.SaleAgreementRepository;
+import com.abt.market.repository.SettlementMainRepository;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.service.IFileService;
 import com.abt.sys.service.UserService;
@@ -29,8 +29,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.abt.common.util.QueryUtil.like;
 import static com.abt.wf.config.WorkFlowConfig.DEF_KEY_INV;
@@ -47,7 +50,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     private final RepositoryService repositoryService;
     private final RuntimeService runtimeService;
     private final InvoiceApplyRepository invoiceApplyRepository;
-    private final SaleAgreementRepository saleAgreementRepository;
+    private final SettlementMainRepository settlementMainRepository;
     private final BpmnModelInstance invoiceApplyBpmnModelInstance;
 
     private final IFileService fileService;
@@ -61,7 +64,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
     public InvoiceApplyServiceImpl(IdentityService identityService, @Qualifier("sqlServerUserService")  UserService userService,
                                    TaskService taskService, FlowOperationLogService flowOperationLogService, RepositoryService repositoryService,
                                    RuntimeService runtimeService,
-                                   InvoiceApplyRepository invoiceApplyRepository, SaleAgreementRepository saleAgreementRepository,
+                                   InvoiceApplyRepository invoiceApplyRepository, SettlementMainRepository settlementMainRepository,
                                    BpmnModelInstance invoiceApplyBpmnModelInstance, IFileService fileService, HistoryService historyService, SignatureService signatureService) {
         super(identityService, flowOperationLogService, taskService, userService, repositoryService, runtimeService, fileService, historyService, signatureService);
         this.identityService = identityService;
@@ -71,7 +74,7 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
         this.repositoryService = repositoryService;
         this.runtimeService = runtimeService;
         this.invoiceApplyRepository = invoiceApplyRepository;
-        this.saleAgreementRepository = saleAgreementRepository;
+        this.settlementMainRepository = settlementMainRepository;
         this.invoiceApplyBpmnModelInstance = invoiceApplyBpmnModelInstance;
         this.fileService = fileService;
         this.historyService = historyService;
@@ -326,13 +329,37 @@ public class InvoiceApplyServiceImpl extends AbstractWorkflowCommonServiceImpl<I
         if (invoices.isEmpty()) {
             return List.of();
         }
-        Boolean includeTax = saleAgreementRepository.findIncludeTaxByContractNo(contractNo);
+        Map<String, Boolean> taxBySettlementId = loadSettlementTax(invoices);
         return invoices.stream().map(invoice -> {
             ContractInvoiceVO vo = new ContractInvoiceVO();
             BeanUtils.copyProperties(invoice, vo);
-            vo.setIncludeTax(includeTax);
+            String settlementId = invoice.getSettlementId();
+            if (StringUtils.isNotBlank(settlementId)) {
+                vo.setIncludeTax(taxBySettlementId.get(settlementId));
+            }
             return vo;
         }).toList();
+    }
+
+    /**
+     * 按开票记录上的结算单号查询是否含税。没有结算单号时不查询。
+     */
+    private Map<String, Boolean> loadSettlementTax(List<InvoiceApply> invoices) {
+        Set<String> settlementIds = invoices.stream()
+                .map(InvoiceApply::getSettlementId)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+        if (settlementIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, Boolean> taxBySettlementId = new HashMap<>();
+        for (Object[] row : settlementMainRepository.findTaxFlagByIdIn(settlementIds)) {
+            if (row == null || row.length < 2 || row[0] == null || !(row[1] instanceof Boolean)) {
+                continue;
+            }
+            taxBySettlementId.put(String.valueOf(row[0]), (Boolean) row[1]);
+        }
+        return taxBySettlementId;
     }
 
 

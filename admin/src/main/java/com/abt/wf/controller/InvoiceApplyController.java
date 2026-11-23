@@ -148,7 +148,7 @@ public class InvoiceApplyController {
 
 
     /**
-     * 按合同编号查询开票记录，包含合同是否含税。
+     * 按合同编号查询开票记录。是否含税取对应结算单。
      */
     @GetMapping("/find/byContractNo")
     public R<List<ContractInvoiceVO>> findInvoicesByContractNo(String contractNo) {
