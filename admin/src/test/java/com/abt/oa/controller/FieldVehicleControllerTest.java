@@ -132,6 +132,24 @@ class FieldVehicleControllerTest {
     }
 
     @Test
+    void fuelMileageIsOptionalAndRejectsNegativeOrExcessScale() throws Exception {
+        String body = "{\"mainId\":\"M\",\"amount\":100.00,\"fuelQuantity\":15.500,\"mileage\":12345.67}";
+        mvc.perform(post("/field-vehicle/fuel/save").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk());
+        verify(service).saveFuel(argThat(form -> form.getMileage() != null && form.getMileage().compareTo(new java.math.BigDecimal("12345.67")) == 0));
+        mvc.perform(post("/field-vehicle/fuel/save").contentType(MediaType.APPLICATION_JSON)
+                        .content(body.replace("12345.67", "0")))
+                .andExpect(status().isOk());
+        mvc.perform(post("/field-vehicle/fuel/save").contentType(MediaType.APPLICATION_JSON)
+                        .content(body.replace("12345.67", "-1")))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/field-vehicle/fuel/save").contentType(MediaType.APPLICATION_JSON)
+                        .content(body.replace("12345.67", "1.234")))
+                .andExpect(status().isBadRequest());
+        verify(service, times(2)).saveFuel(any());
+    }
+
+    @Test
     void invalidDateFormatReturnsChineseParameterError() throws Exception {
         mvc.perform(post("/field-vehicle/return/update").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"id\":\"M\",\"endDate\":\"bad-date\",\"endMileage\":100}"))

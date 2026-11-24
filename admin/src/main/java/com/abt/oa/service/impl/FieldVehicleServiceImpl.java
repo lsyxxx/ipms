@@ -308,8 +308,8 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
             record.update(user.getId(), user.getUsername());
             refreshFuelTotals(record);
             records.saveAndFlush(record);
-            log.info("删除野外加油 id={}, mainId={}, date={}, amount={}, quantity={}, userId={}",
-                    fuel.getId(), record.getId(), fuel.getFuelDate(), fuel.getAmount(), fuel.getFuelQuantity(), user.getId());
+            log.info("删除野外加油 id={}, mainId={}, date={}, amount={}, quantity={}, mileage={}, userId={}",
+                    fuel.getId(), record.getId(), fuel.getFuelDate(), fuel.getAmount(), fuel.getFuelQuantity(), fuel.getMileage(), user.getId());
             return null;
         });
     }
@@ -420,6 +420,7 @@ public class FieldVehicleServiceImpl implements FieldVehicleService {
         fuel.setFuelDate(form.getFuelDate());
         fuel.setAmount(form.getAmount());
         fuel.setFuelQuantity(form.getFuelQuantity());
+        fuel.setMileage(form.getMileage());
         fuel.setRemark(trim(form.getRemark()));
         fuel.update(user.getId(), user.getUsername());
         record.update(user.getId(), user.getUsername());

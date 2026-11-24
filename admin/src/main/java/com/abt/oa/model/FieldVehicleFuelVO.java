@@ -14,5 +14,6 @@ public class FieldVehicleFuelVO extends FieldVehicleAuditVO {
     private LocalDate fuelDate;
     private BigDecimal amount;
     private BigDecimal fuelQuantity;
+    private BigDecimal mileage;
     private String remark;
 }

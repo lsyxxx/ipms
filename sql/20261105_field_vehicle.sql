@@ -3,7 +3,7 @@
 -- 仅两张业务表，保留 oa_ 前缀；司机及同行人为纯文本。
 -- 草稿允许必填业务列为空；正式状态由应用完整校验并以 CHECK 兜底。
 -- 用车日期 use_date；派车时间使用通用审计 create_date。
--- 加油表主关联 m_id（Java mainId）；日期和说明可空，升数必填。
+-- 加油表主关联 m_id（Java mainId）；日期、公里数和说明可空，升数必填。
 -- 每次加油新增、修改、删除重算主表升数、费用、次数，空记录为零，结束后冻结。
 -- 兼容 SQL Server 2014（12.x），在 IPMS 实际业务库执行，不硬编码 USE。
 -- 不修改 T_car_Info 或旧里程；车辆 IsUse 由实施后的 ServiceImpl 事务更新。
@@ -104,6 +104,7 @@ BEGIN TRY
             fuel_date           DATE            NULL,
             amount              DECIMAL(18,2)   NOT NULL,
             fuel_quantity       DECIMAL(18,3)   NOT NULL,
+            mileage             DECIMAL(18,2)   NULL,
             remark              NVARCHAR(1000)  NULL,
             create_userid       VARCHAR(255)    NULL,
             create_username     VARCHAR(255)    NULL,
@@ -115,7 +116,8 @@ BEGIN TRY
             CONSTRAINT FK_ofvf_main FOREIGN KEY (m_id)
                 REFERENCES dbo.oa_field_vehicle_use (id),
             CONSTRAINT CK_ofvf_amount CHECK (amount > 0),
-            CONSTRAINT CK_ofvf_quantity CHECK (fuel_quantity > 0)
+            CONSTRAINT CK_ofvf_quantity CHECK (fuel_quantity > 0),
+            CONSTRAINT CK_ofvf_mileage CHECK (mileage IS NULL OR mileage >= 0)
         );
     END;
 
@@ -180,5 +182,5 @@ END CATCH;
 --    结束后禁止所有业务修改，三项汇总快照不能手工改写或实时重算覆盖。
 -- 3. fuel_date 可空；有值不得早于 use_date，还车不得早于任一非空 fuel_date。
 -- 4. 正式司机字符串必填；同行人可空；两者原样保存前端字符串。
--- 5. 费用只能挂在使用中主记录上，m_id 不允许换绑；升数和金额正数校验。
+-- 5. 费用只能挂在使用中主记录上，m_id 不允许换绑；升数和金额正数校验。公里数可空且不得小于 0。
 -- 6. 当前认证人产生通用审计，客户端不能指定审计；只允许负责人写入。

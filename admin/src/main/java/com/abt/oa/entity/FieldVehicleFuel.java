@@ -35,6 +35,9 @@ public class FieldVehicleFuel extends AuditInfo {
     /** 本次加油数量，单位：升。 */
     @Column(name = "fuel_quantity", precision = 18, scale = 3, nullable = false)
     private BigDecimal fuelQuantity;
+    /** 加油时车辆表显里程，单位：公里，可空。 */
+    @Column(name = "mileage", precision = 18, scale = 2)
+    private BigDecimal mileage;
     /** 加油说明或备注，可空。 */
     @Column(name = "remark", columnDefinition = "NVARCHAR(1000)")
     private String remark;

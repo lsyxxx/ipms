@@ -6,7 +6,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-/** 加油表单，日期和说明可空，费用及升数必填。 */
+/** 加油表单，日期、公里数和说明可空，费用及升数必填。 */
 @Getter
 @Setter
 public class FieldVehicleFuelSaveRequest {
@@ -22,6 +22,9 @@ public class FieldVehicleFuelSaveRequest {
     @DecimalMin(value = "0", inclusive = false, message = "加油数量必须大于0")
     @Digits(integer = 15, fraction = 3, message = "加油数量最多15位整数和3位小数")
     private BigDecimal fuelQuantity;
+    @DecimalMin(value = "0.00", message = "公里数不能小于0")
+    @Digits(integer = 16, fraction = 2, message = "公里数最多16位整数和2位小数")
+    private BigDecimal mileage;
     @Size(max = 1000, message = "加油说明不能超过1000个字符")
     private String remark;
 }

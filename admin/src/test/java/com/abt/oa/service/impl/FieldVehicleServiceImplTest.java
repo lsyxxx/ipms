@@ -336,6 +336,27 @@ class FieldVehicleServiceImplTest {
     }
 
     @Test
+    void fuelMileageIsOptionalAndCanBeReplacedOrCleared() {
+        usingRecord();
+        FieldVehicleFuelSaveRequest form = fuelForm();
+        form.setMileage(new BigDecimal("-0.01"));
+        assertThrows(BusinessException.class, () -> service.saveFuel(form));
+        form.setMileage(new BigDecimal("1234.50"));
+        FieldVehicleFuelVO created = service.saveFuel(form);
+        assertEquals(0, new BigDecimal("1234.50").compareTo(created.getMileage()));
+        FieldVehicleFuel existing = fuel(created.getId(), "27.000", "200.00");
+        existing.setMileage(new BigDecimal("1234.50"));
+        when(fuels.findByIdAndMainId(created.getId(), "FV")).thenReturn(Optional.of(existing));
+        FieldVehicleFuelUpdateRequest update = new FieldVehicleFuelUpdateRequest();
+        update.setId(created.getId()); update.setMainId("FV");
+        update.setAmount(new BigDecimal("200.00")); update.setFuelQuantity(new BigDecimal("27.000"));
+        update.setMileage(BigDecimal.ZERO);
+        assertEquals(0, BigDecimal.ZERO.compareTo(service.updateFuel(update).getMileage()));
+        update.setMileage(null);
+        assertNull(service.updateFuel(update).getMileage());
+    }
+
+    @Test
     void fuelRequiresQuantityButAllowsMissingDateAndCanClearRemark() {
         usingRecord();
         FieldVehicleFuelSaveRequest form = fuelForm();

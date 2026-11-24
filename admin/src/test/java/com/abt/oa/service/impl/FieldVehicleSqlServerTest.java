@@ -83,6 +83,8 @@ class FieldVehicleSqlServerTest {
                 "CREATE TABLE T_PK (FID VARCHAR(32) PRIMARY KEY, TABLENAME VARCHAR(100), PREFIX VARCHAR(50), CURDATE VARCHAR(8), SERVERID VARCHAR(50), SN DECIMAL(18,0), MYROWID VARCHAR(32), OPERATEDATE DATETIME, UPFLAG VARCHAR(1));");
         Path migration = schemaScript().getParent().resolve("20261118_field_vehicle_order_no.sql");
         execute(Files.readString(migration)); execute(Files.readString(migration));
+        Path fuelMileage = schemaScript().getParent().resolve("20261124_field_vehicle_fuel_mileage.sql");
+        execute(Files.readString(fuelMileage)); execute(Files.readString(fuelMileage));
         var numberManager = new org.springframework.jdbc.datasource.DataSourceTransactionManager(dataSource);
         var numbers = new ConcurrentPkServiceImpl(new com.abt.oa.reposity.PkNumberRepository(
                 new org.springframework.jdbc.core.JdbcTemplate(dataSource)), numberManager);
@@ -241,6 +243,22 @@ class FieldVehicleSqlServerTest {
         assertThrows(BusinessException.class, () -> service.updateReturn(returnForm(id)));
         FieldVehicleSaveRequest next = official("李四"); next.setStartMileage(null);
         assertEquals(new BigDecimal("120.00"), service.save(next).getStartMileage());
+    }
+
+    @Test
+    void fuelMileagePersistsAndCanBeCleared() {
+        String id = service.save(official("司机")).getId();
+        FieldVehicleFuelSaveRequest form = new FieldVehicleFuelSaveRequest();
+        form.setMainId(id); form.setFuelQuantity(new BigDecimal("8.500")); form.setAmount(new BigDecimal("60.00"));
+        form.setMileage(new BigDecimal("188.50"));
+        FieldVehicleFuelVO saved = service.saveFuel(form);
+        assertEquals(0, new BigDecimal("188.50").compareTo(saved.getMileage()));
+        assertEquals(0, new BigDecimal("188.50").compareTo(fuels.findById(saved.getId()).orElseThrow().getMileage()));
+        FieldVehicleFuelUpdateRequest update = new FieldVehicleFuelUpdateRequest();
+        update.setId(saved.getId()); update.setMainId(id);
+        update.setFuelQuantity(new BigDecimal("8.500")); update.setAmount(new BigDecimal("60.00"));
+        assertNull(service.updateFuel(update).getMileage());
+        assertNull(fuels.findById(saved.getId()).orElseThrow().getMileage());
     }
 
     @Test
@@ -492,7 +510,7 @@ class FieldVehicleSqlServerTest {
                      "WHERE parent_object_id IN (OBJECT_ID(N'dbo.oa_field_vehicle_use'), OBJECT_ID(N'dbo.oa_field_vehicle_fuel')) " +
                      "AND is_disabled = 0 AND is_not_trusted = 0")) {
             assertTrue(result.next());
-            assertEquals(8, result.getInt(1));
+            assertEquals(9, result.getInt(1));
         }
         assertEquals(1, records.count());
         assertEquals(1, fuels.count());
