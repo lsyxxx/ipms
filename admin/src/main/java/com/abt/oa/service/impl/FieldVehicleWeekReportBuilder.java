@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 
 /** 周报内存聚合：按行程组装明细、日历和同口径汇总，不访问数据库。 */
 final class FieldVehicleWeekReportBuilder {
+    private static final Comparator<FieldVehicleFuel> FUEL_ORDER = Comparator.comparing(FieldVehicleFuel::getFuelDate)
+            .thenComparing(FieldVehicleFuel::getCreateDate, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .thenComparing(FieldVehicleFuel::getId);
     private FieldVehicleWeekReportBuilder() { }
 
     /** 输入已限定正式状态、用车日期不晚于周末，返回 D、U、C 并集。 */
@@ -72,7 +75,7 @@ final class FieldVehicleWeekReportBuilder {
         return report;
     }
 
-    /** 明细重算整次累计，不将不同周及未填日期的加油混入周内小计。 */
+    /** 保留整次明细；截止日未结束的行程以最近一次有日期的加油记录统计。 */
     private static Trip trip(FieldVehicleUse record, List<FieldVehicleFuel> items, FieldVehicleWeekReportVO report) {
         Trip trip = new Trip();
         BeanUtils.copyProperties(record, trip);
@@ -81,8 +84,19 @@ final class FieldVehicleWeekReportBuilder {
         trip.setCrossWeek(record.getUseDate().isBefore(report.getWeekStart())
                 || (finish != null && finish.isAfter(report.getWeekEnd()))
                 || (using(record) && report.getQueryDate().isAfter(report.getWeekEnd())));
-        trip.setMileageValid(validMileage(record));
-        trip.setUsedMileage(trip.isMileageValid() ? record.getEndMileage().subtract(record.getStartMileage()) : null);
+        boolean unfinished = unfinishedAt(record, report.getWeekEnd());
+        boolean startedBeforeWeek = record.getUseDate().isBefore(report.getWeekStart());
+        statisticsStart(trip, record, items, report.getWeekStart());
+        FieldVehicleFuel latest = latestFuel(items, report.getWeekEnd());
+        trip.setStatisticsEndDate(unfinished ? null : record.getEndDate());
+        trip.setStatisticsEndMileage(unfinished ? null : record.getEndMileage());
+        if (unfinished && latest != null) {
+            trip.setStatisticsEndDate(latest.getFuelDate());
+            trip.setStatisticsEndMileage(latest.getMileage());
+            trip.setStatisticsFuelId(latest.getId());
+        }
+        trip.setMileageValid(validMileage(trip.getStatisticsStartMileage(), trip.getStatisticsEndMileage()));
+        trip.setUsedMileage(trip.isMileageValid() ? trip.getStatisticsEndMileage().subtract(trip.getStatisticsStartMileage()) : null);
         BigDecimal quantity = BigDecimal.ZERO;
         BigDecimal amount = BigDecimal.ZERO;
         for (FieldVehicleFuel fuel : items) {
@@ -92,33 +106,53 @@ final class FieldVehicleWeekReportBuilder {
             item.setCarNo(record.getCarNo()); item.setPurpose(record.getPurpose());
             boolean inWeek = fuel.getFuelDate() != null && !fuel.getFuelDate().isBefore(report.getWeekStart())
                     && !fuel.getFuelDate().isAfter(report.getWeekEnd());
-            item.setFuelScope(fuel.getFuelDate() == null ? "待确认日期" : inWeek ? "本周" : "其他周");
+            boolean counted = inWeek && (!unfinished || fuel == latest);
+            item.setFuelScope(fuel.getFuelDate() == null ? "待确认日期" : counted ? "本周" : inWeek ? "本周未纳入统计" : "其他周");
             trip.getFuelItems().add(item);
             quantity = quantity.add(fuel.getFuelQuantity()); amount = amount.add(fuel.getAmount());
-            if (inWeek) {
+            if (counted) {
                 trip.setWeekFuelQuantity(trip.getWeekFuelQuantity().add(fuel.getFuelQuantity()));
                 trip.setWeekFuelAmount(trip.getWeekFuelAmount().add(fuel.getAmount()));
                 report.getWeekFuelItems().add(item);
             } else if (fuel.getFuelDate() == null) report.getPendingFuelItems().add(item);
         }
         trip.setFuelTotalQuantity(quantity); trip.setFuelTotal(amount); trip.setFuelCount(items.size());
+        BigDecimal statisticsQuantity = quantity;
+        if (unfinished || startedBeforeWeek) statisticsQuantity = trip.getWeekFuelQuantity();
+        trip.setStatisticsFuelQuantity(statisticsQuantity);
         Summary summary = report.getSummary();
         summary.setWeekFuelQuantity(summary.getWeekFuelQuantity().add(trip.getWeekFuelQuantity()));
         summary.setWeekFuelAmount(summary.getWeekFuelAmount().add(trip.getWeekFuelAmount()));
         if (using(record)) summary.setUsingCount(summary.getUsingCount() + 1);
-        else {
-            summary.setEndedCount(summary.getEndedCount() + 1);
-            if (!trip.isMileageValid()) summary.setAbnormalMileageCount(summary.getAbnormalMileageCount() + 1);
-            else {
-                summary.setUsedMileage(summary.getUsedMileage().add(trip.getUsedMileage()));
-                if (trip.getUsedMileage().signum() > 0 && !items.isEmpty()) {
-                    summary.setConsumptionMileage(summary.getConsumptionMileage().add(trip.getUsedMileage()));
-                    summary.setConsumptionFuelQuantity(summary.getConsumptionFuelQuantity().add(quantity));
-                    summary.setConsumptionTripCount(summary.getConsumptionTripCount() + 1);
-                }
+        else summary.setEndedCount(summary.getEndedCount() + 1);
+        if (!trip.isMileageValid()) {
+            if ((!unfinished && !startedBeforeWeek)
+                    || (trip.getStatisticsStartMileage() != null && trip.getStatisticsEndMileage() != null))
+                summary.setAbnormalMileageCount(summary.getAbnormalMileageCount() + 1);
+        } else {
+            summary.setUsedMileage(summary.getUsedMileage().add(trip.getUsedMileage()));
+            if (trip.getUsedMileage().signum() > 0 && trip.getStatisticsFuelQuantity().signum() > 0) {
+                summary.setConsumptionMileage(summary.getConsumptionMileage().add(trip.getUsedMileage()));
+                summary.setConsumptionFuelQuantity(summary.getConsumptionFuelQuantity().add(trip.getStatisticsFuelQuantity()));
+                summary.setConsumptionTripCount(summary.getConsumptionTripCount() + 1);
             }
         }
         return trip;
+    }
+
+    /** 周前派车仅承接上周最后一笔加油；缺失时不得回退为派车读数或本周读数。 */
+    private static void statisticsStart(Trip trip, FieldVehicleUse record, List<FieldVehicleFuel> items, LocalDate start) {
+        if (!record.getUseDate().isBefore(start)) {
+            trip.setStatisticsStartDate(record.getUseDate());
+            trip.setStatisticsStartMileage(record.getStartMileage());
+            return;
+        }
+        FieldVehicleFuel previous = latestFuel(items, start.minusDays(1));
+        if (previous != null && !previous.getFuelDate().isBefore(start.minusWeeks(1))) {
+            trip.setStatisticsStartDate(previous.getFuelDate());
+            trip.setStatisticsStartMileage(previous.getMileage());
+            trip.setStatisticsStartFuelId(previous.getId());
+        }
     }
 
     /** 实际行程不画到未来；预计段从查询日次日开始，日期结束值统一转为排他边界。 */
@@ -143,34 +177,39 @@ final class FieldVehicleWeekReportBuilder {
         event.setExtendedProps(props); report.getEvents().add(event);
     }
 
-    /** 累计只计截至周末已结束的有效行程里程、以及有明确日期且不晚于周末的加油金额。 */
+    /** 累计里程也按周末截取，避免历史周报使用后来还车的最终公里数。 */
     private static DriveRow driveRow(List<Trip> trips, List<FieldVehicleUse> history,
                                      Map<String, List<FieldVehicleFuel>> byTrip, LocalDate end, int seq) {
         DriveRow row = new DriveRow();
         row.setCarId(trips.get(0).getCarId()); row.setCarNo(trips.get(0).getCarNo()); row.setSeq(seq);
-        row.setRemark("周始/周末公里数、部门暂无数据；里程按完整行程统计；累计金额不含待确认日期加油");
+        Comparator<Trip> tripOrder = Comparator.comparing(Trip::getUseDate).thenComparing(Trip::getId);
+        row.setWeekStartMileage(Collections.min(trips, tripOrder).getStatisticsStartMileage());
+        row.setWeekEndMileage(Collections.max(trips, tripOrder).getStatisticsEndMileage());
         BigDecimal consumptionQuantity = BigDecimal.ZERO;
         BigDecimal consumptionMileage = BigDecimal.ZERO;
         for (Trip trip : trips) {
             if (trip.isMileageValid()) {
                 row.setUsedMileage(row.getUsedMileage().add(trip.getUsedMileage()));
-                if (trip.getUsedMileage().signum() > 0 && trip.getFuelCount() > 0) {
-                    consumptionQuantity = consumptionQuantity.add(trip.getFuelTotalQuantity());
+                if (trip.getUsedMileage().signum() > 0 && trip.getStatisticsFuelQuantity().signum() > 0) {
+                    consumptionQuantity = consumptionQuantity.add(trip.getStatisticsFuelQuantity());
                     consumptionMileage = consumptionMileage.add(trip.getUsedMileage());
                 }
             }
             row.setFuelQuantity(row.getFuelQuantity().add(trip.getWeekFuelQuantity()));
             row.setFuelAmount(row.getFuelAmount().add(trip.getWeekFuelAmount()));
-            trip.getFuelItems().stream().filter(f -> f.getFuelDate() != null && !f.getFuelDate().isBefore(end.minusDays(6))
-                    && !f.getFuelDate().isAfter(end)).forEach(row.getFuelItems()::add);
+            trip.getFuelItems().stream().filter(f -> "本周".equals(f.getFuelScope())).forEach(row.getFuelItems()::add);
         }
         row.getFuelItems().sort(Comparator.comparing(FuelItem::getFuelDate).thenComparing(FuelItem::getId));
         row.setFuelConsumption(consumption(consumptionQuantity, consumptionMileage));
         for (FieldVehicleUse record : history) {
             if (!Objects.equals(record.getCarId(), row.getCarId())) continue;
-            if (validMileage(record) && !record.getEndDate().isAfter(end))
-                row.setTotalMileage(row.getTotalMileage().add(record.getEndMileage().subtract(record.getStartMileage())));
-            for (FieldVehicleFuel fuel : byTrip.getOrDefault(record.getId(), List.of())) {
+            List<FieldVehicleFuel> fuelItems = byTrip.getOrDefault(record.getId(), List.of());
+            FieldVehicleFuel latest = latestFuel(fuelItems, end);
+            BigDecimal endMileage = record.getEndMileage();
+            if (unfinishedAt(record, end)) endMileage = latest == null ? null : latest.getMileage();
+            if (validMileage(record.getStartMileage(), endMileage))
+                row.setTotalMileage(row.getTotalMileage().add(endMileage.subtract(record.getStartMileage())));
+            for (FieldVehicleFuel fuel : fuelItems) {
                 validateFuel(fuel, record);
                 if (fuel.getFuelDate() != null && !fuel.getFuelDate().isAfter(end))
                     row.setTotalAmount(row.getTotalAmount().add(fuel.getAmount()));
@@ -183,10 +222,18 @@ final class FieldVehicleWeekReportBuilder {
         return Objects.equals(record.getStatus(), FieldVehicleStatus.USING.getCode());
     }
 
-    private static boolean validMileage(FieldVehicleUse record) {
-        return Objects.equals(record.getStatus(), FieldVehicleStatus.FINISHED.getCode())
-                && record.getStartMileage() != null && record.getEndMileage() != null
-                && record.getStartMileage().signum() >= 0 && record.getEndMileage().compareTo(record.getStartMileage()) >= 0;
+    private static boolean validMileage(BigDecimal start, BigDecimal end) {
+        return start != null && end != null && start.signum() >= 0 && end.compareTo(start) >= 0;
+    }
+
+    private static boolean unfinishedAt(FieldVehicleUse record, LocalDate end) {
+        return record.getEndDate() == null || record.getEndDate().isAfter(end);
+    }
+
+    /** 同日多笔按创建时间、ID 排序；空日期及截止日之后的记录不能充当历史读数。 */
+    private static FieldVehicleFuel latestFuel(List<FieldVehicleFuel> items, LocalDate end) {
+        return items.stream().filter(f -> f.getFuelDate() != null && !f.getFuelDate().isAfter(end))
+                .max(FUEL_ORDER).orElse(null);
     }
 
     private static void validateRecord(FieldVehicleUse record) {

@@ -97,6 +97,13 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     }
 
     @Override
+    public PayVoucher apply(PayVoucher form) {
+        // 兼容已打开的旧表单，当前任务由新流程实例确定。
+        form.setCurrentTask(null);
+        return super.apply(form);
+    }
+
+    @Override
     public List<UserTaskDTO> preview(PayVoucher form) {
         return this.commonPreview(form,  form.createVarMap(), payVoucherModelInstance, form.copyList());
     }
@@ -282,6 +289,7 @@ public class PayVoucherServiceImpl extends AbstractWorkflowCommonServiceImpl<Pay
     @Override
     public PayVoucher clearBizProcessData(PayVoucher form) {
         form.clearData();
+        form.setCurrentTask(null);
         return form;
     }
 

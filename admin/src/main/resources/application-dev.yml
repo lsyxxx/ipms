@@ -5,32 +5,40 @@ server:
 # --------- log
 logging:
   level:
+    root: INFO
     org:
       springframework:
-        data: trace
+        data: INFO
         jdbc:
           core:
-            JdbcTemplate: debug
-        security: TRACE
+            JdbcTemplate: DEBUG
+        security: INFO
+        web: INFO
+        session: INFO
       hibernate:
         orm:
           jdbc:
-            bind: TRACE
+            bind: INFO
         type:
           descriptor:
             sql:
-              BasicBinder: TRACE
+              BasicBinder: INFO
         SQL: DEBUG
+      camunda: INFO
     com:
-      abt: TRACE
-      camunda: debug
-    sql: trace
-    web: DEBUG
+      abt: INFO
+      camunda: INFO
+    # SQL 通过日志框架输出，保留在 D:/log/web_debug.log，避免 show-sql 重复打印。
+    sql: DEBUG
+    web: INFO
 
 spring:
   # ---- jpa
   jpa:
-    show-sql: true
+    # 本地数据库结构已同步时跳过自动更新；实体结构变更后需执行脚本或临时改为 update。
+    hibernate:
+      ddl-auto: none
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -62,6 +70,8 @@ camunda:
     database:
       schema-update: true
     auto-deployment-enabled: true
+    # 仅扫描项目流程目录，保留 BPMN 自动部署，避免遍历全部依赖包。
+    deployment-resource-pattern: classpath:/process/*.bpmn
     job-execution:
       enabled: false
 

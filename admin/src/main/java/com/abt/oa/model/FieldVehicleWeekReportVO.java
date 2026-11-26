@@ -53,6 +53,16 @@ public class FieldVehicleWeekReportVO {
     public static class Trip extends FieldVehicleListVO {
         private boolean crossWeek;
         private boolean mileageValid;
+        /** 周前派车取上周最后一笔加油读数；本周派车取实际派车读数。 */
+        private LocalDate statisticsStartDate;
+        private BigDecimal statisticsStartMileage;
+        private String statisticsStartFuelId;
+        /** 本次统计采用的结束读数日期、公里数及加油记录；实际还车字段保持原值。 */
+        private LocalDate statisticsEndDate;
+        private BigDecimal statisticsEndMileage;
+        private String statisticsFuelId;
+        /** 参考油耗分子：截止日未结束取本周最近一笔升数，跨周已结束取周内升数，否则取整次升数。 */
+        private BigDecimal statisticsFuelQuantity = BigDecimal.ZERO;
         private BigDecimal weekFuelQuantity = BigDecimal.ZERO;
         private BigDecimal weekFuelAmount = BigDecimal.ZERO;
         private List<FuelItem> fuelItems = new ArrayList<>();
@@ -99,7 +109,7 @@ public class FieldVehicleWeekReportVO {
         private String line;
     }
 
-    /** 按车辆汇总；周边界里程和部门缺少数据源时为空。 */
+    /** 按车辆汇总；周边界采用行程统计读数，缺少读数或部门时为空。 */
     @Getter
     @Setter
     public static class DriveRow {
