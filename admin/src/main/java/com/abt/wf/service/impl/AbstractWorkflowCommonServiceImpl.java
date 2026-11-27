@@ -10,7 +10,9 @@ import com.abt.common.util.TokenUtil;
 import com.abt.sys.exception.BusinessException;
 import com.abt.sys.model.dto.UserView;
 import com.abt.sys.model.entity.SystemFile;
+import com.abt.sys.model.entity.SystemMessage;
 import com.abt.sys.service.IFileService;
+import com.abt.sys.service.SystemMessageService;
 import com.abt.sys.service.UserService;
 import com.abt.wf.config.Constants;
 import com.abt.wf.entity.FlowOperationLog;
@@ -26,7 +28,7 @@ import cn.idev.excel.EasyExcel;
 import cn.idev.excel.metadata.data.WriteCellData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.engine.*;
@@ -39,6 +41,7 @@ import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.impl.instance.StartEventImpl;
 import org.camunda.bpm.model.bpmn.instance.*;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -57,19 +60,26 @@ import static com.abt.wf.config.Constants.*;
 /**
  * 通用
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, R extends RequestForm> implements WorkFlowService<T>, BusinessService<R, T> {
 
-    private IdentityService identityService;
-    private FlowOperationLogService flowOperationLogService;
-    private TaskService taskService;
-    private UserService userService;
-    private RepositoryService repositoryService;
-    private RuntimeService runtimeService;
-    private IFileService fileService;
-    private HistoryService historyService;
-    private SignatureService signatureService;
+    private final IdentityService identityService;
+    private final FlowOperationLogService flowOperationLogService;
+    private final TaskService taskService;
+    private final UserService userService;
+    private final RepositoryService repositoryService;
+    private final RuntimeService runtimeService;
+    private final IFileService fileService;
+    private final HistoryService historyService;
+    private final SignatureService signatureService;
+
+    private SystemMessageService systemMessageService;
+
+    @Autowired
+    void setSystemMessageService(SystemMessageService systemMessageService) {
+        this.systemMessageService = systemMessageService;
+    }
 
     @Override
     public void setAuthUser(String userid) {
@@ -395,12 +405,16 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         return ValidationResult.pass();
     }
 
+    /** 拒绝会删除流程实例，因此先读取申请人信息，保存拒绝结果后发送站内消息。 */
     public void commonRejectHandler(T form, Task task, String comment, String id) {
+        String processInstanceId = task.getProcessInstanceId();
+        Map<String, Object> variables = runtimeService.getVariables(processInstanceId, List.of(KEY_STARTER, KEY_SERVICE));
+        String starterId = Objects.toString(variables.get(KEY_STARTER), "");
+        String serviceName = Objects.toString(variables.get(KEY_SERVICE), form.getServiceName());
         taskService.claim(task.getId(), form.getSubmitUserid());
-//        taskService.complete(task.getId());
         //delete process
-        runtimeService.setVariable(task.getProcessInstanceId(), VAR_KEY_REVOKE, DELETE_STATE_DELETE);
-        runtimeService.deleteProcessInstance(task.getProcessInstanceId(), Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
+        runtimeService.setVariable(processInstanceId, VAR_KEY_REVOKE, DELETE_STATE_DELETE);
+        runtimeService.deleteProcessInstance(processInstanceId, Constants.DELETE_REASON_REJECT + "_" + form.getSubmitUserid() + "_" + form.getSubmitUsername());
         //update status
         form.setBusinessState(STATE_DETAIL_REJECT);
         saveEntity(form);
@@ -410,6 +424,25 @@ public abstract class AbstractWorkflowCommonServiceImpl<T extends WorkflowBase, 
         optLog.setComment(comment);
         optLog.setTaskResult(WorkFlowUtil.decisionTranslate(getDecision(form)));
         flowOperationLogService.saveLog(optLog);
+        sendRejectionMessage(form, id, starterId, serviceName);
+    }
+
+    private void sendRejectionMessage(T form, String id, String starterId, String serviceName) {
+        if (StringUtils.isBlank(starterId)) {
+            log.error("审批拒绝后无法发送通知，流程未保存申请人，单据编号: {}", id);
+            return;
+        }
+        try {
+            User starter = userService.getSimpleUserInfo(starterId);
+            String starterName = starter == null ? "" : starter.getUsername();
+            String content = String.format("您的%s流程(单据编号:%s)已由%s审批拒绝", serviceName, id, form.getSubmitUsername());
+            SystemMessage message = systemMessageService.createSystemMessage(starterId, starterName, "", content, form.getProcessDefinitionKey());
+            message.setEntityId(id);
+            message.setMsgResult(SystemMessage.MSG_RESULT_REJECT);
+            systemMessageService.sendMessage(message);
+        } catch (Exception e) {
+            log.error("发送审批拒绝通知失败，单据编号: {}", id, e);
+        }
     }
 
     public void commonPassHandler(T form, Task task, String comment, String id) {
